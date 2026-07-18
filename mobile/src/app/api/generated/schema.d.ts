@@ -112,6 +112,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/devices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Register or update the caller's device (push token, app version) */
+        post: operations["registerDevice"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/notes": {
         parameters: {
             query?: never;
@@ -212,6 +229,16 @@ export interface components {
             data: components["schemas"]["User"];
             registered: boolean;
             tokens: components["schemas"]["TokenPair"];
+        };
+        Device: {
+            /** Format: uuid */
+            id: string;
+            /** @enum {string} */
+            platform: "android" | "ios" | "web";
+            app_version: string;
+            has_push_token: boolean;
+            /** Format: date-time */
+            last_seen_at?: string | null;
         };
         NoteInput: {
             body: string;
@@ -461,6 +488,45 @@ export interface operations {
                 };
             };
             426: components["responses"]["UpgradeRequired"];
+        };
+    };
+    registerDevice: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description A client-generated UUID. Replaying it returns the stored response (CLAUDE.md rule */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                "X-Device-Id": string;
+                /** @description App build MAJOR.MINOR.PATCH. Builds below the server minimum receive 426. */
+                "X-App-Version"?: components["parameters"]["AppVersion"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @enum {string} */
+                    platform: "android" | "ios" | "web";
+                    push_token?: string | null;
+                    app_version?: string;
+                };
+            };
+        };
+        responses: {
+            /** @description The registered device */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["Device"];
+                    };
+                };
+            };
+            401: components["responses"]["Problem"];
+            422: components["responses"]["ValidationProblem"];
         };
     };
     createNote: {

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Http\Controllers\Api\V1\Auth\AuthController;
 use App\Http\Controllers\Api\V1\Auth\OtpController;
+use App\Http\Controllers\Api\V1\DeviceController;
 use App\Http\Controllers\Api\V1\Reference\NoteController;
 use Illuminate\Support\Facades\Route;
 
@@ -52,6 +53,10 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
     | via the global api middleware.
     */
     Route::middleware('auth:sanctum')->group(function (): void {
+        // Device registration / push token capture (P1-04).
+        Route::post('/devices', [DeviceController::class, 'store'])->name('devices.store');
+
+        // Reference vertical slice (P0-05).
         Route::post('/notes', [NoteController::class, 'store'])->name('notes.store');
         Route::get('/notes/{note}', [NoteController::class, 'show'])->name('notes.show');
     });

@@ -152,6 +152,52 @@ paths:
         "426":
           $ref: "#/components/responses/UpgradeRequired"
 
+  /devices:
+    post:
+      tags: [Platform]
+      operationId: registerDevice
+      summary: Register or update the caller's device (push token, app version)
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - name: X-Device-Id
+          in: header
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - $ref: "#/components/parameters/AppVersion"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [platform]
+              properties:
+                platform:
+                  type: string
+                  enum: [android, ios, web]
+                push_token:
+                  type: [string, "null"]
+                app_version:
+                  type: string
+                  pattern: '^\d+\.\d+\.\d+$'
+      responses:
+        "200":
+          description: The registered device
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    $ref: "#/components/schemas/Device"
+        "401":
+          $ref: "#/components/responses/Problem"
+        "422":
+          $ref: "#/components/responses/ValidationProblem"
+
   /notes:
     post:
       tags: [Notes (reference)]
@@ -357,6 +403,24 @@ components:
           type: boolean
         tokens:
           $ref: "#/components/schemas/TokenPair"
+
+    Device:
+      type: object
+      required: [id, platform, app_version, has_push_token]
+      properties:
+        id:
+          type: string
+          format: uuid
+        platform:
+          type: string
+          enum: [android, ios, web]
+        app_version:
+          type: string
+        has_push_token:
+          type: boolean
+        last_seen_at:
+          type: [string, "null"]
+          format: date-time
 
     NoteInput:
       type: object
