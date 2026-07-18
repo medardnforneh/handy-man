@@ -1,0 +1,18 @@
+/* GENERATED from tokens/tokens.json — do not edit by hand. Run `npm run tokens:build`. */
+
+:root {
+  --ion-background-color: var(--hm-color-surface-base);
+  --ion-background-color-rgb: 255, 255, 255;
+  --ion-text-color: var(--hm-color-text-primary);
+  --ion-card-background: var(--hm-color-surface-raised);
+  --ion-border-color: var(--hm-color-border-subtle);
+  --ion-color-step-150: var(--hm-color-surface-sunken);
+
+  --ion-color-primary: var(--hm-color-brand-primary);
+  --ion-color-primary-contrast: var(--hm-color-brand-onPrimary);
+
+  --ion-color-success: var(--hm-color-status-success);
+  --ion-color-warning: var(--hm-color-status-warning);
+  --ion-color-danger: var(--hm-color-status-danger);
+  --ion-color-medium: var(--hm-color-text-muted);
+}

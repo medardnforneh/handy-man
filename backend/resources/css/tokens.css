@@ -1,0 +1,82 @@
+/* GENERATED from tokens/tokens.json — do not edit by hand. Run `npm run tokens:build`. */
+
+:root {
+  --hm-color-surface-base: #f7f8fa;
+  --hm-color-surface-raised: #ffffff;
+  --hm-color-surface-sunken: #eceef1;
+  --hm-color-text-primary: #16181d;
+  --hm-color-text-muted: #5b6472;
+  --hm-color-text-inverse: #ffffff;
+  --hm-color-border-subtle: #e3e6ea;
+  --hm-color-border-strong: #c4c9d0;
+  --hm-color-brand-primary: #0a7d54;
+  --hm-color-brand-onPrimary: #ffffff;
+  --hm-color-status-success: #1a7f43;
+  --hm-color-status-warning: #b3620a;
+  --hm-color-status-danger: #c0392b;
+  --hm-color-status-info: #1f6feb;
+  --hm-radius-sm: 6px;
+  --hm-radius-md: 10px;
+  --hm-radius-lg: 16px;
+  --hm-radius-pill: 9999px;
+  --hm-space-xs: 4px;
+  --hm-space-sm: 8px;
+  --hm-space-md: 16px;
+  --hm-space-lg: 24px;
+  --hm-space-xl: 40px;
+}
+
+/* Follow the system when no explicit theme is chosen. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+  --hm-color-surface-base: #0f1216;
+  --hm-color-surface-raised: #171b21;
+  --hm-color-surface-sunken: #0a0c0f;
+  --hm-color-text-primary: #e8eaed;
+  --hm-color-text-muted: #9aa4b2;
+  --hm-color-text-inverse: #0f1216;
+  --hm-color-border-subtle: #262b33;
+  --hm-color-border-strong: #3a414c;
+  --hm-color-brand-primary: #2ea77d;
+  --hm-color-brand-onPrimary: #05130d;
+  --hm-color-status-success: #35b46a;
+  --hm-color-status-warning: #e0912f;
+  --hm-color-status-danger: #e5675a;
+  --hm-color-status-info: #4f9dff;
+  }
+}
+
+/* Explicit overrides always win (persisted per device via Capacitor Preferences). */
+:root[data-theme="dark"] {
+  --hm-color-surface-base: #0f1216;
+  --hm-color-surface-raised: #171b21;
+  --hm-color-surface-sunken: #0a0c0f;
+  --hm-color-text-primary: #e8eaed;
+  --hm-color-text-muted: #9aa4b2;
+  --hm-color-text-inverse: #0f1216;
+  --hm-color-border-subtle: #262b33;
+  --hm-color-border-strong: #3a414c;
+  --hm-color-brand-primary: #2ea77d;
+  --hm-color-brand-onPrimary: #05130d;
+  --hm-color-status-success: #35b46a;
+  --hm-color-status-warning: #e0912f;
+  --hm-color-status-danger: #e5675a;
+  --hm-color-status-info: #4f9dff;
+}
+
+:root[data-theme="light"] {
+  --hm-color-surface-base: #f7f8fa;
+  --hm-color-surface-raised: #ffffff;
+  --hm-color-surface-sunken: #eceef1;
+  --hm-color-text-primary: #16181d;
+  --hm-color-text-muted: #5b6472;
+  --hm-color-text-inverse: #ffffff;
+  --hm-color-border-subtle: #e3e6ea;
+  --hm-color-border-strong: #c4c9d0;
+  --hm-color-brand-primary: #0a7d54;
+  --hm-color-brand-onPrimary: #ffffff;
+  --hm-color-status-success: #1a7f43;
+  --hm-color-status-warning: #b3620a;
+  --hm-color-status-danger: #c0392b;
+  --hm-color-status-info: #1f6feb;
+}

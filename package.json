@@ -1,0 +1,14 @@
+{
+  "name": "handy-man-project",
+  "private": true,
+  "description": "Monorepo tooling for handy-man-project (backend/, mobile/, shared i18n + tokens).",
+  "type": "module",
+  "scripts": {
+    "i18n:build": "node i18n/build.mjs",
+    "i18n:check": "node i18n/build.mjs --check",
+    "tokens:build": "node tokens/build.mjs",
+    "lint:colors": "node tools/lint-no-literal-colors.mjs",
+    "lint:strings": "node tools/lint-no-bare-strings.mjs",
+    "verify:frontend": "npm run i18n:check && npm run lint:colors && npm run lint:strings"
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "app.name": "HandyMan",
+  "app.tagline": "Trouvez de l'aide de confiance, sur place ou à distance",
+
+  "nav.customer": "Trouver de l'aide",
+  "nav.provider": "Proposer des services",
+  "nav.messages": "Messages",
+  "nav.account": "Compte",
+
+  "common.book": "Réserver",
+  "common.cancel": "Annuler",
+  "common.save": "Enregistrer",
+  "common.continue": "Continuer",
+  "common.retry": "Réessayer",
+  "common.back": "Retour",
+  "common.loading": "Chargement…",
+
+  "auth.login": "Se connecter",
+  "auth.logout": "Se déconnecter",
+  "auth.phone": "Numéro de téléphone",
+  "auth.otp_prompt": "Saisissez le code que nous vous avons envoyé",
+  "auth.language_prompt": "Choisissez votre langue",
+  "language.french": "Français",
+  "language.english": "English",
+
+  "errors.offline": "Vous semblez hors ligne. Nous réessaierons automatiquement.",
+  "errors.upgrade_required": "Veuillez mettre à jour l'application pour continuer.",
+  "errors.generic": "Une erreur s'est produite. Veuillez réessayer.",
+
+  "verify.required_title": "Vérification requise",
+  "verify.required_body": "Vous devez vérifier votre identité avant d'accepter ce travail.",
+  "verify.start": "Démarrer la vérification",
+
+  "offers.count": "{count, plural, =0 {Aucune offre} one {# offre} other {# offres}}"
+}

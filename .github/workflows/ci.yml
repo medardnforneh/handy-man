@@ -1,0 +1,140 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+defaults:
+  run:
+    working-directory: backend
+
+jobs:
+  test:
+    name: Lint · Analyse · Test
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        # PostGIS image → real geo/citext/pg_trgm in CI (docs: never SQLite in tests).
+        image: postgis/postgis:16-3.4
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: handyman_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DB_CONNECTION: pgsql
+      DB_HOST: 127.0.0.1
+      DB_PORT: 5432
+      DB_DATABASE: handyman_test
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      REDIS_CLIENT: predis
+      REDIS_HOST: 127.0.0.1
+      REDIS_PORT: 6379
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP 8.3
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: pdo_pgsql, pgsql, mbstring, intl, sodium, bcmath, zip, gd, fileinfo, curl
+          coverage: none
+          tools: composer:v2
+
+      - name: Cache Composer
+        uses: actions/cache@v4
+        with:
+          path: ~/.composer/cache
+          key: composer-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-
+
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Prepare environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+
+      - name: Enable required Postgres extensions
+        env:
+          PGPASSWORD: postgres
+        run: |
+          psql -h 127.0.0.1 -U postgres -d handyman_test -c "CREATE EXTENSION IF NOT EXISTS postgis;"
+          psql -h 127.0.0.1 -U postgres -d handyman_test -c "CREATE EXTENSION IF NOT EXISTS citext;"
+          psql -h 127.0.0.1 -U postgres -d handyman_test -c "CREATE EXTENSION IF NOT EXISTS pg_trgm;"
+
+      - name: Lint (Pint)
+        run: composer lint
+
+      - name: Static analysis (PHPStan L6)
+        run: composer analyse
+
+      - name: Test (Pest)
+        run: composer test
+
+  frontend:
+    name: i18n · Tokens · Lints · App build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: .
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: i18n parity gate (fr/en)
+        run: npm run i18n:check
+
+      - name: Regenerate i18n + tokens and fail on drift
+        run: |
+          node i18n/build.mjs
+          node tokens/build.mjs
+          git diff --exit-code -- backend/lang backend/resources/css backend/public/css mobile/src/assets/i18n mobile/src/theme tokens/generated \
+            || (echo "::error::Generated i18n/token files are stale — run 'npm run i18n:build && npm run tokens:build' and commit." && exit 1)
+
+      - name: No literal colours
+        run: npm run lint:colors
+
+      - name: No hard-coded user strings
+        run: npm run lint:strings
+
+      - name: Install mobile deps
+        working-directory: mobile
+        run: npm ci
+
+      - name: Regenerate API client from OpenAPI and fail on drift
+        working-directory: mobile
+        run: |
+          npm run api:generate
+          git diff --exit-code -- src/app/api/generated \
+            || (echo "::error::Generated API client is stale or hand-edited — run 'npm run api:generate' and commit. Never hand-write a client model (doc 08)." && exit 1)
+
+      - name: Build the Ionic app (one codebase → web bundle)
+        working-directory: mobile
+        run: npm run build

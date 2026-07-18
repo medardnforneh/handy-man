@@ -1,0 +1,28 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>{{ 'app.name' | translate }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="toggleLocale()">{{ otherLocale | uppercase }}</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="ion-padding">
+  <p class="tagline">{{ 'app.tagline' | translate }}</p>
+
+  <!-- Both sections are ALWAYS visible to every user (doc 10): no role gate, no mode switch. -->
+  <ion-list lines="full">
+    <ion-item button="true" detail="true">
+      <ion-label>{{ 'nav.customer' | translate }}</ion-label>
+    </ion-item>
+    <ion-item button="true" detail="true">
+      <ion-label>{{ 'nav.provider' | translate }}</ion-label>
+    </ion-item>
+    <ion-item button="true" detail="true">
+      <ion-label>{{ 'nav.messages' | translate }}</ion-label>
+    </ion-item>
+    <ion-item button="true" detail="true">
+      <ion-label>{{ 'nav.account' | translate }}</ion-label>
+    </ion-item>
+  </ion-list>
+</ion-content>

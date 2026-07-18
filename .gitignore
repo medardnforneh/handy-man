@@ -1,0 +1,23 @@
+# Monorepo root ignores. Each project (backend/, mobile/) has its own .gitignore too.
+
+# Dependencies (also ignored per-project, listed here as a backstop)
+**/node_modules/
+backend/vendor/
+
+# Environment
+**/.env
+!**/.env.example
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.log
+
+# Build output
+mobile/www/
+mobile/dist/
+mobile/.angular/
+mobile/android/
+mobile/ios/
