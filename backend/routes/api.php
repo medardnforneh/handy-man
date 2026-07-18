@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\Api\V1\Auth\OtpController;
 use App\Http\Controllers\Api\V1\Reference\NoteController;
 use Illuminate\Support\Facades\Route;
 
@@ -29,6 +30,13 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
             'server_time' => now()->toIso8601String(),
         ]);
     })->name('meta');
+
+    // Auth — OTP-first (P1-02). Public: these ARE the authentication entry points. Token issuance
+    // is added in P1-03.
+    Route::prefix('auth')->name('auth.')->group(function (): void {
+        Route::post('/otp/request', [OtpController::class, 'request'])->name('otp.request');
+        Route::post('/otp/verify', [OtpController::class, 'verify'])->name('otp.verify');
+    });
 
     /*
     | REFERENCE vertical slice (P0-05) — the canonical example every feature copies.

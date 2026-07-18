@@ -1,6 +1,7 @@
 <?php
 
 use App\Domain\Access\PreconditionUnmetException;
+use App\Domain\Identity\OtpException;
 use App\Http\Middleware\EnforceAppVersion;
 use App\Http\Middleware\Idempotency;
 use App\Http\Middleware\SetLocale;
@@ -87,6 +88,19 @@ return Application::configure(basePath: dirname(__DIR__))
                     'required_tier' => $e->requiredTier,
                     'resolve' => $e->resolve,
                 ], fn ($v) => $v !== null),
+            );
+        });
+
+        $exceptions->render(function (OtpException $e, Request $request) {
+            if (! $request->is('api/*')) {
+                return null;
+            }
+
+            return Problem::make(
+                type: $e->problemType,
+                title: $e->title,
+                status: $e->status,
+                detail: $e->getMessage(),
             );
         });
 

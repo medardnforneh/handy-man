@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Domain\Identity\Otp\LogOtpSender;
+use App\Domain\Identity\Otp\OtpSender;
 use App\Domain\Reference\Policies\NotePolicy;
 use App\Models\Note;
 use Illuminate\Support\Facades\Gate;
@@ -23,7 +25,8 @@ class AppServiceProvider extends ServiceProvider
 
     public function register(): void
     {
-        //
+        // OTP delivery — LogOtpSender in dev; the comms layer (doc 07) swaps in WhatsApp/SMS.
+        $this->app->bind(OtpSender::class, LogOtpSender::class);
     }
 
     public function boot(): void

@@ -12,9 +12,69 @@ servers:
 
 tags:
   - name: Platform
+  - name: Auth
   - name: Notes (reference)
 
 paths:
+  /auth/otp/request:
+    post:
+      tags: [Auth]
+      operationId: requestOtp
+      summary: Request an OTP code (signup or login)
+      description: Rate limited by phone (3/hr), IP (10/hr) and device (5/hr). Never returns the code.
+      security: []
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OtpRequestInput"
+      responses:
+        "202":
+          description: A challenge was issued
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OtpChallengeAccepted"
+        "422":
+          $ref: "#/components/responses/ValidationProblem"
+        "429":
+          $ref: "#/components/responses/Problem"
+
+  /auth/otp/verify:
+    post:
+      tags: [Auth]
+      operationId: verifyOtp
+      summary: Verify an OTP code; creates the user on first success
+      security: []
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OtpVerifyInput"
+      responses:
+        "200":
+          description: Verified (existing user — login)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserEnvelope"
+        "201":
+          description: Verified (new user — signup)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserEnvelope"
+        "422":
+          $ref: "#/components/responses/ValidationProblem"
+        "429":
+          $ref: "#/components/responses/Problem"
+
   /meta:
     get:
       tags: [Platform]
@@ -145,6 +205,77 @@ components:
         server_time:
           type: string
           format: date-time
+
+    OtpRequestInput:
+      type: object
+      required: [phone_e164, purpose]
+      properties:
+        phone_e164:
+          type: string
+          pattern: '^\+[1-9]\d{6,14}$'
+          examples: ["+237699000111"]
+        purpose:
+          type: string
+          enum: [signup, login, phone_change]
+
+    OtpVerifyInput:
+      type: object
+      required: [phone_e164, code, purpose]
+      properties:
+        phone_e164:
+          type: string
+          pattern: '^\+[1-9]\d{6,14}$'
+        code:
+          type: string
+        purpose:
+          type: string
+          enum: [signup, login, phone_change]
+
+    OtpChallengeAccepted:
+      type: object
+      required: [challenge_id, expires_at]
+      properties:
+        challenge_id:
+          type: string
+          format: uuid
+        expires_at:
+          type: string
+          format: date-time
+
+    User:
+      type: object
+      required: [id, phone_e164, locale, status]
+      properties:
+        id:
+          type: string
+          format: uuid
+        display_name:
+          type: string
+        phone_e164:
+          type: string
+        email:
+          type: [string, "null"]
+        locale:
+          type: string
+          enum: [fr, en]
+        comms_locale:
+          type: string
+          enum: [fr, en]
+        status:
+          type: string
+          enum: [pending, active, suspended, closed]
+        phone_verified_at:
+          type: [string, "null"]
+          format: date-time
+
+    UserEnvelope:
+      type: object
+      required: [data, registered]
+      properties:
+        data:
+          $ref: "#/components/schemas/User"
+        registered:
+          type: boolean
 
     NoteInput:
       type: object

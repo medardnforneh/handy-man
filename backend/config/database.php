@@ -97,6 +97,11 @@ return [
             'prefix_indexes' => true,
             'search_path' => 'public',
             'sslmode' => env('DB_SSLMODE', 'prefer'),
+            // Pin the DB session timezone to UTC so timestamptz round-trips match the app's UTC
+            // clock. Without this, Postgres interprets naive timestamps in the server's local
+            // timezone (e.g. Africa/Douala +01), shifting stored instants by the offset — which
+            // silently breaks tight time windows like OTP expiry.
+            'timezone' => 'UTC',
         ],
 
         'sqlsrv' => [

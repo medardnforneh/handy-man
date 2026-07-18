@@ -4,6 +4,43 @@
  */
 
 export interface paths {
+    "/auth/otp/request": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Request an OTP code (signup or login)
+         * @description Rate limited by phone (3/hr), IP (10/hr) and device (5/hr). Never returns the code.
+         */
+        post: operations["requestOtp"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/otp/verify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Verify an OTP code; creates the user on first success */
+        post: operations["verifyOtp"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/meta": {
         parameters: {
             query?: never;
@@ -73,6 +110,43 @@ export interface components {
             min_app_version?: string | null;
             /** Format: date-time */
             server_time: string;
+        };
+        OtpRequestInput: {
+            /** @example +237699000111 */
+            phone_e164: string;
+            /** @enum {string} */
+            purpose: "signup" | "login" | "phone_change";
+        };
+        OtpVerifyInput: {
+            phone_e164: string;
+            code: string;
+            /** @enum {string} */
+            purpose: "signup" | "login" | "phone_change";
+        };
+        OtpChallengeAccepted: {
+            /** Format: uuid */
+            challenge_id: string;
+            /** Format: date-time */
+            expires_at: string;
+        };
+        User: {
+            /** Format: uuid */
+            id: string;
+            display_name?: string;
+            phone_e164: string;
+            email?: string | null;
+            /** @enum {string} */
+            locale: "fr" | "en";
+            /** @enum {string} */
+            comms_locale?: "fr" | "en";
+            /** @enum {string} */
+            status: "pending" | "active" | "suspended" | "closed";
+            /** Format: date-time */
+            phone_verified_at?: string | null;
+        };
+        UserEnvelope: {
+            data: components["schemas"]["User"];
+            registered: boolean;
         };
         NoteInput: {
             body: string;
@@ -161,6 +235,73 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    requestOtp: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description A client-generated UUID. Replaying it returns the stored response (CLAUDE.md rule */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OtpRequestInput"];
+            };
+        };
+        responses: {
+            /** @description A challenge was issued */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OtpChallengeAccepted"];
+                };
+            };
+            422: components["responses"]["ValidationProblem"];
+            429: components["responses"]["Problem"];
+        };
+    };
+    verifyOtp: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description A client-generated UUID. Replaying it returns the stored response (CLAUDE.md rule */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OtpVerifyInput"];
+            };
+        };
+        responses: {
+            /** @description Verified (existing user — login) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserEnvelope"];
+                };
+            };
+            /** @description Verified (new user — signup) */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserEnvelope"];
+                };
+            };
+            422: components["responses"]["ValidationProblem"];
+            429: components["responses"]["Problem"];
+        };
+    };
     getMeta: {
         parameters: {
             query?: never;

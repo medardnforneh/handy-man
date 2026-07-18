@@ -40,6 +40,7 @@ class User extends Authenticatable
 
     protected $fillable = [
         'party_id', 'phone_e164', 'email', 'password_hash', 'locale', 'comms_locale', 'status',
+        'phone_verified_at', 'email_verified_at', 'last_login_at',
     ];
 
     protected $hidden = ['password_hash', 'remember_token'];
