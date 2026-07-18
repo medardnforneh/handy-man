@@ -80,8 +80,8 @@ export interface components {
         Note: {
             /** Format: int64 */
             id: number;
-            /** Format: int64 */
-            author_id: number;
+            /** Format: uuid */
+            author_id: string;
             body: string;
             /** Format: date-time */
             created_at: string;

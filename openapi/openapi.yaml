@@ -162,8 +162,8 @@ components:
           type: integer
           format: int64
         author_id:
-          type: integer
-          format: int64
+          type: string
+          format: uuid
         body:
           type: string
         created_at:

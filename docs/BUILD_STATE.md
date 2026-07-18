@@ -60,7 +60,14 @@ Task IDs come from `docs/05-build-plan.md`.
 | P0-17 | Access-model foundation (doc 10) | **DONE** — `Fact` enum, cached `FactDeriver` (pluggable resolvers, `forget()` invalidation), `Capability` base, `AcceptPaidJob` (tier keyed to engagement_mode), `PreconditionUnmetException` → problem+json 409 with `missing_fact`+`resolve` (not 403); 5 tests |
 | P0-18 | Spatie scoped to org-internal + staff only | **DONE** — spatie/laravel-permission (teams on for org-scoped roles), `HasRoles` on User, `Role` enum (org+staff only, no customer/provider), `StaffRolesSeeder`; tests prove capabilities never consult roles & section split isn't role-gated |
 
-Phases 1–8: not started (see build plan).
+### Phase 1 — Identity and catalog
+
+| ID | Task | Status |
+|---|---|---|
+| P1-01 | parties/users/orgs/memberships + kind trigger | **DONE** — UUID identity per doc 02 (reconciled P0 bigint→UUID: Spatie morph/team keys, notes, idempotency, sessions all UUID); native enums `party_kind`/`user_status`/`membership_role`; constraint trigger rejects user↔org-kind mismatch at DB; phone-primary, OTP-first (password optional); 7 tests. `TestCase::$dropTypes` so RefreshDatabase drops enum types |
+| P1-02..P1-10 | OTP, Sanctum+refresh, devices, consents, addresses+PostGIS, skills, provider profiles, Filament, DSAR | not started |
+
+Phases 2–8: not started (see build plan).
 
 ## What was done, most recent first
 

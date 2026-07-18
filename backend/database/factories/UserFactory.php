@@ -1,45 +1,49 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Database\Factories;
 
+use App\Models\Party;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
 
 /**
  * @extends Factory<User>
  */
 class UserFactory extends Factory
 {
-    /**
-     * The current password being used by the factory.
-     */
-    protected static ?string $password;
+    protected $model = User::class;
 
     /**
-     * Define the model's default state.
-     *
      * @return array<model-property<User>, mixed>
      */
     public function definition(): array
     {
         return [
-            'name' => fake()->name(),
+            'party_id' => Party::factory()->individual(),
+            'phone_e164' => '+2376'.fake()->unique()->numerify('########'),
             'email' => fake()->unique()->safeEmail(),
+            'password_hash' => 'password', // hashed by the model cast
+            'locale' => 'fr',
+            'comms_locale' => 'fr',
+            'status' => 'active',
+            'phone_verified_at' => now(),
             'email_verified_at' => now(),
-            'password' => static::$password ??= Hash::make('password'),
-            'remember_token' => Str::random(10),
         ];
     }
 
-    /**
-     * Indicate that the model's email address should be unverified.
-     */
     public function unverified(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn () => [
+            'phone_verified_at' => null,
             'email_verified_at' => null,
+            'status' => 'pending',
         ]);
+    }
+
+    public function anglophone(): static
+    {
+        return $this->state(fn () => ['locale' => 'en', 'comms_locale' => 'en']);
     }
 }

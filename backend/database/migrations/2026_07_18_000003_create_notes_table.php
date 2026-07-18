@@ -20,7 +20,7 @@ return new class extends Migration
     {
         Schema::create('notes', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->foreignId('author_id')->constrained('users')->cascadeOnDelete();
+            $table->foreignUuid('author_id')->constrained('users')->cascadeOnDelete();
             $table->text('body');
             $table->timestampsTz();
         });

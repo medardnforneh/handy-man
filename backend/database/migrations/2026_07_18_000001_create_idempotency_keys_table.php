@@ -28,7 +28,7 @@ return new class extends Migration
             $table->string('idempotency_key');
 
             // Scope for later (auth arrives in P1). Nullable until then.
-            $table->unsignedBigInteger('user_id')->nullable();
+            $table->uuid('user_id')->nullable();
 
             // Request fingerprint — a replayed key MUST be the same request, else it's a misuse.
             $table->string('request_method', 10);
