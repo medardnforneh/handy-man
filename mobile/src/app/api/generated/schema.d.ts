@@ -129,6 +129,41 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/consents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Current consent state (latest decision per purpose) */
+        get: operations["getConsents"];
+        put?: never;
+        /** Grant or revoke a consent (records the presented locale) */
+        post: operations["recordConsent"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/me/preferences": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update UI language and comms language (may differ) */
+        patch: operations["updatePreferences"];
+        trace?: never;
+    };
     "/notes": {
         parameters: {
             query?: never;
@@ -527,6 +562,100 @@ export interface operations {
             };
             401: components["responses"]["Problem"];
             422: components["responses"]["ValidationProblem"];
+        };
+    };
+    getConsents: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Consent state */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            [key: string]: boolean;
+                        };
+                        policy_version: string;
+                    };
+                };
+            };
+            401: components["responses"]["Problem"];
+        };
+    };
+    recordConsent: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description A client-generated UUID. Replaying it returns the stored response (CLAUDE.md rule */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @enum {string} */
+                    purpose: "terms" | "privacy" | "location_tracking" | "id_verification" | "marketing";
+                    granted: boolean;
+                    /** @enum {string} */
+                    presented_locale?: "fr" | "en";
+                };
+            };
+        };
+        responses: {
+            /** @description Consent recorded */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["Problem"];
+            422: components["responses"]["ValidationProblem"];
+        };
+    };
+    updatePreferences: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description A client-generated UUID. Replaying it returns the stored response (CLAUDE.md rule */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @enum {string} */
+                    locale?: "fr" | "en";
+                    /** @enum {string} */
+                    comms_locale?: "fr" | "en";
+                };
+            };
+        };
+        responses: {
+            /** @description Updated user */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["User"];
+                    };
+                };
+            };
+            401: components["responses"]["Problem"];
         };
     };
     createNote: {

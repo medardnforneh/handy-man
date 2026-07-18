@@ -6,6 +6,7 @@ use App\Http\Middleware\Idempotency;
 use App\Http\Middleware\SetLocale;
 use App\Support\Problem;
 use App\Support\ProblemAware;
+use App\Support\ProvidesProblemExtras;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
@@ -91,7 +92,8 @@ return Application::configure(basePath: dirname(__DIR__))
             );
         });
 
-        // Any domain exception that implements ProblemAware renders itself (OTP, refresh tokens, …).
+        // Any domain exception that implements ProblemAware renders itself (OTP, refresh tokens,
+        // consent, …). ProvidesProblemExtras contributes extra machine-readable members.
         $exceptions->render(function (ProblemAware $e, Request $request) {
             if (! $request->is('api/*')) {
                 return null;
@@ -102,6 +104,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 title: $e->problemTitle(),
                 status: $e->problemStatus(),
                 detail: $e instanceof Throwable ? $e->getMessage() : '',
+                extra: $e instanceof ProvidesProblemExtras ? $e->problemExtras() : [],
             );
         });
 

@@ -198,6 +198,92 @@ paths:
         "422":
           $ref: "#/components/responses/ValidationProblem"
 
+  /consents:
+    get:
+      tags: [Platform]
+      operationId: getConsents
+      summary: Current consent state (latest decision per purpose)
+      responses:
+        "200":
+          description: Consent state
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, policy_version]
+                properties:
+                  data:
+                    type: object
+                    additionalProperties:
+                      type: boolean
+                  policy_version:
+                    type: string
+        "401":
+          $ref: "#/components/responses/Problem"
+    post:
+      tags: [Platform]
+      operationId: recordConsent
+      summary: Grant or revoke a consent (records the presented locale)
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [purpose, granted]
+              properties:
+                purpose:
+                  type: string
+                  enum: [terms, privacy, location_tracking, id_verification, marketing]
+                granted:
+                  type: boolean
+                presented_locale:
+                  type: string
+                  enum: [fr, en]
+      responses:
+        "201":
+          description: Consent recorded
+        "401":
+          $ref: "#/components/responses/Problem"
+        "422":
+          $ref: "#/components/responses/ValidationProblem"
+
+  /me/preferences:
+    patch:
+      tags: [Platform]
+      operationId: updatePreferences
+      summary: Update UI language and comms language (may differ)
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                locale:
+                  type: string
+                  enum: [fr, en]
+                comms_locale:
+                  type: string
+                  enum: [fr, en]
+      responses:
+        "200":
+          description: Updated user
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    $ref: "#/components/schemas/User"
+        "401":
+          $ref: "#/components/responses/Problem"
+
   /notes:
     post:
       tags: [Notes (reference)]
