@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\Api\V1\Auth\AuthController;
 use App\Http\Controllers\Api\V1\Auth\OtpController;
 use App\Http\Controllers\Api\V1\Reference\NoteController;
 use Illuminate\Support\Facades\Route;
@@ -36,14 +37,21 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
     Route::prefix('auth')->name('auth.')->group(function (): void {
         Route::post('/otp/request', [OtpController::class, 'request'])->name('otp.request');
         Route::post('/otp/verify', [OtpController::class, 'verify'])->name('otp.verify');
+        // The refresh token is itself the credential (P1-03) — no bearer required.
+        Route::post('/refresh', [AuthController::class, 'refresh'])->name('refresh');
+
+        Route::middleware('auth:sanctum')->group(function (): void {
+            Route::get('/me', [AuthController::class, 'me'])->name('me');
+            Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+        });
     });
 
     /*
     | REFERENCE vertical slice (P0-05) — the canonical example every feature copies.
-    | Behind `auth` (the P1 work swaps this for `auth:sanctum`). Mutating routes automatically
-    | require an Idempotency-Key via the global api middleware.
+    | Behind `auth:sanctum` (token auth). Mutating routes automatically require an Idempotency-Key
+    | via the global api middleware.
     */
-    Route::middleware('auth')->group(function (): void {
+    Route::middleware('auth:sanctum')->group(function (): void {
         Route::post('/notes', [NoteController::class, 'store'])->name('notes.store');
         Route::get('/notes/{note}', [NoteController::class, 'show'])->name('notes.show');
     });

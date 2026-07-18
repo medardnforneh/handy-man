@@ -75,6 +75,67 @@ paths:
         "429":
           $ref: "#/components/responses/Problem"
 
+  /auth/refresh:
+    post:
+      tags: [Auth]
+      operationId: refreshToken
+      summary: Rotate the refresh token and get a new access token
+      description: Single-use. Replaying an already-rotated token revokes the whole session family.
+      security: []
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [refresh_token]
+              properties:
+                refresh_token:
+                  type: string
+      responses:
+        "200":
+          description: A fresh token pair
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TokenPair"
+        "401":
+          $ref: "#/components/responses/Problem"
+
+  /auth/me:
+    get:
+      tags: [Auth]
+      operationId: getMe
+      summary: The authenticated user
+      responses:
+        "200":
+          description: The current user
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    $ref: "#/components/schemas/User"
+        "401":
+          $ref: "#/components/responses/Problem"
+
+  /auth/logout:
+    post:
+      tags: [Auth]
+      operationId: logout
+      summary: Revoke the current access token
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      responses:
+        "200":
+          description: Logged out
+        "401":
+          $ref: "#/components/responses/Problem"
+
   /meta:
     get:
       tags: [Platform]
@@ -268,14 +329,34 @@ components:
           type: [string, "null"]
           format: date-time
 
+    TokenPair:
+      type: object
+      required: [token_type, access_token, expires_in, refresh_token, refresh_expires_at]
+      properties:
+        token_type:
+          type: string
+          examples: ["Bearer"]
+        access_token:
+          type: string
+        expires_in:
+          type: integer
+          description: Access token lifetime in seconds.
+        refresh_token:
+          type: string
+        refresh_expires_at:
+          type: string
+          format: date-time
+
     UserEnvelope:
       type: object
-      required: [data, registered]
+      required: [data, registered, tokens]
       properties:
         data:
           $ref: "#/components/schemas/User"
         registered:
           type: boolean
+        tokens:
+          $ref: "#/components/schemas/TokenPair"
 
     NoteInput:
       type: object

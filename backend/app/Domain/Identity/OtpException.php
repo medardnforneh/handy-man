@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Identity;
 
+use App\Support\ProblemAware;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -12,12 +13,12 @@ use Symfony\Component\HttpFoundation\Response;
  * bootstrap/app.php). Deliberately vague messages — never reveal whether a phone exists or how
  * many attempts remain to an attacker.
  */
-final class OtpException extends RuntimeException
+final class OtpException extends RuntimeException implements ProblemAware
 {
     public function __construct(
-        public readonly string $problemType,
-        public readonly string $title,
-        public readonly int $status,
+        private readonly string $type,
+        private readonly string $title,
+        private readonly int $status,
         string $detail,
     ) {
         parent::__construct($detail);
@@ -39,5 +40,20 @@ final class OtpException extends RuntimeException
     {
         return new self('otp-locked', 'Too many attempts', Response::HTTP_TOO_MANY_REQUESTS,
             'Too many incorrect attempts. Request a new code.');
+    }
+
+    public function problemType(): string
+    {
+        return $this->type;
+    }
+
+    public function problemTitle(): string
+    {
+        return $this->title;
+    }
+
+    public function problemStatus(): int
+    {
+        return $this->status;
     }
 }

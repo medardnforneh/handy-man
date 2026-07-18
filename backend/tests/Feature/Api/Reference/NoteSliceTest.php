@@ -6,6 +6,7 @@ use App\Models\Note;
 use App\Models\OutboxMessage;
 use App\Models\User;
 use Illuminate\Support\Str;
+use Laravel\Sanctum\Sanctum;
 
 /**
  * P0-05 acceptance: the worked vertical slice exercises every layer end to end —
@@ -15,7 +16,8 @@ use Illuminate\Support\Str;
 it('creates a note through the full stack and announces it via the outbox', function () {
     $user = User::factory()->create();
 
-    $response = $this->actingAs($user)->postJson(
+    Sanctum::actingAs($user);
+    $response = $this->postJson(
         '/api/v1/notes',
         ['body' => 'Fix the leaking tap in the kitchen.'],
         ['Idempotency-Key' => (string) Str::uuid()],
@@ -42,7 +44,8 @@ it('rejects an unauthenticated create with problem+json 401', function () {
 it('validates the request body with problem+json 422', function () {
     $user = User::factory()->create();
 
-    $this->actingAs($user)->postJson('/api/v1/notes', ['body' => ''], ['Idempotency-Key' => (string) Str::uuid()])
+    Sanctum::actingAs($user);
+    $this->postJson('/api/v1/notes', ['body' => ''], ['Idempotency-Key' => (string) Str::uuid()])
         ->assertStatus(422)
         ->assertHeader('Content-Type', 'application/problem+json')
         ->assertJsonPath('title', 'Validation failed')
@@ -52,7 +55,8 @@ it('validates the request body with problem+json 422', function () {
 it('still requires an Idempotency-Key on the create even when authenticated', function () {
     $user = User::factory()->create();
 
-    $this->actingAs($user)->postJson('/api/v1/notes', ['body' => 'x'])
+    Sanctum::actingAs($user);
+    $this->postJson('/api/v1/notes', ['body' => 'x'])
         ->assertStatus(400)
         ->assertJsonPath('title', 'Idempotency-Key required');
 });
@@ -60,7 +64,8 @@ it('still requires an Idempotency-Key on the create even when authenticated', fu
 it('lets the author read their own note', function () {
     $note = Note::factory()->create();
 
-    $this->actingAs($note->author)->getJson("/api/v1/notes/{$note->id}")
+    Sanctum::actingAs($note->author);
+    $this->getJson("/api/v1/notes/{$note->id}")
         ->assertOk()
         ->assertJsonPath('data.id', $note->id);
 });
@@ -69,7 +74,8 @@ it('forbids reading another users note with problem+json 403', function () {
     $note = Note::factory()->create();
     $stranger = User::factory()->create();
 
-    $this->actingAs($stranger)->getJson("/api/v1/notes/{$note->id}")
+    Sanctum::actingAs($stranger);
+    $this->getJson("/api/v1/notes/{$note->id}")
         ->assertStatus(403)
         ->assertHeader('Content-Type', 'application/problem+json')
         ->assertJsonPath('title', 'Forbidden');

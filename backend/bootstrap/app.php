@@ -1,11 +1,11 @@
 <?php
 
 use App\Domain\Access\PreconditionUnmetException;
-use App\Domain\Identity\OtpException;
 use App\Http\Middleware\EnforceAppVersion;
 use App\Http\Middleware\Idempotency;
 use App\Http\Middleware\SetLocale;
 use App\Support\Problem;
+use App\Support\ProblemAware;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
@@ -91,16 +91,17 @@ return Application::configure(basePath: dirname(__DIR__))
             );
         });
 
-        $exceptions->render(function (OtpException $e, Request $request) {
+        // Any domain exception that implements ProblemAware renders itself (OTP, refresh tokens, …).
+        $exceptions->render(function (ProblemAware $e, Request $request) {
             if (! $request->is('api/*')) {
                 return null;
             }
 
             return Problem::make(
-                type: $e->problemType,
-                title: $e->title,
-                status: $e->status,
-                detail: $e->getMessage(),
+                type: $e->problemType(),
+                title: $e->problemTitle(),
+                status: $e->problemStatus(),
+                detail: $e instanceof Throwable ? $e->getMessage() : '',
             );
         });
 

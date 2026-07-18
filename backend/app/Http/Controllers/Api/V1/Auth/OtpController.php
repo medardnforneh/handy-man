@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1\Auth;
 
+use App\Domain\Identity\Actions\IssueAuthTokens;
 use App\Domain\Identity\Actions\RequestOtp;
 use App\Domain\Identity\Actions\VerifyOtp;
 use App\Http\Controllers\Controller;
@@ -34,18 +35,22 @@ final class OtpController extends Controller
         ], 202);
     }
 
-    public function verify(VerifyOtpRequest $request, VerifyOtp $action): JsonResponse
+    public function verify(VerifyOtpRequest $request, VerifyOtp $verify, IssueAuthTokens $issue): JsonResponse
     {
-        $result = $action->handle(
+        $result = $verify->handle(
             phoneE164: $request->string('phone_e164')->toString(),
             code: $request->string('code')->toString(),
             purpose: $request->string('purpose')->toString(),
         );
 
         $user = $result['user']->load('party');
+        $tokens = $issue->handle($user, deviceId: $request->header(config('api.device_id_header')));
 
         return UserResource::make($user)
-            ->additional(['registered' => $result['registered']])
+            ->additional([
+                'registered' => $result['registered'],
+                'tokens' => $tokens->toArray(),
+            ])
             ->response()
             ->setStatusCode($result['registered'] ? 201 : 200);
     }
