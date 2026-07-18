@@ -164,6 +164,24 @@ export interface paths {
         patch: operations["updatePreferences"];
         trace?: never;
     };
+    "/addresses": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The caller's addresses */
+        get: operations["listAddresses"];
+        put?: never;
+        /** Create an address (requires location_tracking consent) */
+        post: operations["createAddress"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/notes": {
         parameters: {
             query?: never;
@@ -274,6 +292,30 @@ export interface components {
             has_push_token: boolean;
             /** Format: date-time */
             last_seen_at?: string | null;
+        };
+        AddressInput: {
+            label?: string | null;
+            line1: string;
+            quarter?: string | null;
+            city: string;
+            region?: string | null;
+            country_code?: string;
+            landmark_note?: string | null;
+            latitude: number;
+            longitude: number;
+        };
+        Address: {
+            /** Format: uuid */
+            id: string;
+            label?: string | null;
+            line1: string;
+            quarter?: string | null;
+            city: string;
+            region?: string | null;
+            country_code?: string;
+            landmark_note?: string | null;
+            latitude: number;
+            longitude: number;
         };
         NoteInput: {
             body: string;
@@ -656,6 +698,71 @@ export interface operations {
                 };
             };
             401: components["responses"]["Problem"];
+        };
+    };
+    listAddresses: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Addresses */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["Address"][];
+                    };
+                };
+            };
+            401: components["responses"]["Problem"];
+        };
+    };
+    createAddress: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description A client-generated UUID. Replaying it returns the stored response (CLAUDE.md rule */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AddressInput"];
+            };
+        };
+        responses: {
+            /** @description The created address */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["Address"];
+                    };
+                };
+            };
+            401: components["responses"]["Problem"];
+            /** @description A required consent is missing */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"] & {
+                        missing_purpose?: string;
+                    };
+                };
+            };
+            422: components["responses"]["ValidationProblem"];
         };
     };
     createNote: {

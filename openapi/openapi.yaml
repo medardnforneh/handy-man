@@ -284,6 +284,65 @@ paths:
         "401":
           $ref: "#/components/responses/Problem"
 
+  /addresses:
+    get:
+      tags: [Platform]
+      operationId: listAddresses
+      summary: The caller's addresses
+      responses:
+        "200":
+          description: Addresses
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Address"
+        "401":
+          $ref: "#/components/responses/Problem"
+    post:
+      tags: [Platform]
+      operationId: createAddress
+      summary: Create an address (requires location_tracking consent)
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AddressInput"
+      responses:
+        "201":
+          description: The created address
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    $ref: "#/components/schemas/Address"
+        "401":
+          $ref: "#/components/responses/Problem"
+        "403":
+          description: A required consent is missing
+          content:
+            application/problem+json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Problem"
+                  - type: object
+                    properties:
+                      missing_purpose:
+                        type: string
+        "422":
+          $ref: "#/components/responses/ValidationProblem"
+
   /notes:
     post:
       tags: [Notes (reference)]
@@ -507,6 +566,35 @@ components:
         last_seen_at:
           type: [string, "null"]
           format: date-time
+
+    AddressInput:
+      type: object
+      required: [line1, city, latitude, longitude]
+      properties:
+        label: { type: [string, "null"] }
+        line1: { type: string }
+        quarter: { type: [string, "null"] }
+        city: { type: string }
+        region: { type: [string, "null"] }
+        country_code: { type: string, minLength: 2, maxLength: 2 }
+        landmark_note: { type: [string, "null"] }
+        latitude: { type: number, minimum: -90, maximum: 90 }
+        longitude: { type: number, minimum: -180, maximum: 180 }
+
+    Address:
+      type: object
+      required: [id, line1, city, latitude, longitude]
+      properties:
+        id: { type: string, format: uuid }
+        label: { type: [string, "null"] }
+        line1: { type: string }
+        quarter: { type: [string, "null"] }
+        city: { type: string }
+        region: { type: [string, "null"] }
+        country_code: { type: string }
+        landmark_note: { type: [string, "null"] }
+        latitude: { type: number }
+        longitude: { type: number }
 
     NoteInput:
       type: object

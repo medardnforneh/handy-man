@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\Api\V1\AddressController;
 use App\Http\Controllers\Api\V1\Auth\AuthController;
 use App\Http\Controllers\Api\V1\Auth\OtpController;
 use App\Http\Controllers\Api\V1\ConsentController;
@@ -62,6 +63,10 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
         Route::get('/consents', [ConsentController::class, 'index'])->name('consents.index');
         Route::post('/consents', [ConsentController::class, 'store'])->name('consents.store');
         Route::patch('/me/preferences', [ProfileController::class, 'updatePreferences'])->name('me.preferences');
+
+        // Addresses (P1-06) — creating one requires location_tracking consent.
+        Route::get('/addresses', [AddressController::class, 'index'])->name('addresses.index');
+        Route::post('/addresses', [AddressController::class, 'store'])->name('addresses.store');
 
         // Reference vertical slice (P0-05).
         Route::post('/notes', [NoteController::class, 'store'])->name('notes.store');
