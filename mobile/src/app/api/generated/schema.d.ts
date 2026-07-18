@@ -112,6 +112,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/skills": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The skills catalog (categories with leaf children), localized */
+        get: operations["listSkills"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/skills/search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Full-text search leaf skills (matching-language dictionary) */
+        get: operations["searchSkills"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/devices": {
         parameters: {
             query?: never;
@@ -234,6 +268,17 @@ export interface components {
             min_app_version?: string | null;
             /** Format: date-time */
             server_time: string;
+        };
+        Skill: {
+            /** Format: uuid */
+            id: string;
+            slug: string;
+            /** @description Localized name for the requested locale. */
+            name: string;
+            is_leaf: boolean;
+            risk_tier: number;
+            requires_license: boolean;
+            children?: components["schemas"]["Skill"][];
         };
         OtpRequestInput: {
             /** @example +237699000111 */
@@ -565,6 +610,55 @@ export interface operations {
                 };
             };
             426: components["responses"]["UpgradeRequired"];
+        };
+    };
+    listSkills: {
+        parameters: {
+            query?: {
+                locale?: "fr" | "en";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Skill categories */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["Skill"][];
+                    };
+                };
+            };
+        };
+    };
+    searchSkills: {
+        parameters: {
+            query: {
+                q: string;
+                locale?: "fr" | "en";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Matching leaf skills */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["Skill"][];
+                    };
+                };
+            };
         };
     };
     registerDevice: {

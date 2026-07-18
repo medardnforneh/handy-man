@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\V1\ConsentController;
 use App\Http\Controllers\Api\V1\DeviceController;
 use App\Http\Controllers\Api\V1\ProfileController;
 use App\Http\Controllers\Api\V1\Reference\NoteController;
+use App\Http\Controllers\Api\V1\SkillController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -35,6 +36,10 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
             'server_time' => now()->toIso8601String(),
         ]);
     })->name('meta');
+
+    // Skills catalog (P1-07) — public discovery (no app bundle needed, doc 08).
+    Route::get('/skills', [SkillController::class, 'index'])->name('skills.index');
+    Route::get('/skills/search', [SkillController::class, 'search'])->name('skills.search');
 
     // Auth — OTP-first (P1-02). Public: these ARE the authentication entry points. Token issuance
     // is added in P1-03.

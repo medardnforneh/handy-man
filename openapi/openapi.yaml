@@ -152,6 +152,58 @@ paths:
         "426":
           $ref: "#/components/responses/UpgradeRequired"
 
+  /skills:
+    get:
+      tags: [Platform]
+      operationId: listSkills
+      summary: The skills catalog (categories with leaf children), localized
+      security: []
+      parameters:
+        - name: locale
+          in: query
+          schema: { type: string, enum: [fr, en] }
+      responses:
+        "200":
+          description: Skill categories
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Skill"
+
+  /skills/search:
+    get:
+      tags: [Platform]
+      operationId: searchSkills
+      summary: Full-text search leaf skills (matching-language dictionary)
+      security: []
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema: { type: string }
+        - name: locale
+          in: query
+          schema: { type: string, enum: [fr, en] }
+      responses:
+        "200":
+          description: Matching leaf skills
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Skill"
+
   /devices:
     post:
       tags: [Platform]
@@ -457,6 +509,21 @@ components:
         server_time:
           type: string
           format: date-time
+
+    Skill:
+      type: object
+      required: [id, slug, name, is_leaf, risk_tier, requires_license]
+      properties:
+        id: { type: string, format: uuid }
+        slug: { type: string }
+        name: { type: string, description: Localized name for the requested locale. }
+        is_leaf: { type: boolean }
+        risk_tier: { type: integer, minimum: 1, maximum: 3 }
+        requires_license: { type: boolean }
+        children:
+          type: array
+          items:
+            $ref: "#/components/schemas/Skill"
 
     OtpRequestInput:
       type: object
