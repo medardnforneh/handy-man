@@ -112,11 +112,17 @@ Task IDs come from `docs/05-build-plan.md`.
 | P3-03 | `PaymentGateway` interface + one aggregator (CinetPay) | **DONE** — `PaymentGateway` abstraction (requestCollection/requestPayout/fetchStatus/verifyWebhook/parseWebhook) with normalised DTOs (`CollectionRequest`/`PayoutRequest`/`GatewayResult`/`GatewayEvent`/`GatewayStatus`); **CinetPay** adapter (v2/payment + v2/payment/check, status mapping, HMAC-SHA256 `x-token` webhook verification over the documented field order) and an in-memory **FakeGateway** that drives the whole flow deterministically (`settle()`); config-selected via `MoneyServiceProvider` (`config/payments.php`, default `fake`) — the app never names a provider; 7 tests (Http-faked request building + status mapping + signature verify + config selection). Live sandbox end-to-end pends real CinetPay credentials. |
 | P3-04 | `payment_intents` + USSD-push flow + pending UX contract | **DONE** — `payment_intents` (native `payment_status`/`payment_purpose`; unique `idempotency_key`; unique `(gateway, external_ref)`; amount>0); `InitiatePaymentIntent` (idempotent — same key returns the same intent; calls the gateway; rests in `processing`; 15-min expiry); `POST /v1/payment-intents` (tied to the request Idempotency-Key); `PaymentIntentResource` is the pending-UX contract (status + `expires_at` countdown + `payment_url`) |
 | P3-05 | webhook handler: signature → dedupe → locked apply | **DONE** — `payment_events` UNIQUE (gateway, external_ref, event_type) is the duplicate defence; `ProcessPaymentWebhook` verifies signature (invalid → recorded + 401), dedupes by insert (savepoint-wrapped so a conflict → 200 without aborting), then locks the intent and **re-fetches the authoritative status** (never trusts the callback body) and applies once; `ApplyGatewayResult` posts the collection (DR gateway_receivable / CR liability) idempotently; public `POST /v1/webhooks/payments/{gateway}` (idempotency-exempt); 6 tests incl. **10 duplicate webhooks → exactly 1 ledger transaction**, unsigned → 401, post-terminal no-op |
-| P3-06..P3-15 | reconciliation, lead credits, payouts, escrow, cash | not started |
+| P3-06 | reconciliation poller with backoff; timeout → expired | **DONE** — `payments:reconcile` sweeps unresolved intents and asks the gateway for the authoritative status (`ReconcilePaymentIntent`: lockForUpdate, idempotent apply), so a **lost webhook still resolves via poll**; an intent still pending past `expires_at` is force-expired (timeout is a state, posts nothing); scheduled on a backoff cadence; 3 tests |
+| P3-07..P3-15 | lead credits, payouts, escrow, reconciliation exceptions, cash | not started |
 
 Phases 3–8: not started (see build plan).
 
 ## What was done, most recent first
+
+- **P3-06 — reconciliation poller**: `payments:reconcile` sweeps unresolved intents and asks the
+  gateway for the authoritative status, so a lost webhook still resolves and a stuck intent past its
+  expiry is force-expired. Per-intent reconcile locks the row and applies idempotently (webhook/poll
+  converge). 3 tests. Backend 223 green, PHPStan L6 clean, Pint clean.
 
 - **P3-04/05 — payment intents + webhook handler**: `payment_intents` (idempotent on the request
   Idempotency-Key — same key returns the same intent, never a second charge) start a MoMo collection
