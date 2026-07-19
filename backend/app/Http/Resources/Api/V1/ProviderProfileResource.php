@@ -20,6 +20,7 @@ final class ProviderProfileResource extends JsonResource
     {
         return [
             'id' => $this->id,
+            'display_name' => $this->whenLoaded('party', fn () => $this->party->display_name),
             'headline' => $this->headline,
             'bio' => $this->bio,
             'bio_language' => $this->bio_language,

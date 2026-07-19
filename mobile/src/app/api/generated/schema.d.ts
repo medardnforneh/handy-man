@@ -285,6 +285,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/jobs/{job}/providers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Matching providers for a job (geo-filtered for onsite/hybrid, whole pool for remote) */
+        get: operations["jobMatchingProviders"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/jobs/{job}/publish": {
         parameters: {
             query?: never;
@@ -1201,6 +1218,32 @@ export interface operations {
             };
             401: components["responses"]["Problem"];
             404: components["responses"]["Problem"];
+        };
+    };
+    jobMatchingProviders: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                job: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Matching providers */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["ProviderProfile"][];
+                    };
+                };
+            };
+            401: components["responses"]["Problem"];
+            403: components["responses"]["Problem"];
         };
     };
     publishJob: {

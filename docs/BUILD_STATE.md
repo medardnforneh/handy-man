@@ -83,7 +83,8 @@ Task IDs come from `docs/05-build-plan.md`.
 | P2-01 | jobs + engagement_mode + conditional-address CHECK + JobStateMachine | **DONE** — `service_jobs` table (named to avoid Laravel's queue `jobs`; doc 02 corrected), enums engagement_mode/assignment_mode/job_status; DB CHECK `(engagement_mode='remote' OR address_id IS NOT NULL)` — remote saves NULL, onsite/hybrid without address rejected by DB; `JobStateMachine` (full transition matrix, illegal→`IllegalJobTransition`); 9 tests |
 | P2-02 | EngagementModePolicy (feature applicability object) | **DONE** — single class encoding the doc-06 matrix (address/dispatch/check-in/panic/share/site-visit/deliverables per mode); mode-branching removed from the enum; scan test proves no `=== 'remote'` branching anywhere else in app/; 3 tests |
 | P2-03 | job creation + photos + PII-minimised JobResource | **DONE** — `CreateJob`/`PublishJob` actions (reference gen, draft→open via state machine + outbox); `job_photos`; `JobResource` PII minimisation — owner sees exact address, a pre-engagement provider sees only quarter/city (no line1/coordinates/landmark); draft hidden from non-owners; address must belong to caller; 6 tests |
-| P2-04..P2-10 | provider search, offers, AcceptOffer, engagements, assignments, availability, Filament | not started |
+| P2-04 | provider search (ST_DWithin + skill + rating/tier; skips geo for remote) | **DONE** — `ProviderSearch::forJob`: skill match + service-area coverage (ST_DWithin) for onsite/hybrid, **NO geo for remote** (whole skilled pool); filters suspended + (when required) unverified; ranks by tier then rating; `GET /v1/jobs/{job}/providers` (owner only); 5 tests incl. remote-outside-any-radius |
+| P2-05..P2-10 | offers, AcceptOffer (concurrency), engagements, assignments, availability, Filament | not started |
 
 Phases 3–8: not started (see build plan).
 

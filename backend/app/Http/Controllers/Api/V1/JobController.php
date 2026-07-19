@@ -7,9 +7,11 @@ namespace App\Http\Controllers\Api\V1;
 use App\Domain\Jobs\Actions\CreateJob;
 use App\Domain\Jobs\Actions\PublishJob;
 use App\Domain\Jobs\JobStatus;
+use App\Domain\Jobs\ProviderSearch;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\CreateJobRequest;
 use App\Http\Resources\Api\V1\JobResource;
+use App\Http\Resources\Api\V1\ProviderProfileResource;
 use App\Models\Job;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
@@ -70,5 +72,16 @@ final class JobController extends Controller
         $action->handle($job);
 
         return JobResource::make($job->load(['photos', 'address']));
+    }
+
+    /** Matching providers for a job — skill + coverage (geo skipped for remote). Owner only. */
+    public function providers(Request $request, Job $job, ProviderSearch $search): AnonymousResourceCollection
+    {
+        /** @var User $user */
+        $user = $request->user();
+
+        abort_unless($job->customer_party_id === $user->party_id, 403);
+
+        return ProviderProfileResource::collection($search->forJob($job)->load('party'));
     }
 }

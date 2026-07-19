@@ -84,6 +84,8 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
         Route::post('/jobs', [JobController::class, 'store'])->name('jobs.store');
         Route::get('/jobs/{job}', [JobController::class, 'show'])->name('jobs.show');
         Route::post('/jobs/{job}/publish', [JobController::class, 'publish'])->name('jobs.publish');
+        // Matching providers (P2-04) — geo-filtered for onsite/hybrid, whole pool for remote.
+        Route::get('/jobs/{job}/providers', [JobController::class, 'providers'])->name('jobs.providers');
 
         // Provider section (P1-08). Profile creation is always allowed (doc 10); listing a skill is
         // fact-gated on having a profile; a service area requires location_tracking consent.
