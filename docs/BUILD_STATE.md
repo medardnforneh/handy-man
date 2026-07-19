@@ -113,7 +113,8 @@ Task IDs come from `docs/05-build-plan.md`.
 | P3-04 | `payment_intents` + USSD-push flow + pending UX contract | **DONE** — `payment_intents` (native `payment_status`/`payment_purpose`; unique `idempotency_key`; unique `(gateway, external_ref)`; amount>0); `InitiatePaymentIntent` (idempotent — same key returns the same intent; calls the gateway; rests in `processing`; 15-min expiry); `POST /v1/payment-intents` (tied to the request Idempotency-Key); `PaymentIntentResource` is the pending-UX contract (status + `expires_at` countdown + `payment_url`) |
 | P3-05 | webhook handler: signature → dedupe → locked apply | **DONE** — `payment_events` UNIQUE (gateway, external_ref, event_type) is the duplicate defence; `ProcessPaymentWebhook` verifies signature (invalid → recorded + 401), dedupes by insert (savepoint-wrapped so a conflict → 200 without aborting), then locks the intent and **re-fetches the authoritative status** (never trusts the callback body) and applies once; `ApplyGatewayResult` posts the collection (DR gateway_receivable / CR liability) idempotently; public `POST /v1/webhooks/payments/{gateway}` (idempotency-exempt); 6 tests incl. **10 duplicate webhooks → exactly 1 ledger transaction**, unsigned → 401, post-terminal no-op |
 | P3-06 | reconciliation poller with backoff; timeout → expired | **DONE** — `payments:reconcile` sweeps unresolved intents and asks the gateway for the authoritative status (`ReconcilePaymentIntent`: lockForUpdate, idempotent apply), so a **lost webhook still resolves via poll**; an intent still pending past `expires_at` is force-expired (timeout is a state, posts nothing); scheduled on a backoff cadence; 3 tests |
-| P3-07..P3-15 | lead credits, payouts, escrow, reconciliation exceptions, cash | not started |
+| P3-07 | lead credits: purchase + spend flows | **DONE** — purchase lands via the collection path (intent → DR gateway_receivable / CR lead_credit_liability); `SpendLeadCredits` shrinks the liability and books revenue (DR lead_credit_liability / CR platform_revenue), with **overspend prevented by locking the credit account row** (serialised check-and-post, balance can't go negative); `InsufficientLeadCredits` (422 + shortfall); `Ledger::availableMinor` reads a balance in its natural direction; `GET /v1/provider/credits`; 4 tests |
+| P3-08..P3-15 | payouts, escrow, reconciliation exceptions, cash | not started |
 
 Phases 3–8: not started (see build plan).
 
@@ -127,6 +128,12 @@ Phases 3–8: not started (see build plan).
   meet the bar when built.
 
 ## What was done, most recent first
+
+- **P3-07 — lead credits (purchase + spend)**: purchases arrive through the collection path; the
+  `SpendLeadCredits` action shrinks the liability and books revenue, locking the provider's credit
+  account row so concurrent spends serialise and the balance can never go negative (`Insufficient
+  LeadCredits` carries the shortfall). `GET /v1/provider/credits` reports the balance. 4 tests.
+  Backend 227 green, PHPStan L6 clean, Pint clean.
 
 - **P3-06 — reconciliation poller**: `payments:reconcile` sweeps unresolved intents and asks the
   gateway for the authoritative status, so a lost webhook still resolves and a stuck intent past its

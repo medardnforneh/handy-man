@@ -36,6 +36,28 @@ final class Ledger
     }
 
     /**
+     * The positive amount held in an account, read in its natural direction: a debit-normal account
+     * (asset) returns its debit balance; a credit-normal account (a liability like lead credits, or
+     * revenue) returns the amount owed/earned. Zero when the account doesn't exist yet.
+     */
+    public function availableMinor(AccountKind $kind, ?string $partyId = null, string $currency = Money::XAF): int
+    {
+        $account = LedgerAccount::query()->firstWhere([
+            'party_id' => $kind->requiresParty() ? $partyId : null,
+            'kind' => $kind->value,
+            'currency' => $currency,
+        ]);
+
+        if ($account === null) {
+            return 0;
+        }
+
+        $balance = $account->balanceMinor();
+
+        return $kind->isDebitNormal() ? $balance : -$balance;
+    }
+
+    /**
      * Post a balanced transaction. Throws {@see UnbalancedTransaction} before touching the DB if the
      * legs don't balance.
      *

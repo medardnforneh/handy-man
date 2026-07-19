@@ -476,6 +476,15 @@ paths:
         "401": { $ref: "#/components/responses/Problem" }
         "404": { $ref: "#/components/responses/Problem" }
 
+  /provider/credits:
+    get:
+      tags: [Platform]
+      operationId: leadCreditBalance
+      summary: The provider's prepaid lead-credit balance
+      responses:
+        "200": { description: Available lead credits, content: { application/json: { schema: { type: object, required: [data], properties: { data: { type: object, required: [available], properties: { available: { $ref: "#/components/schemas/Money" } } } } } } } }
+        "401": { $ref: "#/components/responses/Problem" }
+
   /payment-intents:
     post:
       tags: [Platform]

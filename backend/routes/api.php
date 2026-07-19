@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\V1\Auth\OtpController;
 use App\Http\Controllers\Api\V1\ConsentController;
 use App\Http\Controllers\Api\V1\DeviceController;
 use App\Http\Controllers\Api\V1\JobController;
+use App\Http\Controllers\Api\V1\LeadCreditController;
 use App\Http\Controllers\Api\V1\OfferController;
 use App\Http\Controllers\Api\V1\PaymentIntentController;
 use App\Http\Controllers\Api\V1\PaymentWebhookController;
@@ -75,6 +76,8 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
     Route::middleware('auth:sanctum')->group(function (): void {
         // Payment intents (P3-04) — start a MoMo collection (escrow or lead credits).
         Route::post('/payment-intents', [PaymentIntentController::class, 'store'])->name('payment-intents.store');
+        // Provider's prepaid lead-credit balance (P3-07).
+        Route::get('/provider/credits', [LeadCreditController::class, 'balance'])->name('provider.credits');
 
         // Device registration / push token capture (P1-04).
         Route::post('/devices', [DeviceController::class, 'store'])->name('devices.store');
