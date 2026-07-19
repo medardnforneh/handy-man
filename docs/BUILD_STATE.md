@@ -108,11 +108,17 @@ Task IDs come from `docs/05-build-plan.md`.
 | ID | Task | Status |
 |---|---|---|
 | P3-01 | ledger tables + balance trigger + append-only + REVOKE | **DONE** — `ledger_accounts`/`ledger_transactions`/`ledger_entries` (native `account_kind`/`entry_direction`/`txn_kind` enums; accounts unique on `(party_id, kind, currency)` NULLS NOT DISTINCT); **append-only enforced by a trigger** (`forbid_ledger_mutation` raises on UPDATE/DELETE — role-independent, since dev runs as superuser where REVOKE no-ops) + REVOKE for prod; **deferred balance constraint** `ledger_must_balance` (SUM debit == SUM credit); `amount_minor > 0` CHECK; `ledger_balances` view; `Ledger` posting service (account resolver + balanced `post()`, app-level `UnbalancedTransaction` guard) with `LedgerEntryInput`/`AccountKind`(normal-balance)/`EntryDirection`/`TxnKind`; sign convention in `Money`; 10 tests incl. **UPDATE/DELETE raise at DB, deferred-balance rejection, amount>0** |
-| P3-02..P3-15 | balances view rebuild, gateway, intents, webhooks, escrow, payouts, reconciliation, cash | not started |
+| P3-02 | `ledger_balances` cache + rebuild-from-entries test | **DONE** — cache is a MATERIALIZED VIEW `ledger_balances_cached` (derived, always rebuildable); `php artisan ledger:rebuild-balances` refreshes it from the entries; test rebuilds and asserts **cached == live view == computed balance** across accounts, before and after further postings |
+| P3-03..P3-15 | gateway, intents, webhooks, escrow, payouts, reconciliation, cash | not started |
 
 Phases 3–8: not started (see build plan).
 
 ## What was done, most recent first
+
+- **P3-02 — rebuildable balance cache**: `ledger_balances_cached` materialized view (a derived read
+  model), refreshed by `ledger:rebuild-balances`. A test rebuilds it from the entries and asserts the
+  cached balance equals the live view and the computed balance, before and after further postings —
+  the cache can never silently drift from the truth.
 
 - **P3-01 — the double-entry ledger**: `ledger_accounts`/`transactions`/`entries` with the money
   invariants enforced by Postgres, not app code — append-only via a trigger that raises on
