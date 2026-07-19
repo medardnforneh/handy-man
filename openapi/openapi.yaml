@@ -476,6 +476,45 @@ paths:
         "401": { $ref: "#/components/responses/Problem" }
         "404": { $ref: "#/components/responses/Problem" }
 
+  /milestones/{milestone}/approve:
+    post:
+      tags: [Platform]
+      operationId: approveMilestone
+      summary: Approve a milestone → release its slice from escrow
+      description: >
+        The job's customer approves a milestone, releasing its amount from escrow to the provider net
+        of the platform commission. Each approval releases only that slice, so a partial approval
+        leaves the remainder escrowed. Idempotent. 409 if escrow isn't funded for the amount.
+      parameters:
+        - { name: milestone, in: path, required: true, schema: { type: string, format: uuid } }
+        - $ref: "#/components/parameters/IdempotencyKey"
+      responses:
+        "200": { description: The engagement with updated milestones, content: { application/json: { schema: { type: object, required: [data], properties: { data: { $ref: "#/components/schemas/Engagement" } } } } } }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "409": { $ref: "#/components/responses/Problem" }
+
+  /engagements/{engagement}/refund:
+    post:
+      tags: [Platform]
+      operationId: refundEngagement
+      summary: Refund the remaining escrow to the customer
+      description: The job's customer refunds whatever escrow is still held (dispute/cancellation). Already-released milestones are not clawed back here.
+      parameters:
+        - { name: engagement, in: path, required: true, schema: { type: string, format: uuid } }
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reason: { type: string }
+      responses:
+        "200": { description: Refunded }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+
   /provider/payouts:
     post:
       tags: [Platform]

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Money;
 
 use App\Models\LedgerAccount;
+use App\Models\LedgerEntry;
 use App\Models\LedgerTransaction;
 use App\Support\Money;
 use Illuminate\Support\Facades\DB;
@@ -55,6 +56,33 @@ final class Ledger
         $balance = $account->balanceMinor();
 
         return $kind->isDebitNormal() ? $balance : -$balance;
+    }
+
+    /**
+     * How much escrow is currently held for one engagement. The escrow account is platform-wide, so
+     * per-engagement holdings are tracked by the transaction reference: collections credit escrow for
+     * the engagement, releases and refunds debit it. Net credit = still held.
+     */
+    public function escrowHeldMinor(string $engagementId, string $currency = Money::XAF): int
+    {
+        $account = LedgerAccount::query()->firstWhere([
+            'party_id' => null,
+            'kind' => AccountKind::EscrowLiability->value,
+            'currency' => $currency,
+        ]);
+
+        if ($account === null) {
+            return 0;
+        }
+
+        return (int) LedgerEntry::query()
+            ->where('account_id', $account->id)
+            ->whereIn('transaction_id', LedgerTransaction::query()
+                ->select('id')
+                ->where('reference_type', 'engagement')
+                ->where('reference_id', $engagementId))
+            ->selectRaw("COALESCE(SUM(CASE WHEN direction = 'credit' THEN amount_minor ELSE -amount_minor END), 0) AS held")
+            ->value('held');
     }
 
     /**

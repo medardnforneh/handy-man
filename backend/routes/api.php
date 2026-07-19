@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\V1\Auth\AuthController;
 use App\Http\Controllers\Api\V1\Auth\OtpController;
 use App\Http\Controllers\Api\V1\ConsentController;
 use App\Http\Controllers\Api\V1\DeviceController;
+use App\Http\Controllers\Api\V1\EscrowController;
 use App\Http\Controllers\Api\V1\JobController;
 use App\Http\Controllers\Api\V1\LeadCreditController;
 use App\Http\Controllers\Api\V1\OfferController;
@@ -81,6 +82,10 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
         Route::get('/provider/credits', [LeadCreditController::class, 'balance'])->name('provider.credits');
         // Provider payout request (P3-08).
         Route::post('/provider/payouts', [PayoutController::class, 'store'])->name('provider.payouts.store');
+
+        // Escrow (P3-10/14). Customer approves a milestone (releases its slice) or refunds remaining.
+        Route::post('/milestones/{milestone}/approve', [EscrowController::class, 'approveMilestone'])->name('milestones.approve');
+        Route::post('/engagements/{engagement}/refund', [EscrowController::class, 'refund'])->name('engagements.refund');
 
         // Device registration / push token capture (P1-04).
         Route::post('/devices', [DeviceController::class, 'store'])->name('devices.store');

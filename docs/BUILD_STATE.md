@@ -115,7 +115,8 @@ Task IDs come from `docs/05-build-plan.md`.
 | P3-06 | reconciliation poller with backoff; timeout → expired | **DONE** — `payments:reconcile` sweeps unresolved intents and asks the gateway for the authoritative status (`ReconcilePaymentIntent`: lockForUpdate, idempotent apply), so a **lost webhook still resolves via poll**; an intent still pending past `expires_at` is force-expired (timeout is a state, posts nothing); scheduled on a backoff cadence; 3 tests |
 | P3-07 | lead credits: purchase + spend flows | **DONE** — purchase lands via the collection path (intent → DR gateway_receivable / CR lead_credit_liability); `SpendLeadCredits` shrinks the liability and books revenue (DR lead_credit_liability / CR platform_revenue), with **overspend prevented by locking the credit account row** (serialised check-and-post, balance can't go negative); `InsufficientLeadCredits` (422 + shortfall); `Ledger::availableMinor` reads a balance in its natural direction; `GET /v1/provider/credits`; 4 tests |
 | P3-08 | payouts + failure reversal (new balanced txn, never a delete) | **DONE** — `payouts` table (idempotent; reserves funds via the pending ROW, not a ledger entry); `RequestPayout` locks the payable account + subtracts already-reserved pending payouts so the balance can't be double-spent (`InsufficientPayable` 422); `ResolvePayout` posts DR provider_payable / CR platform_cash **only on gateway confirmation** (via `payouts:reconcile`); `ReversePayout` corrects a confirmed-then-failed payout with a NEW mirror transaction (`reversal_transaction_id`), **never a delete** — restoring provider_payable to its pre-payout value; `POST /v1/provider/payouts`; 5 tests incl. **reversal restores the pre-payout balance with both txns intact** |
-| P3-09..P3-15 | reconciliation exceptions, escrow, cash | not started |
+| P3-10 + P3-14 | escrow: collection, release-on-approval, refund | **DONE** — collection already lands via the intent path (purpose `escrow` → DR gateway_receivable / CR escrow_liability, referenced to the engagement); `Ledger::escrowHeldMinor` computes per-engagement escrow from the transaction reference; `ApproveMilestone` releases a milestone's slice (DR escrow_liability / CR provider_payable net / CR platform_revenue at 15% commission), serialised per engagement by an advisory lock, idempotent, **partial approval leaves the remainder escrowed**; `RefundEngagement` returns remaining escrow (DR escrow_liability / CR platform_cash); `InsufficientEscrow` (409) when unfunded; `POST /v1/milestones/{milestone}/approve`, `POST /v1/engagements/{engagement}/refund` (customer-gated); 7 tests |
+| P3-09, P3-11, P3-12, P3-13, P3-15 | reconciliation exceptions, auto-approve timer, property test, deposit capture, cash | not started |
 
 Phases 3–8: not started (see build plan).
 
@@ -129,6 +130,14 @@ Phases 3–8: not started (see build plan).
   meet the bar when built.
 
 ## What was done, most recent first
+
+- **P3-10/14 — escrow release + refund**: collection lands via the escrow intent path; each milestone
+  approval (`ApproveMilestone`) releases only its slice from escrow to the provider net of the 15%
+  commission — serialised per engagement by an advisory lock, idempotent, and **leaving the remainder
+  escrowed** on a partial approval. `RefundEngagement` returns whatever escrow remains.
+  `Ledger::escrowHeldMinor` reads per-engagement escrow from the transaction reference. Customer-gated
+  `POST /v1/milestones/{milestone}/approve` + `/engagements/{engagement}/refund`. 7 tests. Backend 239
+  green, PHPStan L6, Pint clean.
 
 - **P3-08 — payouts + failure reversal**: `RequestPayout` reserves funds via the pending payout row
   (locks the payable account, subtracts already-pending payouts → no double-spend); `ResolvePayout`
