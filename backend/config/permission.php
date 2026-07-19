@@ -148,9 +148,10 @@ return [
      * (view the latest version of this package's migration file)
      */
 
-    // Org-internal roles (owner/dispatcher/finance/worker) are scoped PER organization, so roles
-    // are team-scoped. Staff/admin roles are global (team_id null). See docs/10 + App\Domain\Access\Role.
-    'teams' => true,
+    // Spatie handles ONLY global staff/admin roles, so teams are OFF (a team-scoped model_has_roles
+    // PK can't hold a global assignment). Org-internal roles (owner/dispatcher/finance/worker) live
+    // in the `memberships.role` column (doc 02) scoped to the organization, not in Spatie teams.
+    'teams' => false,
 
     /*
      * The class to use to resolve the permissions team id
