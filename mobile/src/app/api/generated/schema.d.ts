@@ -305,6 +305,43 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/engagements/{engagement}/deliverables": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Submit a deliverable (provider)
+         * @description The engagement's provider submits an artifact for review. Narrated into the workspace thread as `deliverable_submitted`.
+         */
+        post: operations["submitDeliverable"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/deliverables/{deliverable}/review": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Accept or reject a deliverable (customer) */
+        post: operations["reviewDeliverable"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/milestones/{milestone}/approve": {
         parameters: {
             query?: never;
@@ -891,6 +928,23 @@ export interface components {
             scheduled_from?: string | null;
             /** Format: date-time */
             scheduled_to?: string | null;
+        };
+        Deliverable: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            engagement_id: string;
+            /** Format: uuid */
+            milestone_id?: string | null;
+            title: string;
+            media_url?: string | null;
+            /** @enum {string} */
+            status: "pending" | "submitted" | "accepted" | "rejected";
+            /** Format: date-time */
+            submitted_at?: string | null;
+            /** Format: date-time */
+            reviewed_at?: string | null;
+            reject_reason?: string | null;
         };
         Message: {
             /** Format: uuid */
@@ -1804,6 +1858,85 @@ export interface operations {
             };
             401: components["responses"]["Problem"];
             403: components["responses"]["Problem"];
+            422: components["responses"]["ValidationProblem"];
+        };
+    };
+    submitDeliverable: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description A client-generated UUID. Replaying it returns the stored response (CLAUDE.md rule */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                engagement: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    title: string;
+                    media_url?: string | null;
+                    /** Format: uuid */
+                    milestone_id?: string | null;
+                };
+            };
+        };
+        responses: {
+            /** @description The submitted deliverable */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["Deliverable"];
+                    };
+                };
+            };
+            401: components["responses"]["Problem"];
+            403: components["responses"]["Problem"];
+            422: components["responses"]["ValidationProblem"];
+        };
+    };
+    reviewDeliverable: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description A client-generated UUID. Replaying it returns the stored response (CLAUDE.md rule */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                deliverable: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @enum {string} */
+                    decision: "accept" | "reject";
+                    /** @description Required when decision is reject. */
+                    reject_reason?: string | null;
+                };
+            };
+        };
+        responses: {
+            /** @description The reviewed deliverable */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["Deliverable"];
+                    };
+                };
+            };
+            401: components["responses"]["Problem"];
+            403: components["responses"]["Problem"];
+            409: components["responses"]["Problem"];
             422: components["responses"]["ValidationProblem"];
         };
     };

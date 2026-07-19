@@ -505,6 +505,57 @@ paths:
         "403": { $ref: "#/components/responses/Problem" }
         "422": { $ref: "#/components/responses/ValidationProblem" }
 
+  /engagements/{engagement}/deliverables:
+    post:
+      tags: [Platform]
+      operationId: submitDeliverable
+      summary: Submit a deliverable (provider)
+      description: The engagement's provider submits an artifact for review. Narrated into the workspace thread as `deliverable_submitted`.
+      parameters:
+        - { name: engagement, in: path, required: true, schema: { type: string, format: uuid } }
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title]
+              properties:
+                title: { type: string, maxLength: 255 }
+                media_url: { type: [string, "null"], maxLength: 2048 }
+                milestone_id: { type: [string, "null"], format: uuid }
+      responses:
+        "201": { description: The submitted deliverable, content: { application/json: { schema: { type: object, required: [data], properties: { data: { $ref: "#/components/schemas/Deliverable" } } } } } }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/ValidationProblem" }
+
+  /deliverables/{deliverable}/review:
+    post:
+      tags: [Platform]
+      operationId: reviewDeliverable
+      summary: Accept or reject a deliverable (customer)
+      parameters:
+        - { name: deliverable, in: path, required: true, schema: { type: string, format: uuid } }
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [decision]
+              properties:
+                decision: { type: string, enum: [accept, reject] }
+                reject_reason: { type: [string, "null"], maxLength: 2000, description: "Required when decision is reject." }
+      responses:
+        "200": { description: The reviewed deliverable, content: { application/json: { schema: { type: object, required: [data], properties: { data: { $ref: "#/components/schemas/Deliverable" } } } } } }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "409": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/ValidationProblem" }
+
   /milestones/{milestone}/approve:
     post:
       tags: [Platform]
@@ -1203,6 +1254,20 @@ components:
         removed_at: { type: [string, "null"], format: date-time }
         scheduled_from: { type: [string, "null"], format: date-time }
         scheduled_to: { type: [string, "null"], format: date-time }
+
+    Deliverable:
+      type: object
+      required: [id, engagement_id, title, status]
+      properties:
+        id: { type: string, format: uuid }
+        engagement_id: { type: string, format: uuid }
+        milestone_id: { type: [string, "null"], format: uuid }
+        title: { type: string }
+        media_url: { type: [string, "null"] }
+        status: { type: string, enum: [pending, submitted, accepted, rejected] }
+        submitted_at: { type: [string, "null"], format: date-time }
+        reviewed_at: { type: [string, "null"], format: date-time }
+        reject_reason: { type: [string, "null"] }
 
     Message:
       type: object

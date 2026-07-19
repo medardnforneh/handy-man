@@ -129,7 +129,8 @@ Task IDs come from `docs/05-build-plan.md`.
 |---|---|---|
 | P4-01 + P4-02 + P4-09 | conversations/messages + server-narrated structured messages + contact detection | **DONE** — `conversations`/`conversation_participants`/`messages` (native `message_kind` enum, `payload`, reply/edit/delete, receipts + reactions tables); `Narrator` emits structured messages **inside the transition's transaction** (rule #11) so a rollback narrates nothing, `ConversationManager` enrols participants when an engagement forms; AcceptQuotation narrates `quote_accepted`; the message endpoint accepts **only free-form `text`** (a client posting `quote_accepted` → 422) and gates on participation; contact details (phone/email) detected → `contact_flag`, logged not blocked (P4-09); `GET`/`POST /v1/jobs/{job}/messages`; 8 tests incl. **server-narration + rolled-back-narrates-nothing + client-structured-rejected** |
 | P4-03 | Reverb `engagement.{id}` channel + participant Policy | **DONE** — `ChannelAccess::isEngagementParticipant` now resolves the engagement → its job conversation and authorizes only participants (the P0-16 deny-by-default stub is real); a non-participant or unknown engagement is rejected, and `/broadcasting/auth` refuses unauthenticated private subscriptions; 4 tests |
-| P4-04..P4-08 | presence, voice notes, Ionic workspace, reconnect, deliverables | not started (P4-06 is the Ionic workspace UI — Phase-5-adjacent) |
+| P4-08 | `deliverables` submit/accept/reject (remote path) | **DONE** — `deliverables` (native `deliverable_status`; `media_url` until the P4-05 media table); `SubmitDeliverable` (provider; narrates `deliverable_submitted` in-transaction) + `ReviewDeliverable` (customer accept/reject with reason, row-locked, once-only); provider/customer-gated `POST /v1/engagements/{engagement}/deliverables` + `/deliverables/{deliverable}/review`; 7 tests |
+| P4-04, P4-05, P4-06, P4-07 | typing/presence, voice notes (S3), Ionic workspace UI, reconnect reconciliation | not started (client/realtime/media — land with the app UI in/around Phase 5) |
 
 Phases 5–8: not started (see build plan).
 
@@ -143,6 +144,12 @@ Phases 5–8: not started (see build plan).
   meet the bar when built.
 
 ## What was done, most recent first
+
+- **P4-08 — deliverables**: `deliverables` table + submit/review. The provider submits an artifact
+  (narrated into the thread as `deliverable_submitted`, in-transaction); the customer accepts or
+  rejects it with a reason (row-locked, once-only). Provider/customer-gated endpoints. 7 tests.
+  This completes the cleanly-backend Phase 4 work; the rest (presence, voice/S3, Ionic workspace,
+  reconnect) lands with the app UI. Backend 264 green.
 
 - **P4-03 — engagement channel authorization**: `ChannelAccess::isEngagementParticipant` resolves
   the engagement's job conversation and authorizes only its participants (replacing the P0-16

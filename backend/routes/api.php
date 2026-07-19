@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\V1\Auth\AuthController;
 use App\Http\Controllers\Api\V1\Auth\OtpController;
 use App\Http\Controllers\Api\V1\CashSettlementController;
 use App\Http\Controllers\Api\V1\ConsentController;
+use App\Http\Controllers\Api\V1\DeliverableController;
 use App\Http\Controllers\Api\V1\DeviceController;
 use App\Http\Controllers\Api\V1\EscrowController;
 use App\Http\Controllers\Api\V1\JobController;
@@ -96,6 +97,10 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
         // are narrated by the server (a client posting a structured kind is rejected).
         Route::get('/jobs/{job}/messages', [MessageController::class, 'index'])->name('jobs.messages.index');
         Route::post('/jobs/{job}/messages', [MessageController::class, 'store'])->name('jobs.messages.store');
+
+        // Deliverables (P4-08). Provider submits; customer accepts/rejects.
+        Route::post('/engagements/{engagement}/deliverables', [DeliverableController::class, 'store'])->name('engagements.deliverables.store');
+        Route::post('/deliverables/{deliverable}/review', [DeliverableController::class, 'review'])->name('deliverables.review');
 
         // Device registration / push token capture (P1-04).
         Route::post('/devices', [DeviceController::class, 'store'])->name('devices.store');
