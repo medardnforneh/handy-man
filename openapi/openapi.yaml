@@ -395,6 +395,86 @@ paths:
         "422":
           $ref: "#/components/responses/ValidationProblem"
 
+  /provider/profile:
+    get:
+      tags: [Platform]
+      operationId: getProviderProfile
+      summary: The caller's provider profile
+      responses:
+        "200": { description: Provider profile, content: { application/json: { schema: { type: object, required: [data], properties: { data: { $ref: "#/components/schemas/ProviderProfile" } } } } } }
+        "401": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+    post:
+      tags: [Platform]
+      operationId: createProviderProfile
+      summary: Create or update the provider profile (always allowed — doc 10)
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                headline: { type: [string, "null"] }
+                bio: { type: [string, "null"] }
+                bio_language: { type: string, enum: [fr, en] }
+      responses:
+        "200": { description: Provider profile, content: { application/json: { schema: { type: object, required: [data], properties: { data: { $ref: "#/components/schemas/ProviderProfile" } } } } } }
+        "401": { $ref: "#/components/responses/Problem" }
+
+  /provider/skills:
+    post:
+      tags: [Platform]
+      operationId: addProviderSkill
+      summary: List a skill (requires a provider profile — doc 10)
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [skill_id, price_model]
+              properties:
+                skill_id: { type: string, format: uuid }
+                price_model: { type: string, enum: [hourly, fixed, quote_only] }
+                rate_minor: { type: [integer, "null"] }
+                years_experience: { type: [integer, "null"] }
+      responses:
+        "201": { description: Listed skill }
+        "409":
+          description: A required fact is not satisfied (precondition_unmet)
+          content:
+            application/problem+json:
+              schema: { $ref: "#/components/schemas/PreconditionUnmet" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/ValidationProblem" }
+
+  /provider/service-areas:
+    post:
+      tags: [Platform]
+      operationId: setServiceArea
+      summary: Set a service area (requires location_tracking consent)
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [latitude, longitude, radius_m]
+              properties:
+                latitude: { type: number, minimum: -90, maximum: 90 }
+                longitude: { type: number, minimum: -180, maximum: 180 }
+                radius_m: { type: integer, minimum: 500, maximum: 100000 }
+      responses:
+        "201": { description: Service area }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+
   /notes:
     post:
       tags: [Notes (reference)]
@@ -509,6 +589,41 @@ components:
         server_time:
           type: string
           format: date-time
+
+    ProviderProfile:
+      type: object
+      required: [id, verification_tier]
+      properties:
+        id: { type: string, format: uuid }
+        headline: { type: [string, "null"] }
+        bio: { type: [string, "null"] }
+        bio_language: { type: [string, "null"] }
+        verification_tier: { type: integer }
+        rating_avg: { type: [string, "null"] }
+        rating_count: { type: integer }
+        jobs_completed: { type: integer }
+        accepts_direct: { type: boolean }
+        accepts_dispatch: { type: boolean }
+        accepts_bidding: { type: boolean }
+        skills:
+          type: array
+          items:
+            type: object
+            properties:
+              id: { type: string, format: uuid }
+              skill_id: { type: string, format: uuid }
+              price_model: { type: string, enum: [hourly, fixed, quote_only] }
+              rate: { oneOf: [{ $ref: "#/components/schemas/Money" }, { type: "null" }] }
+              years_experience: { type: [integer, "null"] }
+        service_areas:
+          type: array
+          items:
+            type: object
+            properties:
+              id: { type: string, format: uuid }
+              latitude: { type: number }
+              longitude: { type: number }
+              radius_m: { type: integer }
 
     Skill:
       type: object

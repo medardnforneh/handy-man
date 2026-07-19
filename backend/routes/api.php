@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\V1\Auth\OtpController;
 use App\Http\Controllers\Api\V1\ConsentController;
 use App\Http\Controllers\Api\V1\DeviceController;
 use App\Http\Controllers\Api\V1\ProfileController;
+use App\Http\Controllers\Api\V1\ProviderController;
 use App\Http\Controllers\Api\V1\Reference\NoteController;
 use App\Http\Controllers\Api\V1\SkillController;
 use Illuminate\Support\Facades\Route;
@@ -72,6 +73,13 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
         // Addresses (P1-06) — creating one requires location_tracking consent.
         Route::get('/addresses', [AddressController::class, 'index'])->name('addresses.index');
         Route::post('/addresses', [AddressController::class, 'store'])->name('addresses.store');
+
+        // Provider section (P1-08). Profile creation is always allowed (doc 10); listing a skill is
+        // fact-gated on having a profile; a service area requires location_tracking consent.
+        Route::get('/provider/profile', [ProviderController::class, 'showProfile'])->name('provider.profile.show');
+        Route::post('/provider/profile', [ProviderController::class, 'storeProfile'])->name('provider.profile.store');
+        Route::post('/provider/skills', [ProviderController::class, 'storeSkill'])->name('provider.skills.store');
+        Route::post('/provider/service-areas', [ProviderController::class, 'storeServiceArea'])->name('provider.service-areas.store');
 
         // Reference vertical slice (P0-05).
         Route::post('/notes', [NoteController::class, 'store'])->name('notes.store');

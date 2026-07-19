@@ -216,6 +216,58 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/provider/profile": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The caller's provider profile */
+        get: operations["getProviderProfile"];
+        put?: never;
+        /** Create or update the provider profile (always allowed — doc 10) */
+        post: operations["createProviderProfile"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/provider/skills": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** List a skill (requires a provider profile — doc 10) */
+        post: operations["addProviderSkill"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/provider/service-areas": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Set a service area (requires location_tracking consent) */
+        post: operations["setServiceArea"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/notes": {
         parameters: {
             query?: never;
@@ -268,6 +320,37 @@ export interface components {
             min_app_version?: string | null;
             /** Format: date-time */
             server_time: string;
+        };
+        ProviderProfile: {
+            /** Format: uuid */
+            id: string;
+            headline?: string | null;
+            bio?: string | null;
+            bio_language?: string | null;
+            verification_tier: number;
+            rating_avg?: string | null;
+            rating_count?: number;
+            jobs_completed?: number;
+            accepts_direct?: boolean;
+            accepts_dispatch?: boolean;
+            accepts_bidding?: boolean;
+            skills?: {
+                /** Format: uuid */
+                id?: string;
+                /** Format: uuid */
+                skill_id?: string;
+                /** @enum {string} */
+                price_model?: "hourly" | "fixed" | "quote_only";
+                rate?: components["schemas"]["Money"] | null;
+                years_experience?: number | null;
+            }[];
+            service_areas?: {
+                /** Format: uuid */
+                id?: string;
+                latitude?: number;
+                longitude?: number;
+                radius_m?: number;
+            }[];
         };
         Skill: {
             /** Format: uuid */
@@ -857,6 +940,139 @@ export interface operations {
                 };
             };
             422: components["responses"]["ValidationProblem"];
+        };
+    };
+    getProviderProfile: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Provider profile */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["ProviderProfile"];
+                    };
+                };
+            };
+            401: components["responses"]["Problem"];
+            404: components["responses"]["Problem"];
+        };
+    };
+    createProviderProfile: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description A client-generated UUID. Replaying it returns the stored response (CLAUDE.md rule */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": {
+                    headline?: string | null;
+                    bio?: string | null;
+                    /** @enum {string} */
+                    bio_language?: "fr" | "en";
+                };
+            };
+        };
+        responses: {
+            /** @description Provider profile */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["ProviderProfile"];
+                    };
+                };
+            };
+            401: components["responses"]["Problem"];
+        };
+    };
+    addProviderSkill: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description A client-generated UUID. Replaying it returns the stored response (CLAUDE.md rule */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** Format: uuid */
+                    skill_id: string;
+                    /** @enum {string} */
+                    price_model: "hourly" | "fixed" | "quote_only";
+                    rate_minor?: number | null;
+                    years_experience?: number | null;
+                };
+            };
+        };
+        responses: {
+            /** @description Listed skill */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["Problem"];
+            /** @description A required fact is not satisfied (precondition_unmet) */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["PreconditionUnmet"];
+                };
+            };
+            422: components["responses"]["ValidationProblem"];
+        };
+    };
+    setServiceArea: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description A client-generated UUID. Replaying it returns the stored response (CLAUDE.md rule */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    latitude: number;
+                    longitude: number;
+                    radius_m: number;
+                };
+            };
+        };
+        responses: {
+            /** @description Service area */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["Problem"];
+            403: components["responses"]["Problem"];
         };
     };
     createNote: {

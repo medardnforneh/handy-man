@@ -4,7 +4,12 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Domain\Access\Facts\Fact;
 use App\Domain\Access\Facts\FactDeriver;
+use App\Domain\Access\Facts\FactResult;
+use App\Models\ProviderProfile;
+use App\Models\ProviderSkill;
+use App\Models\User;
 use Illuminate\Support\ServiceProvider;
 
 /**
@@ -30,12 +35,28 @@ final class AccessServiceProvider extends ServiceProvider
 
     private function registerFactResolvers(FactDeriver $facts): void
     {
-        // Phase 1/6 register real resolvers here, e.g.:
-        //
-        // $facts->register(Fact::IdentityVerified, function (User $user): FactResult {
-        //     return FactResult::tier($user->verification_tier ?? 0);
-        // });
-        //
-        // Left empty in Phase 0: every fact safely derives to `unmet` until proven.
+        // has_provider_profile — you "become" a provider by having a profile (doc 10, P1-08).
+        $facts->register(Fact::HasProviderProfile, function (User $user): FactResult {
+            return ProviderProfile::query()->where('party_id', $user->party_id)->exists()
+                ? FactResult::met()
+                : FactResult::unmet();
+        });
+
+        // skill_listed — at least one provider_skill exists (P1-08).
+        $facts->register(Fact::SkillListed, function (User $user): FactResult {
+            $listed = ProviderSkill::query()
+                ->whereHas('providerProfile', fn ($q) => $q->where('party_id', $user->party_id))
+                ->exists();
+
+            return $listed ? FactResult::met() : FactResult::unmet();
+        });
+
+        // identity_verified — the provider profile's verification tier (0..3). The real approval
+        // flow that raises the tier lands in Phase 6; this reads whatever tier is currently set.
+        $facts->register(Fact::IdentityVerified, function (User $user): FactResult {
+            $tier = (int) (ProviderProfile::query()->where('party_id', $user->party_id)->value('verification_tier') ?? 0);
+
+            return FactResult::tier($tier);
+        });
     }
 }

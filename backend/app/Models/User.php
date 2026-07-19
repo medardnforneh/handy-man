@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
@@ -81,6 +82,17 @@ class User extends Authenticatable
     public function memberships(): HasMany
     {
         return $this->hasMany(Membership::class);
+    }
+
+    /**
+     * The provider profile is attached to the user's PARTY (a party can be a provider). Existence
+     * of this is the `has_provider_profile` fact (doc 10).
+     *
+     * @return HasOne<ProviderProfile, $this>
+     */
+    public function providerProfile(): HasOne
+    {
+        return $this->hasOne(ProviderProfile::class, 'party_id', 'party_id');
     }
 
     /**
