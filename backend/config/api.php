@@ -71,7 +71,9 @@ return [
         'header' => 'Idempotency-Key',
         'ttl_hours' => (int) env('API_IDEMPOTENCY_TTL_HOURS', 24),
         'require_on_mutations' => (bool) env('API_IDEMPOTENCY_REQUIRED', true),
-        'exempt_paths' => [],
+        'exempt_paths' => [
+            'api/v1/webhooks/*', // gateway webhooks are server-to-server; they carry no Idempotency-Key
+        ],
     ],
 
 ];

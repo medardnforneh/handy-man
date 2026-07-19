@@ -10,6 +10,8 @@ use App\Http\Controllers\Api\V1\ConsentController;
 use App\Http\Controllers\Api\V1\DeviceController;
 use App\Http\Controllers\Api\V1\JobController;
 use App\Http\Controllers\Api\V1\OfferController;
+use App\Http\Controllers\Api\V1\PaymentIntentController;
+use App\Http\Controllers\Api\V1\PaymentWebhookController;
 use App\Http\Controllers\Api\V1\ProfileController;
 use App\Http\Controllers\Api\V1\ProviderController;
 use App\Http\Controllers\Api\V1\QuotationController;
@@ -47,6 +49,10 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
     Route::get('/skills', [SkillController::class, 'index'])->name('skills.index');
     Route::get('/skills/search', [SkillController::class, 'search'])->name('skills.search');
 
+    // Payment gateway webhooks (P3-05) — public + server-to-server; authenticity is the signature,
+    // not a token. Exempt from the Idempotency-Key requirement (see config/api.php exempt_paths).
+    Route::post('/webhooks/payments/{gateway}', [PaymentWebhookController::class, 'handle'])->name('webhooks.payments');
+
     // Auth — OTP-first (P1-02). Public: these ARE the authentication entry points. Token issuance
     // is added in P1-03.
     Route::prefix('auth')->name('auth.')->group(function (): void {
@@ -67,6 +73,9 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
     | via the global api middleware.
     */
     Route::middleware('auth:sanctum')->group(function (): void {
+        // Payment intents (P3-04) — start a MoMo collection (escrow or lead credits).
+        Route::post('/payment-intents', [PaymentIntentController::class, 'store'])->name('payment-intents.store');
+
         // Device registration / push token capture (P1-04).
         Route::post('/devices', [DeviceController::class, 'store'])->name('devices.store');
 

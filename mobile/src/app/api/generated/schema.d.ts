@@ -285,6 +285,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/payment-intents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Start a MoMo collection (escrow or lead credits)
+         * @description Initiates a mobile-money collection. The response rests in `processing` until the payer answers the USSD prompt — the client shows a countdown to `expires_at` and (for redirect flows) follows `payment_url`. Idempotent on the Idempotency-Key header: the same key returns the same intent, never a second charge. Resolution arrives via webhook or reconciliation poll.
+         */
+        post: operations["initiatePaymentIntent"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/webhooks/payments/{gateway}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Gateway payment webhook (server-to-server)
+         * @description Public callback endpoint for a payment gateway. Authenticity is the gateway's signature, not a token. Duplicate deliveries are idempotent (deduplicated by insert) — the body is empty and the status is 200 for handled/duplicate events, 401 for an invalid signature. Not for client use.
+         */
+        post: operations["paymentWebhook"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/jobs/{job}/quotations": {
         parameters: {
             query?: never;
@@ -636,6 +676,25 @@ export interface components {
             accepted_at: string;
             assignments?: components["schemas"]["Assignment"][];
             milestones?: components["schemas"]["Milestone"][];
+        };
+        PaymentIntent: {
+            /** Format: uuid */
+            id: string;
+            /** @enum {string} */
+            purpose: "escrow" | "lead_credits";
+            /** @enum {string} */
+            status: "pending" | "processing" | "succeeded" | "failed" | "expired";
+            amount: components["schemas"]["Money"];
+            msisdn: string;
+            external_ref?: string | null;
+            payment_url?: string | null;
+            /** Format: date-time */
+            expires_at: string;
+            /** Format: date-time */
+            initiated_at: string;
+            /** Format: date-time */
+            resolved_at?: string | null;
+            failure_code?: string | null;
         };
         SiteVisit: {
             /** Format: uuid */
@@ -1539,6 +1598,74 @@ export interface operations {
             };
             401: components["responses"]["Problem"];
             404: components["responses"]["Problem"];
+        };
+    };
+    initiatePaymentIntent: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description A client-generated UUID. Replaying it returns the stored response (CLAUDE.md rule */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @enum {string} */
+                    purpose: "escrow" | "lead_credits";
+                    amount_minor: number;
+                    msisdn: string;
+                    /**
+                     * Format: uuid
+                     * @description Required when purpose is escrow.
+                     */
+                    engagement_id?: string | null;
+                };
+            };
+        };
+        responses: {
+            /** @description The pending payment intent */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["PaymentIntent"];
+                    };
+                };
+            };
+            401: components["responses"]["Problem"];
+            422: components["responses"]["ValidationProblem"];
+        };
+    };
+    paymentWebhook: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                gateway: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Handled or already-seen */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Invalid signature */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
         };
     };
     submitQuotation: {

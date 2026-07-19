@@ -476,6 +476,50 @@ paths:
         "401": { $ref: "#/components/responses/Problem" }
         "404": { $ref: "#/components/responses/Problem" }
 
+  /payment-intents:
+    post:
+      tags: [Platform]
+      operationId: initiatePaymentIntent
+      summary: Start a MoMo collection (escrow or lead credits)
+      description: >
+        Initiates a mobile-money collection. The response rests in `processing` until the payer
+        answers the USSD prompt — the client shows a countdown to `expires_at` and (for redirect
+        flows) follows `payment_url`. Idempotent on the Idempotency-Key header: the same key returns
+        the same intent, never a second charge. Resolution arrives via webhook or reconciliation poll.
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [purpose, amount_minor, msisdn]
+              properties:
+                purpose: { type: string, enum: [escrow, lead_credits] }
+                amount_minor: { type: integer, minimum: 1 }
+                msisdn: { type: string, maxLength: 20 }
+                engagement_id: { type: [string, "null"], format: uuid, description: "Required when purpose is escrow." }
+      responses:
+        "201": { description: The pending payment intent, content: { application/json: { schema: { type: object, required: [data], properties: { data: { $ref: "#/components/schemas/PaymentIntent" } } } } } }
+        "401": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/ValidationProblem" }
+
+  /webhooks/payments/{gateway}:
+    post:
+      tags: [Platform]
+      operationId: paymentWebhook
+      summary: Gateway payment webhook (server-to-server)
+      description: >
+        Public callback endpoint for a payment gateway. Authenticity is the gateway's signature, not a
+        token. Duplicate deliveries are idempotent (deduplicated by insert) — the body is empty and the
+        status is 200 for handled/duplicate events, 401 for an invalid signature. Not for client use.
+      parameters:
+        - { name: gateway, in: path, required: true, schema: { type: string } }
+      responses:
+        "200": { description: Handled or already-seen }
+        "401": { description: Invalid signature }
+
   /jobs/{job}/quotations:
     post:
       tags: [Platform]
@@ -934,6 +978,22 @@ components:
         accepted_at: { type: string, format: date-time }
         assignments: { type: array, items: { $ref: "#/components/schemas/Assignment" } }
         milestones: { type: array, items: { $ref: "#/components/schemas/Milestone" } }
+
+    PaymentIntent:
+      type: object
+      required: [id, purpose, status, amount, msisdn, expires_at, initiated_at]
+      properties:
+        id: { type: string, format: uuid }
+        purpose: { type: string, enum: [escrow, lead_credits] }
+        status: { type: string, enum: [pending, processing, succeeded, failed, expired] }
+        amount: { $ref: "#/components/schemas/Money" }
+        msisdn: { type: string }
+        external_ref: { type: [string, "null"] }
+        payment_url: { type: [string, "null"] }
+        expires_at: { type: string, format: date-time }
+        initiated_at: { type: string, format: date-time }
+        resolved_at: { type: [string, "null"], format: date-time }
+        failure_code: { type: [string, "null"] }
 
     SiteVisit:
       type: object

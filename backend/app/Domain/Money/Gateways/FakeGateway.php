@@ -51,9 +51,10 @@ final class FakeGateway implements PaymentGateway
     public function parseWebhook(Request $request): GatewayEvent
     {
         $ref = (string) $request->input('reference', '');
+        $type = (string) $request->input('event_type', 'fake.notification');
         $status = GatewayStatus::tryFrom((string) $request->input('status', 'pending')) ?? GatewayStatus::Pending;
 
-        return new GatewayEvent($ref, 'fake.notification', $status, (array) $request->all());
+        return new GatewayEvent($ref, $type, $status, (array) $request->all());
     }
 
     /** Test/dev control: force the outcome a later fetchStatus/reconciliation will report. */
