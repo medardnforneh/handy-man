@@ -81,7 +81,8 @@ Task IDs come from `docs/05-build-plan.md`.
 | ID | Task | Status |
 |---|---|---|
 | P2-01 | jobs + engagement_mode + conditional-address CHECK + JobStateMachine | **DONE** — `service_jobs` table (named to avoid Laravel's queue `jobs`; doc 02 corrected), enums engagement_mode/assignment_mode/job_status; DB CHECK `(engagement_mode='remote' OR address_id IS NOT NULL)` — remote saves NULL, onsite/hybrid without address rejected by DB; `JobStateMachine` (full transition matrix, illegal→`IllegalJobTransition`); 9 tests |
-| P2-02..P2-10 | EngagementModePolicy, job creation, provider search, offers, AcceptOffer, engagements, assignments, availability, Filament | not started |
+| P2-02 | EngagementModePolicy (feature applicability object) | **DONE** — single class encoding the doc-06 matrix (address/dispatch/check-in/panic/share/site-visit/deliverables per mode); mode-branching removed from the enum; scan test proves no `=== 'remote'` branching anywhere else in app/; 3 tests |
+| P2-03..P2-10 | job creation, provider search, offers, AcceptOffer, engagements, assignments, availability, Filament | not started |
 
 Phases 3–8: not started (see build plan).
 

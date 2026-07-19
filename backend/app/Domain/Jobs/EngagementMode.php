@@ -15,8 +15,6 @@ enum EngagementMode: string
     case Remote = 'remote';
     case Hybrid = 'hybrid';
 
-    public function requiresAddress(): bool
-    {
-        return $this !== self::Remote;
-    }
+    // Deliberately NO feature logic here — "does this mode support X?" belongs to
+    // App\Domain\Jobs\EngagementModePolicy, the single place that branches on mode.
 }
