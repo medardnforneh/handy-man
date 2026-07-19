@@ -74,7 +74,7 @@ Task IDs come from `docs/05-build-plan.md`.
 | P1-07 + P1-07b | bilingual skills taxonomy + language-matched FTS | **DONE** — self-referencing `skills` (name_fr/name_en, slug citext, risk_tier 1–3, requires_license); `SkillsSeeder` = 41 leaves / 13 categories real Cameroon trades, both languages; `Skill::scopeSearch` uses the **matching french/english FTS config** (GIN indexes per language); public `GET /v1/skills` + `/skills/search`; `DatabaseSeeder` runs staff roles + skills; 6 tests |
 | P1-08 | provider_profiles + provider_skills + service_areas | **DONE** — 3 tables (service_areas geography+GIST; provider_skills price_model enum); `CreateProviderProfile` (always allowed, doc 10), `AddProviderSkill` (gated on `has_provider_profile` via `ListSkill` capability → precondition_unmet), `SetServiceArea` (location_tracking consent). **Wired REAL fact resolvers** in AccessServiceProvider: has_provider_profile, skill_listed, identity_verified (from verification_tier) — P0-17 now data-driven. 5 tests |
 | P1-09 | Filament 5 admin panel + mandatory 2FA + admin roles | **DONE** — Filament 5.7, `/admin` gated by `canAccessPanel` (staff roles only, never customer/provider), **mandatory TOTP 2FA** (`multiFactorAuthentication(..., isRequired: true)` — can't reach dashboard un-enrolled), recovery codes; `ProviderProfileResource`; User implements FilamentUser/HasName/HasAppAuthentication(+Recovery); **Spatie teams turned OFF** (org roles live in `memberships.role` per doc 02; Spatie = global staff only); 4 tests |
-| P1-10 | DSAR export + crypto-shred erasure | not started |
+| P1-10 | DSAR export + crypto-shred erasure | **DONE** — per-party `data_key` (encrypted, minted on party creation); `ErasePartyData` destroys the key, nulls/tombstones identifiers, deletes PII rows, but KEEPS the party row + id (ledger FKs survive) and announces `party.erased` via outbox; `ExportPersonalData` (DSAR); `DELETE /v1/me`, `GET /v1/me/data-export`; 3 tests |
 
 Phases 2–8: not started (see build plan).
 
@@ -122,16 +122,20 @@ Phases 2–8: not started (see build plan).
 
 ## Next steps
 
-Phase 0 is essentially complete. Remaining:
-1. **P0-10** — OpenAPI 3.1 spec + CI codegen → TypeScript client for the app. Needs a tool
-   choice (code-first annotations vs spec-first `openapi.yaml`). Last Phase-0 item.
-2. **P0-09** — hosting-region decision (ADR drafted; awaiting founder + lawyer).
-3. Then **Phase 1** (identity + catalog): parties/users/orgs, OTP auth, Sanctum + refresh
-   tokens, addresses+PostGIS, skills taxonomy, provider profiles, Filament panel, DSAR/erasure.
+**Phases 0 and 1 are COMPLETE** (every task committed; 114 tests green). End-of-P1 demo works: a
+provider signs up by phone (OTP), lists skills, sets a service radius; an admin sees them in
+Filament. Next is **Phase 2 — jobs, offers, engagements (direct booking)**:
 
-Follow-ups noted in code (not blocking): wire real fact resolvers in `AccessServiceProvider`
-(P1/P6); `auth` → `auth:sanctum` on API routes (P1-03); `cap add android/ios` when building
-native; full Tailwind/Vite pipeline for Blade (currently token CSS is linked directly).
+1. **P2-01** jobs + engagement_mode + conditional-address CHECK + JobStateMachine
+2. **P2-02** EngagementModePolicy (feature applicability object, doc 06)
+3. **P2-03..P2-10** job creation + PII-minimised resource; provider search (ST_DWithin + skill +
+   rating, skips geo for remote); offers; **AcceptOfferAction** (concurrency: 20 parallel → 1
+   engagement); AcceptPaidJob gate keyed to engagement_mode; engagements + auto-assign; assignments
+   + dispatcher org-boundary; availability/conflict; Filament.
+
+Follow-ups noted in code (not blocking): `cap add android/ios` when building native; full
+Tailwind/Vite pipeline for Blade (token CSS linked directly for now); the identity-verification
+approval flow that raises `verification_tier` (P6).
 
 ## Open decisions / to confirm with user
 

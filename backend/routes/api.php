@@ -69,6 +69,9 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
         Route::get('/consents', [ConsentController::class, 'index'])->name('consents.index');
         Route::post('/consents', [ConsentController::class, 'store'])->name('consents.store');
         Route::patch('/me/preferences', [ProfileController::class, 'updatePreferences'])->name('me.preferences');
+        // DSAR export + right to erasure (P1-10, Law 2024/017).
+        Route::get('/me/data-export', [ProfileController::class, 'dataExport'])->name('me.data-export');
+        Route::delete('/me', [ProfileController::class, 'erase'])->name('me.erase');
 
         // Addresses (P1-06) — creating one requires location_tracking consent.
         Route::get('/addresses', [AddressController::class, 'index'])->name('addresses.index');

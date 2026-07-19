@@ -302,6 +302,35 @@ paths:
         "422":
           $ref: "#/components/responses/ValidationProblem"
 
+  /me:
+    delete:
+      tags: [Platform]
+      operationId: eraseAccount
+      summary: Erase the account and personal data (crypto-shred, irreversible)
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      responses:
+        "200": { description: Erased }
+        "401": { $ref: "#/components/responses/Problem" }
+
+  /me/data-export:
+    get:
+      tags: [Platform]
+      operationId: exportPersonalData
+      summary: DSAR — export all personal data held about the caller
+      responses:
+        "200":
+          description: The personal-data export
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: object
+        "401": { $ref: "#/components/responses/Problem" }
+
   /me/preferences:
     patch:
       tags: [Platform]

@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Carbon;
 
 /**
  * The identity supertype (doc 02). A party is either an 'individual' (has a User) or an
@@ -19,6 +20,8 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property string $kind
  * @property string $display_name
  * @property string $status
+ * @property string|null $data_key
+ * @property Carbon|null $erased_at
  */
 final class Party extends Model
 {
@@ -34,6 +37,30 @@ final class Party extends Model
     public $incrementing = false;
 
     protected $fillable = ['kind', 'display_name', 'status'];
+
+    protected function casts(): array
+    {
+        return [
+            'data_key' => 'encrypted', // per-party crypto-shred key; encrypted at rest
+            'erased_at' => 'datetime',
+        ];
+    }
+
+    protected static function booted(): void
+    {
+        // Mint a per-party data key on creation (doc 04 crypto-shred). Destroying it later makes any
+        // key-encrypted PII unrecoverable.
+        self::creating(function (Party $party): void {
+            if ($party->data_key === null) {
+                $party->data_key = base64_encode(random_bytes(32)); // 256-bit
+            }
+        });
+    }
+
+    public function isErased(): bool
+    {
+        return $this->erased_at !== null;
+    }
 
     /**
      * @return HasOne<User, $this>
