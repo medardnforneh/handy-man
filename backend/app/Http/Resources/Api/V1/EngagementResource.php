@@ -28,6 +28,10 @@ final class EngagementResource extends JsonResource
                 'amount_minor' => $this->agreed_amount_minor,
                 'currency' => $this->currency,
             ],
+            'visit_credit' => [
+                'amount_minor' => $this->visit_credit_minor,
+                'currency' => $this->currency,
+            ],
             'is_escrowed' => $this->is_escrowed,
             'accepted_at' => $this->accepted_at->toIso8601String(),
             'assignments' => $this->whenLoaded('assignments', fn () => $this->assignments->map(fn ($a) => [

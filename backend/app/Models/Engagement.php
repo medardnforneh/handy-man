@@ -22,6 +22,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $offer_id
  * @property string|null $quotation_id
  * @property int $agreed_amount_minor
+ * @property int $visit_credit_minor
  * @property string $currency
  * @property bool $is_escrowed
  * @property Carbon $accepted_at
@@ -36,14 +37,15 @@ final class Engagement extends Model
     public $incrementing = false;
 
     protected $fillable = [
-        'job_id', 'provider_party_id', 'offer_id', 'quotation_id', 'agreed_amount_minor', 'currency',
-        'platform_fee_minor', 'is_escrowed', 'accepted_at', 'completed_at',
+        'job_id', 'provider_party_id', 'offer_id', 'quotation_id', 'agreed_amount_minor',
+        'visit_credit_minor', 'currency', 'platform_fee_minor', 'is_escrowed', 'accepted_at', 'completed_at',
     ];
 
     protected function casts(): array
     {
         return [
             'agreed_amount_minor' => 'integer',
+            'visit_credit_minor' => 'integer',
             'platform_fee_minor' => 'integer',
             'is_escrowed' => 'boolean',
             'accepted_at' => 'datetime',

@@ -10,9 +10,11 @@ use App\Domain\Jobs\JobStatus;
 use App\Domain\Quotations\QuotationStateMachine;
 use App\Domain\Quotations\QuoteNotAcceptable;
 use App\Domain\Quotations\QuoteStatus;
+use App\Domain\Quotations\SiteVisitStatus;
 use App\Models\Engagement;
 use App\Models\Job;
 use App\Models\Quotation;
+use App\Models\SiteVisit;
 use App\Models\User;
 use App\Support\Outbox;
 use Illuminate\Support\Facades\DB;
@@ -61,16 +63,30 @@ final class AcceptQuotation
 
             $this->jobStateMachine->transition($job, JobStatus::Engaged);
 
+            // A chargeable, completed site visit that produced this quote is creditable (P2.5-04):
+            // its fee reduces what the customer still owes on the engagement.
+            $visitCredit = (int) SiteVisit::query()
+                ->where('resulting_quotation_id', $quote->id)
+                ->where('is_chargeable', true)
+                ->where('status', SiteVisitStatus::Completed->value)
+                ->sum('fee_minor');
+
+            $appliedCredit = min($visitCredit, $quote->subtotal_minor);
+            $agreed = $quote->subtotal_minor - $appliedCredit;
+
             $engagement = Engagement::query()->create([
                 'job_id' => $job->id,
                 'provider_party_id' => $quote->provider_party_id,
                 'quotation_id' => $quote->id,
-                'agreed_amount_minor' => $quote->subtotal_minor,
+                'agreed_amount_minor' => $agreed,
+                'visit_credit_minor' => $appliedCredit,
                 'currency' => $quote->currency,
                 'accepted_at' => now(),
             ]);
 
-            foreach ($this->milestonePlan($quote) as $milestone) {
+            // The deposit is reduced by the credit the customer has effectively already paid.
+            $depositDue = max(0, $quote->deposit_minor - $appliedCredit);
+            foreach ($this->milestonePlan($agreed, $depositDue) as $milestone) {
                 $engagement->milestones()->create($milestone);
             }
 
@@ -93,22 +109,19 @@ final class AcceptQuotation
 
     /**
      * The default milestone plan: deposit (position 0) then balance, or a single full-payment
-     * milestone. Amounts always sum to the quote subtotal (= the agreed amount).
+     * milestone. Amounts always sum to $total (the engagement's agreed amount).
      *
      * @return list<array{position: int, title: string, amount_minor: int}>
      */
-    private function milestonePlan(Quotation $quote): array
+    private function milestonePlan(int $total, int $deposit): array
     {
-        $subtotal = $quote->subtotal_minor;
-        $deposit = $quote->deposit_minor;
-
-        if ($deposit > 0 && $deposit < $subtotal) {
+        if ($deposit > 0 && $deposit < $total) {
             return [
                 ['position' => 0, 'title' => 'Deposit', 'amount_minor' => $deposit],
-                ['position' => 1, 'title' => 'Balance', 'amount_minor' => $subtotal - $deposit],
+                ['position' => 1, 'title' => 'Balance', 'amount_minor' => $total - $deposit],
             ];
         }
 
-        return [['position' => 0, 'title' => 'Full payment', 'amount_minor' => $subtotal]];
+        return [['position' => 0, 'title' => 'Full payment', 'amount_minor' => $total]];
     }
 }

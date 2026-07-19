@@ -499,6 +499,58 @@ paths:
         "409": { $ref: "#/components/responses/Problem" }
         "422": { $ref: "#/components/responses/ValidationProblem" }
 
+  /jobs/{job}/site-visits:
+    post:
+      tags: [Platform]
+      operationId: scheduleSiteVisit
+      summary: Schedule a site visit for a job (provider)
+      description: >
+        A provider schedules a visit (physical for onsite/hybrid, video for remote). A chargeable
+        visit must carry a fee; the fee is creditable against the quote the visit produces.
+      parameters:
+        - { name: job, in: path, required: true, schema: { type: string, format: uuid } }
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [scheduled_for]
+              properties:
+                scheduled_for: { type: string, format: date-time }
+                is_chargeable: { type: boolean, default: false }
+                fee_minor: { type: integer, minimum: 1, description: "Required when is_chargeable is true." }
+      responses:
+        "201": { description: The scheduled visit, content: { application/json: { schema: { type: object, required: [data], properties: { data: { $ref: "#/components/schemas/SiteVisit" } } } } } }
+        "401": { $ref: "#/components/responses/Problem" }
+        "409": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/ValidationProblem" }
+
+  /site-visits/{siteVisit}/complete:
+    post:
+      tags: [Platform]
+      operationId: completeSiteVisit
+      summary: Complete a site visit (provider)
+      description: The owning provider marks the visit completed, optionally linking the quotation it produced (which makes a chargeable fee creditable on acceptance).
+      parameters:
+        - { name: siteVisit, in: path, required: true, schema: { type: string, format: uuid } }
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                outcome_notes: { type: [string, "null"] }
+                resulting_quotation_id: { type: [string, "null"], format: uuid }
+      responses:
+        "200": { description: The completed visit, content: { application/json: { schema: { type: object, required: [data], properties: { data: { $ref: "#/components/schemas/SiteVisit" } } } } } }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "409": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/ValidationProblem" }
+
   /quotations/{quotation}/accept:
     post:
       tags: [Platform]
@@ -877,10 +929,26 @@ components:
         offer_id: { type: [string, "null"], format: uuid }
         quotation_id: { type: [string, "null"], format: uuid }
         agreed_amount: { $ref: "#/components/schemas/Money" }
+        visit_credit: { $ref: "#/components/schemas/Money" }
         is_escrowed: { type: boolean }
         accepted_at: { type: string, format: date-time }
         assignments: { type: array, items: { $ref: "#/components/schemas/Assignment" } }
         milestones: { type: array, items: { $ref: "#/components/schemas/Milestone" } }
+
+    SiteVisit:
+      type: object
+      required: [id, job_id, provider_party_id, scheduled_for, is_chargeable, fee, status]
+      properties:
+        id: { type: string, format: uuid }
+        job_id: { type: string, format: uuid }
+        provider_party_id: { type: string, format: uuid }
+        scheduled_for: { type: string, format: date-time }
+        is_chargeable: { type: boolean }
+        fee: { $ref: "#/components/schemas/Money" }
+        status: { type: string, enum: [scheduled, completed, cancelled, no_show] }
+        completed_at: { type: [string, "null"], format: date-time }
+        outcome_notes: { type: [string, "null"] }
+        resulting_quotation_id: { type: [string, "null"], format: uuid }
 
     Milestone:
       type: object

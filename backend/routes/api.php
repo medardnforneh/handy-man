@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\V1\ProfileController;
 use App\Http\Controllers\Api\V1\ProviderController;
 use App\Http\Controllers\Api\V1\QuotationController;
 use App\Http\Controllers\Api\V1\Reference\NoteController;
+use App\Http\Controllers\Api\V1\SiteVisitController;
 use App\Http\Controllers\Api\V1\SkillController;
 use Illuminate\Support\Facades\Route;
 
@@ -99,6 +100,10 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
         Route::post('/quotations/{quotation}/revise', [QuotationController::class, 'revise'])->name('quotations.revise');
         // Customer accepts a quotation → engagement + milestones (P2.5-05).
         Route::post('/quotations/{quotation}/accept', [QuotationController::class, 'accept'])->name('quotations.accept');
+
+        // Site visits (P2.5-04). A provider schedules a visit and completes it (fee creditable).
+        Route::post('/jobs/{job}/site-visits', [SiteVisitController::class, 'store'])->name('jobs.site-visits.store');
+        Route::post('/site-visits/{siteVisit}/complete', [SiteVisitController::class, 'complete'])->name('site-visits.complete');
 
         // Engagement staffing (P2-08). Dispatcher-only (org-internal RBAC via EngagementPolicy); the
         // worker must belong to the provider (app check + DB trigger).

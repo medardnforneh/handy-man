@@ -305,6 +305,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/jobs/{job}/site-visits": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Schedule a site visit for a job (provider)
+         * @description A provider schedules a visit (physical for onsite/hybrid, video for remote). A chargeable visit must carry a fee; the fee is creditable against the quote the visit produces.
+         */
+        post: operations["scheduleSiteVisit"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/site-visits/{siteVisit}/complete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Complete a site visit (provider)
+         * @description The owning provider marks the visit completed, optionally linking the quotation it produced (which makes a chargeable fee creditable on acceptance).
+         */
+        post: operations["completeSiteVisit"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/quotations/{quotation}/accept": {
         parameters: {
             query?: never;
@@ -590,11 +630,31 @@ export interface components {
             /** Format: uuid */
             quotation_id?: string | null;
             agreed_amount: components["schemas"]["Money"];
+            visit_credit?: components["schemas"]["Money"];
             is_escrowed: boolean;
             /** Format: date-time */
             accepted_at: string;
             assignments?: components["schemas"]["Assignment"][];
             milestones?: components["schemas"]["Milestone"][];
+        };
+        SiteVisit: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            job_id: string;
+            /** Format: uuid */
+            provider_party_id: string;
+            /** Format: date-time */
+            scheduled_for: string;
+            is_chargeable: boolean;
+            fee: components["schemas"]["Money"];
+            /** @enum {string} */
+            status: "scheduled" | "completed" | "cancelled" | "no_show";
+            /** Format: date-time */
+            completed_at?: string | null;
+            outcome_notes?: string | null;
+            /** Format: uuid */
+            resulting_quotation_id?: string | null;
         };
         Milestone: {
             /** Format: uuid */
@@ -1511,6 +1571,86 @@ export interface operations {
                 };
             };
             401: components["responses"]["Problem"];
+            409: components["responses"]["Problem"];
+            422: components["responses"]["ValidationProblem"];
+        };
+    };
+    scheduleSiteVisit: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description A client-generated UUID. Replaying it returns the stored response (CLAUDE.md rule */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                job: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** Format: date-time */
+                    scheduled_for: string;
+                    /** @default false */
+                    is_chargeable?: boolean;
+                    /** @description Required when is_chargeable is true. */
+                    fee_minor?: number;
+                };
+            };
+        };
+        responses: {
+            /** @description The scheduled visit */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["SiteVisit"];
+                    };
+                };
+            };
+            401: components["responses"]["Problem"];
+            409: components["responses"]["Problem"];
+            422: components["responses"]["ValidationProblem"];
+        };
+    };
+    completeSiteVisit: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description A client-generated UUID. Replaying it returns the stored response (CLAUDE.md rule */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                siteVisit: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": {
+                    outcome_notes?: string | null;
+                    /** Format: uuid */
+                    resulting_quotation_id?: string | null;
+                };
+            };
+        };
+        responses: {
+            /** @description The completed visit */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["SiteVisit"];
+                    };
+                };
+            };
+            401: components["responses"]["Problem"];
+            403: components["responses"]["Problem"];
             409: components["responses"]["Problem"];
             422: components["responses"]["ValidationProblem"];
         };
