@@ -544,6 +544,8 @@ paths:
               properties:
                 worker_user_id: { type: string, format: uuid }
                 role: { type: string, enum: [lead, helper], default: helper }
+                scheduled_from: { type: [string, "null"], format: date-time, description: "Booking window start; both bounds required together. Overlapping windows for one worker are rejected (409)." }
+                scheduled_to: { type: [string, "null"], format: date-time }
       responses:
         "201": { description: The created assignment, content: { application/json: { schema: { type: object, required: [data], properties: { data: { $ref: "#/components/schemas/Assignment" } } } } } }
         "401": { $ref: "#/components/responses/Problem" }
@@ -825,6 +827,8 @@ components:
         status: { type: string, enum: [assigned, accepted, declined, en_route, on_site, completed, removed] }
         assigned_at: { type: string, format: date-time }
         removed_at: { type: [string, "null"], format: date-time }
+        scheduled_from: { type: [string, "null"], format: date-time }
+        scheduled_to: { type: [string, "null"], format: date-time }
 
     Job:
       type: object

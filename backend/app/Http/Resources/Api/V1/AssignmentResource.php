@@ -27,6 +27,8 @@ final class AssignmentResource extends JsonResource
             'status' => $this->status->value,
             'assigned_at' => $this->assigned_at->toIso8601String(),
             'removed_at' => $this->removed_at?->toIso8601String(),
+            'scheduled_from' => $this->scheduled_from?->toIso8601String(),
+            'scheduled_to' => $this->scheduled_to?->toIso8601String(),
         ];
     }
 }

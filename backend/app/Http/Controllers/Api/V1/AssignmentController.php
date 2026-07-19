@@ -30,7 +30,14 @@ final class AssignmentController extends Controller
 
         $worker = User::query()->findOrFail($request->string('worker_user_id')->toString());
 
-        $assignment = $action->handle($actor, $engagement, $worker, $request->role());
+        $assignment = $action->handle(
+            $actor,
+            $engagement,
+            $worker,
+            $request->role(),
+            $request->scheduledFrom(),
+            $request->scheduledTo(),
+        );
 
         return AssignmentResource::make($assignment)->response()->setStatusCode(201);
     }

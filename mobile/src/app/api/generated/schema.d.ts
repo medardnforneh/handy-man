@@ -550,6 +550,10 @@ export interface components {
             assigned_at?: string;
             /** Format: date-time */
             removed_at?: string | null;
+            /** Format: date-time */
+            scheduled_from?: string | null;
+            /** Format: date-time */
+            scheduled_to?: string | null;
         };
         Job: {
             /** Format: uuid */
@@ -1438,6 +1442,13 @@ export interface operations {
                      * @enum {string}
                      */
                     role?: "lead" | "helper";
+                    /**
+                     * Format: date-time
+                     * @description Booking window start; both bounds required together. Overlapping windows for one worker are rejected (409).
+                     */
+                    scheduled_from?: string | null;
+                    /** Format: date-time */
+                    scheduled_to?: string | null;
                 };
             };
         };

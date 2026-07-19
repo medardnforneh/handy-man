@@ -25,6 +25,8 @@ use Illuminate\Support\Carbon;
  * @property AssignmentStatus $status
  * @property Carbon $assigned_at
  * @property Carbon|null $removed_at
+ * @property Carbon|null $scheduled_from
+ * @property Carbon|null $scheduled_to
  */
 final class Assignment extends Model
 {
@@ -37,7 +39,7 @@ final class Assignment extends Model
 
     protected $fillable = [
         'engagement_id', 'worker_user_id', 'assigned_by_user_id', 'role', 'status',
-        'assigned_at', 'removed_at',
+        'assigned_at', 'removed_at', 'scheduled_from', 'scheduled_to',
     ];
 
     protected function casts(): array
@@ -47,6 +49,8 @@ final class Assignment extends Model
             'status' => AssignmentStatus::class,
             'assigned_at' => 'datetime',
             'removed_at' => 'datetime',
+            'scheduled_from' => 'datetime',
+            'scheduled_to' => 'datetime',
         ];
     }
 
