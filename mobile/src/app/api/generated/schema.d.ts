@@ -305,6 +305,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/quotations/{quotation}/accept": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Customer accepts a quotation → engagement + milestones
+         * @description The job's customer accepts a submitted quotation. Concurrency-safe: exactly one engagement forms per job (converging with the offer path). A milestone plan is generated (deposit at position 0, then balance) whose amounts sum to the agreed amount; competing live quotes are rejected. Only the job owner; only a live, unexpired submitted quote (else 409).
+         */
+        post: operations["acceptQuotation"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/quotations/{quotation}/revise": {
         parameters: {
             query?: never;
@@ -566,12 +586,24 @@ export interface components {
             /** Format: uuid */
             provider_party_id: string;
             /** Format: uuid */
-            offer_id: string;
+            offer_id?: string | null;
+            /** Format: uuid */
+            quotation_id?: string | null;
             agreed_amount: components["schemas"]["Money"];
             is_escrowed: boolean;
             /** Format: date-time */
             accepted_at: string;
             assignments?: components["schemas"]["Assignment"][];
+            milestones?: components["schemas"]["Milestone"][];
+        };
+        Milestone: {
+            /** Format: uuid */
+            id: string;
+            position: number;
+            title: string;
+            amount_minor: number;
+            /** @enum {string} */
+            status: "pending" | "in_progress" | "submitted" | "approved" | "rejected" | "paid";
         };
         Assignment: {
             /** Format: uuid */
@@ -1481,6 +1513,36 @@ export interface operations {
             401: components["responses"]["Problem"];
             409: components["responses"]["Problem"];
             422: components["responses"]["ValidationProblem"];
+        };
+    };
+    acceptQuotation: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description A client-generated UUID. Replaying it returns the stored response (CLAUDE.md rule */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                quotation: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The created engagement */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["Engagement"];
+                    };
+                };
+            };
+            401: components["responses"]["Problem"];
+            403: components["responses"]["Problem"];
+            409: components["responses"]["Problem"];
         };
     };
     reviseQuotation: {

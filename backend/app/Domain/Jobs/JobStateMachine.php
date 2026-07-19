@@ -20,7 +20,7 @@ final class JobStateMachine
      */
     private const TRANSITIONS = [
         'draft' => ['open', 'cancelled'],
-        'open' => ['offered', 'cancelled'],
+        'open' => ['offered', 'engaged', 'cancelled'], // engaged directly when a quote is accepted (P2.5-05)
         'offered' => ['engaged', 'open', 'cancelled'], // back to open if all offers lapse
         'engaged' => ['scheduled', 'in_progress', 'cancelled', 'disputed'],
         'scheduled' => ['en_route', 'in_progress', 'cancelled', 'disputed'],

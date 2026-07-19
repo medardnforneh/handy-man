@@ -97,6 +97,8 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
         // Quotations (P2.5-01). A provider submits a priced quote; revision is a new version.
         Route::post('/jobs/{job}/quotations', [QuotationController::class, 'store'])->name('jobs.quotations.store');
         Route::post('/quotations/{quotation}/revise', [QuotationController::class, 'revise'])->name('quotations.revise');
+        // Customer accepts a quotation → engagement + milestones (P2.5-05).
+        Route::post('/quotations/{quotation}/accept', [QuotationController::class, 'accept'])->name('quotations.accept');
 
         // Engagement staffing (P2-08). Dispatcher-only (org-internal RBAC via EngagementPolicy); the
         // worker must belong to the provider (app check + DB trigger).

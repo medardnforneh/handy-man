@@ -97,11 +97,22 @@ Task IDs come from `docs/05-build-plan.md`.
 | ID | Task | Status |
 |---|---|---|
 | P2.5-01/02/03 | versioned immutable quotations + one-live index + three dates | **DONE** — `quotations` + `quotation_lines`; server-computed subtotal; `assert_quote_terms_immutable` (UPDATE of a non-draft quote's terms throws) + `assert_quote_lines_frozen` (lines frozen after submit) triggers; partial unique `one_live_quote_per_provider_per_job`; the three dates (requested/estimated/committed — only `provider_committed_at` will feed on-time-rate); `QuotationStateMachine`; `SubmitQuotation` + `ReviseQuotation` (revise = supersede + v+1 via `supersedes_id`, shared `QuotationBuilder`: draft→add lines→submit); `POST /v1/jobs/{job}/quotations`, `POST /v1/quotations/{quotation}/revise`; 9 tests incl. **DB-frozen terms/lines, revision chain, one-live** |
-| P2.5-04..06 | site visits, quote-accept→milestones, quote follow-ups | not started |
+| P2.5-05 | accept quotation → engagement + milestones | **DONE** — the quote path into `engagements` (converges with the offer path): `engagements.offer_id` now nullable + new nullable `quotation_id` + CHECK one origin present; `milestones` table; **deferred constraint trigger `milestones_sum_matches_agreed`** (SUM = agreed, only when milestones exist — offer-path engagements carry none); `AcceptQuotation` (customer-authorized, job-locked, quote→accepted, competing live quotes rejected, job→engaged, auto milestone plan deposit@0 + balance, lead auto-assign); `JobStateMachine` now allows open→engaged; shared `LeadAssigner` (also used by AcceptOfferAction); `POST /v1/quotations/{quotation}/accept`; 7 tests incl. **deferred SUM enforcement (SET CONSTRAINTS IMMEDIATE)** |
+| P2.5-04, P2.5-06 | site visits (chargeable/creditable), quote follow-ups | not started |
 
 Phases 3–8: not started (see build plan).
 
 ## What was done, most recent first
+
+- **P2.5-05 — accept quotation → engagement + milestones**: the customer accepts a submitted quote,
+  forming the engagement (the quote path converging with the offer path — `engagements` now takes a
+  nullable `offer_id`/`quotation_id` with a one-origin CHECK) plus an auto milestone plan (deposit at
+  position 0, then balance). The `SUM(milestones) = agreed_amount` invariant is a **deferred**
+  constraint trigger (fires only when milestones exist, so offer-path engagements are unaffected).
+  `AcceptQuotation` is job-locked and concurrency-safe, rejects competing live quotes, and engages
+  the job (JobStateMachine gained open→engaged). Extracted a shared `LeadAssigner` used by both accept
+  paths. `POST /v1/quotations/{quotation}/accept`. OpenAPI + TS client updated. Backend 186 tests
+  green, PHPStan L6 clean, Pint clean.
 
 - **P2.5-01/02/03 — versioned, immutable quotations**: `quotations` + `quotation_lines` with a
   server-computed subtotal, DB triggers that freeze a submitted quote's terms and lines (an UPDATE

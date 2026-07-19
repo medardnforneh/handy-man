@@ -5,17 +5,14 @@ declare(strict_types=1);
 namespace App\Domain\Offers\Actions;
 
 use App\Domain\Access\Capabilities\AcceptPaidJob;
-use App\Domain\Engagements\AssignmentRole;
-use App\Domain\Engagements\AssignmentStatus;
+use App\Domain\Engagements\LeadAssigner;
 use App\Domain\Jobs\JobStateMachine;
 use App\Domain\Jobs\JobStatus;
 use App\Domain\Offers\OfferNotAcceptable;
 use App\Domain\Offers\OfferStatus;
-use App\Models\Assignment;
 use App\Models\Engagement;
 use App\Models\Job;
 use App\Models\JobOffer;
-use App\Models\Party;
 use App\Models\User;
 use App\Support\Outbox;
 use Illuminate\Support\Facades\DB;
@@ -39,6 +36,7 @@ final class AcceptOfferAction
     public function __construct(
         private readonly JobStateMachine $stateMachine,
         private readonly AcceptPaidJob $acceptPaidJob,
+        private readonly LeadAssigner $leadAssigner,
         private readonly Outbox $outbox,
     ) {}
 
@@ -84,7 +82,7 @@ final class AcceptOfferAction
                 'accepted_at' => now(),
             ]);
 
-            $this->autoAssignIfIndividual($engagement, $offer->provider_party_id);
+            $this->leadAssigner->assignIfIndividual($engagement, $offer->provider_party_id);
 
             $this->outbox->publish('engagement.created', [
                 'engagement_id' => $engagement->id,
@@ -94,23 +92,5 @@ final class AcceptOfferAction
 
             return $engagement;
         });
-    }
-
-    private function autoAssignIfIndividual(Engagement $engagement, string $providerPartyId): void
-    {
-        $party = Party::query()->with('user')->findOrFail($providerPartyId);
-
-        if (! $party->isIndividual() || $party->user === null) {
-            return; // company → a dispatcher assigns workers (P2-08)
-        }
-
-        Assignment::query()->create([
-            'engagement_id' => $engagement->id,
-            'worker_user_id' => $party->user->id,
-            'assigned_by_user_id' => $party->user->id, // self-assigned lead
-            'role' => AssignmentRole::Lead->value,
-            'status' => AssignmentStatus::Assigned->value,
-            'assigned_at' => now(),
-        ]);
     }
 }

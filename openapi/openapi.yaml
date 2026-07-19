@@ -499,6 +499,25 @@ paths:
         "409": { $ref: "#/components/responses/Problem" }
         "422": { $ref: "#/components/responses/ValidationProblem" }
 
+  /quotations/{quotation}/accept:
+    post:
+      tags: [Platform]
+      operationId: acceptQuotation
+      summary: Customer accepts a quotation → engagement + milestones
+      description: >
+        The job's customer accepts a submitted quotation. Concurrency-safe: exactly one engagement
+        forms per job (converging with the offer path). A milestone plan is generated (deposit at
+        position 0, then balance) whose amounts sum to the agreed amount; competing live quotes are
+        rejected. Only the job owner; only a live, unexpired submitted quote (else 409).
+      parameters:
+        - { name: quotation, in: path, required: true, schema: { type: string, format: uuid } }
+        - $ref: "#/components/parameters/IdempotencyKey"
+      responses:
+        "201": { description: The created engagement, content: { application/json: { schema: { type: object, required: [data], properties: { data: { $ref: "#/components/schemas/Engagement" } } } } } }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "409": { $ref: "#/components/responses/Problem" }
+
   /quotations/{quotation}/revise:
     post:
       tags: [Platform]
@@ -850,16 +869,28 @@ components:
 
     Engagement:
       type: object
-      required: [id, job_id, provider_party_id, offer_id, agreed_amount, is_escrowed, accepted_at]
+      required: [id, job_id, provider_party_id, agreed_amount, is_escrowed, accepted_at]
       properties:
         id: { type: string, format: uuid }
         job_id: { type: string, format: uuid }
         provider_party_id: { type: string, format: uuid }
-        offer_id: { type: string, format: uuid }
+        offer_id: { type: [string, "null"], format: uuid }
+        quotation_id: { type: [string, "null"], format: uuid }
         agreed_amount: { $ref: "#/components/schemas/Money" }
         is_escrowed: { type: boolean }
         accepted_at: { type: string, format: date-time }
         assignments: { type: array, items: { $ref: "#/components/schemas/Assignment" } }
+        milestones: { type: array, items: { $ref: "#/components/schemas/Milestone" } }
+
+    Milestone:
+      type: object
+      required: [id, position, title, amount_minor, status]
+      properties:
+        id: { type: string, format: uuid }
+        position: { type: integer }
+        title: { type: string }
+        amount_minor: { type: integer }
+        status: { type: string, enum: [pending, in_progress, submitted, approved, rejected, paid] }
 
     Assignment:
       type: object

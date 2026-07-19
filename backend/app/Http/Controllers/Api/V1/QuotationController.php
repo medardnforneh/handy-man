@@ -5,16 +5,19 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\V1;
 
 use App\Domain\Jobs\JobStatus;
+use App\Domain\Quotations\Actions\AcceptQuotation;
 use App\Domain\Quotations\Actions\ReviseQuotation;
 use App\Domain\Quotations\Actions\SubmitQuotation;
 use App\Domain\Quotations\QuoteStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\SubmitQuotationRequest;
+use App\Http\Resources\Api\V1\EngagementResource;
 use App\Http\Resources\Api\V1\QuotationResource;
 use App\Models\Job;
 use App\Models\Quotation;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 /**
  * Quotations (build plan P2.5-01). A provider submits a priced quote for a job, and revises it as a
@@ -49,5 +52,22 @@ final class QuotationController extends Controller
         $quote = $action->handle($user, $quotation, $request->toDraft());
 
         return QuotationResource::make($quote->load('lines'))->response()->setStatusCode(201);
+    }
+
+    /**
+     * The job's customer accepts a submitted quotation → engagement + milestones (P2.5-05).
+     */
+    public function accept(Request $request, Quotation $quotation, AcceptQuotation $action): JsonResponse
+    {
+        /** @var User $user */
+        $user = $request->user();
+
+        $job = $quotation->job()->firstOrFail();
+        abort_unless($job->customer_party_id === $user->party_id, 403);
+
+        $engagement = $action->handle($user, $quotation);
+
+        return EngagementResource::make($engagement->load(['assignments', 'milestones']))
+            ->response()->setStatusCode(201);
     }
 }

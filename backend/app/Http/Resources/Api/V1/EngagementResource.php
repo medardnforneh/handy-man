@@ -23,6 +23,7 @@ final class EngagementResource extends JsonResource
             'job_id' => $this->job_id,
             'provider_party_id' => $this->provider_party_id,
             'offer_id' => $this->offer_id,
+            'quotation_id' => $this->quotation_id,
             'agreed_amount' => [
                 'amount_minor' => $this->agreed_amount_minor,
                 'currency' => $this->currency,
@@ -34,6 +35,13 @@ final class EngagementResource extends JsonResource
                 'worker_user_id' => $a->worker_user_id,
                 'role' => $a->role->value,
                 'status' => $a->status->value,
+            ])),
+            'milestones' => $this->whenLoaded('milestones', fn () => $this->milestones->map(fn ($m) => [
+                'id' => $m->id,
+                'position' => $m->position,
+                'title' => $m->title,
+                'amount_minor' => $m->amount_minor,
+                'status' => $m->status->value,
             ])),
         ];
     }

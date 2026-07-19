@@ -19,7 +19,8 @@ use Illuminate\Support\Carbon;
  * @property string $id
  * @property string $job_id
  * @property string $provider_party_id
- * @property string $offer_id
+ * @property string|null $offer_id
+ * @property string|null $quotation_id
  * @property int $agreed_amount_minor
  * @property string $currency
  * @property bool $is_escrowed
@@ -35,7 +36,7 @@ final class Engagement extends Model
     public $incrementing = false;
 
     protected $fillable = [
-        'job_id', 'provider_party_id', 'offer_id', 'agreed_amount_minor', 'currency',
+        'job_id', 'provider_party_id', 'offer_id', 'quotation_id', 'agreed_amount_minor', 'currency',
         'platform_fee_minor', 'is_escrowed', 'accepted_at', 'completed_at',
     ];
 
@@ -72,5 +73,13 @@ final class Engagement extends Model
     public function assignments(): HasMany
     {
         return $this->hasMany(Assignment::class);
+    }
+
+    /**
+     * @return HasMany<Milestone, $this>
+     */
+    public function milestones(): HasMany
+    {
+        return $this->hasMany(Milestone::class)->orderBy('position');
     }
 }

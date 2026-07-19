@@ -78,7 +78,7 @@ it('enforces the full transition matrix (every illegal pair rejected)', function
 
     $legal = [
         'draft' => ['open', 'cancelled'],
-        'open' => ['offered', 'cancelled'],
+        'open' => ['offered', 'engaged', 'cancelled'], // engaged directly on quote acceptance (P2.5-05)
         'offered' => ['engaged', 'open', 'cancelled'],
         'engaged' => ['scheduled', 'in_progress', 'cancelled', 'disputed'],
         'scheduled' => ['en_route', 'in_progress', 'cancelled', 'disputed'],
