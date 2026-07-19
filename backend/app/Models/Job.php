@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 
 /**
@@ -29,8 +30,12 @@ use Illuminate\Support\Carbon;
  * @property EngagementMode $engagement_mode
  * @property AssignmentMode $assignment_mode
  * @property JobStatus $status
+ * @property string $price_model
  * @property int|null $budget_minor
  * @property string $currency
+ * @property int $urgency
+ * @property bool $requires_verified_provider
+ * @property string|null $description
  * @property Carbon|null $published_at
  * @property Carbon|null $cancelled_at
  */
@@ -88,5 +93,13 @@ final class Job extends Model
     public function address(): BelongsTo
     {
         return $this->belongsTo(Address::class);
+    }
+
+    /**
+     * @return HasMany<JobPhoto, $this>
+     */
+    public function photos(): HasMany
+    {
+        return $this->hasMany(JobPhoto::class)->orderBy('position');
     }
 }

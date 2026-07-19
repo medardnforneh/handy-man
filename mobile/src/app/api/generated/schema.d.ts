@@ -250,6 +250,58 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/jobs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The customer's own jobs */
+        get: operations["listMyJobs"];
+        put?: never;
+        /** Post a job (address required unless remote) */
+        post: operations["createJob"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/jobs/{job}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Fetch a job (PII-minimised for non-owners — no exact address) */
+        get: operations["getJob"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/jobs/{job}/publish": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Publish a draft job (draft → open) */
+        post: operations["publishJob"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/provider/profile": {
         parameters: {
             query?: never;
@@ -354,6 +406,40 @@ export interface components {
             min_app_version?: string | null;
             /** Format: date-time */
             server_time: string;
+        };
+        Job: {
+            /** Format: uuid */
+            id: string;
+            reference: string;
+            title: string;
+            description?: string | null;
+            /** Format: uuid */
+            skill_id?: string;
+            /** @enum {string} */
+            engagement_mode: "onsite" | "remote" | "hybrid";
+            /** @enum {string} */
+            assignment_mode?: "direct" | "dispatch" | "bidding";
+            status: string;
+            price_model?: string;
+            budget?: components["schemas"]["Money"] | null;
+            urgency?: number;
+            requires_verified_provider?: boolean;
+            photos?: string[];
+            /** @description Coarse (quarter/city) for non-owners; exact (line1 + lat/lng) only for the owner. Null for remote jobs. */
+            location?: null | {
+                quarter?: string | null;
+                city?: string;
+                region?: string | null;
+                country_code?: string;
+                line1?: string;
+                landmark_note?: string | null;
+                latitude?: number;
+                longitude?: number;
+            };
+            /** Format: date-time */
+            published_at?: string | null;
+            /** Format: date-time */
+            created_at?: string;
         };
         ProviderProfile: {
             /** Format: uuid */
@@ -1019,6 +1105,127 @@ export interface operations {
                 };
             };
             422: components["responses"]["ValidationProblem"];
+        };
+    };
+    listMyJobs: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Jobs */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["Job"][];
+                    };
+                };
+            };
+            401: components["responses"]["Problem"];
+        };
+    };
+    createJob: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description A client-generated UUID. Replaying it returns the stored response (CLAUDE.md rule */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** Format: uuid */
+                    skill_id: string;
+                    /** @enum {string} */
+                    engagement_mode: "onsite" | "remote" | "hybrid";
+                    title: string;
+                    description?: string | null;
+                    /** @enum {string} */
+                    description_language?: "fr" | "en";
+                    /** Format: uuid */
+                    address_id?: string | null;
+                    /** @enum {string} */
+                    price_model?: "hourly" | "fixed" | "quote_only";
+                    budget_minor?: number | null;
+                    urgency?: number;
+                    photos?: string[];
+                };
+            };
+        };
+        responses: {
+            /** @description Created job */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["Job"];
+                    };
+                };
+            };
+            401: components["responses"]["Problem"];
+            422: components["responses"]["ValidationProblem"];
+        };
+    };
+    getJob: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                job: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Job */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["Job"];
+                    };
+                };
+            };
+            401: components["responses"]["Problem"];
+            404: components["responses"]["Problem"];
+        };
+    };
+    publishJob: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description A client-generated UUID. Replaying it returns the stored response (CLAUDE.md rule */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                job: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Published job */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["Problem"];
+            403: components["responses"]["Problem"];
         };
     };
     getProviderProfile: {

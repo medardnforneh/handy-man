@@ -424,6 +424,71 @@ paths:
         "422":
           $ref: "#/components/responses/ValidationProblem"
 
+  /jobs:
+    get:
+      tags: [Platform]
+      operationId: listMyJobs
+      summary: The customer's own jobs
+      responses:
+        "200": { description: Jobs, content: { application/json: { schema: { type: object, required: [data], properties: { data: { type: array, items: { $ref: "#/components/schemas/Job" } } } } } } }
+        "401": { $ref: "#/components/responses/Problem" }
+    post:
+      tags: [Platform]
+      operationId: createJob
+      summary: Post a job (address required unless remote)
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [skill_id, engagement_mode, title]
+              properties:
+                skill_id: { type: string, format: uuid }
+                engagement_mode: { type: string, enum: [onsite, remote, hybrid] }
+                title: { type: string }
+                description: { type: [string, "null"] }
+                description_language: { type: string, enum: [fr, en] }
+                address_id: { type: [string, "null"], format: uuid }
+                price_model: { type: string, enum: [hourly, fixed, quote_only] }
+                budget_minor: { type: [integer, "null"] }
+                urgency: { type: integer, minimum: 1, maximum: 3 }
+                photos: { type: array, items: { type: string } }
+      responses:
+        "201": { description: Created job, content: { application/json: { schema: { type: object, required: [data], properties: { data: { $ref: "#/components/schemas/Job" } } } } } }
+        "401": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/ValidationProblem" }
+
+  /jobs/{job}:
+    get:
+      tags: [Platform]
+      operationId: getJob
+      summary: Fetch a job (PII-minimised for non-owners — no exact address)
+      parameters:
+        - name: job
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        "200": { description: Job, content: { application/json: { schema: { type: object, required: [data], properties: { data: { $ref: "#/components/schemas/Job" } } } } } }
+        "401": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+
+  /jobs/{job}/publish:
+    post:
+      tags: [Platform]
+      operationId: publishJob
+      summary: Publish a draft job (draft → open)
+      parameters:
+        - { name: job, in: path, required: true, schema: { type: string, format: uuid } }
+        - $ref: "#/components/parameters/IdempotencyKey"
+      responses:
+        "200": { description: Published job }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+
   /provider/profile:
     get:
       tags: [Platform]
@@ -618,6 +683,40 @@ components:
         server_time:
           type: string
           format: date-time
+
+    Job:
+      type: object
+      required: [id, reference, title, engagement_mode, status]
+      properties:
+        id: { type: string, format: uuid }
+        reference: { type: string }
+        title: { type: string }
+        description: { type: [string, "null"] }
+        skill_id: { type: string, format: uuid }
+        engagement_mode: { type: string, enum: [onsite, remote, hybrid] }
+        assignment_mode: { type: string, enum: [direct, dispatch, bidding] }
+        status: { type: string }
+        price_model: { type: string }
+        budget: { oneOf: [{ $ref: "#/components/schemas/Money" }, { type: "null" }] }
+        urgency: { type: integer }
+        requires_verified_provider: { type: boolean }
+        photos: { type: array, items: { type: string } }
+        location:
+          description: Coarse (quarter/city) for non-owners; exact (line1 + lat/lng) only for the owner. Null for remote jobs.
+          oneOf:
+            - type: "null"
+            - type: object
+              properties:
+                quarter: { type: [string, "null"] }
+                city: { type: string }
+                region: { type: [string, "null"] }
+                country_code: { type: string }
+                line1: { type: string }
+                landmark_note: { type: [string, "null"] }
+                latitude: { type: number }
+                longitude: { type: number }
+        published_at: { type: [string, "null"], format: date-time }
+        created_at: { type: string, format: date-time }
 
     ProviderProfile:
       type: object

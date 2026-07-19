@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\V1\Auth\AuthController;
 use App\Http\Controllers\Api\V1\Auth\OtpController;
 use App\Http\Controllers\Api\V1\ConsentController;
 use App\Http\Controllers\Api\V1\DeviceController;
+use App\Http\Controllers\Api\V1\JobController;
 use App\Http\Controllers\Api\V1\ProfileController;
 use App\Http\Controllers\Api\V1\ProviderController;
 use App\Http\Controllers\Api\V1\Reference\NoteController;
@@ -76,6 +77,13 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
         // Addresses (P1-06) — creating one requires location_tracking consent.
         Route::get('/addresses', [AddressController::class, 'index'])->name('addresses.index');
         Route::post('/addresses', [AddressController::class, 'store'])->name('addresses.store');
+
+        // Jobs (P2-03). Responses are PII-minimised — a pre-engagement provider never sees the
+        // customer's exact address.
+        Route::get('/jobs', [JobController::class, 'index'])->name('jobs.index');
+        Route::post('/jobs', [JobController::class, 'store'])->name('jobs.store');
+        Route::get('/jobs/{job}', [JobController::class, 'show'])->name('jobs.show');
+        Route::post('/jobs/{job}/publish', [JobController::class, 'publish'])->name('jobs.publish');
 
         // Provider section (P1-08). Profile creation is always allowed (doc 10); listing a skill is
         // fact-gated on having a profile; a service area requires location_tracking consent.
