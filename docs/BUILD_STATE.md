@@ -109,11 +109,20 @@ Task IDs come from `docs/05-build-plan.md`.
 |---|---|---|
 | P3-01 | ledger tables + balance trigger + append-only + REVOKE | **DONE** — `ledger_accounts`/`ledger_transactions`/`ledger_entries` (native `account_kind`/`entry_direction`/`txn_kind` enums; accounts unique on `(party_id, kind, currency)` NULLS NOT DISTINCT); **append-only enforced by a trigger** (`forbid_ledger_mutation` raises on UPDATE/DELETE — role-independent, since dev runs as superuser where REVOKE no-ops) + REVOKE for prod; **deferred balance constraint** `ledger_must_balance` (SUM debit == SUM credit); `amount_minor > 0` CHECK; `ledger_balances` view; `Ledger` posting service (account resolver + balanced `post()`, app-level `UnbalancedTransaction` guard) with `LedgerEntryInput`/`AccountKind`(normal-balance)/`EntryDirection`/`TxnKind`; sign convention in `Money`; 10 tests incl. **UPDATE/DELETE raise at DB, deferred-balance rejection, amount>0** |
 | P3-02 | `ledger_balances` cache + rebuild-from-entries test | **DONE** — cache is a MATERIALIZED VIEW `ledger_balances_cached` (derived, always rebuildable); `php artisan ledger:rebuild-balances` refreshes it from the entries; test rebuilds and asserts **cached == live view == computed balance** across accounts, before and after further postings |
-| P3-03..P3-15 | gateway, intents, webhooks, escrow, payouts, reconciliation, cash | not started |
+| P3-03 | `PaymentGateway` interface + one aggregator (CinetPay) | **DONE** — `PaymentGateway` abstraction (requestCollection/requestPayout/fetchStatus/verifyWebhook/parseWebhook) with normalised DTOs (`CollectionRequest`/`PayoutRequest`/`GatewayResult`/`GatewayEvent`/`GatewayStatus`); **CinetPay** adapter (v2/payment + v2/payment/check, status mapping, HMAC-SHA256 `x-token` webhook verification over the documented field order) and an in-memory **FakeGateway** that drives the whole flow deterministically (`settle()`); config-selected via `MoneyServiceProvider` (`config/payments.php`, default `fake`) — the app never names a provider; 7 tests (Http-faked request building + status mapping + signature verify + config selection). Live sandbox end-to-end pends real CinetPay credentials. |
+| P3-04..P3-15 | intents, webhooks, escrow, payouts, reconciliation, cash | not started |
 
 Phases 3–8: not started (see build plan).
 
 ## What was done, most recent first
+
+- **P3-03 — payment-gateway abstraction + CinetPay**: the `PaymentGateway` interface and normalised
+  DTOs, a CinetPay adapter (collection init + status check, status mapping, HMAC `x-token` webhook
+  verification), and an in-memory `FakeGateway` that drives the pending→settled flow deterministically
+  for tests/local. The active gateway is chosen by `config('payments.gateway')` (default `fake`) in
+  `MoneyServiceProvider`; nothing else in the app names a provider. 7 tests. The live-sandbox
+  end-to-end check waits on real CinetPay credentials — everything else (contract, mapping, signature)
+  is covered.
 
 - **P3-02 — rebuildable balance cache**: `ledger_balances_cached` materialized view (a derived read
   model), refreshed by `ledger:rebuild-balances`. A test rebuilds it from the entries and asserts the
