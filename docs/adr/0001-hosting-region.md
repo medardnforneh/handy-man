@@ -1,7 +1,7 @@
 # ADR 0001 — Hosting region
 
-- **Status:** PROPOSED — awaiting founder + lawyer confirmation (see "Decision" below)
-- **Date:** 2026-07-18
+- **Status:** ACCEPTED (Option A — host in-country / Cameroon) — pending final lawyer sign-off
+- **Date:** 2026-07-18 (decided 2026-07-19)
 - **Deciders:** Founder / data controller, with Cameroonian legal counsel
 - **Task:** P0-09 (build plan) — a **blocker**. Everything after it writes personal data to disk.
 - **Related:** `docs/04-security-and-trust.md` §4 (Law No. 2024/017), CLAUDE.md rule #6 (PII
@@ -65,6 +65,10 @@ Provider examples: Camtel national data centre / local IaaS.
 
 ## Recommendation (to confirm)
 
+> **Outcome:** the decision went to **Option A (in-country)** — prioritising compliance simplicity
+> (no cross-border transfer) over managed-stack convenience. The analysis below is retained as the
+> reasoning; see "Decision" for what was chosen.
+
 Two-track, because the CNDP process has a long lead time and must start on day 1 regardless:
 
 1. **Start the CNDP processing register + cross-border transfer authorisation immediately**
@@ -85,16 +89,33 @@ To keep the decision reversible-ish:
 
 ## Decision
 
-> **PENDING.** Fill in once confirmed with counsel:
+**Chosen: Option A — host in-country (Cameroon).** Personal data of Cameroonian data subjects
+stays inside Cameroon, so there is **no cross-border transfer** — the cleanest posture under Law
+No. 2024/017 and the strongest story for the CNDP. We accept the operational cost of running a
+self-managed stack in exchange for that compliance simplicity.
+
+> Decision record (confirm remaining items with counsel):
 >
-> - Chosen region/provider: `__________________`
-> - CNDP authorisation status: `__________________`
-> - Object-storage region: `__________________`
-> - Confirmed by (name, date): `__________________`
+> - Chosen region/provider: **In-country (Cameroon)** — target a national/local IaaS (e.g. Camtel
+>   data centre or a comparable Cameroonian provider); pick the specific vendor during infra setup.
+> - Object-storage region: **In-country**, S3-compatible via self-hosted **MinIO** (or the
+>   provider's S3-compatible offering) so the app keeps using the S3 filesystem driver unchanged.
+> - CNDP: no cross-border **transfer** authorisation needed; the **processing register** and any
+>   **prior processing authorisation** (doc 04 §4 point 2) still apply — start that on day 1.
+> - Confirmed by (name, date): `__________________` (lawyer sign-off still required)
 
 ## Consequences
 
-- Until this is decided and CNDP authorisation is at least *applied for*, we do **not** provision
-  any environment that stores real personal data. Local dev uses synthetic data only.
-- `.env`/deploy config will expose region/provider as configuration, never as code constants.
-- The processing register (founder task) references this ADR as the record of the region rationale.
+- **We run the managed pieces ourselves in-country:** PostgreSQL 16 + PostGIS, Redis, and an
+  S3-compatible object store (MinIO). This raises the ops burden — backups, HA/replication,
+  patching, and disaster recovery are now our responsibility. Budget for it and verify **power and
+  network resilience** at the chosen data centre before launch.
+- **No cross-border transfer authorisation is required**, which removes a long legal lead time.
+  The CNDP processing register (and prior authorisation for processing, if required) is still a
+  founder+lawyer task and still gates launch.
+- Keep the deployment **provider-agnostic**: S3-compatible storage via the filesystem abstraction,
+  plain Postgres/Redis URLs, region/provider as configuration — so if the in-country choice proves
+  operationally unworkable we can move with minimal code change (revisit this ADR if so).
+- The crypto-shred + no-PII-in-ledger design (doc 04) still stands and further limits exposure.
+- Until the environment is provisioned and the processing register is filed, **no real personal
+  data on disk** — local dev uses synthetic data only.

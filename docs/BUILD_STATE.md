@@ -49,7 +49,7 @@ Task IDs come from `docs/05-build-plan.md`.
 | P0-06 | Idempotency middleware + `idempotency_keys` | **DONE** — global api middleware; atomic claim via INSERT ON CONFLICT; replay stored response; reuse/conflict handling; 5 tests |
 | P0-07 | Transactional outbox + relay worker | **DONE** — `outbox_messages`, `Outbox` publisher, `OutboxRelay` (FOR UPDATE SKIP LOCKED), `outbox:relay` command; rolled-back txn publishes nothing; 5 tests |
 | P0-08 | `/api/v1` scaffold + version header + force-update | **DONE** — `/api/v1`, `EnforceAppVersion` (426), RFC7807 problem+json for validation/auth/authz/http/404; 5 tests |
-| P0-09 | Hosting region ADR (BLOCKER) | **ADR drafted** (`docs/adr/0001-hosting-region.md`, status PROPOSED) — awaiting founder+lawyer decision. Recommendation: start CNDP authorisation now; provisionally EU/OVHcloud unless in-country viable |
+| P0-09 | Hosting region ADR (BLOCKER) | **DECIDED — Option A: in-country (Cameroon)** (`docs/adr/0001-hosting-region.md`, ACCEPTED, lawyer sign-off pending). No cross-border transfer → cleanest compliance; self-manage PostgreSQL+PostGIS/Redis/MinIO in-country; keep deployment provider-agnostic. CNDP processing register still a founder task |
 | P0-10 | OpenAPI 3.1 + CI codegen → TS client | **DONE** — spec-first `openapi/openapi.yaml` (3.1); `openapi-typescript` generates `mobile/src/app/api/generated/schema.d.ts`; typed `openapi-fetch` client; app builds against it; CI drift gate (hand-edited client fails CI) |
 | P0-11 | `tokens.json` → Tailwind + Ionic + Filament | **DONE** — `tokens/tokens.json` (semantic, light+dark) → `tokens/build.mjs` emits CSS vars + Ionic map + Tailwind preset to backend + mobile; CI drift check |
 | P0-12 | Blade scaffold + Ionic shell + Reverb | **DONE** — Ionic 8 + **Angular** app in `mobile/` (builds `www`; ngx-translate + tokens + Capacitor); crawlable token/i18n Blade landing page; Reverb + participant-gated channels (`ChannelAccess`); 4 web + 3 channel tests |
@@ -134,7 +134,8 @@ native; full Tailwind/Vite pipeline for Blade (currently token CSS is linked dir
 
 ## Open decisions / to confirm with user
 
-- P0-09 hosting region is a real decision (Cameroon Law 2024/017) — needs input, not a guess.
+- **P0-09 hosting region: DECIDED → in-country (Cameroon)**, Option A. Lawyer sign-off + CNDP
+  processing register still pending (founder tasks). Self-managed PostGIS/Redis/MinIO in-country.
 - **Ionic flavour: DECIDED → Angular + TypeScript** (ngx-translate for i18n).
 - Redis: running as a Windows service on :6379 (confirmed). Using **predis** client (no phpredis
   extension). Note: `php artisan horizon` needs pcntl (not on Windows) — dashboard + config work
