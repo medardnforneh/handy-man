@@ -218,8 +218,14 @@ provider_skills (
 
 This is the core. Read `docs/01` §1 first if the four-table split isn't obvious.
 
+> **Table name: `service_jobs`.** Laravel reserves `jobs` for its queue table, so the domain jobs
+> table is named `service_jobs` (the model is still `Job`, and everything references it as a "job").
+> Geography is conditional per doc 06: `address_id` is **nullable** with a DB CHECK
+> `(engagement_mode = 'remote' OR address_id IS NOT NULL)`, and there is an `engagement_mode`
+> column — both superseding the `address_id NOT NULL` shown below.
+
 ```sql
-jobs (
+service_jobs (   -- named to avoid colliding with Laravel's queue `jobs` table
   id uuid PK,
   reference citext NOT NULL UNIQUE,          -- human-quotable, e.g. "JOB-7K2M9"
   customer_party_id uuid NOT NULL REFERENCES parties(id),

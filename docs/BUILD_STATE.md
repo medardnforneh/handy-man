@@ -76,7 +76,14 @@ Task IDs come from `docs/05-build-plan.md`.
 | P1-09 | Filament 5 admin panel + mandatory 2FA + admin roles | **DONE** — Filament 5.7, `/admin` gated by `canAccessPanel` (staff roles only, never customer/provider), **mandatory TOTP 2FA** (`multiFactorAuthentication(..., isRequired: true)` — can't reach dashboard un-enrolled), recovery codes; `ProviderProfileResource`; User implements FilamentUser/HasName/HasAppAuthentication(+Recovery); **Spatie teams turned OFF** (org roles live in `memberships.role` per doc 02; Spatie = global staff only); 4 tests |
 | P1-10 | DSAR export + crypto-shred erasure | **DONE** — per-party `data_key` (encrypted, minted on party creation); `ErasePartyData` destroys the key, nulls/tombstones identifiers, deletes PII rows, but KEEPS the party row + id (ledger FKs survive) and announces `party.erased` via outbox; `ExportPersonalData` (DSAR); `DELETE /v1/me`, `GET /v1/me/data-export`; 3 tests |
 
-Phases 2–8: not started (see build plan).
+### Phase 2 — Jobs, offers, engagements (direct booking)
+
+| ID | Task | Status |
+|---|---|---|
+| P2-01 | jobs + engagement_mode + conditional-address CHECK + JobStateMachine | **DONE** — `service_jobs` table (named to avoid Laravel's queue `jobs`; doc 02 corrected), enums engagement_mode/assignment_mode/job_status; DB CHECK `(engagement_mode='remote' OR address_id IS NOT NULL)` — remote saves NULL, onsite/hybrid without address rejected by DB; `JobStateMachine` (full transition matrix, illegal→`IllegalJobTransition`); 9 tests |
+| P2-02..P2-10 | EngagementModePolicy, job creation, provider search, offers, AcceptOffer, engagements, assignments, availability, Filament | not started |
+
+Phases 3–8: not started (see build plan).
 
 ## What was done, most recent first
 
