@@ -128,7 +128,8 @@ Task IDs come from `docs/05-build-plan.md`.
 | ID | Task | Status |
 |---|---|---|
 | P4-01 + P4-02 + P4-09 | conversations/messages + server-narrated structured messages + contact detection | **DONE** — `conversations`/`conversation_participants`/`messages` (native `message_kind` enum, `payload`, reply/edit/delete, receipts + reactions tables); `Narrator` emits structured messages **inside the transition's transaction** (rule #11) so a rollback narrates nothing, `ConversationManager` enrols participants when an engagement forms; AcceptQuotation narrates `quote_accepted`; the message endpoint accepts **only free-form `text`** (a client posting `quote_accepted` → 422) and gates on participation; contact details (phone/email) detected → `contact_flag`, logged not blocked (P4-09); `GET`/`POST /v1/jobs/{job}/messages`; 8 tests incl. **server-narration + rolled-back-narrates-nothing + client-structured-rejected** |
-| P4-03..P4-08 | Reverb channels, presence, voice notes, Ionic workspace, reconnect, deliverables | not started |
+| P4-03 | Reverb `engagement.{id}` channel + participant Policy | **DONE** — `ChannelAccess::isEngagementParticipant` now resolves the engagement → its job conversation and authorizes only participants (the P0-16 deny-by-default stub is real); a non-participant or unknown engagement is rejected, and `/broadcasting/auth` refuses unauthenticated private subscriptions; 4 tests |
+| P4-04..P4-08 | presence, voice notes, Ionic workspace, reconnect, deliverables | not started (P4-06 is the Ionic workspace UI — Phase-5-adjacent) |
 
 Phases 5–8: not started (see build plan).
 
@@ -142,6 +143,10 @@ Phases 5–8: not started (see build plan).
   meet the bar when built.
 
 ## What was done, most recent first
+
+- **P4-03 — engagement channel authorization**: `ChannelAccess::isEngagementParticipant` resolves
+  the engagement's job conversation and authorizes only its participants (replacing the P0-16
+  deny-by-default stub); non-participants and unknown engagements are rejected. 4 tests. Backend 257 green.
 
 - **P4-01/02/09 — the chat is the state machine**: `conversations` + `messages` (structured
   `message_kind`, payloads, receipts/reactions). Structured messages are narrated by the server via a

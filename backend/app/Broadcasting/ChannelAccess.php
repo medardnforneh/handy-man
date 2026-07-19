@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Broadcasting;
 
+use App\Models\Conversation;
+use App\Models\Engagement;
 use App\Models\User;
 
 /**
@@ -22,13 +24,19 @@ final class ChannelAccess
     }
 
     /**
-     * Only engagement PARTICIPANTS may subscribe to `engagement.{id}` (doc 06 / P4-03). The
-     * participant check lands with the engagements schema; until then DENY BY DEFAULT — a private
-     * channel must never leak before its authorization is real.
+     * Only engagement PARTICIPANTS may subscribe to `engagement.{id}` (doc 06 / P4-03) — resolved via
+     * the engagement's job conversation. A missing engagement or a non-participant is denied; a
+     * private channel must never leak.
      */
     public static function isEngagementParticipant(User $user, string $engagementId): bool
     {
-        // TODO(P4-03): resolve the engagement and return $engagement->hasParticipant($user).
-        return false;
+        $engagement = Engagement::query()->find($engagementId);
+        if ($engagement === null) {
+            return false;
+        }
+
+        $conversation = Conversation::query()->where('job_id', $engagement->job_id)->first();
+
+        return $conversation !== null && $conversation->hasParticipant((string) $user->getKey());
     }
 }
