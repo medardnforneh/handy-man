@@ -123,7 +123,14 @@ Task IDs come from `docs/05-build-plan.md`.
 
 **Phase 3 (Money) complete** except P3-11/13, which are parked until Phase 5 provides work-submission and agreement-time capture.
 
-Phases 3–8: not started (see build plan).
+### Phase 4 — The engagement workspace
+
+| ID | Task | Status |
+|---|---|---|
+| P4-01 + P4-02 + P4-09 | conversations/messages + server-narrated structured messages + contact detection | **DONE** — `conversations`/`conversation_participants`/`messages` (native `message_kind` enum, `payload`, reply/edit/delete, receipts + reactions tables); `Narrator` emits structured messages **inside the transition's transaction** (rule #11) so a rollback narrates nothing, `ConversationManager` enrols participants when an engagement forms; AcceptQuotation narrates `quote_accepted`; the message endpoint accepts **only free-form `text`** (a client posting `quote_accepted` → 422) and gates on participation; contact details (phone/email) detected → `contact_flag`, logged not blocked (P4-09); `GET`/`POST /v1/jobs/{job}/messages`; 8 tests incl. **server-narration + rolled-back-narrates-nothing + client-structured-rejected** |
+| P4-03..P4-08 | Reverb channels, presence, voice notes, Ionic workspace, reconnect, deliverables | not started |
+
+Phases 5–8: not started (see build plan).
 
 ## Design debt (tracked)
 
@@ -135,6 +142,14 @@ Phases 3–8: not started (see build plan).
   meet the bar when built.
 
 ## What was done, most recent first
+
+- **P4-01/02/09 — the chat is the state machine**: `conversations` + `messages` (structured
+  `message_kind`, payloads, receipts/reactions). Structured messages are narrated by the server via a
+  `Narrator` called inside the transition's own transaction — so the chat and the state never diverge
+  and a rollback narrates nothing (AcceptQuotation now narrates `quote_accepted`). The message
+  endpoint accepts only free-form text; a client posting a structured kind is rejected (422), and only
+  participants read/post. Detected phone/email is flagged, not blocked. `GET`/`POST
+  /v1/jobs/{job}/messages`. 8 tests. Backend 256 green.
 
 - **P3-09 — nightly reconciliation + exceptions**: `reconcile:nightly` runs the pollers, then
   integrity-checks the ledger (succeeded-intent-missing-ledger, and a `--wallet-cash` vs platform_cash

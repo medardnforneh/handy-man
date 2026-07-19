@@ -11,6 +11,9 @@ use App\Domain\Quotations\QuotationStateMachine;
 use App\Domain\Quotations\QuoteNotAcceptable;
 use App\Domain\Quotations\QuoteStatus;
 use App\Domain\Quotations\SiteVisitStatus;
+use App\Domain\Workspace\ConversationManager;
+use App\Domain\Workspace\MessageKind;
+use App\Domain\Workspace\Narrator;
 use App\Models\Engagement;
 use App\Models\Job;
 use App\Models\Quotation;
@@ -37,12 +40,14 @@ final class AcceptQuotation
         private readonly JobStateMachine $jobStateMachine,
         private readonly QuotationStateMachine $quoteStateMachine,
         private readonly LeadAssigner $leadAssigner,
+        private readonly ConversationManager $conversations,
+        private readonly Narrator $narrator,
         private readonly Outbox $outbox,
     ) {}
 
     public function handle(User $customer, Quotation $quotation): Engagement
     {
-        return DB::transaction(function () use ($quotation): Engagement {
+        return DB::transaction(function () use ($customer, $quotation): Engagement {
             $job = Job::query()->whereKey($quotation->job_id)->lockForUpdate()->firstOrFail();
             $quote = Quotation::query()->whereKey($quotation->id)->lockForUpdate()->firstOrFail();
 
@@ -91,6 +96,15 @@ final class AcceptQuotation
             }
 
             $this->leadAssigner->assignIfIndividual($engagement, $quote->provider_party_id);
+
+            // The server narrates the acceptance into the workspace thread (rule #11), in this
+            // same transaction — a rollback would un-narrate it.
+            $conversation = $this->conversations->ensureForEngagement($engagement);
+            $this->narrator->narrate($conversation, MessageKind::QuoteAccepted, [
+                'quotation_id' => $quote->id,
+                'version' => $quote->version,
+                'amount_minor' => $engagement->agreed_amount_minor,
+            ], senderUserId: $customer->id);
 
             $this->outbox->publish('quote.accepted', [
                 'quotation_id' => $quote->id,

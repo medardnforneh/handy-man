@@ -623,6 +623,47 @@ paths:
         "200": { description: Handled or already-seen }
         "401": { description: Invalid signature }
 
+  /jobs/{job}/messages:
+    get:
+      tags: [Platform]
+      operationId: listMessages
+      summary: The workspace conversation thread (participants only)
+      parameters:
+        - { name: job, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        "200": { description: The thread, content: { application/json: { schema: { type: object, required: [data], properties: { data: { type: array, items: { $ref: "#/components/schemas/Message" } } } } } } }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+    post:
+      tags: [Platform]
+      operationId: postMessage
+      summary: Post a free-form message (participants only)
+      description: >
+        Posts a free-form message to the workspace thread. `kind` must be `text` — structured kinds
+        (quote_accepted, arrived, …) are narrated by the server and rejected here. Detected phone/email
+        is flagged (`contact_flag`) but not blocked.
+      parameters:
+        - { name: job, in: path, required: true, schema: { type: string, format: uuid } }
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [body]
+              properties:
+                body: { type: string, maxLength: 5000 }
+                kind: { type: string, enum: [text], default: text }
+                reply_to_id: { type: [string, "null"], format: uuid }
+      responses:
+        "201": { description: The posted message, content: { application/json: { schema: { type: object, required: [data], properties: { data: { $ref: "#/components/schemas/Message" } } } } } }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/ValidationProblem" }
+
   /jobs/{job}/quotations:
     post:
       tags: [Platform]
@@ -1162,6 +1203,22 @@ components:
         removed_at: { type: [string, "null"], format: date-time }
         scheduled_from: { type: [string, "null"], format: date-time }
         scheduled_to: { type: [string, "null"], format: date-time }
+
+    Message:
+      type: object
+      required: [id, conversation_id, kind, created_at]
+      properties:
+        id: { type: string, format: uuid }
+        conversation_id: { type: string, format: uuid }
+        sender_user_id: { type: [string, "null"], format: uuid, description: "Null for pure server narration." }
+        kind:
+          type: string
+          enum: [text, voice, media, document, system, quote_submitted, quote_revised, quote_accepted, quote_rejected, milestone_submitted, milestone_approved, milestone_rejected, site_visit_proposed, site_visit_confirmed, on_the_way, arrived, started, paused, resumed, completed, payment_requested, payment_received, deliverable_submitted]
+        body: { type: [string, "null"] }
+        payload: { type: [object, "null"], additionalProperties: true }
+        contact_flag: { type: [string, "null"], enum: [phone, email, null] }
+        reply_to_id: { type: [string, "null"], format: uuid }
+        created_at: { type: string, format: date-time }
 
     Quotation:
       type: object

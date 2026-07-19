@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\V1\DeviceController;
 use App\Http\Controllers\Api\V1\EscrowController;
 use App\Http\Controllers\Api\V1\JobController;
 use App\Http\Controllers\Api\V1\LeadCreditController;
+use App\Http\Controllers\Api\V1\MessageController;
 use App\Http\Controllers\Api\V1\OfferController;
 use App\Http\Controllers\Api\V1\PaymentIntentController;
 use App\Http\Controllers\Api\V1\PaymentWebhookController;
@@ -90,6 +91,11 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
 
         // Cash settlement recording (P3-15). The provider records a cash-settled amount; commission booked.
         Route::post('/engagements/{engagement}/cash-settlements', [CashSettlementController::class, 'store'])->name('engagements.cash-settlements.store');
+
+        // Workspace conversation (P4-01/02). Participants read + post free-form; structured messages
+        // are narrated by the server (a client posting a structured kind is rejected).
+        Route::get('/jobs/{job}/messages', [MessageController::class, 'index'])->name('jobs.messages.index');
+        Route::post('/jobs/{job}/messages', [MessageController::class, 'store'])->name('jobs.messages.store');
 
         // Device registration / push token capture (P1-04).
         Route::post('/devices', [DeviceController::class, 'store'])->name('devices.store');

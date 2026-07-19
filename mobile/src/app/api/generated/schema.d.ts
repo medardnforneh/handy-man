@@ -422,6 +422,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/jobs/{job}/messages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The workspace conversation thread (participants only) */
+        get: operations["listMessages"];
+        put?: never;
+        /**
+         * Post a free-form message (participants only)
+         * @description Posts a free-form message to the workspace thread. `kind` must be `text` — structured kinds (quote_accepted, arrived, …) are narrated by the server and rejected here. Detected phone/email is flagged (`contact_flag`) but not blocked.
+         */
+        post: operations["postMessage"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/jobs/{job}/quotations": {
         parameters: {
             query?: never;
@@ -870,6 +891,29 @@ export interface components {
             scheduled_from?: string | null;
             /** Format: date-time */
             scheduled_to?: string | null;
+        };
+        Message: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            conversation_id: string;
+            /**
+             * Format: uuid
+             * @description Null for pure server narration.
+             */
+            sender_user_id?: string | null;
+            /** @enum {string} */
+            kind: "text" | "voice" | "media" | "document" | "system" | "quote_submitted" | "quote_revised" | "quote_accepted" | "quote_rejected" | "milestone_submitted" | "milestone_approved" | "milestone_rejected" | "site_visit_proposed" | "site_visit_confirmed" | "on_the_way" | "arrived" | "started" | "paused" | "resumed" | "completed" | "payment_requested" | "payment_received" | "deliverable_submitted";
+            body?: string | null;
+            payload?: {
+                [key: string]: unknown;
+            } | null;
+            /** @enum {string|null} */
+            contact_flag?: "phone" | "email" | null;
+            /** Format: uuid */
+            reply_to_id?: string | null;
+            /** Format: date-time */
+            created_at: string;
         };
         Quotation: {
             /** Format: uuid */
@@ -1949,6 +1993,77 @@ export interface operations {
                 };
                 content?: never;
             };
+        };
+    };
+    listMessages: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                job: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The thread */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["Message"][];
+                    };
+                };
+            };
+            401: components["responses"]["Problem"];
+            403: components["responses"]["Problem"];
+            404: components["responses"]["Problem"];
+        };
+    };
+    postMessage: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description A client-generated UUID. Replaying it returns the stored response (CLAUDE.md rule */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                job: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    body: string;
+                    /**
+                     * @default text
+                     * @enum {string}
+                     */
+                    kind?: "text";
+                    /** Format: uuid */
+                    reply_to_id?: string | null;
+                };
+            };
+        };
+        responses: {
+            /** @description The posted message */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["Message"];
+                    };
+                };
+            };
+            401: components["responses"]["Problem"];
+            403: components["responses"]["Problem"];
+            404: components["responses"]["Problem"];
+            422: components["responses"]["ValidationProblem"];
         };
     };
     submitQuotation: {
