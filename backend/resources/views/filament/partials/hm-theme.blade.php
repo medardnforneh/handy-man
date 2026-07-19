@@ -37,7 +37,7 @@
     .hm-dash .hm-phead{ display:flex; align-items:center; justify-content:space-between; padding:14px 16px; border-bottom:1px solid var(--hm-border); }
     .hm-dash .hm-phead h2{ margin:0; font-size:14px; letter-spacing:-.01em; font-weight:700; }
     .hm-dash .hm-phead a{ font-size:12.5px; color:var(--hm-brand); font-weight:600; text-decoration:none; }
-    .hm-dash table{ width:100%; border-collapse:collapse; font-size:13px; }
+    .hm-dash table{ width:100%; min-width:520px; border-collapse:collapse; font-size:13px; }
     .hm-dash thead th{ text-align:left; font-size:10.5px; letter-spacing:.07em; text-transform:uppercase; color:var(--hm-muted); font-weight:700; padding:10px 16px; border-bottom:1px solid var(--hm-border); }
     .hm-dash tbody td{ padding:12px 16px; border-bottom:1px solid var(--hm-border); vertical-align:middle; }
     .hm-dash tbody tr:last-child td{ border-bottom:0; }
@@ -52,6 +52,7 @@
     .hm-dash .hm-progress{ color:var(--hm-warning); background:var(--hm-warning-w); }
     .hm-dash .hm-completed{ color:var(--hm-success); background:var(--hm-success-w); }
     .hm-dash .hm-danger{ color:var(--hm-danger); background:var(--hm-danger-w); }
+    .hm-dash .hm-neutral{ color:var(--hm-muted); background:var(--hm-sunken); }
     .hm-dash .hm-mstones{ display:flex; gap:3px; }
     .hm-dash .hm-mstones i{ width:22px; height:5px; border-radius:3px; background:var(--hm-border-strong); }
     .hm-dash .hm-mstones i.hm-done{ background:var(--hm-brand); }
@@ -81,8 +82,8 @@
     .hm-dash .hm-foot{ color:var(--hm-muted); font-size:12px; text-align:center; padding-top:2px; }
 
     /* Detail-view specifics */
-    .hm-dash .hm-head{ display:flex; align-items:center; gap:14px; padding:18px 16px; }
-    .hm-dash .hm-head .hm-title{ font-size:19px; font-weight:700; letter-spacing:-.02em; }
+    .hm-dash .hm-head{ display:flex; align-items:center; gap:14px; padding:18px 16px; flex-wrap:wrap; }
+    .hm-dash .hm-head .hm-title{ font-size:19px; font-weight:700; letter-spacing:-.02em; text-wrap:balance; }
     .hm-dash .hm-head .hm-title small{ color:var(--hm-muted); font-weight:500; font-size:13px; margin-left:8px; }
     .hm-dash .hm-two{ display:grid; grid-template-columns:1fr 1fr; gap:16px; }
     .hm-dash .hm-metric{ padding:14px 16px; }
@@ -101,6 +102,24 @@
     .hm-dash .hm-kv .r{ display:flex; align-items:center; justify-content:space-between; gap:12px; }
     .hm-dash .hm-kv .r .l{ color:var(--hm-muted); font-size:12.5px; }
     .hm-dash .hm-kv .r .val{ font-weight:600; font-size:13px; }
-    @media (max-width:1100px){ .hm-dash .hm-kpis{ grid-template-columns:repeat(2,1fr);} .hm-dash .hm-cols{ grid-template-columns:1fr;} .hm-dash .hm-mgrid{ grid-template-columns:repeat(2,1fr);} }
-    @media (max-width:640px){ .hm-dash .hm-kpis{ grid-template-columns:1fr;} .hm-dash .hm-two{ grid-template-columns:1fr;} .hm-dash .hm-mgrid{ grid-template-columns:1fr;} }
+    /* Extreme responsiveness: fluid from phone → desktop; nothing overflows the viewport. */
+    @media (max-width:1180px){ .hm-dash .hm-cols{ grid-template-columns:1fr; } }
+    @media (max-width:1024px){ .hm-dash .hm-kpis{ grid-template-columns:repeat(2,1fr);} .hm-dash .hm-mgrid{ grid-template-columns:repeat(2,1fr);} }
+    @media (max-width:820px){ .hm-dash .hm-two{ grid-template-columns:1fr; } }
+    @media (max-width:560px){
+        .hm-dash .hm-kpis{ grid-template-columns:1fr; }
+        .hm-dash .hm-mgrid{ grid-template-columns:1fr; }
+        .hm-dash .hm-kpi .hm-value{ font-size:22px; }
+        .hm-dash .hm-metric .hm-mv{ font-size:19px; }
+        .hm-dash .hm-head{ gap:10px; padding:14px; }
+        .hm-dash .hm-head .hm-title{ font-size:17px; }
+        .hm-dash .hm-phead{ padding:12px 14px; }
+        .hm-dash tbody td, .hm-dash thead th{ padding:10px 12px; }
+        .hm-dash .hm-mile, .hm-dash .hm-exc, .hm-dash .hm-metric, .hm-dash .hm-ledger, .hm-dash .hm-kv{ padding-left:14px; padding-right:14px; }
+    }
+    @media (max-width:380px){
+        .hm-dash .hm-grid{ gap:16px; }
+        .hm-dash .hm-two, .hm-dash .hm-stack{ gap:16px; }
+        .hm-dash .hm-kpi .hm-value{ font-size:20px; }
+    }
 </style>

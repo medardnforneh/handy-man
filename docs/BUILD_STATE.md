@@ -149,8 +149,11 @@ Phases 5–8: not started (see build plan).
     Its scoped CSS uses the token palette and syncs to Filament's `.dark` class for both themes. Brand
     + semantic palette, Inter, collapsible sidebar. The **Engagement detail** page is likewise a
     bespoke view (`filament.infolists.engagement`): header, money metrics (agreed/escrow-held/released/
-    visit-credit), a milestone timeline, the workforce list, and key facts. Shared token CSS lives in
-    `filament.partials.hm-theme`. Remaining polish: Job/Offer detail views are incremental.
+    visit-credit), a milestone timeline, the workforce list, and key facts. **Job and Offer detail
+    views** are likewise bespoke (`filament.infolists.job` / `.offer`). Shared token CSS lives in
+    `filament.partials.hm-theme`, hardened for **extreme responsiveness** — fluid 3→2→1 grids,
+    wrapping headers, tables that scroll in their own container, scaled type/padding at ≤560/≤380px;
+    nothing overflows a phone.
   - **`DemoSeeder`** populates the dev DB with a coherent Cameroon marketplace whose money flows
     through the ledger (escrow funded, milestones released, credits, a payout, one reconciliation
     exception) + a loginable superadmin, so `/admin` is full when served. Run
