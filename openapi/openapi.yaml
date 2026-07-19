@@ -476,6 +476,32 @@ paths:
         "401": { $ref: "#/components/responses/Problem" }
         "404": { $ref: "#/components/responses/Problem" }
 
+  /jobs/{job}/offers:
+    post:
+      tags: [Platform]
+      operationId: createDirectOffer
+      summary: Offer a job to a chosen provider (customer_direct)
+      parameters:
+        - { name: job, in: path, required: true, schema: { type: string, format: uuid } }
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [provider_party_id]
+              properties:
+                provider_party_id: { type: string, format: uuid }
+                amount_minor: { type: [integer, "null"] }
+                message: { type: [string, "null"] }
+      responses:
+        "201": { description: The created offer, content: { application/json: { schema: { type: object, required: [data], properties: { data: { $ref: "#/components/schemas/Offer" } } } } } }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "409": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/ValidationProblem" }
+
   /jobs/{job}/providers:
     get:
       tags: [Platform]
@@ -695,6 +721,19 @@ components:
         server_time:
           type: string
           format: date-time
+
+    Offer:
+      type: object
+      required: [id, job_id, provider_party_id, origin, status, expires_at]
+      properties:
+        id: { type: string, format: uuid }
+        job_id: { type: string, format: uuid }
+        provider_party_id: { type: string, format: uuid }
+        origin: { type: string, enum: [customer_direct, system_dispatch, provider_bid] }
+        status: { type: string, enum: [pending, accepted, declined, withdrawn, expired, superseded] }
+        amount: { oneOf: [{ $ref: "#/components/schemas/Money" }, { type: "null" }] }
+        expires_at: { type: string, format: date-time }
+        created_at: { type: string, format: date-time }
 
     Job:
       type: object

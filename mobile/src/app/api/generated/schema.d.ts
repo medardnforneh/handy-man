@@ -285,6 +285,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/jobs/{job}/offers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Offer a job to a chosen provider (customer_direct) */
+        post: operations["createDirectOffer"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/jobs/{job}/providers": {
         parameters: {
             query?: never;
@@ -423,6 +440,23 @@ export interface components {
             min_app_version?: string | null;
             /** Format: date-time */
             server_time: string;
+        };
+        Offer: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            job_id: string;
+            /** Format: uuid */
+            provider_party_id: string;
+            /** @enum {string} */
+            origin: "customer_direct" | "system_dispatch" | "provider_bid";
+            /** @enum {string} */
+            status: "pending" | "accepted" | "declined" | "withdrawn" | "expired" | "superseded";
+            amount?: components["schemas"]["Money"] | null;
+            /** Format: date-time */
+            expires_at: string;
+            /** Format: date-time */
+            created_at?: string;
         };
         Job: {
             /** Format: uuid */
@@ -1218,6 +1252,46 @@ export interface operations {
             };
             401: components["responses"]["Problem"];
             404: components["responses"]["Problem"];
+        };
+    };
+    createDirectOffer: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description A client-generated UUID. Replaying it returns the stored response (CLAUDE.md rule */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                job: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** Format: uuid */
+                    provider_party_id: string;
+                    amount_minor?: number | null;
+                    message?: string | null;
+                };
+            };
+        };
+        responses: {
+            /** @description The created offer */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["Offer"];
+                    };
+                };
+            };
+            401: components["responses"]["Problem"];
+            403: components["responses"]["Problem"];
+            409: components["responses"]["Problem"];
+            422: components["responses"]["ValidationProblem"];
         };
     };
     jobMatchingProviders: {

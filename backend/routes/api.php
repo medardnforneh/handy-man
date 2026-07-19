@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\V1\Auth\OtpController;
 use App\Http\Controllers\Api\V1\ConsentController;
 use App\Http\Controllers\Api\V1\DeviceController;
 use App\Http\Controllers\Api\V1\JobController;
+use App\Http\Controllers\Api\V1\OfferController;
 use App\Http\Controllers\Api\V1\ProfileController;
 use App\Http\Controllers\Api\V1\ProviderController;
 use App\Http\Controllers\Api\V1\Reference\NoteController;
@@ -86,6 +87,8 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
         Route::post('/jobs/{job}/publish', [JobController::class, 'publish'])->name('jobs.publish');
         // Matching providers (P2-04) — geo-filtered for onsite/hybrid, whole pool for remote.
         Route::get('/jobs/{job}/providers', [JobController::class, 'providers'])->name('jobs.providers');
+        // Direct offers (P2-05).
+        Route::post('/jobs/{job}/offers', [OfferController::class, 'store'])->name('jobs.offers.store');
 
         // Provider section (P1-08). Profile creation is always allowed (doc 10); listing a skill is
         // fact-gated on having a profile; a service area requires location_tracking consent.
