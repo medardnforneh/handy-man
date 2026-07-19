@@ -147,8 +147,15 @@ Phases 5–8: not started (see build plan).
     severity stripes, a recent-engagements table (money + status pills + milestone progress), and a
     "money held" ledger breakdown. All computed live from the models + ledger (`Ledger::totalByKindMinor`).
     Its scoped CSS uses the token palette and syncs to Filament's `.dark` class for both themes. Brand
-    + semantic palette, Inter, collapsible sidebar. Remaining polish: per-resource infolist/table
-    refinement is incremental.
+    + semantic palette, Inter, collapsible sidebar. The **Engagement detail** page is likewise a
+    bespoke view (`filament.infolists.engagement`): header, money metrics (agreed/escrow-held/released/
+    visit-credit), a milestone timeline, the workforce list, and key facts. Shared token CSS lives in
+    `filament.partials.hm-theme`. Remaining polish: Job/Offer detail views are incremental.
+  - **`DemoSeeder`** populates the dev DB with a coherent Cameroon marketplace whose money flows
+    through the ledger (escrow funded, milestones released, credits, a payout, one reconciliation
+    exception) + a loginable superadmin, so `/admin` is full when served. Run
+    `php artisan db:seed --class=Database\Seeders\DemoSeeder`; log in at `/admin` with
+    `admin@handyman.cm` / `password` (enrol 2FA once).
   - **Still owed:** Ionic app screens and Blade public/SEO pages (Phase 5+) must meet the bar when built.
 
 ## What was done, most recent first
