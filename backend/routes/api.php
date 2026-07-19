@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\V1\LeadCreditController;
 use App\Http\Controllers\Api\V1\OfferController;
 use App\Http\Controllers\Api\V1\PaymentIntentController;
 use App\Http\Controllers\Api\V1\PaymentWebhookController;
+use App\Http\Controllers\Api\V1\PayoutController;
 use App\Http\Controllers\Api\V1\ProfileController;
 use App\Http\Controllers\Api\V1\ProviderController;
 use App\Http\Controllers\Api\V1\QuotationController;
@@ -78,6 +79,8 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
         Route::post('/payment-intents', [PaymentIntentController::class, 'store'])->name('payment-intents.store');
         // Provider's prepaid lead-credit balance (P3-07).
         Route::get('/provider/credits', [LeadCreditController::class, 'balance'])->name('provider.credits');
+        // Provider payout request (P3-08).
+        Route::post('/provider/payouts', [PayoutController::class, 'store'])->name('provider.payouts.store');
 
         // Device registration / push token capture (P1-04).
         Route::post('/devices', [DeviceController::class, 'store'])->name('devices.store');

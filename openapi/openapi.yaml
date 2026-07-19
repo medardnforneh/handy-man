@@ -476,6 +476,32 @@ paths:
         "401": { $ref: "#/components/responses/Problem" }
         "404": { $ref: "#/components/responses/Problem" }
 
+  /provider/payouts:
+    post:
+      tags: [Platform]
+      operationId: requestPayout
+      summary: Request a payout of the provider's payable balance
+      description: >
+        Withdraw available payable funds to a mobile-money wallet. Idempotent on the Idempotency-Key.
+        Funds are reserved by the pending payout; the ledger posts only on gateway confirmation.
+        Rejected (422) if the requested amount exceeds the available (unreserved) payable balance.
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [amount_minor, msisdn]
+              properties:
+                amount_minor: { type: integer, minimum: 1 }
+                msisdn: { type: string, maxLength: 20 }
+      responses:
+        "201": { description: The requested payout, content: { application/json: { schema: { type: object, required: [data], properties: { data: { $ref: "#/components/schemas/Payout" } } } } } }
+        "401": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/ValidationProblem" }
+
   /provider/credits:
     get:
       tags: [Platform]
@@ -987,6 +1013,20 @@ components:
         accepted_at: { type: string, format: date-time }
         assignments: { type: array, items: { $ref: "#/components/schemas/Assignment" } }
         milestones: { type: array, items: { $ref: "#/components/schemas/Milestone" } }
+
+    Payout:
+      type: object
+      required: [id, amount, msisdn, status, requested_at]
+      properties:
+        id: { type: string, format: uuid }
+        amount: { $ref: "#/components/schemas/Money" }
+        msisdn: { type: string }
+        status: { type: string, enum: [pending, processing, succeeded, failed, expired] }
+        external_ref: { type: [string, "null"] }
+        requested_at: { type: string, format: date-time }
+        resolved_at: { type: [string, "null"], format: date-time }
+        reversed_at: { type: [string, "null"], format: date-time }
+        failure_code: { type: [string, "null"] }
 
     PaymentIntent:
       type: object

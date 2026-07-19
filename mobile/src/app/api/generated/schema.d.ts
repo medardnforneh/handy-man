@@ -285,6 +285,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/provider/payouts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Request a payout of the provider's payable balance
+         * @description Withdraw available payable funds to a mobile-money wallet. Idempotent on the Idempotency-Key. Funds are reserved by the pending payout; the ledger posts only on gateway confirmation. Rejected (422) if the requested amount exceeds the available (unreserved) payable balance.
+         */
+        post: operations["requestPayout"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/provider/credits": {
         parameters: {
             query?: never;
@@ -693,6 +713,22 @@ export interface components {
             accepted_at: string;
             assignments?: components["schemas"]["Assignment"][];
             milestones?: components["schemas"]["Milestone"][];
+        };
+        Payout: {
+            /** Format: uuid */
+            id: string;
+            amount: components["schemas"]["Money"];
+            msisdn: string;
+            /** @enum {string} */
+            status: "pending" | "processing" | "succeeded" | "failed" | "expired";
+            external_ref?: string | null;
+            /** Format: date-time */
+            requested_at: string;
+            /** Format: date-time */
+            resolved_at?: string | null;
+            /** Format: date-time */
+            reversed_at?: string | null;
+            failure_code?: string | null;
         };
         PaymentIntent: {
             /** Format: uuid */
@@ -1615,6 +1651,40 @@ export interface operations {
             };
             401: components["responses"]["Problem"];
             404: components["responses"]["Problem"];
+        };
+    };
+    requestPayout: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description A client-generated UUID. Replaying it returns the stored response (CLAUDE.md rule */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    amount_minor: number;
+                    msisdn: string;
+                };
+            };
+        };
+        responses: {
+            /** @description The requested payout */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["Payout"];
+                    };
+                };
+            };
+            401: components["responses"]["Problem"];
+            422: components["responses"]["ValidationProblem"];
         };
     };
     leadCreditBalance: {

@@ -114,7 +114,8 @@ Task IDs come from `docs/05-build-plan.md`.
 | P3-05 | webhook handler: signature → dedupe → locked apply | **DONE** — `payment_events` UNIQUE (gateway, external_ref, event_type) is the duplicate defence; `ProcessPaymentWebhook` verifies signature (invalid → recorded + 401), dedupes by insert (savepoint-wrapped so a conflict → 200 without aborting), then locks the intent and **re-fetches the authoritative status** (never trusts the callback body) and applies once; `ApplyGatewayResult` posts the collection (DR gateway_receivable / CR liability) idempotently; public `POST /v1/webhooks/payments/{gateway}` (idempotency-exempt); 6 tests incl. **10 duplicate webhooks → exactly 1 ledger transaction**, unsigned → 401, post-terminal no-op |
 | P3-06 | reconciliation poller with backoff; timeout → expired | **DONE** — `payments:reconcile` sweeps unresolved intents and asks the gateway for the authoritative status (`ReconcilePaymentIntent`: lockForUpdate, idempotent apply), so a **lost webhook still resolves via poll**; an intent still pending past `expires_at` is force-expired (timeout is a state, posts nothing); scheduled on a backoff cadence; 3 tests |
 | P3-07 | lead credits: purchase + spend flows | **DONE** — purchase lands via the collection path (intent → DR gateway_receivable / CR lead_credit_liability); `SpendLeadCredits` shrinks the liability and books revenue (DR lead_credit_liability / CR platform_revenue), with **overspend prevented by locking the credit account row** (serialised check-and-post, balance can't go negative); `InsufficientLeadCredits` (422 + shortfall); `Ledger::availableMinor` reads a balance in its natural direction; `GET /v1/provider/credits`; 4 tests |
-| P3-08..P3-15 | payouts, escrow, reconciliation exceptions, cash | not started |
+| P3-08 | payouts + failure reversal (new balanced txn, never a delete) | **DONE** — `payouts` table (idempotent; reserves funds via the pending ROW, not a ledger entry); `RequestPayout` locks the payable account + subtracts already-reserved pending payouts so the balance can't be double-spent (`InsufficientPayable` 422); `ResolvePayout` posts DR provider_payable / CR platform_cash **only on gateway confirmation** (via `payouts:reconcile`); `ReversePayout` corrects a confirmed-then-failed payout with a NEW mirror transaction (`reversal_transaction_id`), **never a delete** — restoring provider_payable to its pre-payout value; `POST /v1/provider/payouts`; 5 tests incl. **reversal restores the pre-payout balance with both txns intact** |
+| P3-09..P3-15 | reconciliation exceptions, escrow, cash | not started |
 
 Phases 3–8: not started (see build plan).
 
@@ -128,6 +129,13 @@ Phases 3–8: not started (see build plan).
   meet the bar when built.
 
 ## What was done, most recent first
+
+- **P3-08 — payouts + failure reversal**: `RequestPayout` reserves funds via the pending payout row
+  (locks the payable account, subtracts already-pending payouts → no double-spend); `ResolvePayout`
+  posts DR provider_payable / CR platform_cash only on gateway confirmation (`payouts:reconcile`);
+  `ReversePayout` corrects a confirmed-then-failed payout with a new mirror transaction — never a
+  delete — restoring provider_payable to its pre-payout value with both the payout and reversal
+  transactions intact. `POST /v1/provider/payouts`. 5 tests. Backend 232 green, PHPStan L6, Pint clean.
 
 - **P3-07 — lead credits (purchase + spend)**: purchases arrive through the collection path; the
   `SpendLeadCredits` action shrinks the liability and books revenue, locking the provider's credit
