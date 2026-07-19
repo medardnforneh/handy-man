@@ -322,6 +322,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/engagements/{engagement}/assignments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Assign a worker to an engagement (dispatcher)
+         * @description Staff a company engagement. Authorised by org-internal RBAC — an active owner/admin/dispatcher of the provider org, or the individual provider themselves. The worker must belong to the provider (a dispatcher of org A cannot assign a worker of org B → 422). A second `lead`, or a duplicate worker, is a 409.
+         */
+        post: operations["assignWorker"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/engagements/{engagement}/assignments/{assignment}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Remove a worker from an engagement (dispatcher)
+         * @description Soft removal — the row stays with status `removed`, freeing the lead slot. Same authority as assigning.
+         */
+        delete: operations["unassignWorker"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/jobs/{job}/providers": {
         parameters: {
             query?: never;
@@ -497,11 +537,19 @@ export interface components {
             /** Format: uuid */
             id: string;
             /** Format: uuid */
+            engagement_id?: string;
+            /** Format: uuid */
             worker_user_id: string;
+            /** Format: uuid */
+            assigned_by_user_id?: string;
             /** @enum {string} */
             role: "lead" | "helper";
             /** @enum {string} */
             status: "assigned" | "accepted" | "declined" | "en_route" | "on_site" | "completed" | "removed";
+            /** Format: date-time */
+            assigned_at?: string;
+            /** Format: date-time */
+            removed_at?: string | null;
         };
         Job: {
             /** Format: uuid */
@@ -1366,6 +1414,76 @@ export interface operations {
             };
             401: components["responses"]["Problem"];
             409: components["responses"]["Problem"];
+        };
+    };
+    assignWorker: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description A client-generated UUID. Replaying it returns the stored response (CLAUDE.md rule */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                engagement: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** Format: uuid */
+                    worker_user_id: string;
+                    /**
+                     * @default helper
+                     * @enum {string}
+                     */
+                    role?: "lead" | "helper";
+                };
+            };
+        };
+        responses: {
+            /** @description The created assignment */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["Assignment"];
+                    };
+                };
+            };
+            401: components["responses"]["Problem"];
+            403: components["responses"]["Problem"];
+            409: components["responses"]["Problem"];
+            422: components["responses"]["ValidationProblem"];
+        };
+    };
+    unassignWorker: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description A client-generated UUID. Replaying it returns the stored response (CLAUDE.md rule */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                engagement: string;
+                assignment: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Removed */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["Problem"];
+            403: components["responses"]["Problem"];
+            404: components["responses"]["Problem"];
         };
     };
     jobMatchingProviders: {

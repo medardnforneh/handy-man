@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\Api\V1\AddressController;
+use App\Http\Controllers\Api\V1\AssignmentController;
 use App\Http\Controllers\Api\V1\Auth\AuthController;
 use App\Http\Controllers\Api\V1\Auth\OtpController;
 use App\Http\Controllers\Api\V1\ConsentController;
@@ -91,6 +92,11 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
         Route::post('/jobs/{job}/offers', [OfferController::class, 'store'])->name('jobs.offers.store');
         // Provider accepts an offer → engagement (P2-06). Concurrency-safe; fact-gated (P2-06b).
         Route::post('/offers/{offer}/accept', [OfferController::class, 'accept'])->name('offers.accept');
+
+        // Engagement staffing (P2-08). Dispatcher-only (org-internal RBAC via EngagementPolicy); the
+        // worker must belong to the provider (app check + DB trigger).
+        Route::post('/engagements/{engagement}/assignments', [AssignmentController::class, 'store'])->name('engagements.assignments.store');
+        Route::delete('/engagements/{engagement}/assignments/{assignment}', [AssignmentController::class, 'destroy'])->name('engagements.assignments.destroy');
 
         // Provider section (P1-08). Profile creation is always allowed (doc 10); listing a skill is
         // fact-gated on having a profile; a service area requires location_tracking consent.

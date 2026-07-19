@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
 /**
  * A worker's assignment on an engagement (doc 02). The provider section queries ONLY this table —
@@ -22,6 +23,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $assigned_by_user_id
  * @property AssignmentRole $role
  * @property AssignmentStatus $status
+ * @property Carbon $assigned_at
+ * @property Carbon|null $removed_at
  */
 final class Assignment extends Model
 {
@@ -33,7 +36,8 @@ final class Assignment extends Model
     public $incrementing = false;
 
     protected $fillable = [
-        'engagement_id', 'worker_user_id', 'assigned_by_user_id', 'role', 'status', 'assigned_at',
+        'engagement_id', 'worker_user_id', 'assigned_by_user_id', 'role', 'status',
+        'assigned_at', 'removed_at',
     ];
 
     protected function casts(): array
@@ -42,6 +46,7 @@ final class Assignment extends Model
             'role' => AssignmentRole::class,
             'status' => AssignmentStatus::class,
             'assigned_at' => 'datetime',
+            'removed_at' => 'datetime',
         ];
     }
 

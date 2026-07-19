@@ -86,11 +86,21 @@ Task IDs come from `docs/05-build-plan.md`.
 | P2-04 | provider search (ST_DWithin + skill + rating/tier; skips geo for remote) | **DONE** — `ProviderSearch::forJob`: skill match + service-area coverage (ST_DWithin) for onsite/hybrid, **NO geo for remote** (whole skilled pool); filters suspended + (when required) unverified; ranks by tier then rating; `GET /v1/jobs/{job}/providers` (owner only); 5 tests incl. remote-outside-any-radius |
 | P2-05 | job_offers + customer_direct origin + expiry | **DONE** — `job_offers` (offer_origin/offer_status enums, UNIQUE(job,provider), **partial unique `one_accepted_offer_per_job`** — P2-06 backbone); `CreateDirectOffer` (open→offered + outbox); `offers:expire` command; `POST /v1/jobs/{job}/offers` (owner only); 6 tests |
 | P2-06 + P2-06b + P2-07 | AcceptOffer (concurrency-safe), engagements, mode-keyed gate, auto-assign lead | **DONE** — `engagements` (one per job: `job_id UNIQUE`) + `assignments` (assignment_role/status enums, `UNIQUE(engagement,worker)`, partial unique `one_lead_per_engagement`); `AcceptOfferAction`: fact gate (`AcceptPaidJob`) BEFORE the txn, then `lockForUpdate` on the job + status guard → offer accepted, siblings superseded, job offered→engaged, engagement created, outbox `engagement.created`; **individual provider auto-assigned as `lead`** (company → dispatcher, P2-08); `identity_verified` resolver now `max(phone→1, ID tier)` so remote passes the lighter check while on-site needs full ID; `POST /v1/offers/{offer}/accept`; 8 tests incl. **20-way race → exactly 1 engagement** and mode-keyed gate (on-site unverified → `precondition_unmet`, remote OK) |
-| P2-08..P2-10 | dispatcher assignments, availability/conflicts, Filament | not started |
+| P2-08 | dispatcher assignments + org-boundary authorisation | **DONE** — `EngagementPolicy` (org-internal RBAC: active owner/admin/dispatcher of the provider org, or the individual provider themselves — never the fact model); `AssignWorker`/`UnassignWorker` actions (soft removal via `removed_at`, frees the lead slot); worker↔provider boundary enforced BOTH in the Action (clean 422) AND by DB constraint trigger `assignments_worker_boundary_check` (individual → provider's own user; org → active membership); `AssignmentConflict` (409) for second-lead/duplicate; `POST`/`DELETE /v1/engagements/{engagement}/assignments`; 8 tests incl. **dispatcher-of-A-cannot-assign-worker-of-B (422) + DB-trigger backstop** |
+| P2-09..P2-10 | availability/conflicts, Filament | not started |
 
 Phases 3–8: not started (see build plan).
 
 ## What was done, most recent first
+
+- **P2-08 — dispatcher assignments + org boundary**: `EngagementPolicy` gates staffing on
+  org-internal RBAC (dispatch authority = active owner/admin/dispatcher of the provider org, or the
+  individual provider). `AssignWorker`/`UnassignWorker` actions; the worker↔provider boundary is
+  enforced twice — a friendly 422 in the Action and, as the hard guarantee, the DB constraint
+  trigger `assignments_worker_boundary_check` (so "dispatcher of A can't assign a worker of B" holds
+  even if the app is bypassed). Second-lead / duplicate-worker → 409. Soft removal (`removed_at`)
+  frees the `one_lead_per_engagement` slot. `POST`/`DELETE /v1/engagements/{engagement}/assignments`;
+  OpenAPI + TS client updated. Backend **159 tests green**, PHPStan L6 clean, Pint clean.
 
 - **P2-06 + P2-06b + P2-07 — accept offer → engagement (concurrency-safe, mode-gated)**: added
   `engagements` (one per job) + `assignments` tables, `AssignmentRole`/`AssignmentStatus` enums,

@@ -521,6 +521,52 @@ paths:
         "401": { $ref: "#/components/responses/Problem" }
         "409": { $ref: "#/components/responses/Problem" }
 
+  /engagements/{engagement}/assignments:
+    post:
+      tags: [Platform]
+      operationId: assignWorker
+      summary: Assign a worker to an engagement (dispatcher)
+      description: >
+        Staff a company engagement. Authorised by org-internal RBAC — an active owner/admin/dispatcher
+        of the provider org, or the individual provider themselves. The worker must belong to the
+        provider (a dispatcher of org A cannot assign a worker of org B → 422). A second `lead`, or a
+        duplicate worker, is a 409.
+      parameters:
+        - { name: engagement, in: path, required: true, schema: { type: string, format: uuid } }
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [worker_user_id]
+              properties:
+                worker_user_id: { type: string, format: uuid }
+                role: { type: string, enum: [lead, helper], default: helper }
+      responses:
+        "201": { description: The created assignment, content: { application/json: { schema: { type: object, required: [data], properties: { data: { $ref: "#/components/schemas/Assignment" } } } } } }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "409": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/ValidationProblem" }
+
+  /engagements/{engagement}/assignments/{assignment}:
+    delete:
+      tags: [Platform]
+      operationId: unassignWorker
+      summary: Remove a worker from an engagement (dispatcher)
+      description: Soft removal — the row stays with status `removed`, freeing the lead slot. Same authority as assigning.
+      parameters:
+        - { name: engagement, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: assignment, in: path, required: true, schema: { type: string, format: uuid } }
+        - $ref: "#/components/parameters/IdempotencyKey"
+      responses:
+        "200": { description: Removed }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+
   /jobs/{job}/providers:
     get:
       tags: [Platform]
@@ -772,9 +818,13 @@ components:
       required: [id, worker_user_id, role, status]
       properties:
         id: { type: string, format: uuid }
+        engagement_id: { type: string, format: uuid }
         worker_user_id: { type: string, format: uuid }
+        assigned_by_user_id: { type: string, format: uuid }
         role: { type: string, enum: [lead, helper] }
         status: { type: string, enum: [assigned, accepted, declined, en_route, on_site, completed, removed] }
+        assigned_at: { type: string, format: date-time }
+        removed_at: { type: [string, "null"], format: date-time }
 
     Job:
       type: object

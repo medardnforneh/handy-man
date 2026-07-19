@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Domain\Engagements\Policies\EngagementPolicy;
 use App\Domain\Identity\Otp\LogOtpSender;
 use App\Domain\Identity\Otp\OtpSender;
 use App\Domain\Reference\Policies\NotePolicy;
+use App\Models\Engagement;
 use App\Models\Note;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
@@ -21,6 +23,7 @@ class AppServiceProvider extends ServiceProvider
      */
     private const POLICIES = [
         Note::class => NotePolicy::class,
+        Engagement::class => EngagementPolicy::class,
     ];
 
     public function register(): void
