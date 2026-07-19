@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\V1\AddressController;
 use App\Http\Controllers\Api\V1\AssignmentController;
 use App\Http\Controllers\Api\V1\Auth\AuthController;
 use App\Http\Controllers\Api\V1\Auth\OtpController;
+use App\Http\Controllers\Api\V1\CashSettlementController;
 use App\Http\Controllers\Api\V1\ConsentController;
 use App\Http\Controllers\Api\V1\DeviceController;
 use App\Http\Controllers\Api\V1\EscrowController;
@@ -86,6 +87,9 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
         // Escrow (P3-10/14). Customer approves a milestone (releases its slice) or refunds remaining.
         Route::post('/milestones/{milestone}/approve', [EscrowController::class, 'approveMilestone'])->name('milestones.approve');
         Route::post('/engagements/{engagement}/refund', [EscrowController::class, 'refund'])->name('engagements.refund');
+
+        // Cash settlement recording (P3-15). The provider records a cash-settled amount; commission booked.
+        Route::post('/engagements/{engagement}/cash-settlements', [CashSettlementController::class, 'store'])->name('engagements.cash-settlements.store');
 
         // Device registration / push token capture (P1-04).
         Route::post('/devices', [DeviceController::class, 'store'])->name('devices.store');

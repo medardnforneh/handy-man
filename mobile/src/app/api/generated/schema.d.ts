@@ -285,6 +285,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/engagements/{engagement}/cash-settlements": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Record a cash-settled amount (provider)
+         * @description The engagement's provider records that a job (or a named milestone) was settled in cash off-platform. The ledger books the platform commission as revenue and as a provider debt (provider_receivable); the milestone, if given, is marked paid. Self-reporting builds the provider's on-platform history.
+         */
+        post: operations["recordCashSettlement"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/milestones/{milestone}/approve": {
         parameters: {
             query?: never;
@@ -753,6 +773,18 @@ export interface components {
             accepted_at: string;
             assignments?: components["schemas"]["Assignment"][];
             milestones?: components["schemas"]["Milestone"][];
+        };
+        CashSettlement: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            engagement_id: string;
+            /** Format: uuid */
+            milestone_id?: string | null;
+            amount: components["schemas"]["Money"];
+            commission: components["schemas"]["Money"];
+            /** Format: date-time */
+            recorded_at: string;
         };
         Payout: {
             /** Format: uuid */
@@ -1691,6 +1723,44 @@ export interface operations {
             };
             401: components["responses"]["Problem"];
             404: components["responses"]["Problem"];
+        };
+    };
+    recordCashSettlement: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description A client-generated UUID. Replaying it returns the stored response (CLAUDE.md rule */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                engagement: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    amount_minor: number;
+                    /** Format: uuid */
+                    milestone_id?: string | null;
+                };
+            };
+        };
+        responses: {
+            /** @description The recorded cash settlement */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["CashSettlement"];
+                    };
+                };
+            };
+            401: components["responses"]["Problem"];
+            403: components["responses"]["Problem"];
+            422: components["responses"]["ValidationProblem"];
         };
     };
     approveMilestone: {

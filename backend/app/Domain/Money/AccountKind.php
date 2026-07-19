@@ -16,6 +16,9 @@ enum AccountKind: string
     case PlatformCash = 'platform_cash';
     case GatewayReceivable = 'gateway_receivable';
 
+    // Asset: a provider owes the platform (e.g. commission on a cash-settled job).
+    case ProviderReceivable = 'provider_receivable';
+
     // Liabilities (we owe someone).
     case EscrowLiability = 'escrow_liability';      // owed to the eventual winner of an engagement
     case ProviderPayable = 'provider_payable';      // owed to a provider, awaiting payout
@@ -32,7 +35,7 @@ enum AccountKind: string
     public function isDebitNormal(): bool
     {
         return match ($this) {
-            self::PlatformCash, self::GatewayReceivable => true,
+            self::PlatformCash, self::GatewayReceivable, self::ProviderReceivable => true,
             default => false,
         };
     }
@@ -44,7 +47,7 @@ enum AccountKind: string
     public function requiresParty(): bool
     {
         return match ($this) {
-            self::ProviderPayable, self::LeadCreditLiability, self::PromoLiability => true,
+            self::ProviderPayable, self::LeadCreditLiability, self::PromoLiability, self::ProviderReceivable => true,
             default => false,
         };
     }

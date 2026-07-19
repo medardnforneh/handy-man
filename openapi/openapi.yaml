@@ -476,6 +476,35 @@ paths:
         "401": { $ref: "#/components/responses/Problem" }
         "404": { $ref: "#/components/responses/Problem" }
 
+  /engagements/{engagement}/cash-settlements:
+    post:
+      tags: [Platform]
+      operationId: recordCashSettlement
+      summary: Record a cash-settled amount (provider)
+      description: >
+        The engagement's provider records that a job (or a named milestone) was settled in cash
+        off-platform. The ledger books the platform commission as revenue and as a provider debt
+        (provider_receivable); the milestone, if given, is marked paid. Self-reporting builds the
+        provider's on-platform history.
+      parameters:
+        - { name: engagement, in: path, required: true, schema: { type: string, format: uuid } }
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [amount_minor]
+              properties:
+                amount_minor: { type: integer, minimum: 1 }
+                milestone_id: { type: [string, "null"], format: uuid }
+      responses:
+        "201": { description: The recorded cash settlement, content: { application/json: { schema: { type: object, required: [data], properties: { data: { $ref: "#/components/schemas/CashSettlement" } } } } } }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/ValidationProblem" }
+
   /milestones/{milestone}/approve:
     post:
       tags: [Platform]
@@ -1052,6 +1081,17 @@ components:
         accepted_at: { type: string, format: date-time }
         assignments: { type: array, items: { $ref: "#/components/schemas/Assignment" } }
         milestones: { type: array, items: { $ref: "#/components/schemas/Milestone" } }
+
+    CashSettlement:
+      type: object
+      required: [id, engagement_id, amount, commission, recorded_at]
+      properties:
+        id: { type: string, format: uuid }
+        engagement_id: { type: string, format: uuid }
+        milestone_id: { type: [string, "null"], format: uuid }
+        amount: { $ref: "#/components/schemas/Money" }
+        commission: { $ref: "#/components/schemas/Money" }
+        recorded_at: { type: string, format: date-time }
 
     Payout:
       type: object
