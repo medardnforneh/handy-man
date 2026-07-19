@@ -118,7 +118,10 @@ Task IDs come from `docs/05-build-plan.md`.
 | P3-10 + P3-14 | escrow: collection, release-on-approval, refund | **DONE** — collection already lands via the intent path (purpose `escrow` → DR gateway_receivable / CR escrow_liability, referenced to the engagement); `Ledger::escrowHeldMinor` computes per-engagement escrow from the transaction reference; `ApproveMilestone` releases a milestone's slice (DR escrow_liability / CR provider_payable net / CR platform_revenue at 15% commission), serialised per engagement by an advisory lock, idempotent, **partial approval leaves the remainder escrowed**; `RefundEngagement` returns remaining escrow (DR escrow_liability / CR platform_cash); `InsufficientEscrow` (409) when unfunded; `POST /v1/milestones/{milestone}/approve`, `POST /v1/engagements/{engagement}/refund` (customer-gated); 7 tests |
 | P3-12 | property test: global debits == credits over random flows | **DONE** — drives a deterministic 60-step randomized mix of real flows (credit purchase/spend, payable grants, payouts + reversals, with legitimate refusals caught) and asserts **SUM(debits) == SUM(credits) globally after every step** — the ledger never leaks or invents a franc |
 | P3-15 | cash settlement recording | **DONE** — new `provider_receivable` (asset) account kind; `cash_settlements` table; `RecordCashSettlement` books the 15% commission as revenue AND as a provider debt (DR provider_receivable / CR platform_revenue) and marks a named milestone paid — no escrow involved; provider-gated `POST /v1/engagements/{engagement}/cash-settlements`; 3 tests. Makes honest self-reporting first-class (builds provider history) |
-| P3-09, P3-11, P3-13 | nightly reconciliation exceptions, auto-approve timer, deposit-capture-on-agreement | not started (P3-11/13 depend on Phase 5 work-submission + agreement-time capture) |
+| P3-09 | nightly reconciliation + `reconciliation_exceptions` + admin alert | **DONE** — `reconcile:nightly` resolves stuck payments/payouts (via the pollers), then integrity-checks the ledger: a succeeded intent missing its ledger txn, and (with `--wallet-cash`) a `platform_cash` vs wallet mismatch → a `reconciliation_exceptions` row + outbox `reconciliation.exception` alert, **never auto-corrected**; one-open-per-(kind,ref) partial unique index dedupes re-runs; `ResolveReconciliationException` applies a human's balanced adjustment stamped with `created_by_user_id`; 5 tests |
+| P3-11, P3-13 | auto-approve timer (72h), deposit-capture-on-agreement | deferred — depend on Phase 5 work-submission + agreement-time escrow capture |
+
+**Phase 3 (Money) complete** except P3-11/13, which are parked until Phase 5 provides work-submission and agreement-time capture.
 
 Phases 3–8: not started (see build plan).
 
@@ -132,6 +135,13 @@ Phases 3–8: not started (see build plan).
   meet the bar when built.
 
 ## What was done, most recent first
+
+- **P3-09 — nightly reconciliation + exceptions**: `reconcile:nightly` runs the pollers, then
+  integrity-checks the ledger (succeeded-intent-missing-ledger, and a `--wallet-cash` vs platform_cash
+  settlement mismatch) and records any discrepancy as a `reconciliation_exceptions` row + admin alert
+  — never auto-correcting. A partial unique index keeps re-runs from duplicating open exceptions, and
+  `ResolveReconciliationException` records a human's balanced adjustment stamped with their user id.
+  5 tests. **Phase 3 essentially complete** (P3-11/13 parked for Phase 5). Backend 248 green.
 
 - **P3-15 — cash settlement recording**: cash is a first-class rail. A new `provider_receivable`
   (asset) account kind + `cash_settlements` table; `RecordCashSettlement` books the platform's 15%
