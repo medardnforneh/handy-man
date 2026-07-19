@@ -285,6 +285,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/jobs/{job}/quotations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Submit a priced quotation for a job (provider)
+         * @description A provider submits a versioned quotation. The subtotal is computed server-side from the lines. Only one live (draft/submitted) quote may exist per provider per job — a second returns 409; change terms by revising instead. Deposit may not exceed subtotal (422).
+         */
+        post: operations["submitQuotation"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/quotations/{quotation}/revise": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Revise a submitted quotation (new version)
+         * @description Supersedes the given submitted quotation and creates the next version linked by supersedes_id (never an in-place edit). Only the owning provider, and only a submitted quote.
+         */
+        post: operations["reviseQuotation"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/jobs/{job}/offers": {
         parameters: {
             query?: never;
@@ -554,6 +594,64 @@ export interface components {
             scheduled_from?: string | null;
             /** Format: date-time */
             scheduled_to?: string | null;
+        };
+        Quotation: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            job_id: string;
+            /** Format: uuid */
+            provider_party_id: string;
+            version: number;
+            /** Format: uuid */
+            supersedes_id?: string | null;
+            /** @enum {string} */
+            status: "draft" | "submitted" | "accepted" | "rejected" | "expired" | "withdrawn" | "superseded";
+            subtotal: components["schemas"]["Money"];
+            deposit: components["schemas"]["Money"];
+            notes?: string | null;
+            /** Format: date-time */
+            customer_requested_by?: string | null;
+            /** Format: date-time */
+            provider_estimated_at?: string | null;
+            /** Format: date-time */
+            provider_committed_at?: string | null;
+            /** Format: date-time */
+            valid_until: string;
+            /** Format: date-time */
+            submitted_at?: string | null;
+            /** Format: date-time */
+            responded_at?: string | null;
+            lines?: components["schemas"]["QuotationLine"][];
+        };
+        QuotationLine: {
+            position: number;
+            /** @enum {string} */
+            kind: "labour" | "material" | "travel" | "other";
+            label: string;
+            /** @description Decimal string, e.g. "1.500" */
+            quantity: string;
+            unit_price_minor: number;
+        };
+        QuotationInput: {
+            lines: {
+                /** @enum {string} */
+                kind: "labour" | "material" | "travel" | "other";
+                label: string;
+                quantity: number;
+                unit_price_minor: number;
+            }[];
+            /** @default 0 */
+            deposit_minor: number;
+            notes?: string | null;
+            /** Format: date-time */
+            valid_until: string;
+            /** Format: date-time */
+            customer_requested_by?: string | null;
+            /** Format: date-time */
+            provider_estimated_at?: string | null;
+            /** Format: date-time */
+            provider_committed_at?: string | null;
         };
         Job: {
             /** Format: uuid */
@@ -1349,6 +1447,75 @@ export interface operations {
             };
             401: components["responses"]["Problem"];
             404: components["responses"]["Problem"];
+        };
+    };
+    submitQuotation: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description A client-generated UUID. Replaying it returns the stored response (CLAUDE.md rule */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                job: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["QuotationInput"];
+            };
+        };
+        responses: {
+            /** @description The submitted quotation */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["Quotation"];
+                    };
+                };
+            };
+            401: components["responses"]["Problem"];
+            409: components["responses"]["Problem"];
+            422: components["responses"]["ValidationProblem"];
+        };
+    };
+    reviseQuotation: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description A client-generated UUID. Replaying it returns the stored response (CLAUDE.md rule */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                quotation: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["QuotationInput"];
+            };
+        };
+        responses: {
+            /** @description The new version */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["Quotation"];
+                    };
+                };
+            };
+            401: components["responses"]["Problem"];
+            403: components["responses"]["Problem"];
+            409: components["responses"]["Problem"];
+            422: components["responses"]["ValidationProblem"];
         };
     };
     createDirectOffer: {

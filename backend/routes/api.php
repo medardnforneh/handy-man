@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\V1\JobController;
 use App\Http\Controllers\Api\V1\OfferController;
 use App\Http\Controllers\Api\V1\ProfileController;
 use App\Http\Controllers\Api\V1\ProviderController;
+use App\Http\Controllers\Api\V1\QuotationController;
 use App\Http\Controllers\Api\V1\Reference\NoteController;
 use App\Http\Controllers\Api\V1\SkillController;
 use Illuminate\Support\Facades\Route;
@@ -92,6 +93,10 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
         Route::post('/jobs/{job}/offers', [OfferController::class, 'store'])->name('jobs.offers.store');
         // Provider accepts an offer → engagement (P2-06). Concurrency-safe; fact-gated (P2-06b).
         Route::post('/offers/{offer}/accept', [OfferController::class, 'accept'])->name('offers.accept');
+
+        // Quotations (P2.5-01). A provider submits a priced quote; revision is a new version.
+        Route::post('/jobs/{job}/quotations', [QuotationController::class, 'store'])->name('jobs.quotations.store');
+        Route::post('/quotations/{quotation}/revise', [QuotationController::class, 'revise'])->name('quotations.revise');
 
         // Engagement staffing (P2-08). Dispatcher-only (org-internal RBAC via EngagementPolicy); the
         // worker must belong to the provider (app check + DB trigger).

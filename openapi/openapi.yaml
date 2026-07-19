@@ -476,6 +476,52 @@ paths:
         "401": { $ref: "#/components/responses/Problem" }
         "404": { $ref: "#/components/responses/Problem" }
 
+  /jobs/{job}/quotations:
+    post:
+      tags: [Platform]
+      operationId: submitQuotation
+      summary: Submit a priced quotation for a job (provider)
+      description: >
+        A provider submits a versioned quotation. The subtotal is computed server-side from the
+        lines. Only one live (draft/submitted) quote may exist per provider per job — a second
+        returns 409; change terms by revising instead. Deposit may not exceed subtotal (422).
+      parameters:
+        - { name: job, in: path, required: true, schema: { type: string, format: uuid } }
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/QuotationInput" }
+      responses:
+        "201": { description: The submitted quotation, content: { application/json: { schema: { type: object, required: [data], properties: { data: { $ref: "#/components/schemas/Quotation" } } } } } }
+        "401": { $ref: "#/components/responses/Problem" }
+        "409": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/ValidationProblem" }
+
+  /quotations/{quotation}/revise:
+    post:
+      tags: [Platform]
+      operationId: reviseQuotation
+      summary: Revise a submitted quotation (new version)
+      description: >
+        Supersedes the given submitted quotation and creates the next version linked by
+        supersedes_id (never an in-place edit). Only the owning provider, and only a submitted quote.
+      parameters:
+        - { name: quotation, in: path, required: true, schema: { type: string, format: uuid } }
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/QuotationInput" }
+      responses:
+        "201": { description: The new version, content: { application/json: { schema: { type: object, required: [data], properties: { data: { $ref: "#/components/schemas/Quotation" } } } } } }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "409": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/ValidationProblem" }
+
   /jobs/{job}/offers:
     post:
       tags: [Platform]
@@ -829,6 +875,61 @@ components:
         removed_at: { type: [string, "null"], format: date-time }
         scheduled_from: { type: [string, "null"], format: date-time }
         scheduled_to: { type: [string, "null"], format: date-time }
+
+    Quotation:
+      type: object
+      required: [id, job_id, provider_party_id, version, status, subtotal, deposit, valid_until]
+      properties:
+        id: { type: string, format: uuid }
+        job_id: { type: string, format: uuid }
+        provider_party_id: { type: string, format: uuid }
+        version: { type: integer }
+        supersedes_id: { type: [string, "null"], format: uuid }
+        status: { type: string, enum: [draft, submitted, accepted, rejected, expired, withdrawn, superseded] }
+        subtotal: { $ref: "#/components/schemas/Money" }
+        deposit: { $ref: "#/components/schemas/Money" }
+        notes: { type: [string, "null"] }
+        customer_requested_by: { type: [string, "null"], format: date-time }
+        provider_estimated_at: { type: [string, "null"], format: date-time }
+        provider_committed_at: { type: [string, "null"], format: date-time }
+        valid_until: { type: string, format: date-time }
+        submitted_at: { type: [string, "null"], format: date-time }
+        responded_at: { type: [string, "null"], format: date-time }
+        lines:
+          type: array
+          items: { $ref: "#/components/schemas/QuotationLine" }
+
+    QuotationLine:
+      type: object
+      required: [position, kind, label, quantity, unit_price_minor]
+      properties:
+        position: { type: integer }
+        kind: { type: string, enum: [labour, material, travel, other] }
+        label: { type: string }
+        quantity: { type: string, description: "Decimal string, e.g. \"1.500\"" }
+        unit_price_minor: { type: integer }
+
+    QuotationInput:
+      type: object
+      required: [lines, valid_until]
+      properties:
+        lines:
+          type: array
+          minItems: 1
+          items:
+            type: object
+            required: [kind, label, quantity, unit_price_minor]
+            properties:
+              kind: { type: string, enum: [labour, material, travel, other] }
+              label: { type: string, maxLength: 255 }
+              quantity: { type: number, exclusiveMinimum: 0 }
+              unit_price_minor: { type: integer, minimum: 0 }
+        deposit_minor: { type: integer, minimum: 0, default: 0 }
+        notes: { type: [string, "null"] }
+        valid_until: { type: string, format: date-time }
+        customer_requested_by: { type: [string, "null"], format: date-time }
+        provider_estimated_at: { type: [string, "null"], format: date-time }
+        provider_committed_at: { type: [string, "null"], format: date-time }
 
     Job:
       type: object

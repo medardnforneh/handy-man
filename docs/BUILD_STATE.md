@@ -90,11 +90,26 @@ Task IDs come from `docs/05-build-plan.md`.
 | P2-09 | worker availability + conflict detection | **DONE** — assignments carry an optional booking window (`scheduled_from`/`scheduled_to`); a GENERATED `tstzrange` feeds a GiST `EXCLUDE` constraint (`btree_gist`) `assignments_no_double_booking` so one worker can never hold two active overlapping bookings — the hard guarantee; `AssignWorker` pre-checks overlap (clean 409 `WorkerDoubleBooked`) and catches the constraint under a race; half-open `[)` ranges mean touching windows don't conflict; removed assignments free the slot; 7 tests incl. **overlap → 409, adjacent OK, DB-constraint backstop** |
 | P2-10 | Filament: jobs, offers, engagements + manual reassignment | **DONE** — read-only admin resources (`JobResource`/`JobOfferResource`/`EngagementResource`) under a "Marketplace" nav group: list + view + filters, no create/edit routes so status/money can't be mutated outside the state machines/Actions (rule #8/#9); manual (re)assignment via an `AssignmentsRelationManager` on the engagement whose assign/remove route through the same `AssignWorker`/`UnassignWorker` Actions (org boundary + one-lead + no-double-booking still enforced; domain problems shown as notifications); staff-gated + 2FA (P1-09); 4 tests |
 
-**Phase 2 (marketplace core) complete.** Next: Phase 2.5 (quotations/workspace, doc 06) → Phase 3 (money/ledger).
+**Phase 2 (marketplace core) complete.**
+
+### Phase 2.5 — Negotiation and quotations
+
+| ID | Task | Status |
+|---|---|---|
+| P2.5-01/02/03 | versioned immutable quotations + one-live index + three dates | **DONE** — `quotations` + `quotation_lines`; server-computed subtotal; `assert_quote_terms_immutable` (UPDATE of a non-draft quote's terms throws) + `assert_quote_lines_frozen` (lines frozen after submit) triggers; partial unique `one_live_quote_per_provider_per_job`; the three dates (requested/estimated/committed — only `provider_committed_at` will feed on-time-rate); `QuotationStateMachine`; `SubmitQuotation` + `ReviseQuotation` (revise = supersede + v+1 via `supersedes_id`, shared `QuotationBuilder`: draft→add lines→submit); `POST /v1/jobs/{job}/quotations`, `POST /v1/quotations/{quotation}/revise`; 9 tests incl. **DB-frozen terms/lines, revision chain, one-live** |
+| P2.5-04..06 | site visits, quote-accept→milestones, quote follow-ups | not started |
 
 Phases 3–8: not started (see build plan).
 
 ## What was done, most recent first
+
+- **P2.5-01/02/03 — versioned, immutable quotations**: `quotations` + `quotation_lines` with a
+  server-computed subtotal, DB triggers that freeze a submitted quote's terms and lines (an UPDATE
+  throws), a partial unique index allowing only one live quote per provider per job, and the three
+  distinct dates. `SubmitQuotation`/`ReviseQuotation` Actions (revision supersedes and creates the
+  next version via `supersedes_id`, sharing a `QuotationBuilder` that writes draft → lines → submit)
+  behind `POST /v1/jobs/{job}/quotations` and `/v1/quotations/{quotation}/revise`. OpenAPI + TS
+  client updated. Backend 179 tests green, PHPStan L6 clean, Pint clean.
 
 - **P2-10 — Filament marketplace resources + manual reassignment**: read-only admin views for
   jobs, offers and engagements (list/view/filters, no create/edit so state/money never bypass the
