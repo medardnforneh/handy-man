@@ -103,9 +103,26 @@ Task IDs come from `docs/05-build-plan.md`.
 
 **Phase 2.5 complete except P2.5-06 (parked for Phase 7).**
 
+### Phase 3 — Money
+
+| ID | Task | Status |
+|---|---|---|
+| P3-01 | ledger tables + balance trigger + append-only + REVOKE | **DONE** — `ledger_accounts`/`ledger_transactions`/`ledger_entries` (native `account_kind`/`entry_direction`/`txn_kind` enums; accounts unique on `(party_id, kind, currency)` NULLS NOT DISTINCT); **append-only enforced by a trigger** (`forbid_ledger_mutation` raises on UPDATE/DELETE — role-independent, since dev runs as superuser where REVOKE no-ops) + REVOKE for prod; **deferred balance constraint** `ledger_must_balance` (SUM debit == SUM credit); `amount_minor > 0` CHECK; `ledger_balances` view; `Ledger` posting service (account resolver + balanced `post()`, app-level `UnbalancedTransaction` guard) with `LedgerEntryInput`/`AccountKind`(normal-balance)/`EntryDirection`/`TxnKind`; sign convention in `Money`; 10 tests incl. **UPDATE/DELETE raise at DB, deferred-balance rejection, amount>0** |
+| P3-02..P3-15 | balances view rebuild, gateway, intents, webhooks, escrow, payouts, reconciliation, cash | not started |
+
 Phases 3–8: not started (see build plan).
 
 ## What was done, most recent first
+
+- **P3-01 — the double-entry ledger**: `ledger_accounts`/`transactions`/`entries` with the money
+  invariants enforced by Postgres, not app code — append-only via a trigger that raises on
+  UPDATE/DELETE (role-independent; the doc's REVOKE is a no-op under the dev superuser, so the
+  trigger is the real guard), a **deferred** balance constraint (debits == credits per transaction),
+  and `amount_minor > 0`. Balances are computed (`ledger_balances` view + `LedgerAccount::balanceMinor`).
+  A `Ledger` service is the only writer: it resolves accounts and posts balanced transactions,
+  rejecting an unbalanced set (`UnbalancedTransaction`) before the DB does. Sign convention lives in
+  `Money`. 10 tests, incl. DB-level append-only and deferred-balance rejection. Backend 205 tests
+  green, PHPStan L6 clean, Pint clean.
 
 - **P2.5-04 — site visits (chargeable + creditable)**: `site_visits` (native status enum; a CHECK
   ties chargeable to a positive fee), `ScheduleSiteVisit`/`CompleteSiteVisit` Actions. A completed

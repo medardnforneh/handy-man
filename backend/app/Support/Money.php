@@ -31,6 +31,9 @@ use InvalidArgumentException;
  */
 final readonly class Money
 {
+    /** The platform's home currency. Referenced wherever a default currency is needed. */
+    public const XAF = 'XAF';
+
     /**
      * Minor-unit scale per currency. The default for anything not listed is 2 (the common case),
      * but every currency we actually transact in MUST be listed explicitly so the choice is never
