@@ -139,23 +139,27 @@ Phases 5–8: not started (see build plan).
 - **UI quality bar (user-mandated): every UI must be beautiful, professional, perfect.** New UI is
   built to that bar from the start on the design-token system (light+dark, semantic colours,
   no-literal-colour lint).
-  - **Filament admin — reworked (design proposal approved).** A real, information-first **dashboard**
-    now leads the panel: `PlatformStatsWidget` (KPI stats + sparklines: open jobs, active
-    engagements, escrow held, GMV 30d, revenue, open reconciliation exceptions), a
-    `ReconciliationExceptionsWidget` "needs attention" table, and a `RecentEngagementsWidget` (money
-    + status pills). Brand palette + semantic hues wired from the tokens, Inter, collapsible sidebar,
-    a light render-hook CSS polish. Proposal artifact: the admin-dashboard mockup. Remaining polish:
-    per-resource infolist/table refinement is incremental.
+  - **Filament admin — reworked to full visual fidelity (proposal approved).** The dashboard is a
+    single bespoke-view widget (`OverviewWidget` → `resources/views/filament/widgets/overview.blade.php`)
+    that reproduces the approved mockup pixel-for-pixel inside the Filament shell: KPI cards with
+    hand-drawn SVG sparklines (open jobs, active engagements, escrow held, GMV 30d, revenue, open
+    reconciliation exceptions — the last highlighted), a "needs attention" reconciliation panel with
+    severity stripes, a recent-engagements table (money + status pills + milestone progress), and a
+    "money held" ledger breakdown. All computed live from the models + ledger (`Ledger::totalByKindMinor`).
+    Its scoped CSS uses the token palette and syncs to Filament's `.dark` class for both themes. Brand
+    + semantic palette, Inter, collapsible sidebar. Remaining polish: per-resource infolist/table
+    refinement is incremental.
   - **Still owed:** Ionic app screens and Blade public/SEO pages (Phase 5+) must meet the bar when built.
 
 ## What was done, most recent first
 
-- **Filament admin rework (design debt) — dashboard**: replaced the stock Filament dashboard with a
-  purpose-built one on the project tokens — `PlatformStatsWidget` (six KPIs with sparklines, computed
-  from the models + ledger), `ReconciliationExceptionsWidget` (open exceptions, the "needs attention"
-  panel), and `RecentEngagementsWidget` (recent engagements with money + status pills). Brand + status
-  palette wired from the tokens, Inter, collapsible sidebar, render-hook CSS polish. A design-proposal
-  artifact was shared and approved first. 3 widget tests. Backend 267 green.
+- **Filament admin rework — full fidelity**: after the stats/table-widget first pass, rebuilt the
+  dashboard as a single bespoke-view widget (`OverviewWidget`) whose Blade view reproduces the
+  approved mockup pixel-for-pixel inside the Filament shell — KPI cards with SVG sparklines, a
+  severity-striped reconciliation panel, a recent-engagements table (money + status pills + milestone
+  progress), and a money-held ledger breakdown. Scoped token CSS synced to Filament's `.dark` class
+  for both themes; data computed live (`Ledger::totalByKindMinor`). Clears the admin design-debt item.
+  2 widget tests. Backend 266 green, PHPStan L6 clean, Pint clean.
 
 - **P4-08 — deliverables**: `deliverables` table + submit/review. The provider submits an artifact
   (narrated into the thread as `deliverable_submitted`, in-transaction); the customer accepts or

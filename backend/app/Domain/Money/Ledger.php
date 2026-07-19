@@ -59,6 +59,25 @@ final class Ledger
     }
 
     /**
+     * The aggregate balance across ALL accounts of a kind (e.g. total provider_payable owed across
+     * every provider), read in the kind's natural direction. For dashboards/reporting.
+     */
+    public function totalByKindMinor(AccountKind $kind, string $currency = Money::XAF): int
+    {
+        $signed = $kind->isDebitNormal()
+            ? "SUM(CASE WHEN direction = 'debit' THEN amount_minor ELSE -amount_minor END)"
+            : "SUM(CASE WHEN direction = 'credit' THEN amount_minor ELSE -amount_minor END)";
+
+        return (int) LedgerEntry::query()
+            ->whereIn('account_id', LedgerAccount::query()
+                ->select('id')
+                ->where('kind', $kind->value)
+                ->where('currency', $currency))
+            ->selectRaw("COALESCE({$signed}, 0) AS total")
+            ->value('total');
+    }
+
+    /**
      * How much escrow is currently held for one engagement. The escrow account is platform-wide, so
      * per-engagement holdings are tracked by the transaction reference: collections credit escrow for
      * the engagement, releases and refunds debit it. Net credit = still held.

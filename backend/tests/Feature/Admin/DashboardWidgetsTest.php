@@ -2,18 +2,17 @@
 
 declare(strict_types=1);
 
-use App\Filament\Widgets\PlatformStatsWidget;
-use App\Filament\Widgets\RecentEngagementsWidget;
-use App\Filament\Widgets\ReconciliationExceptionsWidget;
+use App\Filament\Widgets\OverviewWidget;
 use App\Models\Engagement;
+use App\Models\Job;
 use App\Models\ReconciliationException;
 use App\Models\User;
 use Database\Seeders\StaffRolesSeeder;
 use Livewire\Livewire;
 
 /**
- * P2-10 rework: the reworked admin dashboard surfaces the marketplace + money at a glance via real
- * widgets computed from the models and the ledger.
+ * P2-10 rework (full-fidelity): the reworked admin dashboard is a single bespoke-view widget that
+ * surfaces the marketplace + money at a glance, computed from the models and the ledger.
  */
 beforeEach(function () {
     $this->seed(StaffRolesSeeder::class);
@@ -23,26 +22,30 @@ beforeEach(function () {
     $this->actingAs($staff);
 });
 
-it('renders the platform stats widget with the KPI labels', function () {
-    Livewire::test(PlatformStatsWidget::class)
+it('renders the overview KPIs, a recent engagement, and an open exception', function () {
+    $customer = User::factory()->create();
+    $job = Job::factory()->remote()->create([
+        'customer_party_id' => $customer->party_id,
+        'reference' => 'JOB-DASH1',
+    ]);
+    Engagement::factory()->create(['job_id' => $job->id]);
+    ReconciliationException::factory()->create([
+        'status' => 'open',
+        'detail' => 'Ledger platform_cash short by 2000 vs wallet.',
+    ]);
+
+    Livewire::test(OverviewWidget::class)
         ->assertSee('Open jobs')
         ->assertSee('Escrow held')
         ->assertSee('Platform revenue')
-        ->assertSee('Reconciliation exceptions');
+        ->assertSee('Reconciliation exceptions')
+        ->assertSee('Recent engagements')
+        ->assertSee('JOB-DASH1')
+        ->assertSee('Needs attention')
+        ->assertSee('Settlement mismatch');
 });
 
-it('shows recent engagements in the widget table', function () {
-    $engagement = Engagement::factory()->create();
-
-    Livewire::test(RecentEngagementsWidget::class)
-        ->assertCanSeeTableRecords([$engagement]);
-});
-
-it('surfaces open reconciliation exceptions and hides resolved ones', function () {
-    $open = ReconciliationException::factory()->create(['status' => 'open']);
-    $resolved = ReconciliationException::factory()->create(['status' => 'resolved']);
-
-    Livewire::test(ReconciliationExceptionsWidget::class)
-        ->assertCanSeeTableRecords([$open])
-        ->assertCanNotSeeTableRecords([$resolved]);
+it('shows the all-clear state when there are no open exceptions', function () {
+    Livewire::test(OverviewWidget::class)
+        ->assertSee('All clear — the ledger matches');
 });
