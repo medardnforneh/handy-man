@@ -117,6 +117,15 @@ Task IDs come from `docs/05-build-plan.md`.
 
 Phases 3–8: not started (see build plan).
 
+## Design debt (tracked)
+
+- **UI quality bar (user-mandated): every UI must be beautiful, professional, perfect.** New UI is
+  built to that bar from the start on the design-token system (light+dark, semantic colours,
+  no-literal-colour lint). **Rework owed:** the P2-10 Filament resources (jobs/offers/engagements)
+  are functional but plain — they need a design pass (custom theme, layout, dashboards) before Phase
+  3's admin surfaces are called done. Ionic app screens and Blade public pages (Phase 5+/SEO) must
+  meet the bar when built.
+
 ## What was done, most recent first
 
 - **P3-06 — reconciliation poller**: `payments:reconcile` sweeps unresolved intents and asks the
