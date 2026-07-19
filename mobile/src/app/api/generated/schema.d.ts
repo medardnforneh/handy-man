@@ -302,6 +302,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/offers/{offer}/accept": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Provider accepts an offer → engagement
+         * @description The offer's own provider accepts it. Concurrency-safe: exactly one engagement is created per job even under simultaneous accepts. Gated on `identity_verified` keyed to the job's engagement_mode — remote uses the lighter (phone) check, on-site requires full ID; an unmet gate returns a `precondition_unmet` problem (409), not a 403. An individual provider is auto-assigned as the engagement lead.
+         */
+        post: operations["acceptOffer"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/jobs/{job}/providers": {
         parameters: {
             query?: never;
@@ -457,6 +477,31 @@ export interface components {
             expires_at: string;
             /** Format: date-time */
             created_at?: string;
+        };
+        Engagement: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            job_id: string;
+            /** Format: uuid */
+            provider_party_id: string;
+            /** Format: uuid */
+            offer_id: string;
+            agreed_amount: components["schemas"]["Money"];
+            is_escrowed: boolean;
+            /** Format: date-time */
+            accepted_at: string;
+            assignments?: components["schemas"]["Assignment"][];
+        };
+        Assignment: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            worker_user_id: string;
+            /** @enum {string} */
+            role: "lead" | "helper";
+            /** @enum {string} */
+            status: "assigned" | "accepted" | "declined" | "en_route" | "on_site" | "completed" | "removed";
         };
         Job: {
             /** Format: uuid */
@@ -1292,6 +1337,35 @@ export interface operations {
             403: components["responses"]["Problem"];
             409: components["responses"]["Problem"];
             422: components["responses"]["ValidationProblem"];
+        };
+    };
+    acceptOffer: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description A client-generated UUID. Replaying it returns the stored response (CLAUDE.md rule */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                offer: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The created engagement */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["Engagement"];
+                    };
+                };
+            };
+            401: components["responses"]["Problem"];
+            409: components["responses"]["Problem"];
         };
     };
     jobMatchingProviders: {

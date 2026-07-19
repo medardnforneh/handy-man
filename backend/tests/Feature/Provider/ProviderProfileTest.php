@@ -83,13 +83,18 @@ it('sets a service area only with location_tracking consent', function () {
         ->assertJsonPath('data.radius_m', 5000);
 });
 
-it('derives identity_verified from the provider verification tier', function () {
-    $user = User::factory()->create();
-
+it('derives identity_verified as the stronger of the phone check and the ID tier', function () {
+    // Nothing proven yet → tier 0.
+    $user = User::factory()->unverified()->create();
     expect(app(FactDeriver::class)->derive($user, Fact::IdentityVerified)->level)->toBe(0);
 
+    // A confirmed phone alone satisfies the lighter (remote) check → tier 1.
+    $user->forceFill(['phone_verified_at' => now()])->save();
+    app(FactDeriver::class)->forget($user, Fact::IdentityVerified);
+    expect(app(FactDeriver::class)->derive($user, Fact::IdentityVerified)->level)->toBe(1);
+
+    // Full ID verification raises it to the on-site tier → 2.
     ProviderProfile::factory()->verified(2)->create(['party_id' => $user->party_id]);
     app(FactDeriver::class)->forget($user, Fact::IdentityVerified);
-
     expect(app(FactDeriver::class)->derive($user, Fact::IdentityVerified)->level)->toBe(2);
 });

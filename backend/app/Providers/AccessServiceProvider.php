@@ -51,12 +51,14 @@ final class AccessServiceProvider extends ServiceProvider
             return $listed ? FactResult::met() : FactResult::unmet();
         });
 
-        // identity_verified — the provider profile's verification tier (0..3). The real approval
-        // flow that raises the tier lands in Phase 6; this reads whatever tier is currently set.
+        // identity_verified — the STRONGER of: the "lighter check" (a confirmed phone → tier 1,
+        // doc 10's remote requirement) and the provider profile's ID verification tier (2..3, the
+        // on-site requirement; the approval flow that raises it lands in Phase 6).
         $facts->register(Fact::IdentityVerified, function (User $user): FactResult {
-            $tier = (int) (ProviderProfile::query()->where('party_id', $user->party_id)->value('verification_tier') ?? 0);
+            $idTier = (int) (ProviderProfile::query()->where('party_id', $user->party_id)->value('verification_tier') ?? 0);
+            $phoneTier = $user->phone_verified_at !== null ? 1 : 0;
 
-            return FactResult::tier($tier);
+            return FactResult::tier(max($idTier, $phoneTier));
         });
     }
 }

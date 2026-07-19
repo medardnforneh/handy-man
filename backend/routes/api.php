@@ -89,6 +89,8 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
         Route::get('/jobs/{job}/providers', [JobController::class, 'providers'])->name('jobs.providers');
         // Direct offers (P2-05).
         Route::post('/jobs/{job}/offers', [OfferController::class, 'store'])->name('jobs.offers.store');
+        // Provider accepts an offer → engagement (P2-06). Concurrency-safe; fact-gated (P2-06b).
+        Route::post('/offers/{offer}/accept', [OfferController::class, 'accept'])->name('offers.accept');
 
         // Provider section (P1-08). Profile creation is always allowed (doc 10); listing a skill is
         // fact-gated on having a profile; a service area requires location_tracking consent.

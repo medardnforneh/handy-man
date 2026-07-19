@@ -40,10 +40,13 @@ it('creates an on-site job with photos; the owner sees the full exact address', 
         ->assertJsonPath('data.status', 'draft')
         ->assertJsonCount(2, 'data.photos')
         // Owner sees the exact address.
-        ->assertJsonPath('data.location.line1', $address->line1)
-        ->assertJsonPath('data.location.latitude', $address->point->latitude);
+        ->assertJsonPath('data.location.line1', $address->line1);
 
-    expect($res->json('data.reference'))->toStartWith('JOB-');
+    // Compare against the DB-round-tripped coordinate (PostGIS double precision) rather than the
+    // in-memory factory value, which can differ in the last float digit.
+    $address->refresh();
+    expect($res->json('data.location.latitude'))->toEqualWithDelta($address->point->latitude, 1e-6)
+        ->and($res->json('data.reference'))->toStartWith('JOB-');
 });
 
 it('creates a remote job with no location', function () {
