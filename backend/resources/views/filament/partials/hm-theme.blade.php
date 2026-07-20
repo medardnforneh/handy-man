@@ -1,25 +1,31 @@
-{{-- Shared admin design-token styles (tokens/tokens.json). Scoped under .hm-dash; syncs to
-     Filament's `.dark` class so both themes are designed, not inverted. Included by the dashboard
-     and the bespoke resource detail views. --}}
+{{-- Shared admin styles. SEMANTIC TOKENS ONLY — every colour resolves to a --hm-color-* variable
+     from the generated stylesheet (tokens/tokens.json → public/css/tokens.css, linked by
+     AdminPanelProvider). Light/dark follow `data-theme`, which is mirrored from Filament's `.dark`
+     class, so both themes are designed rather than inverted. Enforced by `npm run lint:colors`. --}}
 <style>
     .hm-dash {
-        --hm-surface:#ffffff; --hm-base:#f7f8fa; --hm-sunken:#eceef1;
-        --hm-text:#16181d; --hm-muted:#5b6472; --hm-border:#e3e6ea; --hm-border-strong:#c4c9d0;
-        --hm-brand:#0a7d54; --hm-brand-weak:rgba(10,125,84,.10); --hm-on-brand:#fff;
-        --hm-success:#1a7f43; --hm-warning:#b3620a; --hm-danger:#c0392b; --hm-info:#1f6feb;
-        --hm-success-w:rgba(26,127,67,.12); --hm-warning-w:rgba(179,98,10,.12);
-        --hm-danger-w:rgba(192,57,43,.12); --hm-info-w:rgba(31,111,235,.12);
-        --hm-shadow:0 1px 2px rgba(16,24,32,.04), 0 4px 16px rgba(16,24,32,.05);
-        color:var(--hm-text); font-variant-numeric:tabular-nums;
-    }
-    .dark .hm-dash {
-        --hm-surface:#171b21; --hm-base:#0f1216; --hm-sunken:#0a0c0f;
-        --hm-text:#e8eaed; --hm-muted:#9aa4b2; --hm-border:#262b33; --hm-border-strong:#3a414c;
-        --hm-brand:#2ea77d; --hm-brand-weak:rgba(46,167,125,.14); --hm-on-brand:#05130d;
-        --hm-success:#35b46a; --hm-warning:#e0912f; --hm-danger:#e5675a; --hm-info:#4f9dff;
-        --hm-success-w:rgba(53,180,106,.15); --hm-warning-w:rgba(224,145,47,.15);
-        --hm-danger-w:rgba(229,103,90,.16); --hm-info-w:rgba(79,157,255,.15);
-        --hm-shadow:0 1px 2px rgba(0,0,0,.4), 0 6px 20px rgba(0,0,0,.35);
+        --hm-surface: var(--hm-color-surface-raised);
+        --hm-base: var(--hm-color-surface-base);
+        --hm-sunken: var(--hm-color-surface-sunken);
+        --hm-text: var(--hm-color-text-primary);
+        --hm-muted: var(--hm-color-text-muted);
+        --hm-border: var(--hm-color-border-subtle);
+        --hm-border-strong: var(--hm-color-border-strong);
+        --hm-brand: var(--hm-color-brand-primary);
+        --hm-on-brand: var(--hm-color-brand-onPrimary);
+        --hm-success: var(--hm-color-status-success);
+        --hm-warning: var(--hm-color-status-warning);
+        --hm-danger: var(--hm-color-status-danger);
+        --hm-info: var(--hm-color-status-info);
+        --hm-brand-weak: color-mix(in srgb, var(--hm-brand) 12%, transparent);
+        --hm-success-w: color-mix(in srgb, var(--hm-success) 14%, transparent);
+        --hm-warning-w: color-mix(in srgb, var(--hm-warning) 14%, transparent);
+        --hm-danger-w: color-mix(in srgb, var(--hm-danger) 14%, transparent);
+        --hm-info-w: color-mix(in srgb, var(--hm-info) 14%, transparent);
+        --hm-shadow: 0 1px 2px color-mix(in srgb, var(--hm-text) 6%, transparent),
+                     0 4px 16px color-mix(in srgb, var(--hm-text) 7%, transparent);
+        color: var(--hm-text);
+        font-variant-numeric: tabular-nums;
     }
     .hm-dash *{ box-sizing:border-box; }
     .hm-dash .hm-grid{ display:flex; flex-direction:column; gap:24px; }
@@ -45,7 +51,10 @@
     .hm-dash .hm-ref{ font-weight:600; }
     .hm-dash .hm-sub{ color:var(--hm-muted); font-size:12px; }
     .hm-dash .hm-prov{ display:flex; align-items:center; gap:9px; }
-    .hm-dash .hm-pa{ width:26px; height:26px; border-radius:7px; flex:none; display:grid; place-items:center; font-weight:700; font-size:11px; color:#fff; }
+    .hm-dash .hm-pa{ width:26px; height:26px; border-radius:7px; flex:none; display:grid; place-items:center; font-weight:700; font-size:11px; color:var(--hm-on-brand); background:var(--hm-brand); }
+    .hm-dash .hm-pa.accent-info{ background:var(--hm-info); }
+    .hm-dash .hm-pa.accent-warning{ background:var(--hm-warning); }
+    .hm-dash .hm-pa.accent-muted{ background:var(--hm-muted); }
     .hm-dash .hm-pill{ display:inline-flex; align-items:center; gap:6px; padding:3px 9px; border-radius:9999px; font-size:11.5px; font-weight:600; white-space:nowrap; }
     .hm-dash .hm-pill::before{ content:""; width:6px; height:6px; border-radius:50%; background:currentColor; }
     .hm-dash .hm-engaged{ color:var(--hm-info); background:var(--hm-info-w); }
@@ -102,7 +111,8 @@
     .hm-dash .hm-kv .r{ display:flex; align-items:center; justify-content:space-between; gap:12px; }
     .hm-dash .hm-kv .r .l{ color:var(--hm-muted); font-size:12.5px; }
     .hm-dash .hm-kv .r .val{ font-weight:600; font-size:13px; }
-    /* Extreme responsiveness: fluid from phone → desktop; nothing overflows the viewport. */
+
+    /* Extreme responsiveness: fluid phone → desktop; nothing overflows the viewport. */
     @media (max-width:1180px){ .hm-dash .hm-cols{ grid-template-columns:1fr; } }
     @media (max-width:1024px){ .hm-dash .hm-kpis{ grid-template-columns:repeat(2,1fr);} .hm-dash .hm-mgrid{ grid-template-columns:repeat(2,1fr);} }
     @media (max-width:820px){ .hm-dash .hm-two{ grid-template-columns:1fr; } }

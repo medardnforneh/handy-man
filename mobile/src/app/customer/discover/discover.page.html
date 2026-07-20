@@ -1,0 +1,94 @@
+<ion-header [translucent]="true" class="ion-no-border">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <div class="loc">
+        <ion-icon name="location-outline" aria-hidden="true"></ion-icon>
+        <span class="loc-text">
+          <b>{{ 'app.name' | translate }}</b>
+          <small>{{ 'discover.change_location' | translate }}</small>
+        </span>
+      </div>
+    </ion-buttons>
+    <ion-buttons slot="end">
+      <div class="hm-avatar accent-brand top-avatar" aria-hidden="true">{{ userInitials }}</div>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <div class="page">
+    <h1 class="greeting">{{ 'discover.greeting' | translate }}</h1>
+
+    <ion-searchbar
+      class="hm-tap"
+      [placeholder]="'discover.search_placeholder' | translate"
+      [attr.aria-label]="'discover.search_placeholder' | translate"
+    ></ion-searchbar>
+
+    <ion-segment class="mode" [value]="mode()">
+      <ion-segment-button class="hm-tap" value="onsite" (click)="setMode('onsite')">
+        <ion-label>{{ 'discover.mode.onsite' | translate }}</ion-label>
+      </ion-segment-button>
+      <ion-segment-button class="hm-tap" value="remote" (click)="setMode('remote')">
+        <ion-label>{{ 'discover.mode.remote' | translate }}</ion-label>
+      </ion-segment-button>
+      <ion-segment-button class="hm-tap" value="both" (click)="setMode('both')">
+        <ion-label>{{ 'discover.mode.both' | translate }}</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+
+    <div class="hm-section-head">
+      <h2>{{ 'discover.categories' | translate }}</h2>
+      <a href="#">{{ 'discover.see_all' | translate }}</a>
+    </div>
+
+    <div class="cats">
+      @for (cat of categories; track cat.id) {
+        <button class="cat hm-tap" type="button">
+          <span class="ic"><ion-icon [name]="cat.icon" aria-hidden="true"></ion-icon></span>
+          <span class="cat-label">{{ cat.label }}</span>
+        </button>
+      }
+    </div>
+
+    <div class="hm-section-head">
+      <h2>{{ 'discover.top_providers' | translate }}</h2>
+      <a href="#">{{ 'discover.map' | translate }}</a>
+    </div>
+
+    @for (p of providers(); track p.id) {
+      <div class="hm-card pro">
+        <div class="hm-avatar pro-av" [class]="'hm-avatar pro-av accent-' + p.accent" aria-hidden="true">{{ p.initials }}</div>
+
+        <div class="pro-info">
+          <div class="pro-name">
+            <b>{{ p.name }}</b>
+            @if (p.verified) {
+              <ion-icon
+                class="verified"
+                name="shield-checkmark"
+                [attr.aria-label]="'discover.verified' | translate"
+              ></ion-icon>
+            }
+          </div>
+          <div class="pro-meta">
+            <span class="rating"><ion-icon name="star" aria-hidden="true"></ion-icon>{{ p.rating }}</span>
+            <span class="dot" aria-hidden="true"></span>
+            <span>{{ p.skill }}</span>
+            @if (p.mode === 'remote') {
+              <span class="hm-pill tone-info">{{ 'discover.mode.remote' | translate }}</span>
+            } @else {
+              <span class="hm-pill tone-brand">{{ 'discover.distance' | translate:{ km: p.distanceKm } }}</span>
+            }
+          </div>
+        </div>
+
+        <ion-button class="hm-tap" size="small" (click)="openWorkspace(p)">
+          {{ 'discover.quote' | translate }}
+        </ion-button>
+      </div>
+    } @empty {
+      <p class="hm-empty">{{ 'discover.no_providers' | translate }}</p>
+    }
+  </div>
+</ion-content>

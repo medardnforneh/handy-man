@@ -36,13 +36,17 @@ function stripToText(src) {
   return src
     .replace(/<style[\s\S]*?<\/style>/gi, ' ')  // <style> blocks (CSS is not user copy)
     .replace(/<script[\s\S]*?<\/script>/gi, ' ') // <script> blocks
+    .replace(/@php[\s\S]*?@endphp/gi, ' ')  // @php blocks (code, not user copy — same as <script>)
     .replace(/<!--[\s\S]*?-->/g, ' ')       // HTML comments
     .replace(/\{\{--[\s\S]*?--\}\}/g, ' ')   // Blade comments
     .replace(/\{\{[\s\S]*?\}\}/g, ' ')       // {{ … }} interpolation (Angular + Blade)
     .replace(/\{!![\s\S]*?!!\}/g, ' ')       // {!! … !!} Blade raw
-    .replace(/@\w+\s*\([^)]*\)/g, ' ')       // @lang('…'), @if(…) …
+    // @lang('…'), @if(…), Blade @forelse ($a->b('c') as $d), Angular @for (x of f(); track y).
+    // Parens nest, so match up to three levels rather than stopping at the first ')'.
+    .replace(/@\w+\s*\((?:[^()]|\((?:[^()]|\([^()]*\))*\))*\)/g, ' ')
     .replace(/@\w+/g, ' ')                   // bare @else, @endif …
-    .replace(/<[^>]*>/g, ' ');               // all tags (drops attribute values too)
+    .replace(/<[^>]*>/g, ' ')                // all tags (drops attribute values too)
+    .replace(/&[a-zA-Z]+;|&#\d+;/g, ' ');    // HTML entities (&nbsp; …) are markup, not copy
 }
 
 const violations = [];

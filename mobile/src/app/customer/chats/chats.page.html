@@ -1,0 +1,31 @@
+<ion-header [translucent]="true" class="ion-no-border">
+  <ion-toolbar>
+    <ion-title>{{ 'chats.title' | translate }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <div class="page">
+    @for (chat of chats; track chat.id) {
+      <button class="chat hm-tap" type="button" (click)="open(chat)">
+        <div [class]="'hm-avatar chat-av accent-' + chat.accent" aria-hidden="true">{{ chat.initials }}</div>
+
+        <div class="body">
+          <div class="line">
+            <b>{{ chat.providerName }}</b>
+            <small class="hm-muted">{{ chat.time }}</small>
+          </div>
+          <div class="line">
+            <span class="preview hm-muted">{{ chat.preview }}</span>
+            @if (chat.unread > 0) {
+              <span class="unread">{{ chat.unread }}</span>
+            }
+          </div>
+          <small class="ref hm-muted">{{ chat.reference }}</small>
+        </div>
+      </button>
+    } @empty {
+      <p class="hm-empty">{{ 'chats.empty' | translate }}</p>
+    }
+  </div>
+</ion-content>

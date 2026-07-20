@@ -1,0 +1,160 @@
+// Shared primitives load once globally — see angular.json styles.
+
+ion-toolbar {
+  --background: var(--hm-color-surface-raised);
+  --border-width: 0;
+}
+
+.ws-head {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding-inline-end: var(--hm-space-md);
+  min-width: 0;
+
+  .ws-av { width: 36px; height: 36px; font-size: 0.8rem; }
+
+  .ws-title {
+    flex: 1;
+    min-width: 0;
+    line-height: 1.2;
+
+    b {
+      display: block;
+      font-size: 0.92rem;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    small { color: var(--hm-color-text-muted); font-size: 0.7rem; }
+  }
+}
+
+.thread-bg { --background: var(--hm-color-surface-base); }
+
+.thread {
+  display: flex;
+  flex-direction: column;
+  gap: var(--hm-space-sm);
+  padding: var(--hm-space-md);
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.day {
+  align-self: center;
+  color: var(--hm-color-text-muted);
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.bub {
+  align-self: flex-start;
+  max-width: 82%;
+  padding: 0.55rem 0.8rem;
+  border-radius: var(--hm-radius-lg);
+  border-bottom-left-radius: var(--hm-radius-sm);
+  background: var(--hm-color-surface-raised);
+  border: 1px solid var(--hm-color-border-subtle);
+  font-size: 0.88rem;
+  line-height: 1.45;
+
+  &.mine {
+    align-self: flex-end;
+    background: var(--hm-color-brand-primary);
+    color: var(--hm-color-brand-onPrimary);
+    border-color: transparent;
+    border-bottom-left-radius: var(--hm-radius-lg);
+    border-bottom-right-radius: var(--hm-radius-sm);
+  }
+
+  .tm {
+    display: block;
+    margin-top: 0.2rem;
+    font-size: 0.65rem;
+    opacity: 0.7;
+  }
+}
+
+.voice {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 190px;
+
+  .play {
+    display: grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    flex: none;
+    border-radius: 50%;
+    color: var(--hm-color-brand-primary);
+    background: color-mix(in srgb, var(--hm-color-brand-primary) 12%, transparent);
+  }
+
+  .wave {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    height: 22px;
+
+    i {
+      width: 2.5px;
+      border-radius: 2px;
+      background: var(--hm-color-brand-primary);
+      opacity: 0.65;
+    }
+  }
+
+  .tm { margin-top: 0; flex: none; }
+}
+
+.sys {
+  align-self: center;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.7rem;
+  border-radius: var(--hm-radius-pill);
+  background: var(--hm-color-surface-sunken);
+  color: var(--hm-color-text-muted);
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-align: center;
+
+  ion-icon { color: var(--hm-color-brand-primary); font-size: 0.85rem; flex: none; }
+}
+
+// Structured-message card styles (.scard/.total/.mlist/.acts/.released) live in the global
+// primitives — the provider workspace renders the same server-narrated cards.
+
+.composer {
+  --background: var(--hm-color-surface-raised);
+  --border-width: 0;
+  padding-bottom: env(safe-area-inset-bottom);
+
+  .field {
+    --background: var(--hm-color-surface-sunken);
+    --color: var(--hm-color-text-primary);
+    --placeholder-color: var(--hm-color-text-muted);
+    --padding-start: 0.9rem;
+    --padding-end: 0.9rem;
+    border-radius: var(--hm-radius-pill);
+    font-size: 0.88rem;
+  }
+
+  .send {
+    --background: var(--hm-color-brand-primary);
+    --color: var(--hm-color-brand-onPrimary);
+    --border-radius: 50%;
+  }
+}
+
+// Narrow phones: stack the quote actions so neither button gets squeezed.
+@media (max-width: 380px) {
+  .acts { flex-direction: column; }
+  .bub { max-width: 90%; }
+}

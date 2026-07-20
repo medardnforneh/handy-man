@@ -12,6 +12,8 @@ use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
+use Filament\Support\Facades\FilamentView;
+use Filament\View\PanelsRenderHook;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
@@ -68,5 +70,29 @@ class AdminPanelProvider extends PanelProvider
             ->authMiddleware([
                 Authenticate::class,
             ]);
+    }
+
+    public function boot(): void
+    {
+        // The bespoke admin views consume the SAME generated design tokens as the app and Blade
+        // (tokens/tokens.json → public/css/tokens.css) — no palette is ever redeclared here.
+        // Filament switches themes with a `dark` class on <html>; the token stylesheet keys off
+        // `data-theme`, so mirror one onto the other and both stay in lockstep.
+        FilamentView::registerRenderHook(
+            PanelsRenderHook::HEAD_END,
+            fn (): string => <<<'HTML'
+                <link rel="stylesheet" href="/css/tokens.css">
+                <script>
+                    (function () {
+                        var root = document.documentElement;
+                        var sync = function () {
+                            root.setAttribute('data-theme', root.classList.contains('dark') ? 'dark' : 'light');
+                        };
+                        sync();
+                        new MutationObserver(sync).observe(root, { attributes: true, attributeFilter: ['class'] });
+                    })();
+                </script>
+                HTML,
+        );
     }
 }

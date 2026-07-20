@@ -15,6 +15,8 @@ use Livewire\Livewire;
  * surfaces the marketplace + money at a glance, computed from the models and the ledger.
  */
 beforeEach(function () {
+    // The panel is translated (doc 09); pin the locale so assertions don't depend on APP_LOCALE.
+    app()->setLocale('en');
     $this->seed(StaffRolesSeeder::class);
     $staff = User::factory()->create(['email' => 'admin+'.uniqid().'@handyman.cm']);
     $staff->assignRole('superadmin');

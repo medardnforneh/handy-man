@@ -1,0 +1,80 @@
+// Shared primitives load once globally — see angular.json styles.
+
+ion-toolbar {
+  --background: var(--hm-color-surface-base);
+  --border-width: 0;
+}
+
+ion-title {
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.page {
+  padding: var(--hm-space-sm) var(--hm-space-md) var(--hm-space-xl);
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.job {
+  display: block;
+  width: 100%;
+  text-align: start;
+  padding: var(--hm-space-md);
+  margin-bottom: var(--hm-space-sm);
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--hm-space-sm);
+  flex-wrap: wrap;
+
+  & + .row { margin-top: 0.5rem; }
+}
+
+.ref {
+  min-width: 0;
+
+  b {
+    display: block;
+    font-size: 0.9rem;
+    letter-spacing: -0.01em;
+  }
+
+  .title {
+    display: block;
+    color: var(--hm-color-text-muted);
+    font-size: 0.78rem;
+  }
+}
+
+.meta .amount {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+
+  small {
+    color: var(--hm-color-text-muted);
+    font-weight: 600;
+    font-size: 0.7rem;
+    margin-inline-start: 0.15rem;
+  }
+}
+
+.bars {
+  display: flex;
+  gap: 3px;
+
+  i {
+    width: 26px;
+    height: 5px;
+    border-radius: 3px;
+    background: var(--hm-color-border-strong);
+
+    &.done { background: var(--hm-color-brand-primary); }
+  }
+}

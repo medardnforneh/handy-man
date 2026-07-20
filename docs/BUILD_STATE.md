@@ -163,6 +163,22 @@ Phases 5–8: not started (see build plan).
 
 ## What was done, most recent first
 
+- **Customer app (Ionic) — first real screens**: a tabs shell (Discover / Jobs / Chats / Account)
+  plus the **engagement workspace**, built as standalone Angular 20 components on the generated
+  design tokens. Discover has search, an on-site/remote filter, a category rail and provider cards;
+  the workspace renders the chat-as-state-machine — free-form bubbles and voice notes interleaved
+  with **server-narrated** structured cards (quotation with Accept/Counter, milestone released,
+  system chips), with a composer that deliberately has no "submit quote" button (rule #11). Shared
+  primitives live in one global stylesheet; every screen is fluid to ~360px with ≥44px tap targets.
+  Data comes from a typed fixture service whose shapes match the API, so swapping in the generated
+  client is a per-method change. `ng build` green.
+- **Token/i18n discipline restored across the admin**: the Filament views had hard-coded hexes and
+  English copy (both violations of doc 08/09). They now consume the generated `--hm-color-*` tokens
+  (loaded into the panel, with Filament's `.dark` class mirrored onto `data-theme` so both themes
+  work) and all admin copy runs through `__()` with a new `admin.*` namespace — **160 i18n keys ×
+  2 locales, parity OK**. Also fixed three real gaps in the bare-strings linter (it flagged `@php`
+  blocks, nested-paren directives like `@for (x of f(); track y)`, and HTML entities).
+
 - **Filament admin rework — full fidelity**: after the stats/table-widget first pass, rebuilt the
   dashboard as a single bespoke-view widget (`OverviewWidget`) whose Blade view reproduces the
   approved mockup pixel-for-pixel inside the Filament shell — KPI cards with SVG sparklines, a

@@ -1,0 +1,90 @@
+// Shared primitives load once globally — see angular.json styles.
+
+ion-toolbar {
+  --background: var(--hm-color-surface-base);
+  --border-width: 0;
+}
+
+ion-title {
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.page {
+  padding: var(--hm-space-sm) var(--hm-space-md) var(--hm-space-xl);
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.chat {
+  display: flex;
+  align-items: center;
+  gap: var(--hm-space-sm);
+  width: 100%;
+  padding: var(--hm-space-sm) 0;
+  background: none;
+  border: 0;
+  border-bottom: 1px solid var(--hm-color-border-subtle);
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+
+  &:last-of-type { border-bottom: 0; }
+}
+
+.chat-av {
+  width: 48px;
+  height: 48px;
+  font-size: 0.95rem;
+}
+
+.body {
+  flex: 1;
+  min-width: 0;
+}
+
+.line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+
+  b {
+    font-size: 0.92rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  small { flex: none; font-size: 0.7rem; }
+}
+
+.preview {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.8rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.unread {
+  flex: none;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 0.35rem;
+  border-radius: var(--hm-radius-pill);
+  background: var(--hm-color-brand-primary);
+  color: var(--hm-color-brand-onPrimary);
+  font-size: 0.68rem;
+  font-weight: 700;
+  display: grid;
+  place-items: center;
+}
+
+.ref {
+  display: block;
+  margin-top: 0.1rem;
+  font-size: 0.68rem;
+}

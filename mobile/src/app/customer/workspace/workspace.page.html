@@ -1,0 +1,125 @@
+<ion-header [translucent]="true" class="ion-no-border">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/tabs/chats" [text]="''"></ion-back-button>
+    </ion-buttons>
+
+    @if (thread) {
+      <div class="ws-head">
+        <div [class]="'hm-avatar ws-av accent-' + thread.accent" aria-hidden="true">{{ thread.initials }}</div>
+        <div class="ws-title">
+          <b>{{ thread.providerName }}</b>
+          <small>{{ thread.reference }} · {{ thread.skill }}</small>
+        </div>
+        <span [class]="'hm-pill ' + tone(thread.status)">{{ 'status.' + thread.status | translate }}</span>
+      </div>
+    }
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="thread-bg">
+  @if (thread) {
+    <div class="thread">
+      <div class="day">{{ 'workspace.today' | translate }}</div>
+
+      @for (m of thread.messages; track m.id) {
+        @switch (m.kind) {
+          @case ('text') {
+            <div class="bub" [class.mine]="m.mine">
+              <span>{{ m.body }}</span>
+              <small class="tm">{{ m.time }}</small>
+            </div>
+          }
+
+          @case ('voice') {
+            <div class="bub voice" [class.mine]="m.mine">
+              <span class="play" aria-hidden="true"><ion-icon name="play"></ion-icon></span>
+              <span class="wave" aria-hidden="true">
+                @for (bar of [8,14,20,11,17,22,9,15,19,7]; track $index) {
+                  <i [style.height.px]="bar"></i>
+                }
+              </span>
+              <small class="tm">{{ m.duration }}</small>
+            </div>
+          }
+
+          @case ('system') {
+            <div class="sys">
+              <ion-icon name="shield-checkmark" aria-hidden="true"></ion-icon>
+              <span>{{ m.systemKey ?? '' | translate }}</span>
+            </div>
+          }
+
+          @case ('quote') {
+            <div class="hm-card scard">
+              <div class="sh">
+                <ion-icon name="document-text-outline" aria-hidden="true"></ion-icon>
+                <span>{{ 'workspace.quote' | translate }}</span>
+                <span class="ver">{{ 'workspace.version' | translate:{ version: m.quote?.version } }}</span>
+              </div>
+              <div class="bd">
+                <div class="total">
+                  <span class="hm-muted">{{ 'workspace.total' | translate }}</span>
+                  <span class="big">{{ m.quote?.totalMinor | money }}<small>{{ 'money.currency' | translate }}</small></span>
+                </div>
+
+                <div class="mlist">
+                  <div class="mrow">
+                    <span class="dot">1</span>
+                    <span class="hm-muted">{{ 'workspace.deposit' | translate }}</span>
+                    <span class="amt">{{ m.quote?.depositMinor | money }}</span>
+                  </div>
+                  <div class="mrow">
+                    <span class="dot">2</span>
+                    <span class="hm-muted">{{ 'workspace.on_completion' | translate }}</span>
+                    <span class="amt">{{ m.quote?.balanceMinor | money }}</span>
+                  </div>
+                </div>
+
+                <div class="acts">
+                  <ion-button class="hm-tap" fill="outline" expand="block">{{ 'workspace.counter' | translate }}</ion-button>
+                  <ion-button class="hm-tap" expand="block">{{ 'workspace.accept_pay' | translate }}</ion-button>
+                </div>
+              </div>
+            </div>
+          }
+
+          @case ('milestone') {
+            <div class="hm-card scard">
+              <div class="sh done">
+                <ion-icon name="checkmark-circle-outline" aria-hidden="true"></ion-icon>
+                <span>{{ 'workspace.milestone_released' | translate }}</span>
+              </div>
+              <div class="bd released">
+                <span class="ric" aria-hidden="true"><ion-icon name="checkmark"></ion-icon></span>
+                <div>
+                  <b>{{ 'workspace.deposit' | translate }} · {{ m.milestone?.amountMinor | money }}</b>
+                  <p class="hm-muted">{{ 'workspace.released_note' | translate }}</p>
+                </div>
+              </div>
+            </div>
+          }
+        }
+      }
+    </div>
+  }
+</ion-content>
+
+<ion-footer class="ion-no-border">
+  <ion-toolbar class="composer">
+    <ion-buttons slot="start">
+      <ion-button class="hm-tap" fill="clear"><ion-icon slot="icon-only" name="image-outline"></ion-icon></ion-button>
+    </ion-buttons>
+
+    <ion-input
+      class="field"
+      [placeholder]="'workspace.composer_placeholder' | translate"
+      [attr.aria-label]="'workspace.composer_placeholder' | translate"
+    ></ion-input>
+
+    <ion-buttons slot="end">
+      <ion-button class="hm-tap" fill="clear"><ion-icon slot="icon-only" name="mic-outline"></ion-icon></ion-button>
+      <ion-button class="hm-tap send" fill="solid"><ion-icon slot="icon-only" name="send"></ion-icon></ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-footer>

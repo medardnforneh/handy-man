@@ -1,0 +1,223 @@
+// Shared customer-section UI primitives.
+// SEMANTIC TOKENS ONLY — never a literal colour (doc 08; enforced by `npm run lint:colors`).
+// Tinted surfaces use color-mix() against a token so light/dark both stay correct.
+
+.hm-card {
+  background: var(--hm-color-surface-raised);
+  border: 1px solid var(--hm-color-border-subtle);
+  border-radius: var(--hm-radius-lg);
+}
+
+.hm-muted { color: var(--hm-color-text-muted); }
+
+.hm-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--hm-space-sm);
+  margin: var(--hm-space-lg) 0 var(--hm-space-md);
+
+  h2 {
+    margin: 0;
+    font-size: 1rem;
+    letter-spacing: -0.01em;
+  }
+
+  a {
+    color: var(--hm-color-brand-primary);
+    font-size: 0.82rem;
+    font-weight: 600;
+    text-decoration: none;
+  }
+}
+
+// Round accent avatar. The accent classes map onto semantic tokens.
+.hm-avatar {
+  flex: none;
+  display: grid;
+  place-items: center;
+  color: var(--hm-color-brand-onPrimary);
+  font-weight: 700;
+  border-radius: var(--hm-radius-md);
+
+  &.accent-brand { background: var(--hm-color-brand-primary); }
+  &.accent-info { background: var(--hm-color-status-info); }
+  &.accent-warning { background: var(--hm-color-status-warning); }
+  &.accent-muted { background: var(--hm-color-text-muted); }
+}
+
+// Status / mode pill.
+.hm-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.18rem 0.55rem;
+  border-radius: var(--hm-radius-pill);
+  font-size: 0.72rem;
+  font-weight: 600;
+  white-space: nowrap;
+
+  &::before {
+    content: '';
+    width: 0.36rem;
+    height: 0.36rem;
+    border-radius: 50%;
+    background: currentColor;
+  }
+
+  &.tone-info {
+    color: var(--hm-color-status-info);
+    background: color-mix(in srgb, var(--hm-color-status-info) 14%, transparent);
+  }
+
+  &.tone-warning {
+    color: var(--hm-color-status-warning);
+    background: color-mix(in srgb, var(--hm-color-status-warning) 14%, transparent);
+  }
+
+  &.tone-success {
+    color: var(--hm-color-status-success);
+    background: color-mix(in srgb, var(--hm-color-status-success) 14%, transparent);
+  }
+
+  &.tone-danger {
+    color: var(--hm-color-status-danger);
+    background: color-mix(in srgb, var(--hm-color-status-danger) 14%, transparent);
+  }
+
+  &.tone-brand {
+    color: var(--hm-color-brand-primary);
+    background: color-mix(in srgb, var(--hm-color-brand-primary) 12%, transparent);
+  }
+
+  &.tone-neutral {
+    color: var(--hm-color-text-muted);
+    background: var(--hm-color-surface-sunken);
+  }
+}
+
+.hm-empty {
+  text-align: center;
+  color: var(--hm-color-text-muted);
+  font-size: 0.9rem;
+  padding: var(--hm-space-xl) var(--hm-space-md);
+}
+
+// Comfortable tap targets everywhere (>= 44px) — phones first.
+.hm-tap {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+// ---------------------------------------------------------------------------
+// Structured-message cards — the chat IS the state machine (doc 06). These are
+// SERVER-narrated (rule #11) and shared by the customer and provider workspaces.
+// ---------------------------------------------------------------------------
+.scard {
+  align-self: stretch;
+  overflow: hidden;
+
+  .sh {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.65rem 0.85rem;
+    border-bottom: 1px solid var(--hm-color-border-subtle);
+    color: var(--hm-color-brand-primary);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+
+    .ver { margin-inline-start: auto; opacity: 0.75; }
+  }
+
+  .bd { padding: 0.85rem; }
+}
+
+.total {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--hm-space-sm);
+  margin-bottom: var(--hm-space-sm);
+
+  .big {
+    font-size: 1.35rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+
+    small {
+      font-size: 0.72rem;
+      color: var(--hm-color-text-muted);
+      font-weight: 600;
+      margin-inline-start: 0.25rem;
+    }
+  }
+}
+
+.mlist {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  margin-bottom: var(--hm-space-md);
+}
+
+.mrow {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-size: 0.85rem;
+
+  .dot {
+    display: grid;
+    place-items: center;
+    width: 20px;
+    height: 20px;
+    flex: none;
+    border-radius: 50%;
+    border: 2px solid var(--hm-color-border-strong);
+    color: var(--hm-color-text-muted);
+    font-size: 0.6rem;
+    font-weight: 700;
+  }
+
+  .amt { margin-inline-start: auto; font-weight: 700; }
+}
+
+.acts {
+  display: flex;
+  gap: 0.5rem;
+
+  ion-button {
+    flex: 1;
+    --border-radius: var(--hm-radius-md);
+    font-weight: 700;
+    margin: 0;
+  }
+}
+
+.released {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+
+  .ric {
+    display: grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    flex: none;
+    border-radius: var(--hm-radius-md);
+    color: var(--hm-color-status-success);
+    background: color-mix(in srgb, var(--hm-color-status-success) 14%, transparent);
+  }
+
+  b { font-size: 0.88rem; }
+  p { margin: 0.1rem 0 0; font-size: 0.76rem; }
+}
+
+// Narrow phones: stack the quote actions so neither button is squeezed.
+@media (max-width: 380px) {
+  .acts { flex-direction: column; }
+}

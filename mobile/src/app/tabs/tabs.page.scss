@@ -1,0 +1,18 @@
+// Shared primitives load once globally — see angular.json styles.
+
+ion-tab-bar {
+  --background: var(--hm-color-surface-raised);
+  --border: 1px solid var(--hm-color-border-subtle);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+ion-tab-button {
+  --color: var(--hm-color-text-muted);
+  --color-selected: var(--hm-color-brand-primary);
+  font-weight: 600;
+}
+
+ion-tab-button ion-label {
+  font-size: 0.68rem;
+  letter-spacing: 0.01em;
+}

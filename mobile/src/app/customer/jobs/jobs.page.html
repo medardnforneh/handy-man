@@ -1,0 +1,39 @@
+<ion-header [translucent]="true" class="ion-no-border">
+  <ion-toolbar>
+    <ion-title>{{ 'jobs.title' | translate }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <div class="page">
+    @for (job of jobs; track job.id) {
+      <button class="hm-card job hm-tap" type="button" (click)="open(job)">
+        <div class="row">
+          <div class="ref">
+            <b>{{ job.reference }}</b>
+            <span class="title">{{ job.title }}</span>
+          </div>
+          <span [class]="'hm-pill ' + tone(job.status)">{{ 'status.' + job.status | translate }}</span>
+        </div>
+
+        <div class="row meta">
+          <span class="hm-muted">{{ job.providerName }}</span>
+          <span class="amount">{{ job.amountMinor | money }} <small>{{ 'money.currency' | translate }}</small></span>
+        </div>
+
+        @if (job.milestonesTotal > 0) {
+          <div class="row">
+            <div class="bars" aria-hidden="true">
+              @for (i of slots(job); track i) {
+                <i [class.done]="i < job.milestonesDone"></i>
+              }
+            </div>
+            <small class="hm-muted">{{ job.milestonesDone }}/{{ job.milestonesTotal }} {{ 'jobs.milestones' | translate }}</small>
+          </div>
+        }
+      </button>
+    } @empty {
+      <p class="hm-empty">{{ 'jobs.empty' | translate }}</p>
+    }
+  </div>
+</ion-content>

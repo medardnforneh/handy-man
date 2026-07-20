@@ -1,0 +1,46 @@
+// Shared primitives load once globally — see angular.json styles.
+
+ion-toolbar {
+  --background: var(--hm-color-surface-base);
+  --border-width: 0;
+}
+
+ion-title {
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.page {
+  padding: 0 var(--hm-space-md) var(--hm-space-xl);
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.choice {
+  --background: var(--hm-color-surface-sunken);
+  border-radius: var(--hm-radius-md);
+
+  ion-segment-button {
+    --color: var(--hm-color-text-muted);
+    --color-checked: var(--hm-color-text-primary);
+    --indicator-color: var(--hm-color-surface-raised);
+    --border-radius: var(--hm-radius-sm);
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: none;
+    min-height: 42px;
+  }
+}
+
+ion-list {
+  padding: 0;
+  overflow: hidden;
+  background: var(--hm-color-surface-raised);
+}
+
+ion-item {
+  --background: var(--hm-color-surface-raised);
+  --color: var(--hm-color-text-primary);
+  --border-color: var(--hm-color-border-subtle);
+  font-size: 0.9rem;
+}
