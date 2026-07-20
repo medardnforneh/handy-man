@@ -14,7 +14,7 @@ use Symfony\Component\HttpFoundation\Response;
  *   1. an explicit ?lang=fr|en (lets a link force a language),
  *   2. the authenticated user's stored locale (added in P1),
  *   3. the Accept-Language header,
- *   4. the app default (fr — the majority locale, but detected, never silently forced).
+ *   4. the app default (en), which is only reached when nothing above matched.
  *
  * Only fr/en are supported; anything else falls back to the default.
  */

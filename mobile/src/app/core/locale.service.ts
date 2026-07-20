@@ -5,13 +5,14 @@ import { Preferences } from '@capacitor/preferences';
 export const SUPPORTED_LOCALES = ['fr', 'en'] as const;
 export type Locale = (typeof SUPPORTED_LOCALES)[number];
 
-const DEFAULT_LOCALE: Locale = 'fr'; // majority locale (doc 09) — but detected/offered, never forced
+const DEFAULT_LOCALE: Locale = 'en'; // matches the backend's APP_LOCALE; French is detected/offered
 const STORAGE_KEY = 'locale';
 
 /**
  * Owns the app's UI language (doc 09). On first launch we DETECT the device locale and apply it,
- * but do not persist until the user confirms — so the choice is offered, never silently locked to
- * French. Persisted via Capacitor Preferences so it survives reinstalls of the web layer.
+ * but do not persist until the user confirms — so the choice is offered, never silently locked in.
+ * A device with no supported language lands on English. Persisted via Capacitor Preferences so it
+ * survives reinstalls of the web layer.
  */
 @Injectable({ providedIn: 'root' })
 export class LocaleService {

@@ -1,23 +1,46 @@
-<ion-tabs>
-  <ion-tab-bar slot="bottom">
-    <ion-tab-button tab="discover" class="hm-tap">
-      <ion-icon name="compass-outline" aria-hidden="true"></ion-icon>
-      <ion-label>{{ 'tabs.discover' | translate }}</ion-label>
-    </ion-tab-button>
+<!-- One shell, two shapes: the split pane promotes the menu to a permanent side rail from
+     `md` up (see tabs.page.scss, which hides the tab bar at the same breakpoint), and below
+     that the menu stays closed and the bottom tab bar is the navigation. -->
+<ion-split-pane contentId="tabs-content" when="(min-width: 768px)">
+  <ion-menu contentId="tabs-content" type="overlay" [swipeGesture]="false">
+    <ion-content class="hm-rail">
+      <div class="brand">
+        <span class="mark" aria-hidden="true">
+          <ion-icon name="hammer-outline"></ion-icon>
+        </span>
+        <span class="brand-text">
+          <strong>{{ 'app.name' | translate }}</strong>
+          <small>{{ 'app.tagline' | translate }}</small>
+        </span>
+      </div>
 
-    <ion-tab-button tab="jobs" class="hm-tap">
-      <ion-icon name="briefcase-outline" aria-hidden="true"></ion-icon>
-      <ion-label>{{ 'tabs.jobs' | translate }}</ion-label>
-    </ion-tab-button>
+      <p class="rail-label">{{ 'nav.customer' | translate }}</p>
 
-    <ion-tab-button tab="chats" class="hm-tap">
-      <ion-icon name="chatbubbles-outline" aria-hidden="true"></ion-icon>
-      <ion-label>{{ 'tabs.chats' | translate }}</ion-label>
-    </ion-tab-button>
+      <ion-list lines="none">
+        @for (item of items; track item.tab) {
+          <ion-item
+            class="hm-tap"
+            [routerLink]="['/tabs', item.tab]"
+            routerLinkActive="active"
+            [detail]="false"
+            button
+          >
+            <ion-icon slot="start" [name]="item.icon" aria-hidden="true"></ion-icon>
+            <ion-label>{{ item.label | translate }}</ion-label>
+          </ion-item>
+        }
+      </ion-list>
+    </ion-content>
+  </ion-menu>
 
-    <ion-tab-button tab="account" class="hm-tap">
-      <ion-icon name="person-outline" aria-hidden="true"></ion-icon>
-      <ion-label>{{ 'tabs.account' | translate }}</ion-label>
-    </ion-tab-button>
-  </ion-tab-bar>
-</ion-tabs>
+  <ion-tabs id="tabs-content">
+    <ion-tab-bar slot="bottom">
+      @for (item of items; track item.tab) {
+        <ion-tab-button [tab]="item.tab" class="hm-tap">
+          <ion-icon [name]="item.icon" aria-hidden="true"></ion-icon>
+          <ion-label>{{ item.label | translate }}</ion-label>
+        </ion-tab-button>
+      }
+    </ion-tab-bar>
+  </ion-tabs>
+</ion-split-pane>

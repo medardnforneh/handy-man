@@ -163,6 +163,23 @@ Phases 5–8: not started (see build plan).
 
 ## What was done, most recent first
 
+- **English is the default language, in both apps.** `APP_LOCALE`/`APP_FALLBACK_LOCALE` are now
+  `en` (in `.env`, `.env.example` and the `config/app.php` defaults), and the app's ngx-translate
+  default/fallback plus `LocaleService.DEFAULT_LOCALE` match. French is still first-class — it is
+  detected from the device/`Accept-Language` and offered, never forced (doc 09 unchanged, only the
+  fallback flipped). The admin panel had been rendering in French purely because of `APP_LOCALE`.
+- **Responsive app shell: side rail on web, tabs on phones.** `mobile/src/app/tabs/` now wraps the
+  `ion-tabs` in an `ion-split-pane` with an `ion-menu` that becomes a permanent 264px side rail at
+  ≥768px; the tab bar is hidden at exactly that breakpoint, so the two are never both on screen.
+  One `items` array in `TabsPage` drives both, so the rail and the tab bar cannot drift apart.
+- **Admin chrome brought onto the tokens** (`backend/public/css/admin.css`, linked from
+  `AdminPanelProvider`'s HEAD_END hook next to `tokens.css`). The bespoke dashboard body was already
+  correct — verified by rendering the widget in isolation — but it sat inside Filament's stock
+  shell, which is why the panel didn't read like the approved proposal. The stylesheet restyles the
+  canvas, sidebar (uppercase group labels, brand-tinted active pill on `.fi-active`/
+  `[aria-current=page]`, both verified against Filament's own Blade), topbar and page header, and
+  strips the widget wrapper's duplicate section chrome. Every value resolves to a `--hm-color-*`
+  token — no palette is redeclared.
 - **Customer app (Ionic) — first real screens**: a tabs shell (Discover / Jobs / Chats / Account)
   plus the **engagement workspace**, built as standalone Angular 20 components on the generated
   design tokens. Discover has search, an on-site/remote filter, a category rail and provider cards;

@@ -1,5 +1,98 @@
 // Shared primitives load once globally — see angular.json styles.
 
+ion-split-pane {
+  --side-width: 264px;
+  --side-max-width: 264px;
+  --border: 1px solid var(--hm-color-border-subtle);
+}
+
+// ---- side rail (wide viewports) ----
+
+.hm-rail {
+  --background: var(--hm-color-surface-raised);
+  --padding-start: var(--hm-space-sm);
+  --padding-end: var(--hm-space-sm);
+  --padding-top: var(--hm-space-md);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: var(--hm-space-sm);
+  padding: var(--hm-space-sm) var(--hm-space-sm) var(--hm-space-lg);
+}
+
+.brand .mark {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  flex: none;
+  border-radius: var(--hm-radius-md);
+  background: var(--hm-color-brand-primary);
+  color: var(--hm-color-brand-onPrimary);
+  font-size: 1.15rem;
+}
+
+.brand-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.brand-text strong {
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--hm-color-text-primary);
+}
+
+.brand-text small {
+  font-size: 0.7rem;
+  line-height: 1.3;
+  color: var(--hm-color-text-muted);
+}
+
+.rail-label {
+  margin: 0 0 var(--hm-space-xs);
+  padding-inline: var(--hm-space-sm);
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--hm-color-text-muted);
+}
+
+.hm-rail ion-list {
+  background: transparent;
+  padding: 0;
+}
+
+.hm-rail ion-item {
+  --background: transparent;
+  --background-hover: var(--hm-color-surface-sunken);
+  --color: var(--hm-color-text-muted);
+  --border-radius: var(--hm-radius-sm);
+  --min-height: 44px;
+  --padding-start: var(--hm-space-sm);
+  margin-bottom: 2px;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.hm-rail ion-item ion-icon {
+  margin-inline-end: var(--hm-space-sm);
+  font-size: 1.15rem;
+}
+
+.hm-rail ion-item.active {
+  --background: color-mix(in srgb, var(--hm-color-brand-primary) 12%, transparent);
+  --color: var(--hm-color-brand-primary);
+  font-weight: 600;
+}
+
+// ---- tab bar (phones) ----
+
 ion-tab-bar {
   --background: var(--hm-color-surface-raised);
   --border: 1px solid var(--hm-color-border-subtle);
@@ -15,4 +108,11 @@ ion-tab-button {
 ion-tab-button ion-label {
   font-size: 0.68rem;
   letter-spacing: 0.01em;
+}
+
+// The rail takes over exactly where the split pane activates — never both at once.
+@media (min-width: 768px) {
+  ion-tab-bar {
+    display: none;
+  }
 }

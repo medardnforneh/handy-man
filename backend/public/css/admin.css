@@ -1,0 +1,88 @@
+/* Admin chrome — brings Filament's shell onto the design tokens so the panel matches the approved
+   proposal. Authored (not generated); every colour resolves to a --hm-color-* variable from
+   tokens.css, which is linked before this file. Both themes follow `data-theme`, mirrored from
+   Filament's `.dark` class by AdminPanelProvider. */
+
+/* ---- canvas ---- */
+.fi-body {
+    background: var(--hm-color-surface-base);
+    color: var(--hm-color-text-primary);
+}
+
+/* ---- sidebar ---- */
+.fi-sidebar {
+    background: var(--hm-color-surface-raised);
+    border-inline-end: 1px solid var(--hm-color-border-subtle);
+}
+
+.fi-sidebar-header {
+    background: var(--hm-color-surface-raised);
+    border-bottom: 1px solid var(--hm-color-border-subtle);
+    box-shadow: none;
+}
+
+.fi-logo {
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--hm-color-text-primary);
+}
+
+.fi-sidebar-group-label {
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--hm-color-text-muted);
+}
+
+.fi-sidebar-item-btn {
+    border-radius: var(--hm-radius-sm);
+    color: var(--hm-color-text-muted);
+    font-weight: 500;
+}
+
+.fi-sidebar-item-btn:hover {
+    background: var(--hm-color-surface-sunken);
+    color: var(--hm-color-text-primary);
+}
+
+/* Active item reads as a brand pill, as in the proposal. */
+.fi-sidebar-item.fi-active > .fi-sidebar-item-btn,
+.fi-sidebar-item-btn[aria-current='page'] {
+    background: color-mix(in srgb, var(--hm-color-brand-primary) 12%, transparent);
+    color: var(--hm-color-brand-primary);
+    font-weight: 600;
+}
+
+.fi-sidebar-item.fi-active .fi-sidebar-item-icon,
+.fi-sidebar-item-btn[aria-current='page'] .fi-sidebar-item-icon {
+    color: var(--hm-color-brand-primary);
+}
+
+/* ---- topbar ---- */
+.fi-topbar > nav,
+.fi-topbar-ctn {
+    background: color-mix(in srgb, var(--hm-color-surface-base) 82%, transparent);
+    border-bottom: 1px solid var(--hm-color-border-subtle);
+    backdrop-filter: saturate(1.4) blur(8px);
+    box-shadow: none;
+}
+
+/* ---- page ---- */
+.fi-main {
+    max-width: 1240px;
+}
+
+.fi-header-heading {
+    letter-spacing: -0.02em;
+    font-weight: 800;
+}
+
+/* The dashboard widget owns its own cards — don't double up Filament's section chrome. */
+.fi-page-content .fi-wi,
+.fi-page-content .fi-wi > .fi-section {
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+    padding: 0;
+}

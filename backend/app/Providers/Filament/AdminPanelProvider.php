@@ -82,6 +82,7 @@ class AdminPanelProvider extends PanelProvider
             PanelsRenderHook::HEAD_END,
             fn (): string => <<<'HTML'
                 <link rel="stylesheet" href="/css/tokens.css">
+                <link rel="stylesheet" href="/css/admin.css">
                 <script>
                     (function () {
                         var root = document.documentElement;
