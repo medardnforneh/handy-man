@@ -40,7 +40,7 @@ final class LeakageWatchWidget extends TableWidget
                     ->selectRaw("{$completed} as completed_total")
                     ->selectRaw("{$distinct} as distinct_customers")
                     ->whereRaw("{$completed} >= ?", [$minCompleted])
-                    ->whereRaw("({$completed} - {$distinct}) < ? * {$completed}", [$threshold])
+                    ->whereRaw("({$completed} - {$distinct}) < ?::numeric * {$completed}", [$threshold])
             )
             ->columns([
                 TextColumn::make('party.display_name')->label('Provider'),

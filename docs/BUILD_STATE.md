@@ -190,9 +190,11 @@ build, which lands with the app UI work.**
 | P8-05 | Rebooking a known provider in one tap | **DONE** — `RebookProvider` clones the customer's most recent job with the provider into a fresh open job and sends a direct offer (reuses `CreateJob`+`PublishJob`+`CreateDirectOffer`, so blocks still hold); refused if no prior engagement. `POST /v1/providers/{party}/rebook`. 2 tests |
 | P8-02 | Referral fraud controls: velocity + review queue | **DONE** — a referrer over the **weekly velocity limit** (config) has new referrals **flagged for review** (not blocked, not auto-rewarded); `qualify` skips flagged referrals; an admin clears them via a Filament referral queue (`clearReview` → qualifies immediately if the referee already completed). Device-fingerprint dedupe is a further control (noted). 2 tests incl. **over-velocity flagged + flagged-not-auto-qualified-until-cleared** |
 | P8-03 | Dispatch mode: ranking engine, fan-out, offer expiry cascade | **DONE** — `DispatchJob` ranks via `ProviderSearch` (skill + coverage + tier + rating) and **fans out to the top N** not-already-offered (config `dispatch_fanout`), honouring blocks; `RedispatchStaleJobs` + `dispatch:cascade` command **cascade to the next batch** when a dispatch job's offers all expire with no engagement. Behind the `dispatch` flag (P8-04). 2 tests incl. **fan-out to top-3 + cascade to next 3 on expiry** |
-| P8-06 | Admin analytics: liquidity, match rate, time-to-offer, leakage | not started |
+| P8-06 | Admin analytics: liquidity, match rate, time-to-offer, leakage | **DONE** — `MarketplaceAnalytics` computes over a rolling window: **liquidity** (offered rate), **match rate** (engaged/jobs), **avg time-to-first-offer**, active providers, and the **leakage-flagged** count; surfaced via a Filament `MarketplaceAnalyticsWidget` (stat cards) on the dashboard. 2 tests. Also fixed a float-binding-in-bigint-context bug in the shared leakage query (`?::numeric`). |
 
-P3-13 (deposit-capture-on-agreement) still parked — collection lands via the intent path; auto-capture at acceptance is the remaining piece.
+**Phase 8 (growth and scale) complete: 6/6.**
+
+P3-13 (deposit-capture-on-agreement) is the one remaining backend piece — collection already lands via the intent path; the auto-capture at agreement time is a payment-flow wiring that pairs with the client checkout UX (Phase 5 native). All other backend build-plan tasks are done.
 
 ## Design debt (tracked)
 
@@ -222,6 +224,17 @@ P3-13 (deposit-capture-on-agreement) still parked — collection lands via the i
   - **Still owed:** Ionic app screens and Blade public/SEO pages (Phase 5+) must meet the bar when built.
 
 ## What was done, most recent first
+
+- **Phase 8 (growth & scale) — complete**: P8-01 referrals (codes, qualify-on-first-completed-job,
+  **ledger-backed** reward DR platform_revenue / CR promo_liability; self/dup blocked); P8-02 fraud
+  controls (weekly velocity → review queue, flagged-not-auto-paid, admin clears); P8-03 dispatch mode
+  (rank via ProviderSearch → **fan-out to top N** → **offer-expiry cascade** to the next batch, behind
+  a flag); P8-04 bidding behind a `features` flag (off by default); P8-05 one-tap **rebooking** (clone
+  last job + direct offer); P8-06 admin analytics (liquidity, match rate, time-to-offer, leakage) via a
+  Filament stats widget. Plus the parked P3-11 (auto-approve timer) and P2.5-06 (quote nudges) landed on
+  the follow-up engine. Backend **367 green**, PHPStan L6, Pint + design linters clean. **Every
+  backend build-plan task is done except P3-13 (agreement-time deposit capture, pairs with the native
+  checkout UX).**
 
 - **P7-08 — provider CRM (backend) → Phase 7 backend complete**: `ProviderCustomers` builds the client
   book (job count, completions, lifetime value, last engagement per customer); `ScheduleManualFollowUp`
