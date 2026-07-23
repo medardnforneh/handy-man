@@ -137,7 +137,8 @@ Task IDs come from `docs/05-build-plan.md`.
 | ID | Task | Status |
 |---|---|---|
 | P5-03 + P5-06 | `work_sessions` check-in/out (geo + timestamp) + structured provider status actions | **DONE** — `work_sessions` (geography start/end points + GPS accuracy; `work_sessions_span_check`; **partial unique `one_open_session_per_assignment`** — can't check in twice); `CheckIn` opens a session and narrates `arrived` in-transaction (rule #11), gated to onsite/hybrid via `EngagementModePolicy` (**remote → 422 `check-in-not-supported`**, no affordance); `CheckOut` row-locks and closes the open session (pure work-time close — completion stays a separate signal); `RecordStatus` narrates the structured `ProviderStatus` signals (on_the_way/started/paused/resumed/completed — `arrived` reserved to check-in); acting user must be an active assigned worker (provider section queries `assignments` only, no individual-vs-company branch); `POST /v1/engagements/{engagement}/check-in`, `/check-out`, `/status`; OpenAPI + TS client updated; 8 tests incl. **remote-refuses-check-in, double-check-in 409, arrived-not-postable-via-status** |
-| P5-01, P5-02, P5-04, P5-05 | Ionic PWA/Android/iOS + secure token storage; offline-first cache + write queue; `job_reports` + before/after media (EXIF stripped); push (FCM) via outbox | not started (client/native/media — P5-01/02 need device builds; P5-04 waits on the `media` table) |
+| P5-04 | `job_reports` + before/after `media`, EXIF stripped server-side | **DONE** — polymorphic `media` table (owner party, attachable type/id, kind, sha256, bytes, `captured_point` geography; CHECKs on bytes/type/kind) + `job_reports` (summary, materials jsonb, extra_charges, signature slot); `StoreMedia` **re-encodes raster images through GD to strip every EXIF/XMP/GPS segment**, records the client-reported geo in `captured_point` server-side (never in the file), and stores sha256/bytes of the CLEAN file; `SubmitJobReport` (worker; attaches before/after photos in one txn); `POST /v1/engagements/{engagement}/report` (multipart); OpenAPI + TS client updated; 4 tests incl. **injected-EXIF-marker gone from stored bytes + geo-in-DB** |
+| P5-01, P5-02, P5-05 | Ionic PWA/Android/iOS + secure token storage; offline-first cache + write queue; push (FCM) via outbox | not started (client/native — P5-01/02 need device builds; P5-05 is the outbox→FCM fan-out) |
 
 Phases 6–8: not started (see build plan). P3-11/13 (auto-approve timer, deposit-capture-on-agreement) still parked — the work-submission side now exists (work sessions), but agreement-time escrow capture is the remaining dependency.
 
@@ -169,6 +170,16 @@ Phases 6–8: not started (see build plan). P3-11/13 (auto-approve timer, deposi
   - **Still owed:** Ionic app screens and Blade public/SEO pages (Phase 5+) must meet the bar when built.
 
 ## What was done, most recent first
+
+- **P5-04 — job reports + EXIF-stripped media**: a polymorphic `media` table (the shared attachment
+  foundation — job reports now, verification docs + voice notes later) and `job_reports` (summary,
+  materials, extra charges, before/after photos). The privacy guarantee lives in `StoreMedia`: raster
+  images are **re-encoded through GD, which drops every EXIF/XMP/GPS segment**, and the location the
+  client reports is written to the `captured_point` DB column instead — so a customer's photo can be
+  served to a provider without leaking the GPS of their home. sha256/bytes describe the clean file.
+  `SubmitJobReport` (worker, one txn) behind `POST /v1/engagements/{engagement}/report` (multipart).
+  Marquee test: an **injected EXIF marker is absent from the stored bytes** while the geo is recorded
+  in the DB. OpenAPI + TS client updated. 4 tests. Backend **278 green**, PHPStan L6, Pint clean.
 
 - **P5-03 + P5-06 — the provider execution surface**: `work_sessions` (geography start/end points +
   GPS accuracy) with a **partial unique index** so a worker can't hold two open sessions on one

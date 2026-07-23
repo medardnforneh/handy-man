@@ -402,6 +402,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/engagements/{engagement}/report": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Submit an on-site job report (worker)
+         * @description An assigned worker submits the on-site report — summary, materials, extra charges, and before/after photos. Every photo is EXIF-stripped server-side; the geo it carried is recorded in the DB, never left embedded in the served file. Multipart: `photos[i][file]` with `photos[i][kind]` and optional per-photo `latitude`/`longitude`.
+         */
+        post: operations["submitJobReport"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/milestones/{milestone}/approve": {
         parameters: {
             query?: never;
@@ -1048,6 +1068,33 @@ export interface components {
             is_open: boolean;
             start?: components["schemas"]["WorkSessionEndpoint"] | null;
             end?: components["schemas"]["WorkSessionEndpoint"] | null;
+        };
+        Media: {
+            /** Format: uuid */
+            id: string;
+            /** @enum {string} */
+            kind: "before" | "after" | "issue" | "id_doc" | "attachment";
+            storage_path: string;
+            sha256: string;
+            bytes: number;
+            /** Format: date-time */
+            captured_at?: string | null;
+        };
+        JobReport: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            assignment_id: string;
+            summary: string;
+            materials: {
+                label?: string;
+                qty?: number;
+                unit_cost_minor?: number;
+            }[];
+            extra_charges_minor: number;
+            /** Format: date-time */
+            submitted_at?: string | null;
+            media?: components["schemas"]["Media"][];
         };
         Quotation: {
             /** Format: uuid */
@@ -2119,6 +2166,56 @@ export interface operations {
                 content: {
                     "application/json": {
                         data: components["schemas"]["Message"];
+                    };
+                };
+            };
+            401: components["responses"]["Problem"];
+            403: components["responses"]["Problem"];
+            422: components["responses"]["ValidationProblem"];
+        };
+    };
+    submitJobReport: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description A client-generated UUID. Replaying it returns the stored response (CLAUDE.md rule */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                engagement: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": {
+                    summary: string;
+                    extra_charges_minor?: number;
+                    materials?: {
+                        label: string;
+                        qty: number;
+                        unit_cost_minor: number;
+                    }[];
+                    photos?: {
+                        /** Format: binary */
+                        file: string;
+                        /** @enum {string} */
+                        kind: "before" | "after" | "issue";
+                        latitude?: number;
+                        longitude?: number;
+                    }[];
+                };
+            };
+        };
+        responses: {
+            /** @description The submitted report */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["JobReport"];
                     };
                 };
             };

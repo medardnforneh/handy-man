@@ -108,6 +108,8 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
         Route::post('/engagements/{engagement}/check-in', [WorkSessionController::class, 'checkIn'])->name('engagements.check-in');
         Route::post('/engagements/{engagement}/check-out', [WorkSessionController::class, 'checkOut'])->name('engagements.check-out');
         Route::post('/engagements/{engagement}/status', [WorkSessionController::class, 'status'])->name('engagements.status');
+        // On-site job report (P5-04). Multipart; before/after photos are EXIF-stripped server-side.
+        Route::post('/engagements/{engagement}/report', [WorkSessionController::class, 'report'])->name('engagements.report');
 
         // Device registration / push token capture (P1-04).
         Route::post('/devices', [DeviceController::class, 'store'])->name('devices.store');

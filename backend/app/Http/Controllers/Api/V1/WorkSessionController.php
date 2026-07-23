@@ -7,9 +7,12 @@ namespace App\Http\Controllers\Api\V1;
 use App\Domain\Execution\Actions\CheckIn;
 use App\Domain\Execution\Actions\CheckOut;
 use App\Domain\Execution\Actions\RecordStatus;
+use App\Domain\Execution\Actions\SubmitJobReport;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\RecordStatusRequest;
+use App\Http\Requests\Api\V1\SubmitJobReportRequest;
 use App\Http\Requests\Api\V1\WorkSessionRequest;
+use App\Http\Resources\Api\V1\JobReportResource;
 use App\Http\Resources\Api\V1\MessageResource;
 use App\Http\Resources\Api\V1\WorkSessionResource;
 use App\Models\Assignment;
@@ -50,6 +53,21 @@ final class WorkSessionController extends Controller
         $message = $action->handle($assignment, $request->status());
 
         return MessageResource::make($message)->response()->setStatusCode(201);
+    }
+
+    public function report(SubmitJobReportRequest $request, Engagement $engagement, SubmitJobReport $action): JsonResponse
+    {
+        $assignment = $this->assignmentFor($engagement, $this->user($request));
+
+        $report = $action->handle(
+            $assignment,
+            $request->string('summary')->toString(),
+            $request->materials(),
+            (int) $request->input('extra_charges_minor', 0),
+            $request->photos(),
+        );
+
+        return JobReportResource::make($report->load('media'))->response()->setStatusCode(201);
     }
 
     /**

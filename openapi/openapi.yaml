@@ -625,6 +625,55 @@ paths:
         "403": { $ref: "#/components/responses/Problem" }
         "422": { $ref: "#/components/responses/ValidationProblem" }
 
+  /engagements/{engagement}/report:
+    post:
+      tags: [Platform]
+      operationId: submitJobReport
+      summary: Submit an on-site job report (worker)
+      description: >
+        An assigned worker submits the on-site report — summary, materials, extra charges, and
+        before/after photos. Every photo is EXIF-stripped server-side; the geo it carried is recorded
+        in the DB, never left embedded in the served file. Multipart: `photos[i][file]` with
+        `photos[i][kind]` and optional per-photo `latitude`/`longitude`.
+      parameters:
+        - { name: engagement, in: path, required: true, schema: { type: string, format: uuid } }
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [summary]
+              properties:
+                summary: { type: string, maxLength: 5000 }
+                extra_charges_minor: { type: integer, minimum: 0 }
+                materials:
+                  type: array
+                  items:
+                    type: object
+                    required: [label, qty, unit_cost_minor]
+                    properties:
+                      label: { type: string, maxLength: 255 }
+                      qty: { type: number, minimum: 0 }
+                      unit_cost_minor: { type: integer, minimum: 0 }
+                photos:
+                  type: array
+                  maxItems: 20
+                  items:
+                    type: object
+                    required: [file, kind]
+                    properties:
+                      file: { type: string, format: binary }
+                      kind: { type: string, enum: [before, after, issue] }
+                      latitude: { type: number }
+                      longitude: { type: number }
+      responses:
+        "201": { description: The submitted report, content: { application/json: { schema: { type: object, required: [data], properties: { data: { $ref: "#/components/schemas/JobReport" } } } } } }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/ValidationProblem" }
+
   /milestones/{milestone}/approve:
     post:
       tags: [Platform]
@@ -1373,6 +1422,38 @@ components:
         is_open: { type: boolean }
         start: { oneOf: [ { $ref: "#/components/schemas/WorkSessionEndpoint" }, { type: "null" } ] }
         end: { oneOf: [ { $ref: "#/components/schemas/WorkSessionEndpoint" }, { type: "null" } ] }
+
+    Media:
+      type: object
+      required: [id, kind, storage_path, sha256, bytes]
+      properties:
+        id: { type: string, format: uuid }
+        kind: { type: string, enum: [before, after, issue, id_doc, attachment] }
+        storage_path: { type: string }
+        sha256: { type: string }
+        bytes: { type: integer }
+        captured_at: { type: [string, "null"], format: date-time }
+
+    JobReport:
+      type: object
+      required: [id, assignment_id, summary, materials, extra_charges_minor]
+      properties:
+        id: { type: string, format: uuid }
+        assignment_id: { type: string, format: uuid }
+        summary: { type: string }
+        materials:
+          type: array
+          items:
+            type: object
+            properties:
+              label: { type: string }
+              qty: { type: number }
+              unit_cost_minor: { type: integer }
+        extra_charges_minor: { type: integer }
+        submitted_at: { type: [string, "null"], format: date-time }
+        media:
+          type: array
+          items: { $ref: "#/components/schemas/Media" }
 
     Quotation:
       type: object
