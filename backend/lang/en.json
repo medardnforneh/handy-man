@@ -158,5 +158,7 @@
   "admin.message": "Message",
   "admin.no_message": "No message included with this offer.",
   "admin.offer_suffix": "offer",
-  "admin.on_job": "on"
+  "admin.on_job": "on",
+  "push.new_message.title": "New message",
+  "push.new_message.body": "You have a new message in your job."
 }

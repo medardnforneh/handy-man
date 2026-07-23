@@ -198,5 +198,11 @@
     "no_message": "Aucun message joint à cette offre.",
     "offer_suffix": "offre",
     "on_job": "sur"
+  },
+  "push": {
+    "new_message": {
+      "title": "Nouveau message",
+      "body": "Vous avez un nouveau message dans votre travail."
+    }
   }
 }

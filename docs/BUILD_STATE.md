@@ -138,9 +138,11 @@ Task IDs come from `docs/05-build-plan.md`.
 |---|---|---|
 | P5-03 + P5-06 | `work_sessions` check-in/out (geo + timestamp) + structured provider status actions | **DONE** — `work_sessions` (geography start/end points + GPS accuracy; `work_sessions_span_check`; **partial unique `one_open_session_per_assignment`** — can't check in twice); `CheckIn` opens a session and narrates `arrived` in-transaction (rule #11), gated to onsite/hybrid via `EngagementModePolicy` (**remote → 422 `check-in-not-supported`**, no affordance); `CheckOut` row-locks and closes the open session (pure work-time close — completion stays a separate signal); `RecordStatus` narrates the structured `ProviderStatus` signals (on_the_way/started/paused/resumed/completed — `arrived` reserved to check-in); acting user must be an active assigned worker (provider section queries `assignments` only, no individual-vs-company branch); `POST /v1/engagements/{engagement}/check-in`, `/check-out`, `/status`; OpenAPI + TS client updated; 8 tests incl. **remote-refuses-check-in, double-check-in 409, arrived-not-postable-via-status** |
 | P5-04 | `job_reports` + before/after `media`, EXIF stripped server-side | **DONE** — polymorphic `media` table (owner party, attachable type/id, kind, sha256, bytes, `captured_point` geography; CHECKs on bytes/type/kind) + `job_reports` (summary, materials jsonb, extra_charges, signature slot); `StoreMedia` **re-encodes raster images through GD to strip every EXIF/XMP/GPS segment**, records the client-reported geo in `captured_point` server-side (never in the file), and stores sha256/bytes of the CLEAN file; `SubmitJobReport` (worker; attaches before/after photos in one txn); `POST /v1/engagements/{engagement}/report` (multipart); OpenAPI + TS client updated; 4 tests incl. **injected-EXIF-marker gone from stored bytes + geo-in-DB** |
-| P5-01, P5-02, P5-05 | Ionic PWA/Android/iOS + secure token storage; offline-first cache + write queue; push (FCM) via outbox | not started (client/native — P5-01/02 need device builds; P5-05 is the outbox→FCM fan-out) |
+| P5-05 | Push notifications (FCM) via outbox | **DONE** — provider-agnostic `PushSender` abstraction + normalised `PushMessage`; `FakePushSender` (records sends, default) + `FcmPushSender` (HTTP v1, one request/token, per-token failure logged not thrown — live delivery pends real project creds); config-selected in `NotificationsServiceProvider` (`config/notifications.php`, default `fake`). Push **rides the transactional outbox**: `NotifyOnOutboxMessage` subscribes to the `OutboxMessagePublished` seam and, for a relayed `message.created`, notifies the conversation's participants **except the sender** on their non-revoked devices, **each in their own comms locale** (`push.*` i18n keys, parity OK). New endpoints: none (server-internal). 4 tests incl. **sender-excluded + per-locale copy + sole-participant no-op** |
+| P5-01, P5-02 | Ionic PWA/Android/iOS + secure token storage; offline-first cache (Drift) + write queue | not started (client/native — need device builds) |
 
-Phases 6–8: not started (see build plan). P3-11/13 (auto-approve timer, deposit-capture-on-agreement) still parked — the work-submission side now exists (work sessions), but agreement-time escrow capture is the remaining dependency.
+Phases 6–8: not started (see build plan). **Phase 5's cleanly-backend tasks (P5-03/04/05/06) are done;
+P5-01/02 are the native/offline client build, which lands with the app UI work.** P3-11/13 (auto-approve timer, deposit-capture-on-agreement) still parked — the work-submission side now exists (work sessions), but agreement-time escrow capture is the remaining dependency.
 
 ## Design debt (tracked)
 
@@ -170,6 +172,15 @@ Phases 6–8: not started (see build plan). P3-11/13 (auto-approve timer, deposi
   - **Still owed:** Ionic app screens and Blade public/SEO pages (Phase 5+) must meet the bar when built.
 
 ## What was done, most recent first
+
+- **P5-05 — push notifications via the outbox**: a provider-agnostic `PushSender` (Fake default +
+  FCM HTTP v1 adapter, config-selected — the app never names a transport) and a listener on the
+  `OutboxMessagePublished` seam. Push **rides the transactional outbox**, so a notification fires only
+  for a committed event: a relayed `message.created` notifies the conversation's participants —
+  **never the sender** — on their registered devices, **each in their own comms locale** (`push.*`
+  i18n keys). A dead token can't sink the batch. 4 tests. Backend **282 green**, PHPStan L6, Pint
+  clean. With P5-03/04/06, the cleanly-backend Phase 5 work is complete; P5-01/02 are the native/
+  offline client build.
 
 - **P5-04 — job reports + EXIF-stripped media**: a polymorphic `media` table (the shared attachment
   foundation — job reports now, verification docs + voice notes later) and `job_reports` (summary,

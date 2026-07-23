@@ -198,5 +198,11 @@
     "no_message": "No message included with this offer.",
     "offer_suffix": "offer",
     "on_job": "on"
+  },
+  "push": {
+    "new_message": {
+      "title": "New message",
+      "body": "You have a new message in your job."
+    }
   }
 }
