@@ -32,8 +32,41 @@ final class FollowUpOrchestrator
             'engagement.completed' => $this->onEngagementCompleted($event->payload),
             'review.submitted' => $this->onReviewSubmitted($event->payload),
             'warranty.issued' => $this->onWarrantyIssued($event->payload),
+            'deliverable.submitted' => $this->onDeliverableSubmitted($event->payload),
+            'deliverable.accepted', 'deliverable.rejected' => $this->onDeliverableReviewed($event->payload),
             default => null,
         };
+    }
+
+    /**
+     * @param  array<string, mixed>  $payload
+     */
+    private function onDeliverableSubmitted(array $payload): void
+    {
+        $deliverableId = $payload['deliverable_id'] ?? null;
+        $engagement = $this->engagement($payload['engagement_id'] ?? null);
+        $customer = $engagement !== null ? $this->customer($engagement) : null;
+        if (! is_string($deliverableId) || $customer === null) {
+            return;
+        }
+
+        // Warn the customer 24h before auto-approval (at 48h of a 72h window).
+        $warnAt = now()->addHours(max((int) config('deliverables.auto_approve_hours', 72) - 24, 1));
+        $this->scheduler->schedule(
+            FollowUpKind::AutoApproveWarning, $customer, $this->ladder->pick($customer), $warnAt,
+            'deliverable', $deliverableId, engagementId: $engagement->id,
+        );
+    }
+
+    /**
+     * @param  array<string, mixed>  $payload
+     */
+    private function onDeliverableReviewed(array $payload): void
+    {
+        $deliverableId = $payload['deliverable_id'] ?? null;
+        if (is_string($deliverableId)) {
+            $this->scheduler->cancelByPrefix("auto_approve_warning:deliverable:{$deliverableId}", 'reviewed');
+        }
     }
 
     /**
