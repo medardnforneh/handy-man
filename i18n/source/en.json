@@ -160,5 +160,6 @@
     "admin.offer_suffix": "offer",
     "admin.on_job": "on",
     "push.new_message.title": "New message",
-    "push.new_message.body": "You have a new message in your job."
+    "push.new_message.body": "You have a new message in your job.",
+    "sms.panic_alert": "SAFETY ALERT: :name triggered a panic alert. Location: :location"
 }

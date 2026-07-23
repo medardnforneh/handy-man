@@ -186,6 +186,61 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/safety/panic": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Raise a panic alert
+         * @description Raises a safety alert, texts the caller's emergency contacts, and alerts staff — all server-side, so it works with the app backgrounded. Coordinates are optional but travel together; an optional assignment ties the alert to the job.
+         */
+        post: operations["raisePanic"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/emergency-contacts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List the caller's emergency contacts */
+        get: operations["listEmergencyContacts"];
+        put?: never;
+        /** Add an emergency contact */
+        post: operations["addEmergencyContact"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/emergency-contacts/{contact}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Remove an emergency contact */
+        delete: operations["removeEmergencyContact"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/blocks": {
         parameters: {
             query?: never;
@@ -1218,6 +1273,27 @@ export interface components {
             submitted_at?: string | null;
             media?: components["schemas"]["Media"][];
         };
+        SafetyAlert: {
+            /** Format: uuid */
+            id: string;
+            /** @enum {string} */
+            kind: "panic" | "no_show" | "unsafe_site" | "harassment" | "check_in_overdue";
+            /** @enum {string} */
+            status: "open" | "acknowledged" | "resolved";
+            note?: string | null;
+            /** Format: date-time */
+            created_at: string;
+            /** Format: date-time */
+            resolved_at?: string | null;
+        };
+        EmergencyContact: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            phone_e164: string;
+            /** Format: date-time */
+            created_at: string;
+        };
         Review: {
             /** Format: uuid */
             id: string;
@@ -1860,6 +1936,128 @@ export interface operations {
                     };
                 };
             };
+        };
+    };
+    raisePanic: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description A client-generated UUID. Replaying it returns the stored response (CLAUDE.md rule */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": {
+                    latitude?: number;
+                    longitude?: number;
+                    note?: string | null;
+                    /** Format: uuid */
+                    assignment_id?: string | null;
+                };
+            };
+        };
+        responses: {
+            /** @description The raised alert */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["SafetyAlert"];
+                    };
+                };
+            };
+            401: components["responses"]["Problem"];
+            422: components["responses"]["ValidationProblem"];
+        };
+    };
+    listEmergencyContacts: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The contacts */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["EmergencyContact"][];
+                    };
+                };
+            };
+            401: components["responses"]["Problem"];
+        };
+    };
+    addEmergencyContact: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description A client-generated UUID. Replaying it returns the stored response (CLAUDE.md rule */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    name: string;
+                    /** @description E.164, e.g. +237690000000. */
+                    phone_e164: string;
+                };
+            };
+        };
+        responses: {
+            /** @description The contact */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["EmergencyContact"];
+                    };
+                };
+            };
+            401: components["responses"]["Problem"];
+            422: components["responses"]["ValidationProblem"];
+        };
+    };
+    removeEmergencyContact: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description A client-generated UUID. Replaying it returns the stored response (CLAUDE.md rule */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                contact: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Removed */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": Record<string, never>;
+                };
+            };
+            401: components["responses"]["Problem"];
+            403: components["responses"]["Problem"];
         };
     };
     listBlocks: {

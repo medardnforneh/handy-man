@@ -204,5 +204,8 @@
       "title": "New message",
       "body": "You have a new message in your job."
     }
+  },
+  "sms": {
+    "panic_alert": "SAFETY ALERT: :name triggered a panic alert. Location: :location"
   }
 }

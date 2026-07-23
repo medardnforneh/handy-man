@@ -5,9 +5,12 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use App\Domain\Notifications\FakePushSender;
+use App\Domain\Notifications\FakeSmsSender;
 use App\Domain\Notifications\FcmPushSender;
 use App\Domain\Notifications\Listeners\NotifyOnOutboxMessage;
+use App\Domain\Notifications\LogSmsSender;
 use App\Domain\Notifications\PushSender;
+use App\Domain\Notifications\SmsSender;
 use App\Events\OutboxMessagePublished;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
@@ -37,6 +40,19 @@ final class NotificationsServiceProvider extends ServiceProvider
                     baseUrl: (string) config('notifications.fcm.base_url'),
                 ),
                 default => throw new InvalidArgumentException("Unknown push sender: {$driver}"),
+            };
+        });
+
+        // One shared Fake SMS instance, resolvable by its concrete type for test assertions.
+        $this->app->singleton(FakeSmsSender::class);
+
+        $this->app->singleton(SmsSender::class, function ($app): SmsSender {
+            $driver = (string) config('notifications.sms', 'fake');
+
+            return match ($driver) {
+                'fake' => $app->make(FakeSmsSender::class),
+                'log' => new LogSmsSender,
+                default => throw new InvalidArgumentException("Unknown SMS sender: {$driver}"),
             };
         });
     }

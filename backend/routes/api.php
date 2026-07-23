@@ -126,6 +126,12 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
         Route::delete('/blocks/{party}', [SafetyController::class, 'unblock'])->name('blocks.destroy');
         Route::post('/reports', [SafetyController::class, 'report'])->name('reports.store');
 
+        // Panic button + emergency contacts (P6-04). One request fans out to contacts + staff.
+        Route::post('/safety/panic', [SafetyController::class, 'panic'])->name('safety.panic');
+        Route::get('/emergency-contacts', [SafetyController::class, 'emergencyContacts'])->name('emergency-contacts.index');
+        Route::post('/emergency-contacts', [SafetyController::class, 'addEmergencyContact'])->name('emergency-contacts.store');
+        Route::delete('/emergency-contacts/{contact}', [SafetyController::class, 'removeEmergencyContact'])->name('emergency-contacts.destroy');
+
         // Verification documents (P6-01). Upload own identity/licence docs for admin review; the file
         // is encrypted at rest and only ever served via a signed short-TTL URL. Paths never returned.
         Route::get('/verification-documents', [VerificationDocumentController::class, 'index'])->name('verification-documents.index');

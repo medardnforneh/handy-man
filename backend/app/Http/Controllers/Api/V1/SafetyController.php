@@ -5,14 +5,20 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\V1;
 
 use App\Domain\Safety\Actions\BlockParty;
+use App\Domain\Safety\Actions\RaisePanicAlert;
 use App\Domain\Safety\Actions\ReportParty;
 use App\Domain\Safety\Actions\UnblockParty;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\BlockPartyRequest;
+use App\Http\Requests\Api\V1\EmergencyContactRequest;
+use App\Http\Requests\Api\V1\PanicRequest;
 use App\Http\Requests\Api\V1\ReportPartyRequest;
 use App\Http\Resources\Api\V1\BlockResource;
+use App\Http\Resources\Api\V1\EmergencyContactResource;
 use App\Http\Resources\Api\V1\ReportResource;
+use App\Http\Resources\Api\V1\SafetyAlertResource;
 use App\Models\Block;
+use App\Models\EmergencyContact;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -55,6 +61,46 @@ final class SafetyController extends Controller
         );
 
         return ReportResource::make($report)->response()->setStatusCode(201);
+    }
+
+    public function panic(PanicRequest $request, RaisePanicAlert $action): JsonResponse
+    {
+        $alert = $action->handle(
+            $this->user($request),
+            $request->latitude(),
+            $request->longitude(),
+            $request->input('note'),
+            $request->input('assignment_id'),
+        );
+
+        return SafetyAlertResource::make($alert)->response()->setStatusCode(201);
+    }
+
+    public function emergencyContacts(Request $request): JsonResponse
+    {
+        $contacts = EmergencyContact::query()->where('user_id', $this->user($request)->id)->get();
+
+        return EmergencyContactResource::collection($contacts)->response();
+    }
+
+    public function addEmergencyContact(EmergencyContactRequest $request): JsonResponse
+    {
+        $contact = EmergencyContact::query()->create([
+            'user_id' => $this->user($request)->id,
+            'name' => $request->string('name')->toString(),
+            'phone_e164' => $request->string('phone_e164')->toString(),
+            'created_at' => now(),
+        ]);
+
+        return EmergencyContactResource::make($contact)->response()->setStatusCode(201);
+    }
+
+    public function removeEmergencyContact(Request $request, EmergencyContact $contact): JsonResponse
+    {
+        abort_unless($contact->user_id === $this->user($request)->id, 403);
+        $contact->delete();
+
+        return response()->json(['data' => ['status' => 'removed']]);
     }
 
     private function user(Request $request): User

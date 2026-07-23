@@ -246,6 +246,74 @@ paths:
       responses:
         "200": { description: Published reviews, content: { application/json: { schema: { type: object, required: [data], properties: { data: { type: array, items: { $ref: "#/components/schemas/Review" } } } } } } }
 
+  /safety/panic:
+    post:
+      tags: [Platform]
+      operationId: raisePanic
+      summary: Raise a panic alert
+      description: >
+        Raises a safety alert, texts the caller's emergency contacts, and alerts staff — all
+        server-side, so it works with the app backgrounded. Coordinates are optional but travel
+        together; an optional assignment ties the alert to the job.
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                latitude: { type: number }
+                longitude: { type: number }
+                note: { type: [string, "null"], maxLength: 2000 }
+                assignment_id: { type: [string, "null"], format: uuid }
+      responses:
+        "201": { description: The raised alert, content: { application/json: { schema: { type: object, required: [data], properties: { data: { $ref: "#/components/schemas/SafetyAlert" } } } } } }
+        "401": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/ValidationProblem" }
+
+  /emergency-contacts:
+    get:
+      tags: [Platform]
+      operationId: listEmergencyContacts
+      summary: List the caller's emergency contacts
+      responses:
+        "200": { description: The contacts, content: { application/json: { schema: { type: object, required: [data], properties: { data: { type: array, items: { $ref: "#/components/schemas/EmergencyContact" } } } } } } }
+        "401": { $ref: "#/components/responses/Problem" }
+    post:
+      tags: [Platform]
+      operationId: addEmergencyContact
+      summary: Add an emergency contact
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, phone_e164]
+              properties:
+                name: { type: string, maxLength: 255 }
+                phone_e164: { type: string, description: "E.164, e.g. +237690000000." }
+      responses:
+        "201": { description: The contact, content: { application/json: { schema: { type: object, required: [data], properties: { data: { $ref: "#/components/schemas/EmergencyContact" } } } } } }
+        "401": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/ValidationProblem" }
+
+  /emergency-contacts/{contact}:
+    delete:
+      tags: [Platform]
+      operationId: removeEmergencyContact
+      summary: Remove an emergency contact
+      parameters:
+        - { name: contact, in: path, required: true, schema: { type: string, format: uuid } }
+        - $ref: "#/components/parameters/IdempotencyKey"
+      responses:
+        "200": { description: Removed, content: { application/json: { schema: { type: object } } } }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+
   /blocks:
     get:
       tags: [Platform]
@@ -1597,6 +1665,26 @@ components:
         media:
           type: array
           items: { $ref: "#/components/schemas/Media" }
+
+    SafetyAlert:
+      type: object
+      required: [id, kind, status, created_at]
+      properties:
+        id: { type: string, format: uuid }
+        kind: { type: string, enum: [panic, no_show, unsafe_site, harassment, check_in_overdue] }
+        status: { type: string, enum: [open, acknowledged, resolved] }
+        note: { type: [string, "null"] }
+        created_at: { type: string, format: date-time }
+        resolved_at: { type: [string, "null"], format: date-time }
+
+    EmergencyContact:
+      type: object
+      required: [id, name, phone_e164, created_at]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        phone_e164: { type: string }
+        created_at: { type: string, format: date-time }
 
     Review:
       type: object

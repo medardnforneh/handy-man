@@ -12,6 +12,15 @@ return [
     */
     'push' => env('PUSH_SENDER', 'fake'),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Active SMS sender
+    |--------------------------------------------------------------------------
+    | Emergency-contact texts (panic alerts) ride this. 'fake' in tests, 'log' in
+    | local dev, a real aggregator in prod. The app depends only on the interface.
+    */
+    'sms' => env('SMS_SENDER', 'fake'),
+
     'fcm' => [
         // FCM HTTP v1: https://fcm.googleapis.com/v1/projects/{project_id}/messages:send
         'project_id' => env('FCM_PROJECT_ID', ''),
