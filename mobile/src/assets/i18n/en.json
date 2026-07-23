@@ -207,5 +207,16 @@
   },
   "sms": {
     "panic_alert": "SAFETY ALERT: :name triggered a panic alert. Location: :location"
+  },
+  "share": {
+    "heading": "Live job status",
+    "provider": "Provider",
+    "location": "Location",
+    "status": "Status",
+    "status_scheduled": "Scheduled",
+    "status_on_site": "On site",
+    "status_completed": "Completed",
+    "expires": "This link expires :time.",
+    "reassurance": "Shared with you for peace of mind."
   }
 }

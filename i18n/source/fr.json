@@ -161,5 +161,14 @@
     "admin.on_job": "sur",
     "push.new_message.title": "Nouveau message",
     "push.new_message.body": "Vous avez un nouveau message dans votre travail.",
-    "sms.panic_alert": "ALERTE SECURITE : :name a declenche une alerte panique. Localisation : :location"
+    "sms.panic_alert": "ALERTE SECURITE : :name a declenche une alerte panique. Localisation : :location",
+    "share.heading": "Statut du travail en direct",
+    "share.provider": "Prestataire",
+    "share.location": "Lieu",
+    "share.status": "Statut",
+    "share.status_scheduled": "Prevu",
+    "share.status_on_site": "Sur place",
+    "share.status_completed": "Termine",
+    "share.expires": "Ce lien expire :time.",
+    "share.reassurance": "Partage avec vous pour votre tranquillite."
 }

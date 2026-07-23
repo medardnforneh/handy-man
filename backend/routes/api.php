@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\V1\CashSettlementController;
 use App\Http\Controllers\Api\V1\ConsentController;
 use App\Http\Controllers\Api\V1\DeliverableController;
 use App\Http\Controllers\Api\V1\DeviceController;
+use App\Http\Controllers\Api\V1\EngagementShareController;
 use App\Http\Controllers\Api\V1\EscrowController;
 use App\Http\Controllers\Api\V1\JobController;
 use App\Http\Controllers\Api\V1\LeadCreditController;
@@ -125,6 +126,10 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
         Route::post('/blocks', [SafetyController::class, 'block'])->name('blocks.store');
         Route::delete('/blocks/{party}', [SafetyController::class, 'unblock'])->name('blocks.destroy');
         Route::post('/reports', [SafetyController::class, 'report'])->name('reports.store');
+
+        // Share-my-job link (P6-05). A participant mints an expiring, revocable share link.
+        Route::post('/engagements/{engagement}/share', [EngagementShareController::class, 'store'])->name('engagements.share.store');
+        Route::delete('/engagement-shares/{share}', [EngagementShareController::class, 'destroy'])->name('engagement-shares.destroy');
 
         // Panic button + emergency contacts (P6-04). One request fans out to contacts + staff.
         Route::post('/safety/panic', [SafetyController::class, 'panic'])->name('safety.panic');

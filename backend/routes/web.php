@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\EngagementShareViewController;
 use App\Http\Controllers\VerificationDocumentViewController;
 use Illuminate\Support\Facades\Route;
 
@@ -16,3 +17,7 @@ Route::get('/', fn () => view('public.home'))->name('home');
 Route::get('/verification-documents/{document}/view', VerificationDocumentViewController::class)
     ->middleware('signed')
     ->name('verification-documents.view');
+
+// Share-my-job public status page (P6-05, doc 04). The opaque token is the grant; it expires and is
+// revocable. A stale/revoked token is a 404. Read-only, PII-minimised.
+Route::get('/s/{token}', EngagementShareViewController::class)->name('engagement.share');

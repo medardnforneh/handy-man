@@ -246,6 +246,50 @@ paths:
       responses:
         "200": { description: Published reviews, content: { application/json: { schema: { type: object, required: [data], properties: { data: { type: array, items: { $ref: "#/components/schemas/Review" } } } } } } }
 
+  /engagements/{engagement}/share:
+    post:
+      tags: [Platform]
+      operationId: createEngagementShare
+      summary: Mint a share-my-job link (participant)
+      description: >
+        A participant (the customer or an assigned worker) creates an expiring, revocable link that
+        shows the engagement's live status to a family member. On-site/hybrid only (422 for remote).
+      parameters:
+        - { name: engagement, in: path, required: true, schema: { type: string, format: uuid } }
+        - $ref: "#/components/parameters/IdempotencyKey"
+      responses:
+        "201":
+          description: The share link
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: object
+                    required: [id, url, expires_at]
+                    properties:
+                      id: { type: string, format: uuid }
+                      url: { type: string, format: uri }
+                      expires_at: { type: string, format: date-time }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/ValidationProblem" }
+
+  /engagement-shares/{share}:
+    delete:
+      tags: [Platform]
+      operationId: revokeEngagementShare
+      summary: Revoke a share-my-job link
+      parameters:
+        - { name: share, in: path, required: true, schema: { type: string, format: uuid } }
+        - $ref: "#/components/parameters/IdempotencyKey"
+      responses:
+        "200": { description: Revoked, content: { application/json: { schema: { type: object } } } }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+
   /safety/panic:
     post:
       tags: [Platform]

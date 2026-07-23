@@ -155,7 +155,9 @@ build, which lands with the app UI work.**
 | P6-08 | Reviews: double-blind, 14-day window, simultaneous reveal | **DONE** — `reviews` (native `review_visibility`; UNIQUE(engagement, author); not-self + 1–5 CHECKs; `private_note` never published). `SubmitReview` rests each review `pending` — content withheld even from an API peek — until BOTH parties submit (revealed at once) or the shared window closes; the first submission fixes `window_closes_at`, the second inherits it. `RevealDueReviews` + `reviews:reveal` command publish a lone review when its 14-day window expires. `POST /v1/engagements/{engagement}/reviews`; public `GET /v1/providers/{party}/reviews` (published only). OpenAPI + TS client. Tests incl. **hidden-until-both, window-expiry reveal, dup 409, non-party 403** |
 | P6-09 | Bayesian shrinkage rating display | **DONE** — `RatingCalculator` shrinks toward the prior mean (4.0, weight 10 pseudo-reviews): `(w·mean + Σ)/(w + n)`; recomputed into `provider_profiles.rating_avg` (shrunk) + `rating_count` (RAW, for P6-12's sample-size floor) on every publish. Test: **1×5★ → 4.09 ranks below 200×4.8 → 4.76; unrated shows null, not the bare prior** |
 | P6-04 | Panic button + `safety_alerts` + emergency contact SMS + admin alert | **DONE** — `safety_alerts` (native `safety_alert_kind`; geo point; status open/acknowledged/resolved, resolution attributed to a named admin) + `emergency_contacts` (citext phone). `RaisePanicAlert` (one request) creates the alert, **texts every emergency contact directly** (not via the relay — a panic mustn't wait for a queue) and alerts staff via `safety.alert_raised` outbox — all server-side, so it **works with the app backgrounded**. New `SmsSender` rail (Fake/Log, config-selected — mirrors the push rail); panic SMS copy through i18n (`sms.panic_alert`, per comms locale). `POST /v1/safety/panic`, `GET/POST/DELETE /v1/emergency-contacts`; Filament safety-alert queue (danger badge, acknowledge/resolve). OpenAPI + TS client. 5 tests incl. **all contacts texted + staff alerted + no-contacts still records** |
-| P6-05, P6-06, P6-10..P6-13 | share-link, check-in watchdog, disputes, warranties, metrics | not started |
+| P6-05 | Share-my-job signed expiring link | **DONE** — `engagement_shares` (opaque token stored **hashed**; expiring + revocable). `CreateEngagementShare` (participant-gated: customer or assigned worker; onsite/hybrid only via `supportsShareJob`, remote → 422) mints a link; a **public, tokenised Blade page** (`/s/{token}`) renders read-only, PII-minimised status — provider first name, approximate location (quarter/city), live status from `work_sessions` — a stale/revoked token is 404. `POST /v1/engagements/{engagement}/share`, `DELETE /v1/engagement-shares/{share}`; i18n `share.*` (parity OK); no-literal-colour + no-bare-string linters clean. 5 tests |
+| P6-06 | Check-in-overdue watchdog | **DONE** — `RaiseOverdueCheckIns` + `safety:check-in-watchdog` command: an assignment past `scheduled_from` + grace with **no `work_session`** (never checked in) on an onsite/hybrid job raises a `check_in_overdue` `safety_alert` + `safety.alert_raised` outbox — deduped against an open alert, mode-gated via the policy. Reuses the P5-03 audit trail. 5 tests incl. **overdue-flagged, checked-in-not-flagged, remote-skipped, within-grace-skipped, dedupe** |
+| P6-10..P6-13 | disputes, warranties, metrics, leakage proxy | not started |
 
 Phases 7–8: not started (see build plan). P3-11/13 (auto-approve timer, deposit-capture-on-agreement) still parked — the work-submission side now exists (work sessions), but agreement-time escrow capture is the remaining dependency.
 
@@ -187,6 +189,14 @@ Phases 7–8: not started (see build plan). P3-11/13 (auto-approve timer, deposi
   - **Still owed:** Ionic app screens and Blade public/SEO pages (Phase 5+) must meet the bar when built.
 
 ## What was done, most recent first
+
+- **P6-05 + P6-06 — share-my-job + check-in watchdog**: a participant mints an **expiring, revocable
+  share link** (`engagement_shares`, token stored hashed) whose public tokenised Blade page (`/s/{token}`)
+  shows PII-minimised live status (provider first name, approximate location, on-site/scheduled/
+  completed from `work_sessions`) — onsite/hybrid only, stale/revoked → 404. The **check-in watchdog**
+  (`safety:check-in-watchdog`) flags a worker past their scheduled start with no `work_session` — a
+  `check_in_overdue` alert + staff notice, deduped and mode-gated — reusing the P5-03 audit trail.
+  10 tests. Backend **318 green**, PHPStan L6, Pint + both design linters clean.
 
 - **P6-04 — panic button + safety alerts + emergency SMS**: `safety_alerts` + `emergency_contacts`.
   One `POST /v1/safety/panic` raises the alert, **texts every emergency contact directly** (not via

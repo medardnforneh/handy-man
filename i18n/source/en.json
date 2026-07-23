@@ -161,5 +161,14 @@
     "admin.on_job": "on",
     "push.new_message.title": "New message",
     "push.new_message.body": "You have a new message in your job.",
-    "sms.panic_alert": "SAFETY ALERT: :name triggered a panic alert. Location: :location"
+    "sms.panic_alert": "SAFETY ALERT: :name triggered a panic alert. Location: :location",
+    "share.heading": "Live job status",
+    "share.provider": "Provider",
+    "share.location": "Location",
+    "share.status": "Status",
+    "share.status_scheduled": "Scheduled",
+    "share.status_on_site": "On site",
+    "share.status_completed": "Completed",
+    "share.expires": "This link expires :time.",
+    "share.reassurance": "Shared with you for peace of mind."
 }
