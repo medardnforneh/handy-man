@@ -149,8 +149,8 @@ build, which lands with the app UI work.**
 | ID | Task | Status |
 |---|---|---|
 | P6-01 | `verification_documents` + encrypted bucket + signed 60s URLs | **DONE** — `verification_documents` (native `doc_kind`/`doc_status`; `grants_tier` fixed by kind so tier can't be self-assigned; reject-reason CHECK) stored in a **separate `verification` disk, encrypted at rest by the app** (`VerificationStorage` via `Crypt` — on-disk bytes are never the plaintext even if the bucket is misconfigured); sha256 of the plaintext recorded. Access is a **signed short-TTL app route** (`SignedDocumentUrl`, 60s; `GET /verification-documents/{document}/view` under `signed` middleware) — deliberately through the app, not a presigned bucket URL, so P6-02 can log every view. `SubmitVerificationDocument`; `GET`/`POST /v1/verification-documents` (paths never returned). OpenAPI + TS client. 5 tests incl. **encrypted-at-rest, signed-URL streams within TTL, expired→403, tampered→403** |
-| P6-02 | Filament review queue; every document **view** writes an activity log | pending |
-| P6-03 | Verification tiers feed `identity_verified`; `AcceptPaidJob` reads tier from job mode + skill `risk_tier` | partial — the gate already keys required tier on mode+risk (`AcceptPaidJob`) and the resolver reads `verification_tier`; **pending: the approval flow that raises the tier from approved documents** (lands with P6-02) |
+| P6-02 | Filament review queue; every document **view** writes an activity log | **DONE** — append-only `activity_logs` (DB trigger forbids UPDATE/DELETE; actor/action/subject/context/ip) + `ActivityLogger`; the signed-URL **view controller logs every view** (`verification_document.viewed`, capturing the admin + IP) — reads, not just edits (the insider-threat control). Filament `VerificationDocumentResource` under a "Trust & safety" nav group: oldest-pending-first queue, pending badge, Open-document (signed URL) / Approve / Reject actions routing through the domain Action (never a row edit). 1 test (view-is-logged) |
+| P6-03 | Verification tiers feed `identity_verified`; `AcceptPaidJob` reads tier from job mode + skill `risk_tier` | **DONE** — `ReviewVerificationDocument` (approve/reject, reviewer-attributed, once-only) **raises the party's `verification_tier` to the tier the document grants** and invalidates the cached `identity_verified` fact; the gate (already mode+risk-keyed) now becomes fully data-driven from real approved documents. 3 tests incl. **tier-1 provider refused a tier-3 on-site job, allowed after approval; a remote high-risk job needs only the lighter check** |
 | P6-04..P6-13 | panic/safety, share-link, watchdog, reports/blocks, reviews, ratings, disputes, warranties, metrics | not started |
 
 Phases 7–8: not started (see build plan). P3-11/13 (auto-approve timer, deposit-capture-on-agreement) still parked — the work-submission side now exists (work sessions), but agreement-time escrow capture is the remaining dependency.
@@ -183,6 +183,17 @@ Phases 7–8: not started (see build plan). P3-11/13 (auto-approve timer, deposi
   - **Still owed:** Ionic app screens and Blade public/SEO pages (Phase 5+) must meet the bar when built.
 
 ## What was done, most recent first
+
+- **P6-02 + P6-03 — verification review queue + tiers feed the gate**: append-only `activity_logs`
+  (DB trigger forbids mutation) + `ActivityLogger`; the signed-URL view controller **logs every view**
+  (`verification_document.viewed` with the admin + IP) — the insider-threat control is that *reads*
+  are logged, not just edits. `ReviewVerificationDocument` (reviewer-attributed) **raises the party's
+  `verification_tier`** to the tier the document grants and invalidates the cached `identity_verified`
+  fact, so the accept-paid-job gate becomes data-driven from real approved documents. A Filament
+  "Trust & safety" review queue (oldest-pending-first, pending badge, Open/Approve/Reject) routes
+  every decision through the Action, never a row edit. 4 tests incl. **tier-1 refused a tier-3 on-site
+  job then allowed after approval; remote needs only the lighter check**. Backend **291 green**,
+  PHPStan L6, Pint clean.
 
 - **P6-01 — verification documents (encrypted + signed 60s URLs)**: `verification_documents` stored
   in a **separate bucket, encrypted at rest by the app** (Crypt), with the plaintext sha256 recorded.

@@ -6,6 +6,9 @@ namespace App\Http\Controllers;
 
 use App\Domain\Verification\VerificationStorage;
 use App\Models\VerificationDocument;
+use App\Support\ActivityLogger;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -16,8 +19,17 @@ use Symfony\Component\HttpFoundation\Response;
  */
 final class VerificationDocumentViewController extends Controller
 {
-    public function __invoke(VerificationDocument $document, VerificationStorage $storage): Response
+    public function __invoke(Request $request, VerificationDocument $document, VerificationStorage $storage, ActivityLogger $log): Response
     {
+        // The insider-threat control (doc 04): every view — not just edits — is logged, with the
+        // viewer (when the browser carries an admin session) and their IP.
+        $log->log(
+            action: 'verification_document.viewed',
+            subject: $document,
+            actorUserId: Auth::id() !== null ? (string) Auth::id() : null,
+            ip: $request->ip(),
+        );
+
         $bytes = $storage->read($document);
         $mime = (new \finfo(FILEINFO_MIME_TYPE))->buffer($bytes) ?: 'application/octet-stream';
 
