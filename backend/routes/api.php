@@ -29,6 +29,7 @@ use App\Http\Controllers\Api\V1\SafetyController;
 use App\Http\Controllers\Api\V1\SiteVisitController;
 use App\Http\Controllers\Api\V1\SkillController;
 use App\Http\Controllers\Api\V1\VerificationDocumentController;
+use App\Http\Controllers\Api\V1\WarrantyController;
 use App\Http\Controllers\Api\V1\WorkSessionController;
 use Illuminate\Support\Facades\Route;
 
@@ -125,6 +126,10 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
         // Disputes (P6-10). A party raises a dispute; admin adjudicates in the panel.
         Route::get('/disputes', [DisputeController::class, 'index'])->name('disputes.index');
         Route::post('/engagements/{engagement}/disputes', [DisputeController::class, 'store'])->name('engagements.disputes.store');
+
+        // Warranties (P6-11). Provider issues; customer claims → spawns a real remedy job.
+        Route::post('/engagements/{engagement}/warranty', [WarrantyController::class, 'issue'])->name('engagements.warranty.issue');
+        Route::post('/warranties/{warranty}/claims', [WarrantyController::class, 'claim'])->name('warranties.claims.store');
 
         // Reports + blocks (P6-07). A block is honoured in search, ranking and offers.
         Route::get('/blocks', [SafetyController::class, 'blocks'])->name('blocks.index');

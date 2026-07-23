@@ -146,6 +146,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/engagements/{engagement}/warranty": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Issue a warranty on an engagement (provider)
+         * @description The provider issues a warranty (one per engagement). It exists only on-platform — the anti-leakage payoff.
+         */
+        post: operations["issueWarranty"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/warranties/{warranty}/claims": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * File a warranty claim (customer)
+         * @description The customer files a claim, which spawns a real remedy job — its own engagement and a lead assignment to the original worker, free of charge. 409 if the warranty is not active.
+         */
+        post: operations["fileWarrantyClaim"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/disputes": {
         parameters: {
             query?: never;
@@ -1347,6 +1387,33 @@ export interface components {
             submitted_at?: string | null;
             media?: components["schemas"]["Media"][];
         };
+        Warranty: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            engagement_id: string;
+            duration_days: number;
+            /** Format: date-time */
+            starts_at: string;
+            /** Format: date-time */
+            expires_at: string;
+            /** @enum {string} */
+            status: "active" | "claimed" | "expired" | "void";
+            terms?: string | null;
+        };
+        WarrantyClaim: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            warranty_id: string;
+            description?: string;
+            /** @enum {string} */
+            status: "open" | "remedied" | "rejected";
+            /** Format: uuid */
+            remedy_job_id?: string | null;
+            /** Format: date-time */
+            created_at: string;
+        };
         Dispute: {
             /** Format: uuid */
             id: string;
@@ -1956,6 +2023,80 @@ export interface operations {
                     };
                 };
             };
+        };
+    };
+    issueWarranty: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description A client-generated UUID. Replaying it returns the stored response (CLAUDE.md rule */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                engagement: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    duration_days: number;
+                    terms?: string | null;
+                };
+            };
+        };
+        responses: {
+            /** @description The issued warranty */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["Warranty"];
+                    };
+                };
+            };
+            401: components["responses"]["Problem"];
+            403: components["responses"]["Problem"];
+            422: components["responses"]["ValidationProblem"];
+        };
+    };
+    fileWarrantyClaim: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description A client-generated UUID. Replaying it returns the stored response (CLAUDE.md rule */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                warranty: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    description: string;
+                };
+            };
+        };
+        responses: {
+            /** @description The claim (with its spawned remedy job) */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["WarrantyClaim"];
+                    };
+                };
+            };
+            401: components["responses"]["Problem"];
+            403: components["responses"]["Problem"];
+            409: components["responses"]["Problem"];
+            422: components["responses"]["ValidationProblem"];
         };
     };
     listDisputes: {

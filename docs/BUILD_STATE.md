@@ -158,7 +158,8 @@ build, which lands with the app UI work.**
 | P6-05 | Share-my-job signed expiring link | **DONE** — `engagement_shares` (opaque token stored **hashed**; expiring + revocable). `CreateEngagementShare` (participant-gated: customer or assigned worker; onsite/hybrid only via `supportsShareJob`, remote → 422) mints a link; a **public, tokenised Blade page** (`/s/{token}`) renders read-only, PII-minimised status — provider first name, approximate location (quarter/city), live status from `work_sessions` — a stale/revoked token is 404. `POST /v1/engagements/{engagement}/share`, `DELETE /v1/engagement-shares/{share}`; i18n `share.*` (parity OK); no-literal-colour + no-bare-string linters clean. 5 tests |
 | P6-06 | Check-in-overdue watchdog | **DONE** — `RaiseOverdueCheckIns` + `safety:check-in-watchdog` command: an assignment past `scheduled_from` + grace with **no `work_session`** (never checked in) on an onsite/hybrid job raises a `check_in_overdue` `safety_alert` + `safety.alert_raised` outbox — deduped against an open alert, mode-gated via the policy. Reuses the P5-03 audit trail. 5 tests incl. **overdue-flagged, checked-in-not-flagged, remote-skipped, within-grace-skipped, dedupe** |
 | P6-10 | Dispute flow + admin adjudication → balanced adjustment txn | **DONE** — `disputes` (category/status CHECKs; links `resolution_transaction_id` + `resolved_by_user_id`). `RaiseDispute` (party-gated; `dispute.raised` outbox, never auto-moves money); `AdjudicateDispute` — a human decision that, when it moves money, posts a **balanced `Adjustment` ledger transaction stamped with the admin's id** and referenced to the dispute (mirrors `ResolveReconciliationException`), else resolves with no ledger effect; writes `dispute.adjudicated` to the audit log; once-only. `POST /v1/engagements/{engagement}/disputes`, `GET /v1/disputes`; Filament dispute queue (adjudicate = resolve/reject + note). 5 tests incl. **balanced adjustment attributable to a named admin + no-money dismissal** |
-| P6-11..P6-13 | warranties, metrics, leakage proxy | not started |
+| P6-11 | `warranties` + `warranty_claims` + **remedy job spawning** | **DONE** — `warranties` (one per engagement; duration/window CHECKs) + `warranty_claims`. `IssueWarranty` (provider); `FileWarrantyClaim` (customer) **spawns a REAL remedy job**: a job cloned from the original (`RMD-` ref, status engaged), its own engagement whose **origin is the warranty claim** (a third engagement origin — added `warranty_claim_id` + widened `engagements_origin_check`), agreed 0 (free), and a **real lead assignment to the original worker** — links `remedy_job_id`, sets warranty `claimed`, `warranty.claim_filed` outbox. `POST /v1/engagements/{engagement}/warranty`, `POST /v1/warranties/{warranty}/claims`. 5 tests incl. **claim → linked job + real assignment to original worker** |
+| P6-12, P6-13 | provider metrics, repeat-customer leakage proxy | not started |
 
 Phases 7–8: not started (see build plan). P3-11/13 (auto-approve timer, deposit-capture-on-agreement) still parked — the work-submission side now exists (work sessions), but agreement-time escrow capture is the remaining dependency.
 
@@ -190,6 +191,13 @@ Phases 7–8: not started (see build plan). P3-11/13 (auto-approve timer, deposi
   - **Still owed:** Ionic app screens and Blade public/SEO pages (Phase 5+) must meet the bar when built.
 
 ## What was done, most recent first
+
+- **P6-11 — warranties + claims + remedy-job spawning**: `warranties` (one per engagement) +
+  `warranty_claims`. A claim **spawns a real remedy job** — cloned from the original (`RMD-` ref),
+  its own engagement whose **origin is the warranty claim** (a third way into `engagements`, alongside
+  offer/quote — added `warranty_claim_id` and widened the origin CHECK), free (agreed 0), with a
+  **real lead assignment to the original worker**. Not an email thread; the fix only exists
+  on-platform — the anti-leakage payoff. 5 tests. Backend **328 green**, PHPStan L6, Pint clean.
 
 - **P6-10 — dispute flow + admin adjudication**: `disputes` raised by a party (`dispute.raised`
   outbox, never auto-moving money); `AdjudicateDispute` is a human decision that, when it moves money,

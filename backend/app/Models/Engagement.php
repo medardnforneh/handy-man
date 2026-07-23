@@ -37,7 +37,7 @@ final class Engagement extends Model
     public $incrementing = false;
 
     protected $fillable = [
-        'job_id', 'provider_party_id', 'offer_id', 'quotation_id', 'agreed_amount_minor',
+        'job_id', 'provider_party_id', 'offer_id', 'quotation_id', 'warranty_claim_id', 'agreed_amount_minor',
         'visit_credit_minor', 'currency', 'platform_fee_minor', 'is_escrowed', 'accepted_at', 'completed_at',
     ];
 

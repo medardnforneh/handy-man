@@ -204,6 +204,58 @@ paths:
                     items:
                       $ref: "#/components/schemas/Skill"
 
+  /engagements/{engagement}/warranty:
+    post:
+      tags: [Platform]
+      operationId: issueWarranty
+      summary: Issue a warranty on an engagement (provider)
+      description: The provider issues a warranty (one per engagement). It exists only on-platform — the anti-leakage payoff.
+      parameters:
+        - { name: engagement, in: path, required: true, schema: { type: string, format: uuid } }
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [duration_days]
+              properties:
+                duration_days: { type: integer, minimum: 1, maximum: 3650 }
+                terms: { type: [string, "null"], maxLength: 5000 }
+      responses:
+        "201": { description: The issued warranty, content: { application/json: { schema: { type: object, required: [data], properties: { data: { $ref: "#/components/schemas/Warranty" } } } } } }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/ValidationProblem" }
+
+  /warranties/{warranty}/claims:
+    post:
+      tags: [Platform]
+      operationId: fileWarrantyClaim
+      summary: File a warranty claim (customer)
+      description: >
+        The customer files a claim, which spawns a real remedy job — its own engagement and a lead
+        assignment to the original worker, free of charge. 409 if the warranty is not active.
+      parameters:
+        - { name: warranty, in: path, required: true, schema: { type: string, format: uuid } }
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [description]
+              properties:
+                description: { type: string, maxLength: 5000 }
+      responses:
+        "201": { description: The claim (with its spawned remedy job), content: { application/json: { schema: { type: object, required: [data], properties: { data: { $ref: "#/components/schemas/WarrantyClaim" } } } } } }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "409": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/ValidationProblem" }
+
   /disputes:
     get:
       tags: [Platform]
@@ -1743,6 +1795,29 @@ components:
         media:
           type: array
           items: { $ref: "#/components/schemas/Media" }
+
+    Warranty:
+      type: object
+      required: [id, engagement_id, duration_days, starts_at, expires_at, status]
+      properties:
+        id: { type: string, format: uuid }
+        engagement_id: { type: string, format: uuid }
+        duration_days: { type: integer }
+        starts_at: { type: string, format: date-time }
+        expires_at: { type: string, format: date-time }
+        status: { type: string, enum: [active, claimed, expired, void] }
+        terms: { type: [string, "null"] }
+
+    WarrantyClaim:
+      type: object
+      required: [id, warranty_id, status, created_at]
+      properties:
+        id: { type: string, format: uuid }
+        warranty_id: { type: string, format: uuid }
+        description: { type: string }
+        status: { type: string, enum: [open, remedied, rejected] }
+        remedy_job_id: { type: [string, "null"], format: uuid }
+        created_at: { type: string, format: date-time }
 
     Dispute:
       type: object
