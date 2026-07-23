@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Domain\Jobs\Actions\CreateJob;
 use App\Domain\Jobs\Actions\PublishJob;
+use App\Domain\Jobs\Actions\RebookProvider;
 use App\Domain\Jobs\JobStatus;
 use App\Domain\Jobs\ProviderSearch;
 use App\Http\Controllers\Controller;
@@ -25,6 +26,17 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  */
 final class JobController extends Controller
 {
+    public function rebook(Request $request, string $party, RebookProvider $action): JsonResponse
+    {
+        /** @var User $user */
+        $user = $request->user();
+
+        // RebookRefused (422) / PartyBlocked (422) render as problem+json automatically.
+        $offer = $action->handle($user, $party);
+
+        return response()->json(['data' => ['job_id' => $offer->job_id, 'offer_id' => $offer->id]], 201);
+    }
+
     public function index(Request $request): AnonymousResourceCollection
     {
         /** @var User $user */

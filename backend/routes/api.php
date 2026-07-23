@@ -60,6 +60,11 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
             'api_version' => config('api.version'),
             'min_app_version' => config('api.min_app_version'),
             'server_time' => now()->toIso8601String(),
+            // Feature flags (P8-03/04) — dispatch fan-out + bidding are off until supply supports them.
+            'features' => [
+                'dispatch' => (bool) config('marketplace.dispatch_enabled'),
+                'bidding' => (bool) config('marketplace.bidding_enabled'),
+            ],
         ]);
     })->name('meta');
 
@@ -200,6 +205,8 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
         Route::post('/jobs/{job}/publish', [JobController::class, 'publish'])->name('jobs.publish');
         // Matching providers (P2-04) — geo-filtered for onsite/hybrid, whole pool for remote.
         Route::get('/jobs/{job}/providers', [JobController::class, 'providers'])->name('jobs.providers');
+        // One-tap rebook of a known provider (P8-05) — clones the last job + sends a direct offer.
+        Route::post('/providers/{party}/rebook', [JobController::class, 'rebook'])->name('providers.rebook');
         // Direct offers (P2-05).
         Route::post('/jobs/{job}/offers', [OfferController::class, 'store'])->name('jobs.offers.store');
         // Provider accepts an offer → engagement (P2-06). Concurrency-safe; fact-gated (P2-06b).

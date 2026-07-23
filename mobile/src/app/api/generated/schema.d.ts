@@ -243,6 +243,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/providers/{party}/rebook": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Rebook a known provider in one tap
+         * @description Clones the customer's most recent job with the provider into a fresh open job and sends a direct offer. 422 if there is no prior engagement.
+         */
+        post: operations["rebookProvider"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/referral-code": {
         parameters: {
             query?: never;
@@ -1338,6 +1358,11 @@ export interface components {
             min_app_version?: string | null;
             /** Format: date-time */
             server_time: string;
+            /** @description Marketplace feature flags (P8-03/04). */
+            features?: {
+                dispatch?: boolean;
+                bidding?: boolean;
+            };
         };
         Offer: {
             /** Format: uuid */
@@ -2379,6 +2404,40 @@ export interface operations {
             };
             401: components["responses"]["Problem"];
             403: components["responses"]["Problem"];
+            422: components["responses"]["ValidationProblem"];
+        };
+    };
+    rebookProvider: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description A client-generated UUID. Replaying it returns the stored response (CLAUDE.md rule */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                party: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The new job + offer */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            /** Format: uuid */
+                            job_id?: string;
+                            /** Format: uuid */
+                            offer_id?: string;
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["Problem"];
             422: components["responses"]["ValidationProblem"];
         };
     };

@@ -319,6 +319,32 @@ paths:
         "403": { $ref: "#/components/responses/Problem" }
         "422": { $ref: "#/components/responses/ValidationProblem" }
 
+  /providers/{party}/rebook:
+    post:
+      tags: [Platform]
+      operationId: rebookProvider
+      summary: Rebook a known provider in one tap
+      description: Clones the customer's most recent job with the provider into a fresh open job and sends a direct offer. 422 if there is no prior engagement.
+      parameters:
+        - { name: party, in: path, required: true, schema: { type: string, format: uuid } }
+        - $ref: "#/components/parameters/IdempotencyKey"
+      responses:
+        "201":
+          description: The new job + offer
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      job_id: { type: string, format: uuid }
+                      offer_id: { type: string, format: uuid }
+        "401": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/ValidationProblem" }
+
   /referral-code:
     get:
       tags: [Platform]
@@ -1776,6 +1802,12 @@ components:
         server_time:
           type: string
           format: date-time
+        features:
+          type: object
+          description: Marketplace feature flags (P8-03/04).
+          properties:
+            dispatch: { type: boolean }
+            bidding: { type: boolean }
 
     Offer:
       type: object

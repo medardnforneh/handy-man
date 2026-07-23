@@ -186,7 +186,9 @@ build, which lands with the app UI work.**
 | ID | Task | Status |
 |---|---|---|
 | P8-01 | Referrals: codes, qualify-on-first-completed-paid-job, ledger-backed | **DONE** — `referral_codes` + `referrals` (one per referee UNIQUE; not-self CHECK). `ReferralService`: `codeFor` mints a code; `claim` guards **self-referral + duplicate + unknown code**; `qualify` (on `engagement.completed` for the referee, via `QualifyReferralOnCompletion` listener) books a **ledger-backed reward** — DR platform_revenue / CR `promo_liability`[referrer] (`TxnKind::ReferralReward`) — a real liability, idempotent. `GET /v1/referral-code`, `POST /v1/referrals/claim`. 4 tests incl. **ledger-balanced reward + self/dup blocked** |
-| P8-02..P8-06 | referral fraud controls, dispatch mode, bidding flag, rebooking, admin analytics | not started |
+| P8-04 | Bidding mode behind a feature flag; off by default | **DONE** — `config/marketplace.php` flags (`dispatch_enabled`/`bidding_enabled`, both env-gated, off by default) surfaced in `GET /v1/meta` `features`. Test: **meta.features.bidding == false** |
+| P8-05 | Rebooking a known provider in one tap | **DONE** — `RebookProvider` clones the customer's most recent job with the provider into a fresh open job and sends a direct offer (reuses `CreateJob`+`PublishJob`+`CreateDirectOffer`, so blocks still hold); refused if no prior engagement. `POST /v1/providers/{party}/rebook`. 2 tests |
+| P8-02, P8-03, P8-06 | referral fraud controls, dispatch mode, admin analytics | not started |
 
 P3-13 (deposit-capture-on-agreement) still parked — collection lands via the intent path; auto-capture at acceptance is the remaining piece.
 
