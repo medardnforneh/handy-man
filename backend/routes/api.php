@@ -11,8 +11,10 @@ use App\Http\Controllers\Api\V1\ConsentController;
 use App\Http\Controllers\Api\V1\DeliverableController;
 use App\Http\Controllers\Api\V1\DeviceController;
 use App\Http\Controllers\Api\V1\DisputeController;
+use App\Http\Controllers\Api\V1\EngagementLifecycleController;
 use App\Http\Controllers\Api\V1\EngagementShareController;
 use App\Http\Controllers\Api\V1\EscrowController;
+use App\Http\Controllers\Api\V1\FollowUpController;
 use App\Http\Controllers\Api\V1\JobController;
 use App\Http\Controllers\Api\V1\LeadCreditController;
 use App\Http\Controllers\Api\V1\MessageController;
@@ -134,6 +136,13 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
         // Warranties (P6-11). Provider issues; customer claims → spawns a real remedy job.
         Route::post('/engagements/{engagement}/warranty', [WarrantyController::class, 'issue'])->name('engagements.warranty.issue');
         Route::post('/warranties/{warranty}/claims', [WarrantyController::class, 'claim'])->name('warranties.claims.store');
+
+        // Engagement completion (P7-02) → schedules review follow-ups.
+        Route::post('/engagements/{engagement}/complete', [EngagementLifecycleController::class, 'complete'])->name('engagements.complete');
+
+        // Follow-ups (P7-07). The target reads their nudges and records a response action.
+        Route::get('/follow-ups', [FollowUpController::class, 'index'])->name('follow-ups.index');
+        Route::post('/follow-ups/{followUp}/respond', [FollowUpController::class, 'respond'])->name('follow-ups.respond');
 
         // Reports + blocks (P6-07). A block is honoured in search, ranking and offers.
         Route::get('/blocks', [SafetyController::class, 'blocks'])->name('blocks.index');

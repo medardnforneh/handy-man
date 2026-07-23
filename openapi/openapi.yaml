@@ -286,6 +286,53 @@ paths:
         "409": { $ref: "#/components/responses/Problem" }
         "422": { $ref: "#/components/responses/ValidationProblem" }
 
+  /follow-ups:
+    get:
+      tags: [Platform]
+      operationId: listFollowUps
+      summary: The caller's follow-ups (nudges)
+      responses:
+        "200": { description: The caller's follow-ups, content: { application/json: { schema: { type: object, required: [data], properties: { data: { type: array, items: { $ref: "#/components/schemas/FollowUp" } } } } } } }
+        "401": { $ref: "#/components/responses/Problem" }
+
+  /follow-ups/{followUp}/respond:
+    post:
+      tags: [Platform]
+      operationId: respondToFollowUp
+      summary: Record the response action for a follow-up
+      description: Every follow-up has exactly one response action; recording the tap is how effectiveness is measured.
+      parameters:
+        - { name: followUp, in: path, required: true, schema: { type: string, format: uuid } }
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [response_action]
+              properties:
+                response_action: { type: string, enum: [quote_accepted, review_submitted, warranty_claimed, rebooked, approved, dismissed, opened] }
+      responses:
+        "200": { description: The updated follow-up, content: { application/json: { schema: { type: object, required: [data], properties: { data: { $ref: "#/components/schemas/FollowUp" } } } } } }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/ValidationProblem" }
+
+  /engagements/{engagement}/complete:
+    post:
+      tags: [Platform]
+      operationId: completeEngagement
+      summary: Mark an engagement complete (party)
+      description: Sets completion and opens the review window (schedules review follow-ups). Idempotent.
+      parameters:
+        - { name: engagement, in: path, required: true, schema: { type: string, format: uuid } }
+        - $ref: "#/components/parameters/IdempotencyKey"
+      responses:
+        "200": { description: The completed engagement, content: { application/json: { schema: { type: object, required: [data], properties: { data: { $ref: "#/components/schemas/Engagement" } } } } } }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+
   /disputes:
     get:
       tags: [Platform]
@@ -1825,6 +1872,21 @@ components:
         media:
           type: array
           items: { $ref: "#/components/schemas/Media" }
+
+    FollowUp:
+      type: object
+      required: [id, kind, channel, status, scheduled_for]
+      properties:
+        id: { type: string, format: uuid }
+        kind: { type: string }
+        channel: { type: string, enum: [in_app, push, sms, whatsapp, email] }
+        status: { type: string, enum: [scheduled, sent, cancelled, responded, failed, suppressed] }
+        scheduled_for: { type: string, format: date-time }
+        job_id: { type: [string, "null"], format: uuid }
+        engagement_id: { type: [string, "null"], format: uuid }
+        quotation_id: { type: [string, "null"], format: uuid }
+        warranty_id: { type: [string, "null"], format: uuid }
+        response_action: { type: [string, "null"] }
 
     Warranty:
       type: object

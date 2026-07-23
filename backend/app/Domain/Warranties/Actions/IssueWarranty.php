@@ -7,6 +7,7 @@ namespace App\Domain\Warranties\Actions;
 use App\Domain\Warranties\WarrantyStatus;
 use App\Models\Engagement;
 use App\Models\Warranty;
+use App\Support\Outbox;
 
 /**
  * Issues a warranty on a completed engagement (build plan P6-11, doc 06). One per engagement
@@ -15,11 +16,13 @@ use App\Models\Warranty;
  */
 final class IssueWarranty
 {
+    public function __construct(private readonly Outbox $outbox) {}
+
     public function handle(Engagement $engagement, int $durationDays, ?string $terms = null): Warranty
     {
         $startsAt = now();
 
-        return Warranty::query()->create([
+        $warranty = Warranty::query()->create([
             'engagement_id' => $engagement->id,
             'duration_days' => $durationDays,
             'starts_at' => $startsAt,
@@ -27,5 +30,14 @@ final class IssueWarranty
             'terms' => $terms,
             'status' => WarrantyStatus::Active->value,
         ]);
+
+        // Announce it so the orchestrator schedules a warranty_expiring nudge 14d before expiry.
+        $this->outbox->publish('warranty.issued', [
+            'warranty_id' => $warranty->id,
+            'engagement_id' => $engagement->id,
+            'expires_at' => $warranty->expires_at->toIso8601String(),
+        ]);
+
+        return $warranty;
     }
 }

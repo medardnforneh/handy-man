@@ -171,7 +171,8 @@ build, which lands with the app UI work.**
 | P7-01 | `follow_ups` + `dedupe_key` UNIQUE + scheduler | **DONE** — `follow_ups` (native `followup_kind`/`channel`/`status`; UNIQUE `dedupe_key`; due partial index) + `comms_log`. `FollowUpScheduler::schedule` builds the key `{kind}:{anchor_type}:{anchor_id}:{sequence}` and is **idempotent via `firstOrCreate`** — the same at-least-once event 50× → exactly 1 row. `DispatchFollowUps` action + `follow-ups:dispatch` command sweep due `scheduled` rows. Test: **50× → 1** |
 | P7-03 | `comms_log` + per-user per-channel budget | **DONE** — `CommsBudget` counts real sends in `comms_log` over rolling windows (config `followups.budget`: push 4/d, sms 2/d + 3/wk, whatsapp 3/d, email 2/d; in_app unlimited); over cap → `suppressed`, not sent. Test: **5 SMS → 2 sent, 3 suppressed** |
 | P7-04 | Consent gate on non-transactional kinds | **DONE** — `FollowUpKind::requiresMarketingConsent()` (reengagement/maintenance_due) gated on the `marketing` grant via `ConsentState`; `isTransactional()` kinds (check_in_overdue/auto_approve_warning/payout_ready/…) bypass the budget entirely. Test: **revoke marketing → reengagement suppressed, check_in_overdue still sent** |
-| P7-02 | Event-driven scheduling + cancellation | pending — schedule on domain events (engagement.completed → review_request + review_reminder) and cancel by dedupe-prefix on the counter-event (review submitted) |
+| P7-02 | Event-driven scheduling + cancellation | **DONE** — `FollowUpOrchestrator` subscribes to the outbox seam: `engagement.completed` → review_request (+2h) + review_reminder (+3d); `review.submitted` (by the customer) → cancels both by dedupe-prefix; `warranty.issued` → warranty_expiring 14d before expiry. New `CompleteEngagement` action (publishes `engagement.completed`, idempotent); `SubmitReview`/`IssueWarranty` now publish their events. `POST /v1/engagements/{engagement}/complete`. Test: **complete → 2 scheduled; review submitted → both cancelled; completing twice → still 2** |
+| P7-07 | `quote_pending_customer` / `warranty_expiring` / `review_request` / `maintenance_due` + `response_action` | **DONE (core)** — review_request/reminder + warranty_expiring wired to events (above); every follow-up carries a single **`response_action`** recorded via `POST /v1/follow-ups/{followUp}/respond` (target-gated, enum'd actions), `GET /v1/follow-ups` lists a user's nudges. quote_pending_customer / maintenance_due scheduling lands when their source events are wired. Test: **response_action recorded → status responded; non-target → 403** |
 | P7-05 | WhatsApp Business API + approved templates + deep links | pending (external template approval; will add the WhatsApp channel adapter, Fake default) |
 | P7-06 | Channel ladder in_app → push → whatsapp → sms → email | pending (partially: budget + channels exist; the escalation ladder + real transports land with P7-05) |
 | P7-07 | `quote_pending_customer` / `warranty_expiring` / `review_request` / `maintenance_due` + `response_action` | pending |
@@ -207,6 +208,14 @@ Phase 8: not started (see build plan). P3-11/13 (auto-approve timer, deposit-cap
   - **Still owed:** Ionic app screens and Blade public/SEO pages (Phase 5+) must meet the bar when built.
 
 ## What was done, most recent first
+
+- **P7-02 + P7-07 — event-driven follow-ups + response actions**: `FollowUpOrchestrator` on the outbox
+  seam schedules on event and cancels on event (doc 07 rule 1): `engagement.completed` → review_request
+  (+2h) + review_reminder (+3d); the customer's `review.submitted` cancels both by dedupe-prefix;
+  `warranty.issued` → warranty_expiring 14d pre-expiry. New `CompleteEngagement` action (idempotent).
+  Every follow-up carries one **`response_action`**, recorded via `POST /v1/follow-ups/{id}/respond`
+  (target-gated); `GET /v1/follow-ups` lists them. 5 tests incl. **complete → 2 scheduled → review →
+  both cancelled** and **response_action recorded**. Backend **344 green**, PHPStan L6, Pint clean.
 
 - **P7-01/03/04 — the follow-up engine core**: `follow_ups` + `comms_log`, the retention backbone.
   Scheduling is **idempotent on `dedupe_key`** (`{kind}:{anchor}:{id}:{seq}`) — the same at-least-once

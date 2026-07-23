@@ -206,6 +206,63 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/follow-ups": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The caller's follow-ups (nudges) */
+        get: operations["listFollowUps"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/follow-ups/{followUp}/respond": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Record the response action for a follow-up
+         * @description Every follow-up has exactly one response action; recording the tap is how effectiveness is measured.
+         */
+        post: operations["respondToFollowUp"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/engagements/{engagement}/complete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Mark an engagement complete (party)
+         * @description Sets completion and opens the review window (schedules review follow-ups). Idempotent.
+         */
+        post: operations["completeEngagement"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/disputes": {
         parameters: {
             query?: never;
@@ -1407,6 +1464,26 @@ export interface components {
             submitted_at?: string | null;
             media?: components["schemas"]["Media"][];
         };
+        FollowUp: {
+            /** Format: uuid */
+            id: string;
+            kind: string;
+            /** @enum {string} */
+            channel: "in_app" | "push" | "sms" | "whatsapp" | "email";
+            /** @enum {string} */
+            status: "scheduled" | "sent" | "cancelled" | "responded" | "failed" | "suppressed";
+            /** Format: date-time */
+            scheduled_for: string;
+            /** Format: uuid */
+            job_id?: string | null;
+            /** Format: uuid */
+            engagement_id?: string | null;
+            /** Format: uuid */
+            quotation_id?: string | null;
+            /** Format: uuid */
+            warranty_id?: string | null;
+            response_action?: string | null;
+        };
         Warranty: {
             /** Format: uuid */
             id: string;
@@ -2148,6 +2225,95 @@ export interface operations {
             403: components["responses"]["Problem"];
             409: components["responses"]["Problem"];
             422: components["responses"]["ValidationProblem"];
+        };
+    };
+    listFollowUps: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The caller's follow-ups */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["FollowUp"][];
+                    };
+                };
+            };
+            401: components["responses"]["Problem"];
+        };
+    };
+    respondToFollowUp: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description A client-generated UUID. Replaying it returns the stored response (CLAUDE.md rule */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                followUp: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @enum {string} */
+                    response_action: "quote_accepted" | "review_submitted" | "warranty_claimed" | "rebooked" | "approved" | "dismissed" | "opened";
+                };
+            };
+        };
+        responses: {
+            /** @description The updated follow-up */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["FollowUp"];
+                    };
+                };
+            };
+            401: components["responses"]["Problem"];
+            403: components["responses"]["Problem"];
+            422: components["responses"]["ValidationProblem"];
+        };
+    };
+    completeEngagement: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description A client-generated UUID. Replaying it returns the stored response (CLAUDE.md rule */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                engagement: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The completed engagement */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["Engagement"];
+                    };
+                };
+            };
+            401: components["responses"]["Problem"];
+            403: components["responses"]["Problem"];
         };
     };
     listDisputes: {

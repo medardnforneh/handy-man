@@ -11,6 +11,7 @@ use App\Domain\Reviews\ReviewVisibility;
 use App\Models\Engagement;
 use App\Models\Review;
 use App\Models\User;
+use App\Support\Outbox;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -26,7 +27,10 @@ use Illuminate\Support\Facades\DB;
  */
 final class SubmitReview
 {
-    public function __construct(private readonly PublishEngagementReviews $publisher) {}
+    public function __construct(
+        private readonly PublishEngagementReviews $publisher,
+        private readonly Outbox $outbox,
+    ) {}
 
     public function handle(
         Engagement $engagement,
@@ -58,6 +62,12 @@ final class SubmitReview
                 if (Review::query()->where('engagement_id', $engagement->id)->count() >= 2) {
                     $this->publisher->handle($engagement->id);
                 }
+
+                // Announce the submission so the follow-up orchestrator cancels the review nudges.
+                $this->outbox->publish('review.submitted', [
+                    'engagement_id' => $engagement->id,
+                    'author_party_id' => $author->party_id,
+                ]);
 
                 return $review;
             });
