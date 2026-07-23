@@ -24,6 +24,7 @@ use App\Http\Controllers\Api\V1\PaymentWebhookController;
 use App\Http\Controllers\Api\V1\PayoutController;
 use App\Http\Controllers\Api\V1\ProfileController;
 use App\Http\Controllers\Api\V1\ProviderController;
+use App\Http\Controllers\Api\V1\ProviderCustomerController;
 use App\Http\Controllers\Api\V1\ProviderMetricsController;
 use App\Http\Controllers\Api\V1\QuotationController;
 use App\Http\Controllers\Api\V1\Reference\NoteController;
@@ -143,6 +144,12 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
         // Follow-ups (P7-07). The target reads their nudges and records a response action.
         Route::get('/follow-ups', [FollowUpController::class, 'index'])->name('follow-ups.index');
         Route::post('/follow-ups/{followUp}/respond', [FollowUpController::class, 'respond'])->name('follow-ups.respond');
+
+        // Provider CRM (P7-08). Customer book + manual re-engagement (same budget) + do-not-contact.
+        Route::get('/provider/customers', [ProviderCustomerController::class, 'index'])->name('provider.customers.index');
+        Route::post('/provider/customers/{party}/follow-up', [ProviderCustomerController::class, 'followUp'])->name('provider.customers.follow-up');
+        Route::post('/provider/customers/{party}/do-not-contact', [ProviderCustomerController::class, 'setDoNotContact'])->name('provider.customers.dnc.set');
+        Route::delete('/provider/customers/{party}/do-not-contact', [ProviderCustomerController::class, 'removeDoNotContact'])->name('provider.customers.dnc.remove');
 
         // Reports + blocks (P6-07). A block is honoured in search, ranking and offers.
         Route::get('/blocks', [SafetyController::class, 'blocks'])->name('blocks.index');

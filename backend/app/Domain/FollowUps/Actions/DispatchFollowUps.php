@@ -9,6 +9,7 @@ use App\Domain\FollowUps\FollowUpDelivery;
 use App\Domain\FollowUps\FollowUpStatus;
 use App\Domain\Identity\Consent\ConsentState;
 use App\Models\CommsLog;
+use App\Models\DoNotContact;
 use App\Models\FollowUp;
 use App\Models\User;
 use Throwable;
@@ -51,6 +52,14 @@ final class DispatchFollowUps
 
             $kind = $followUp->kind;
 
+            // A manual provider follow-up to a do-not-contact customer is suppressed absolutely,
+            // even if the customer was listed after it was scheduled (P7-08).
+            if ($followUp->created_by_user_id !== null && $this->onDoNotContact($followUp, $user)) {
+                $followUp->update(['status' => FollowUpStatus::Suppressed->value, 'failure_reason' => 'do_not_contact']);
+
+                continue;
+            }
+
             if ($kind->requiresMarketingConsent() && ! $this->consent->has($user, 'marketing')) {
                 $followUp->update(['status' => FollowUpStatus::Suppressed->value, 'failure_reason' => 'consent_revoked']);
 
@@ -92,5 +101,12 @@ final class DispatchFollowUps
         }
 
         return $sent;
+    }
+
+    private function onDoNotContact(FollowUp $followUp, User $target): bool
+    {
+        $providerPartyId = User::query()->where('id', $followUp->created_by_user_id)->value('party_id');
+
+        return is_string($providerPartyId) && DoNotContact::exists($providerPartyId, $target->party_id);
     }
 }

@@ -176,7 +176,9 @@ build, which lands with the app UI work.**
 | P7-05 | WhatsApp Business API + approved templates + deep links | **DONE (adapter)** — `WhatsAppSender` rail (Fake/Log, config-selected, mirroring push/SMS); template = kind, variables + **deep link back to the follow-up**, sent in the target's **comms locale** (`followup.*` i18n copy, parity OK). `FollowUpDelivery` routes each follow-up to the right transport at dispatch; a transport failure marks the row `failed`. Live template approval is the remaining external dependency (like CinetPay creds). Test: **WhatsApp follow-up → transport got template + fr locale + deep link** |
 | P7-06 | Channel ladder in_app → push → whatsapp → sms → email | **DONE** — `ChannelLadder::pick` chooses the outbound channel (push if a live device token, else WhatsApp — the workhorse), used by the orchestrator; the follow-up row is always the in-app record; SMS/email reserved (SMS transactional, email for receipts). Test: **ladder picks push with a token, WhatsApp without; push follow-up reaches the device token** |
 | P7-07 | `quote_pending_customer` / `warranty_expiring` / `review_request` / `maintenance_due` + `response_action` | pending |
-| P7-08 | Provider CRM surface (customer list, pipeline, manual follow-up, do-not-contact) | pending |
+| P7-08 | Provider CRM surface (customer list, pipeline, manual follow-up, do-not-contact) | **DONE (backend)** — `ProviderCustomers` builds the client book (per customer: job count, completions, lifetime value, last engagement) from the provider's engagements; `ScheduleManualFollowUp` lets a provider send a `reengagement` nudge on the **same budget + consent gates** (`created_by_user_id` recorded) — a provider can't spam through the platform; `do_not_contacts` (per provider→customer) is **honoured absolutely** — refused at schedule time and re-checked at dispatch. `GET /v1/provider/customers`, `POST /v1/provider/customers/{party}/follow-up`, `POST`/`DELETE .../do-not-contact`. 3 tests. (Pipeline view is a client/admin UI surface.) |
+
+**Phase 7 complete (backend): 8/8 tasks. P7-05 live WhatsApp templates + the pipeline UI are the external/UI remainders.**
 
 Phase 8: not started (see build plan). P3-11/13 (auto-approve timer, deposit-capture-on-agreement) still parked — the auto-approve timer is now unblocked by the follow-up engine; agreement-time escrow capture remains.
 
@@ -208,6 +210,14 @@ Phase 8: not started (see build plan). P3-11/13 (auto-approve timer, deposit-cap
   - **Still owed:** Ionic app screens and Blade public/SEO pages (Phase 5+) must meet the bar when built.
 
 ## What was done, most recent first
+
+- **P7-08 — provider CRM (backend) → Phase 7 backend complete**: `ProviderCustomers` builds the client
+  book (job count, completions, lifetime value, last engagement per customer); `ScheduleManualFollowUp`
+  lets a provider send a re-engagement nudge on the **same budget + consent gates** (attributed via
+  `created_by_user_id`); `do_not_contacts` is **honoured absolutely** — refused at schedule time and
+  re-checked at dispatch. `GET /v1/provider/customers` + manual follow-up + do-not-contact endpoints.
+  3 tests. Also fixed a Collection-generics PHPStan quirk (return a typed `list`). Backend **350 green**,
+  PHPStan L6, Pint clean. **Phase 7 backend is complete (8/8).**
 
 - **P7-05 + P7-06 — WhatsApp channel + routing ladder**: a `WhatsAppSender` rail (Fake/Log,
   config-selected) — templated, deep-linked, in the target's comms locale. `FollowUpDelivery` routes

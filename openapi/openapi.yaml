@@ -319,6 +319,71 @@ paths:
         "403": { $ref: "#/components/responses/Problem" }
         "422": { $ref: "#/components/responses/ValidationProblem" }
 
+  /provider/customers:
+    get:
+      tags: [Platform]
+      operationId: providerCustomers
+      summary: The provider's customer book (CRM)
+      description: Each customer the caller has engaged, with job count, completions, lifetime value, last engagement, and do-not-contact status.
+      responses:
+        "200":
+          description: The customer list
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        customer_party_id: { type: string, format: uuid }
+                        customer_name: { type: string }
+                        job_count: { type: integer }
+                        completed_count: { type: integer }
+                        lifetime_value_minor: { type: integer }
+                        last_engaged_at: { type: [string, "null"], format: date-time }
+                        do_not_contact: { type: boolean }
+        "401": { $ref: "#/components/responses/Problem" }
+
+  /provider/customers/{party}/follow-up:
+    post:
+      tags: [Platform]
+      operationId: scheduleManualFollowUp
+      summary: Schedule a manual re-engagement (provider)
+      description: Rides the same budget + consent gates as automated follow-ups. 422 if the customer is on the do-not-contact list.
+      parameters:
+        - { name: party, in: path, required: true, schema: { type: string, format: uuid } }
+        - $ref: "#/components/parameters/IdempotencyKey"
+      responses:
+        "201": { description: The scheduled follow-up, content: { application/json: { schema: { type: object, required: [data], properties: { data: { $ref: "#/components/schemas/FollowUp" } } } } } }
+        "401": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/ValidationProblem" }
+
+  /provider/customers/{party}/do-not-contact:
+    post:
+      tags: [Platform]
+      operationId: setDoNotContact
+      summary: Mark a customer do-not-contact (provider)
+      parameters:
+        - { name: party, in: path, required: true, schema: { type: string, format: uuid } }
+        - $ref: "#/components/parameters/IdempotencyKey"
+      responses:
+        "201": { description: Blocked, content: { application/json: { schema: { type: object } } } }
+        "401": { $ref: "#/components/responses/Problem" }
+    delete:
+      tags: [Platform]
+      operationId: removeDoNotContact
+      summary: Lift do-not-contact (provider)
+      parameters:
+        - { name: party, in: path, required: true, schema: { type: string, format: uuid } }
+        - $ref: "#/components/parameters/IdempotencyKey"
+      responses:
+        "200": { description: Unblocked, content: { application/json: { schema: { type: object } } } }
+        "401": { $ref: "#/components/responses/Problem" }
+
   /engagements/{engagement}/complete:
     post:
       tags: [Platform]
