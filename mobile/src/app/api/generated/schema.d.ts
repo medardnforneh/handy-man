@@ -342,6 +342,66 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/engagements/{engagement}/check-in": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Check in at the job site (worker)
+         * @description An assigned worker opens a work session with server-recorded geo + timestamp, narrated into the workspace thread as `arrived`. Exists only for onsite/hybrid engagements — a remote engagement returns 422 `check-in-not-supported`. 409 if a session is already open.
+         */
+        post: operations["checkIn"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/engagements/{engagement}/check-out": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Check out (worker)
+         * @description Closes the worker's open work session with the end geo + timestamp. 409 if no session is open.
+         */
+        post: operations["checkOut"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/engagements/{engagement}/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Emit a structured status signal (worker)
+         * @description The worker records a structured status signal (on-the-way / started / paused / resumed / completed), narrated into the workspace timeline. `arrived` is emitted only by check-in.
+         */
+        post: operations["recordProviderStatus"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/milestones/{milestone}/approve": {
         parameters: {
             query?: never;
@@ -968,6 +1028,26 @@ export interface components {
             reply_to_id?: string | null;
             /** Format: date-time */
             created_at: string;
+        };
+        /** @description One end (start or end) of a work session — geo captured server-side. */
+        WorkSessionEndpoint: {
+            latitude?: number | null;
+            longitude?: number | null;
+            /** @description Device GPS accuracy in metres. */
+            accuracy_m?: number | null;
+        };
+        WorkSession: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            assignment_id: string;
+            /** Format: date-time */
+            started_at: string;
+            /** Format: date-time */
+            ended_at?: string | null;
+            is_open: boolean;
+            start?: components["schemas"]["WorkSessionEndpoint"] | null;
+            end?: components["schemas"]["WorkSessionEndpoint"] | null;
         };
         Quotation: {
             /** Format: uuid */
@@ -1937,6 +2017,113 @@ export interface operations {
             401: components["responses"]["Problem"];
             403: components["responses"]["Problem"];
             409: components["responses"]["Problem"];
+            422: components["responses"]["ValidationProblem"];
+        };
+    };
+    checkIn: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description A client-generated UUID. Replaying it returns the stored response (CLAUDE.md rule */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                engagement: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["WorkSessionEndpoint"];
+            };
+        };
+        responses: {
+            /** @description The open work session */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["WorkSession"];
+                    };
+                };
+            };
+            401: components["responses"]["Problem"];
+            403: components["responses"]["Problem"];
+            409: components["responses"]["Problem"];
+            422: components["responses"]["ValidationProblem"];
+        };
+    };
+    checkOut: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description A client-generated UUID. Replaying it returns the stored response (CLAUDE.md rule */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                engagement: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["WorkSessionEndpoint"];
+            };
+        };
+        responses: {
+            /** @description The closed work session */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["WorkSession"];
+                    };
+                };
+            };
+            401: components["responses"]["Problem"];
+            403: components["responses"]["Problem"];
+            409: components["responses"]["Problem"];
+            422: components["responses"]["ValidationProblem"];
+        };
+    };
+    recordProviderStatus: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description A client-generated UUID. Replaying it returns the stored response (CLAUDE.md rule */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                engagement: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @enum {string} */
+                    status: "on_the_way" | "started" | "paused" | "resumed" | "completed";
+                };
+            };
+        };
+        responses: {
+            /** @description The narrated timeline message */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["Message"];
+                    };
+                };
+            };
+            401: components["responses"]["Problem"];
+            403: components["responses"]["Problem"];
             422: components["responses"]["ValidationProblem"];
         };
     };

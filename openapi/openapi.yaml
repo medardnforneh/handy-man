@@ -556,6 +556,75 @@ paths:
         "409": { $ref: "#/components/responses/Problem" }
         "422": { $ref: "#/components/responses/ValidationProblem" }
 
+  /engagements/{engagement}/check-in:
+    post:
+      tags: [Platform]
+      operationId: checkIn
+      summary: Check in at the job site (worker)
+      description: >
+        An assigned worker opens a work session with server-recorded geo + timestamp, narrated into
+        the workspace thread as `arrived`. Exists only for onsite/hybrid engagements — a remote
+        engagement returns 422 `check-in-not-supported`. 409 if a session is already open.
+      parameters:
+        - { name: engagement, in: path, required: true, schema: { type: string, format: uuid } }
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/WorkSessionEndpoint" }
+      responses:
+        "201": { description: The open work session, content: { application/json: { schema: { type: object, required: [data], properties: { data: { $ref: "#/components/schemas/WorkSession" } } } } } }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "409": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/ValidationProblem" }
+
+  /engagements/{engagement}/check-out:
+    post:
+      tags: [Platform]
+      operationId: checkOut
+      summary: Check out (worker)
+      description: Closes the worker's open work session with the end geo + timestamp. 409 if no session is open.
+      parameters:
+        - { name: engagement, in: path, required: true, schema: { type: string, format: uuid } }
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/WorkSessionEndpoint" }
+      responses:
+        "200": { description: The closed work session, content: { application/json: { schema: { type: object, required: [data], properties: { data: { $ref: "#/components/schemas/WorkSession" } } } } } }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "409": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/ValidationProblem" }
+
+  /engagements/{engagement}/status:
+    post:
+      tags: [Platform]
+      operationId: recordProviderStatus
+      summary: Emit a structured status signal (worker)
+      description: >
+        The worker records a structured status signal (on-the-way / started / paused / resumed /
+        completed), narrated into the workspace timeline. `arrived` is emitted only by check-in.
+      parameters:
+        - { name: engagement, in: path, required: true, schema: { type: string, format: uuid } }
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status: { type: string, enum: [on_the_way, started, paused, resumed, completed] }
+      responses:
+        "201": { description: The narrated timeline message, content: { application/json: { schema: { type: object, required: [data], properties: { data: { $ref: "#/components/schemas/Message" } } } } } }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/ValidationProblem" }
+
   /milestones/{milestone}/approve:
     post:
       tags: [Platform]
@@ -1284,6 +1353,26 @@ components:
         contact_flag: { type: [string, "null"], enum: [phone, email, null] }
         reply_to_id: { type: [string, "null"], format: uuid }
         created_at: { type: string, format: date-time }
+
+    WorkSessionEndpoint:
+      type: object
+      description: One end (start or end) of a work session — geo captured server-side.
+      properties:
+        latitude: { type: [number, "null"] }
+        longitude: { type: [number, "null"] }
+        accuracy_m: { type: [number, "null"], description: "Device GPS accuracy in metres." }
+
+    WorkSession:
+      type: object
+      required: [id, assignment_id, started_at, is_open]
+      properties:
+        id: { type: string, format: uuid }
+        assignment_id: { type: string, format: uuid }
+        started_at: { type: string, format: date-time }
+        ended_at: { type: [string, "null"], format: date-time }
+        is_open: { type: boolean }
+        start: { oneOf: [ { $ref: "#/components/schemas/WorkSessionEndpoint" }, { type: "null" } ] }
+        end: { oneOf: [ { $ref: "#/components/schemas/WorkSessionEndpoint" }, { type: "null" } ] }
 
     Quotation:
       type: object

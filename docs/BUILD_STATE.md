@@ -3,7 +3,7 @@
 > Living tracker for the build. Updated as work progresses. Source of truth for **where we
 > are** and **how this machine is set up**. Read this first when resuming.
 
-_Last updated: 2026-07-18_
+_Last updated: 2026-07-23_
 
 ## Environment (this dev machine — Windows 10 Pro, non-admin)
 
@@ -132,7 +132,14 @@ Task IDs come from `docs/05-build-plan.md`.
 | P4-08 | `deliverables` submit/accept/reject (remote path) | **DONE** — `deliverables` (native `deliverable_status`; `media_url` until the P4-05 media table); `SubmitDeliverable` (provider; narrates `deliverable_submitted` in-transaction) + `ReviewDeliverable` (customer accept/reject with reason, row-locked, once-only); provider/customer-gated `POST /v1/engagements/{engagement}/deliverables` + `/deliverables/{deliverable}/review`; 7 tests |
 | P4-04, P4-05, P4-06, P4-07 | typing/presence, voice notes (S3), Ionic workspace UI, reconnect reconciliation | not started (client/realtime/media — land with the app UI in/around Phase 5) |
 
-Phases 5–8: not started (see build plan).
+### Phase 5 — Execution (provider section + native capabilities)
+
+| ID | Task | Status |
+|---|---|---|
+| P5-03 + P5-06 | `work_sessions` check-in/out (geo + timestamp) + structured provider status actions | **DONE** — `work_sessions` (geography start/end points + GPS accuracy; `work_sessions_span_check`; **partial unique `one_open_session_per_assignment`** — can't check in twice); `CheckIn` opens a session and narrates `arrived` in-transaction (rule #11), gated to onsite/hybrid via `EngagementModePolicy` (**remote → 422 `check-in-not-supported`**, no affordance); `CheckOut` row-locks and closes the open session (pure work-time close — completion stays a separate signal); `RecordStatus` narrates the structured `ProviderStatus` signals (on_the_way/started/paused/resumed/completed — `arrived` reserved to check-in); acting user must be an active assigned worker (provider section queries `assignments` only, no individual-vs-company branch); `POST /v1/engagements/{engagement}/check-in`, `/check-out`, `/status`; OpenAPI + TS client updated; 8 tests incl. **remote-refuses-check-in, double-check-in 409, arrived-not-postable-via-status** |
+| P5-01, P5-02, P5-04, P5-05 | Ionic PWA/Android/iOS + secure token storage; offline-first cache + write queue; `job_reports` + before/after media (EXIF stripped); push (FCM) via outbox | not started (client/native/media — P5-01/02 need device builds; P5-04 waits on the `media` table) |
+
+Phases 6–8: not started (see build plan). P3-11/13 (auto-approve timer, deposit-capture-on-agreement) still parked — the work-submission side now exists (work sessions), but agreement-time escrow capture is the remaining dependency.
 
 ## Design debt (tracked)
 
@@ -162,6 +169,17 @@ Phases 5–8: not started (see build plan).
   - **Still owed:** Ionic app screens and Blade public/SEO pages (Phase 5+) must meet the bar when built.
 
 ## What was done, most recent first
+
+- **P5-03 + P5-06 — the provider execution surface**: `work_sessions` (geography start/end points +
+  GPS accuracy) with a **partial unique index** so a worker can't hold two open sessions on one
+  assignment. `CheckIn` opens a session and narrates `arrived` into the workspace thread in its own
+  transaction (rule #11); it's gated to onsite/hybrid by `EngagementModePolicy`, so a **remote
+  engagement refuses check-in (422)** and exposes no affordance. `CheckOut` row-locks and closes the
+  open session — a pure work-time close, kept distinct from declaring the job `completed`.
+  `RecordStatus` narrates the structured status signals (on_the_way/started/paused/resumed/completed;
+  `arrived` is reserved to check-in). The acting user must be an active assigned worker — the provider
+  section only ever queries `assignments`. `POST /v1/engagements/{engagement}/check-in`, `/check-out`,
+  `/status`. OpenAPI + TS client updated. 8 tests. Backend **274 green**, PHPStan L6 clean, Pint clean.
 
 - **English is the default language, in both apps.** `APP_LOCALE`/`APP_FALLBACK_LOCALE` are now
   `en` (in `.env`, `.env.example` and the `config/app.php` defaults), and the app's ngx-translate

@@ -24,6 +24,7 @@ use App\Http\Controllers\Api\V1\QuotationController;
 use App\Http\Controllers\Api\V1\Reference\NoteController;
 use App\Http\Controllers\Api\V1\SiteVisitController;
 use App\Http\Controllers\Api\V1\SkillController;
+use App\Http\Controllers\Api\V1\WorkSessionController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -101,6 +102,12 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
         // Deliverables (P4-08). Provider submits; customer accepts/rejects.
         Route::post('/engagements/{engagement}/deliverables', [DeliverableController::class, 'store'])->name('engagements.deliverables.store');
         Route::post('/deliverables/{deliverable}/review', [DeliverableController::class, 'review'])->name('deliverables.review');
+
+        // Provider execution (P5-03 check-in/out geo + P5-06 status signals). The acting user must be
+        // an active assigned worker; check-in exists only for onsite/hybrid engagements.
+        Route::post('/engagements/{engagement}/check-in', [WorkSessionController::class, 'checkIn'])->name('engagements.check-in');
+        Route::post('/engagements/{engagement}/check-out', [WorkSessionController::class, 'checkOut'])->name('engagements.check-out');
+        Route::post('/engagements/{engagement}/status', [WorkSessionController::class, 'status'])->name('engagements.status');
 
         // Device registration / push token capture (P1-04).
         Route::post('/devices', [DeviceController::class, 'store'])->name('devices.store');
