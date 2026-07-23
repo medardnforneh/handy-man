@@ -164,7 +164,20 @@ build, which lands with the app UI work.**
 
 **Phase 6 (trust, safety, reputation) complete.**
 
-Phases 7–8: not started (see build plan). P3-11/13 (auto-approve timer, deposit-capture-on-agreement) still parked — the work-submission side now exists (work sessions), but agreement-time escrow capture is the remaining dependency.
+### Phase 7 — Client follow-ups & lifecycle
+
+| ID | Task | Status |
+|---|---|---|
+| P7-01 | `follow_ups` + `dedupe_key` UNIQUE + scheduler | **DONE** — `follow_ups` (native `followup_kind`/`channel`/`status`; UNIQUE `dedupe_key`; due partial index) + `comms_log`. `FollowUpScheduler::schedule` builds the key `{kind}:{anchor_type}:{anchor_id}:{sequence}` and is **idempotent via `firstOrCreate`** — the same at-least-once event 50× → exactly 1 row. `DispatchFollowUps` action + `follow-ups:dispatch` command sweep due `scheduled` rows. Test: **50× → 1** |
+| P7-03 | `comms_log` + per-user per-channel budget | **DONE** — `CommsBudget` counts real sends in `comms_log` over rolling windows (config `followups.budget`: push 4/d, sms 2/d + 3/wk, whatsapp 3/d, email 2/d; in_app unlimited); over cap → `suppressed`, not sent. Test: **5 SMS → 2 sent, 3 suppressed** |
+| P7-04 | Consent gate on non-transactional kinds | **DONE** — `FollowUpKind::requiresMarketingConsent()` (reengagement/maintenance_due) gated on the `marketing` grant via `ConsentState`; `isTransactional()` kinds (check_in_overdue/auto_approve_warning/payout_ready/…) bypass the budget entirely. Test: **revoke marketing → reengagement suppressed, check_in_overdue still sent** |
+| P7-02 | Event-driven scheduling + cancellation | pending — schedule on domain events (engagement.completed → review_request + review_reminder) and cancel by dedupe-prefix on the counter-event (review submitted) |
+| P7-05 | WhatsApp Business API + approved templates + deep links | pending (external template approval; will add the WhatsApp channel adapter, Fake default) |
+| P7-06 | Channel ladder in_app → push → whatsapp → sms → email | pending (partially: budget + channels exist; the escalation ladder + real transports land with P7-05) |
+| P7-07 | `quote_pending_customer` / `warranty_expiring` / `review_request` / `maintenance_due` + `response_action` | pending |
+| P7-08 | Provider CRM surface (customer list, pipeline, manual follow-up, do-not-contact) | pending |
+
+Phase 8: not started (see build plan). P3-11/13 (auto-approve timer, deposit-capture-on-agreement) still parked — the auto-approve timer is now unblocked by the follow-up engine; agreement-time escrow capture remains.
 
 ## Design debt (tracked)
 
@@ -194,6 +207,14 @@ Phases 7–8: not started (see build plan). P3-11/13 (auto-approve timer, deposi
   - **Still owed:** Ionic app screens and Blade public/SEO pages (Phase 5+) must meet the bar when built.
 
 ## What was done, most recent first
+
+- **P7-01/03/04 — the follow-up engine core**: `follow_ups` + `comms_log`, the retention backbone.
+  Scheduling is **idempotent on `dedupe_key`** (`{kind}:{anchor}:{id}:{seq}`) — the same at-least-once
+  event 50× yields one row. The dispatcher applies two gates in order: **consent** (marketing kinds
+  need the `marketing` grant; service/transactional kinds bypass) then **budget** (per-user per-channel
+  rolling caps from `comms_log`; over cap → `suppressed`, not sent). `follow-ups:dispatch` command.
+  Marquee tests: **50× → 1 row; 5 SMS → 2 sent / 3 suppressed; revoke marketing → reengagement
+  suppressed while check_in_overdue still sends**. Backend **339 green**, PHPStan L6, Pint clean.
 
 - **P6-12 + P6-13 — provider metrics + leakage proxy → Phase 6 complete**: a `ProviderMetrics` service
   with two disciplines. **Sample-size floor** (P6-12): an on-time rate from fewer than 5 data points
