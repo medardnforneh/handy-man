@@ -204,6 +204,72 @@ paths:
                     items:
                       $ref: "#/components/schemas/Skill"
 
+  /blocks:
+    get:
+      tags: [Platform]
+      operationId: listBlocks
+      summary: List the caller's blocks
+      responses:
+        "200": { description: The caller's blocks, content: { application/json: { schema: { type: object, required: [data], properties: { data: { type: array, items: { $ref: "#/components/schemas/Block" } } } } } } }
+        "401": { $ref: "#/components/responses/Problem" }
+    post:
+      tags: [Platform]
+      operationId: blockParty
+      summary: Block a party
+      description: A block is honoured in search, dispatch ranking and offer creation — a blocked party is never matched again.
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [blocked_party_id]
+              properties:
+                blocked_party_id: { type: string, format: uuid }
+      responses:
+        "201": { description: The block, content: { application/json: { schema: { type: object, required: [data], properties: { data: { $ref: "#/components/schemas/Block" } } } } } }
+        "401": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/ValidationProblem" }
+
+  /blocks/{party}:
+    delete:
+      tags: [Platform]
+      operationId: unblockParty
+      summary: Lift a block the caller placed
+      parameters:
+        - { name: party, in: path, required: true, schema: { type: string, format: uuid } }
+        - $ref: "#/components/parameters/IdempotencyKey"
+      responses:
+        "200": { description: Unblocked, content: { application/json: { schema: { type: object } } } }
+        "401": { $ref: "#/components/responses/Problem" }
+
+  /reports:
+    post:
+      tags: [Platform]
+      operationId: fileReport
+      summary: File a report about a party
+      description: Queues a human review (admin). Never auto-penalises. `off_platform` is a first-class category.
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [subject_party_id, category, body]
+              properties:
+                subject_party_id: { type: string, format: uuid }
+                category: { type: string, enum: [fraud, no_show, harassment, safety, spam, off_platform, other] }
+                body: { type: string, maxLength: 5000 }
+                job_id: { type: [string, "null"], format: uuid }
+      responses:
+        "201": { description: The filed report, content: { application/json: { schema: { type: object, required: [data], properties: { data: { $ref: "#/components/schemas/Report" } } } } } }
+        "401": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/ValidationProblem" }
+
   /verification-documents:
     get:
       tags: [Platform]
@@ -1489,6 +1555,25 @@ components:
         media:
           type: array
           items: { $ref: "#/components/schemas/Media" }
+
+    Block:
+      type: object
+      required: [party_id, blocked_party_id, created_at]
+      properties:
+        party_id: { type: string, format: uuid }
+        blocked_party_id: { type: string, format: uuid }
+        created_at: { type: string, format: date-time }
+
+    Report:
+      type: object
+      required: [id, subject_party_id, category, status, created_at]
+      properties:
+        id: { type: string, format: uuid }
+        subject_party_id: { type: string, format: uuid }
+        job_id: { type: [string, "null"], format: uuid }
+        category: { type: string, enum: [fraud, no_show, harassment, safety, spam, off_platform, other] }
+        status: { type: string, enum: [open, reviewing, resolved, dismissed] }
+        created_at: { type: string, format: date-time }
 
     VerificationDocument:
       type: object

@@ -8,6 +8,8 @@ use App\Domain\Jobs\JobStateMachine;
 use App\Domain\Jobs\JobStatus;
 use App\Domain\Offers\OfferOrigin;
 use App\Domain\Offers\OfferStatus;
+use App\Domain\Safety\PartyBlocked;
+use App\Models\Block;
 use App\Models\Job;
 use App\Models\JobOffer;
 use App\Support\Outbox;
@@ -27,6 +29,12 @@ final class CreateDirectOffer
 
     public function handle(Job $job, string $providerPartyId, ?int $amountMinor = null, ?string $message = null): JobOffer
     {
+        // A block is honoured at offer creation (P6-07) — the third of the three paths, with search
+        // and dispatch ranking. Without this, a block would leak through direct offers.
+        if (Block::existsBetween($job->customer_party_id, $providerPartyId)) {
+            throw new PartyBlocked;
+        }
+
         return DB::transaction(function () use ($job, $providerPartyId, $amountMinor, $message): JobOffer {
             $offer = JobOffer::query()->create([
                 'job_id' => $job->id,

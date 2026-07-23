@@ -146,6 +146,64 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/blocks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List the caller's blocks */
+        get: operations["listBlocks"];
+        put?: never;
+        /**
+         * Block a party
+         * @description A block is honoured in search, dispatch ranking and offer creation — a blocked party is never matched again.
+         */
+        post: operations["blockParty"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/blocks/{party}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Lift a block the caller placed */
+        delete: operations["unblockParty"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/reports": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * File a report about a party
+         * @description Queues a human review (admin). Never auto-penalises. `off_platform` is a first-class category.
+         */
+        post: operations["fileReport"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/verification-documents": {
         parameters: {
             query?: never;
@@ -1120,6 +1178,28 @@ export interface components {
             submitted_at?: string | null;
             media?: components["schemas"]["Media"][];
         };
+        Block: {
+            /** Format: uuid */
+            party_id: string;
+            /** Format: uuid */
+            blocked_party_id: string;
+            /** Format: date-time */
+            created_at: string;
+        };
+        Report: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            subject_party_id: string;
+            /** Format: uuid */
+            job_id?: string | null;
+            /** @enum {string} */
+            category: "fraud" | "no_show" | "harassment" | "safety" | "spam" | "off_platform" | "other";
+            /** @enum {string} */
+            status: "open" | "reviewing" | "resolved" | "dismissed";
+            /** Format: date-time */
+            created_at: string;
+        };
         VerificationDocument: {
             /** Format: uuid */
             id: string;
@@ -1649,6 +1729,128 @@ export interface operations {
                     };
                 };
             };
+        };
+    };
+    listBlocks: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The caller's blocks */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["Block"][];
+                    };
+                };
+            };
+            401: components["responses"]["Problem"];
+        };
+    };
+    blockParty: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description A client-generated UUID. Replaying it returns the stored response (CLAUDE.md rule */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** Format: uuid */
+                    blocked_party_id: string;
+                };
+            };
+        };
+        responses: {
+            /** @description The block */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["Block"];
+                    };
+                };
+            };
+            401: components["responses"]["Problem"];
+            422: components["responses"]["ValidationProblem"];
+        };
+    };
+    unblockParty: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description A client-generated UUID. Replaying it returns the stored response (CLAUDE.md rule */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                party: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Unblocked */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": Record<string, never>;
+                };
+            };
+            401: components["responses"]["Problem"];
+        };
+    };
+    fileReport: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description A client-generated UUID. Replaying it returns the stored response (CLAUDE.md rule */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** Format: uuid */
+                    subject_party_id: string;
+                    /** @enum {string} */
+                    category: "fraud" | "no_show" | "harassment" | "safety" | "spam" | "off_platform" | "other";
+                    body: string;
+                    /** Format: uuid */
+                    job_id?: string | null;
+                };
+            };
+        };
+        responses: {
+            /** @description The filed report */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["Report"];
+                    };
+                };
+            };
+            401: components["responses"]["Problem"];
+            422: components["responses"]["ValidationProblem"];
         };
     };
     listVerificationDocuments: {

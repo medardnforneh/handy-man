@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Jobs;
 
+use App\Models\Block;
 use App\Models\Job;
 use App\Models\ProviderProfile;
 use App\Models\ServiceArea;
@@ -36,6 +37,13 @@ final class ProviderSearch
             ->where('party_id', '!=', $job->customer_party_id)
             // Skill match.
             ->whereHas('skills', fn (Builder $q): Builder => $q->where('skill_id', $job->skill_id));
+
+        // A block is honoured in search + ranking (P6-07): a provider blocked by, or blocking, the
+        // customer never appears — the same boundary the offer path enforces.
+        $blocked = Block::partyIdsAround($job->customer_party_id);
+        if ($blocked !== []) {
+            $query->whereNotIn('party_id', $blocked);
+        }
 
         if ($job->requires_verified_provider) {
             $query->where('verification_tier', '>=', 2);

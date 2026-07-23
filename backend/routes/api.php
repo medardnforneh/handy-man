@@ -22,6 +22,7 @@ use App\Http\Controllers\Api\V1\ProfileController;
 use App\Http\Controllers\Api\V1\ProviderController;
 use App\Http\Controllers\Api\V1\QuotationController;
 use App\Http\Controllers\Api\V1\Reference\NoteController;
+use App\Http\Controllers\Api\V1\SafetyController;
 use App\Http\Controllers\Api\V1\SiteVisitController;
 use App\Http\Controllers\Api\V1\SkillController;
 use App\Http\Controllers\Api\V1\VerificationDocumentController;
@@ -111,6 +112,12 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
         Route::post('/engagements/{engagement}/status', [WorkSessionController::class, 'status'])->name('engagements.status');
         // On-site job report (P5-04). Multipart; before/after photos are EXIF-stripped server-side.
         Route::post('/engagements/{engagement}/report', [WorkSessionController::class, 'report'])->name('engagements.report');
+
+        // Reports + blocks (P6-07). A block is honoured in search, ranking and offers.
+        Route::get('/blocks', [SafetyController::class, 'blocks'])->name('blocks.index');
+        Route::post('/blocks', [SafetyController::class, 'block'])->name('blocks.store');
+        Route::delete('/blocks/{party}', [SafetyController::class, 'unblock'])->name('blocks.destroy');
+        Route::post('/reports', [SafetyController::class, 'report'])->name('reports.store');
 
         // Verification documents (P6-01). Upload own identity/licence docs for admin review; the file
         // is encrypted at rest and only ever served via a signed short-TTL URL. Paths never returned.
