@@ -6,11 +6,14 @@ namespace App\Providers;
 
 use App\Domain\Notifications\FakePushSender;
 use App\Domain\Notifications\FakeSmsSender;
+use App\Domain\Notifications\FakeWhatsAppSender;
 use App\Domain\Notifications\FcmPushSender;
 use App\Domain\Notifications\Listeners\NotifyOnOutboxMessage;
 use App\Domain\Notifications\LogSmsSender;
+use App\Domain\Notifications\LogWhatsAppSender;
 use App\Domain\Notifications\PushSender;
 use App\Domain\Notifications\SmsSender;
+use App\Domain\Notifications\WhatsAppSender;
 use App\Events\OutboxMessagePublished;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
@@ -53,6 +56,19 @@ final class NotificationsServiceProvider extends ServiceProvider
                 'fake' => $app->make(FakeSmsSender::class),
                 'log' => new LogSmsSender,
                 default => throw new InvalidArgumentException("Unknown SMS sender: {$driver}"),
+            };
+        });
+
+        // One shared Fake WhatsApp instance, resolvable by its concrete type for test assertions.
+        $this->app->singleton(FakeWhatsAppSender::class);
+
+        $this->app->singleton(WhatsAppSender::class, function ($app): WhatsAppSender {
+            $driver = (string) config('notifications.whatsapp', 'fake');
+
+            return match ($driver) {
+                'fake' => $app->make(FakeWhatsAppSender::class),
+                'log' => new LogWhatsAppSender,
+                default => throw new InvalidArgumentException("Unknown WhatsApp sender: {$driver}"),
             };
         });
     }

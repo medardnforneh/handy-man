@@ -94,17 +94,16 @@ final class FileWarrantyClaim
 
     private function assignOriginalWorker(Engagement $original, Engagement $remedy): void
     {
-        $lead = Assignment::query()
+        $workerUserId = Assignment::query()
             ->where('engagement_id', $original->id)
             ->where('role', AssignmentRole::Lead->value)
             ->whereNull('removed_at')
-            ->first();
-
-        // Fall back to any active worker if there's no recorded lead (defensive).
-        $workerUserId = $lead?->worker_user_id ?? Assignment::query()
-            ->where('engagement_id', $original->id)
-            ->whereNull('removed_at')
-            ->value('worker_user_id');
+            ->value('worker_user_id')
+            // Fall back to any active worker if there's no recorded lead (defensive).
+            ?? Assignment::query()
+                ->where('engagement_id', $original->id)
+                ->whereNull('removed_at')
+                ->value('worker_user_id');
 
         if ($workerUserId === null) {
             return;

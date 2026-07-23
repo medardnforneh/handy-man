@@ -43,12 +43,13 @@ final class ProviderMetrics
             ? round(($completedTotal - $distinctCustomers) / $completedTotal, 4)
             : null;
 
-        $profile = ProviderProfile::query()->where('party_id', $partyId)->first();
+        $ratingAvg = ProviderProfile::query()->where('party_id', $partyId)->value('rating_avg');
+        $ratingCount = (int) (ProviderProfile::query()->where('party_id', $partyId)->value('rating_count') ?? 0);
 
         return [
             'jobs_completed_90d' => $completed90d,
-            'rating_avg' => $profile?->rating_avg !== null ? (float) $profile->rating_avg : null,
-            'rating_count' => (int) ($profile?->rating_count ?? 0),
+            'rating_avg' => $ratingAvg !== null ? (float) $ratingAvg : null,
+            'rating_count' => $ratingCount,
             'on_time_rate' => $onTimeRate,
             'on_time_sample' => $onTimeSample,
             'repeat_customer_rate' => $repeatRate,

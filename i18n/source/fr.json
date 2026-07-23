@@ -170,5 +170,13 @@
     "share.status_on_site": "Sur place",
     "share.status_completed": "Termine",
     "share.expires": "Ce lien expire :time.",
-    "share.reassurance": "Partage avec vous pour votre tranquillite."
+    "share.reassurance": "Partage avec vous pour votre tranquillite.",
+    "followup.generic.title": "Un petit rappel",
+    "followup.generic.body": "Ouvrez l app pour continuer.",
+    "followup.review_request.title": "Comment ca s est passe ?",
+    "followup.review_request.body": "Laissez un avis pour votre prestataire.",
+    "followup.review_reminder.title": "Il est encore temps de noter",
+    "followup.review_reminder.body": "Votre avis aide les autres clients a bien choisir.",
+    "followup.warranty_expiring.title": "Garantie bientot expiree",
+    "followup.warranty_expiring.body": "Votre garantie se termine bientot. Ouvrez une reclamation si besoin."
 }

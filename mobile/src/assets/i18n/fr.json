@@ -218,5 +218,23 @@
     "status_completed": "Termine",
     "expires": "Ce lien expire :time.",
     "reassurance": "Partage avec vous pour votre tranquillite."
+  },
+  "followup": {
+    "generic": {
+      "title": "Un petit rappel",
+      "body": "Ouvrez l app pour continuer."
+    },
+    "review_request": {
+      "title": "Comment ca s est passe ?",
+      "body": "Laissez un avis pour votre prestataire."
+    },
+    "review_reminder": {
+      "title": "Il est encore temps de noter",
+      "body": "Votre avis aide les autres clients a bien choisir."
+    },
+    "warranty_expiring": {
+      "title": "Garantie bientot expiree",
+      "body": "Votre garantie se termine bientot. Ouvrez une reclamation si besoin."
+    }
   }
 }

@@ -21,6 +21,15 @@ return [
     */
     'sms' => env('SMS_SENDER', 'fake'),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Active WhatsApp sender
+    |--------------------------------------------------------------------------
+    | The workhorse follow-up channel (doc 07). 'fake' in tests, 'log' in dev, the
+    | WhatsApp Business API adapter in prod (once templates are approved).
+    */
+    'whatsapp' => env('WHATSAPP_SENDER', 'fake'),
+
     'fcm' => [
         // FCM HTTP v1: https://fcm.googleapis.com/v1/projects/{project_id}/messages:send
         'project_id' => env('FCM_PROJECT_ID', ''),

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\FollowUps\Listeners;
 
-use App\Domain\FollowUps\FollowUpChannel;
+use App\Domain\FollowUps\ChannelLadder;
 use App\Domain\FollowUps\FollowUpKind;
 use App\Domain\FollowUps\FollowUpScheduler;
 use App\Events\OutboxMessagePublished;
@@ -21,7 +21,10 @@ use Illuminate\Support\Carbon;
  */
 final class FollowUpOrchestrator
 {
-    public function __construct(private readonly FollowUpScheduler $scheduler) {}
+    public function __construct(
+        private readonly FollowUpScheduler $scheduler,
+        private readonly ChannelLadder $ladder,
+    ) {}
 
     public function handle(OutboxMessagePublished $event): void
     {
@@ -44,13 +47,14 @@ final class FollowUpOrchestrator
             return;
         }
 
+        $channel = $this->ladder->pick($customer);
         $this->scheduler->schedule(
-            FollowUpKind::ReviewRequest, $customer, FollowUpChannel::Push, now()->addHours(2),
-            'engagement', $engagement->id, links: ['engagement_id' => $engagement->id],
+            FollowUpKind::ReviewRequest, $customer, $channel, now()->addHours(2),
+            'engagement', $engagement->id, engagementId: $engagement->id,
         );
         $this->scheduler->schedule(
-            FollowUpKind::ReviewReminder, $customer, FollowUpChannel::Push, now()->addDays(3),
-            'engagement', $engagement->id, links: ['engagement_id' => $engagement->id],
+            FollowUpKind::ReviewReminder, $customer, $channel, now()->addDays(3),
+            'engagement', $engagement->id, engagementId: $engagement->id,
         );
     }
 
@@ -91,9 +95,9 @@ final class FollowUpOrchestrator
         }
 
         $this->scheduler->schedule(
-            FollowUpKind::WarrantyExpiring, $customer, FollowUpChannel::Push,
+            FollowUpKind::WarrantyExpiring, $customer, $this->ladder->pick($customer),
             Carbon::parse((string) $warranty->expires_at)->subDays(14),
-            'warranty', $warranty->id, links: ['warranty_id' => $warranty->id],
+            'warranty', $warranty->id, warrantyId: $warranty->id,
         );
     }
 

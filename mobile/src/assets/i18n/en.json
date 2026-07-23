@@ -218,5 +218,23 @@
     "status_completed": "Completed",
     "expires": "This link expires :time.",
     "reassurance": "Shared with you for peace of mind."
+  },
+  "followup": {
+    "generic": {
+      "title": "A quick reminder",
+      "body": "Open the app to continue."
+    },
+    "review_request": {
+      "title": "How did it go?",
+      "body": "Leave a review for your provider."
+    },
+    "review_reminder": {
+      "title": "Still time to review",
+      "body": "Your review helps other customers choose well."
+    },
+    "warranty_expiring": {
+      "title": "Warranty expiring soon",
+      "body": "Your warranty ends soon. Open a claim if anything needs fixing."
+    }
   }
 }

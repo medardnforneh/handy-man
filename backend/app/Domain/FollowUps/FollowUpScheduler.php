@@ -16,9 +16,6 @@ use Illuminate\Support\Carbon;
  */
 final class FollowUpScheduler
 {
-    /**
-     * @param  array<string, string|null>  $links  e.g. ['engagement_id' => '…', 'quotation_id' => '…']
-     */
     public function schedule(
         FollowUpKind $kind,
         User $target,
@@ -27,22 +24,29 @@ final class FollowUpScheduler
         string $anchorType,
         string $anchorId,
         int $sequence = 1,
-        array $links = [],
+        ?string $jobId = null,
+        ?string $engagementId = null,
+        ?string $quotationId = null,
+        ?string $warrantyId = null,
         ?string $createdByUserId = null,
     ): FollowUp {
         $dedupeKey = "{$kind->value}:{$anchorType}:{$anchorId}:{$sequence}";
 
         return FollowUp::query()->firstOrCreate(
             ['dedupe_key' => $dedupeKey],
-            array_merge([
+            [
                 'kind' => $kind->value,
                 'target_user_id' => $target->id,
                 'target_party_id' => $target->party_id,
                 'channel' => $channel->value,
                 'scheduled_for' => $scheduledFor,
                 'status' => FollowUpStatus::Scheduled->value,
+                'job_id' => $jobId,
+                'engagement_id' => $engagementId,
+                'quotation_id' => $quotationId,
+                'warranty_id' => $warrantyId,
                 'created_by_user_id' => $createdByUserId,
-            ], $links),
+            ],
         );
     }
 

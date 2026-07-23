@@ -173,8 +173,8 @@ build, which lands with the app UI work.**
 | P7-04 | Consent gate on non-transactional kinds | **DONE** — `FollowUpKind::requiresMarketingConsent()` (reengagement/maintenance_due) gated on the `marketing` grant via `ConsentState`; `isTransactional()` kinds (check_in_overdue/auto_approve_warning/payout_ready/…) bypass the budget entirely. Test: **revoke marketing → reengagement suppressed, check_in_overdue still sent** |
 | P7-02 | Event-driven scheduling + cancellation | **DONE** — `FollowUpOrchestrator` subscribes to the outbox seam: `engagement.completed` → review_request (+2h) + review_reminder (+3d); `review.submitted` (by the customer) → cancels both by dedupe-prefix; `warranty.issued` → warranty_expiring 14d before expiry. New `CompleteEngagement` action (publishes `engagement.completed`, idempotent); `SubmitReview`/`IssueWarranty` now publish their events. `POST /v1/engagements/{engagement}/complete`. Test: **complete → 2 scheduled; review submitted → both cancelled; completing twice → still 2** |
 | P7-07 | `quote_pending_customer` / `warranty_expiring` / `review_request` / `maintenance_due` + `response_action` | **DONE (core)** — review_request/reminder + warranty_expiring wired to events (above); every follow-up carries a single **`response_action`** recorded via `POST /v1/follow-ups/{followUp}/respond` (target-gated, enum'd actions), `GET /v1/follow-ups` lists a user's nudges. quote_pending_customer / maintenance_due scheduling lands when their source events are wired. Test: **response_action recorded → status responded; non-target → 403** |
-| P7-05 | WhatsApp Business API + approved templates + deep links | pending (external template approval; will add the WhatsApp channel adapter, Fake default) |
-| P7-06 | Channel ladder in_app → push → whatsapp → sms → email | pending (partially: budget + channels exist; the escalation ladder + real transports land with P7-05) |
+| P7-05 | WhatsApp Business API + approved templates + deep links | **DONE (adapter)** — `WhatsAppSender` rail (Fake/Log, config-selected, mirroring push/SMS); template = kind, variables + **deep link back to the follow-up**, sent in the target's **comms locale** (`followup.*` i18n copy, parity OK). `FollowUpDelivery` routes each follow-up to the right transport at dispatch; a transport failure marks the row `failed`. Live template approval is the remaining external dependency (like CinetPay creds). Test: **WhatsApp follow-up → transport got template + fr locale + deep link** |
+| P7-06 | Channel ladder in_app → push → whatsapp → sms → email | **DONE** — `ChannelLadder::pick` chooses the outbound channel (push if a live device token, else WhatsApp — the workhorse), used by the orchestrator; the follow-up row is always the in-app record; SMS/email reserved (SMS transactional, email for receipts). Test: **ladder picks push with a token, WhatsApp without; push follow-up reaches the device token** |
 | P7-07 | `quote_pending_customer` / `warranty_expiring` / `review_request` / `maintenance_due` + `response_action` | pending |
 | P7-08 | Provider CRM surface (customer list, pipeline, manual follow-up, do-not-contact) | pending |
 
@@ -208,6 +208,13 @@ Phase 8: not started (see build plan). P3-11/13 (auto-approve timer, deposit-cap
   - **Still owed:** Ionic app screens and Blade public/SEO pages (Phase 5+) must meet the bar when built.
 
 ## What was done, most recent first
+
+- **P7-05 + P7-06 — WhatsApp channel + routing ladder**: a `WhatsAppSender` rail (Fake/Log,
+  config-selected) — templated, deep-linked, in the target's comms locale. `FollowUpDelivery` routes
+  each dispatched follow-up to the right transport (push→device token, WhatsApp→phone, SMS→text);
+  `ChannelLadder::pick` chooses push if a live device token exists else WhatsApp (the workhorse), used
+  by the orchestrator. The follow-up row is always the in-app record. Live WhatsApp template approval
+  is the remaining external dep. 3 tests. Backend green, PHPStan L6, Pint clean.
 
 - **P7-02 + P7-07 — event-driven follow-ups + response actions**: `FollowUpOrchestrator` on the outbox
   seam schedules on event and cancels on event (doc 07 rule 1): `engagement.completed` → review_request

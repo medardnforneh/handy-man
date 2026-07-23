@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace App\Domain\FollowUps\Actions;
 
 use App\Domain\FollowUps\CommsBudget;
+use App\Domain\FollowUps\FollowUpDelivery;
 use App\Domain\FollowUps\FollowUpStatus;
 use App\Domain\Identity\Consent\ConsentState;
 use App\Models\CommsLog;
 use App\Models\FollowUp;
 use App\Models\User;
+use Throwable;
 
 /**
  * Dispatches due follow-ups (doc 07). For each still-scheduled, due row it applies the two gates in
@@ -23,6 +25,7 @@ final class DispatchFollowUps
     public function __construct(
         private readonly CommsBudget $budget,
         private readonly ConsentState $consent,
+        private readonly FollowUpDelivery $delivery,
     ) {}
 
     /**
@@ -60,8 +63,17 @@ final class DispatchFollowUps
                 continue;
             }
 
-            // Deliver. The comms_log entry IS the record of the send (and what the budget counts); the
-            // per-channel transport (push/WhatsApp/SMS) plugs in behind the channel in P7-05/06.
+            // Deliver on the channel (push/WhatsApp/SMS); a transport failure marks the row failed
+            // and leaves it out of the budget count.
+            try {
+                $this->delivery->deliver($followUp, $user);
+            } catch (Throwable $e) {
+                $followUp->update(['status' => FollowUpStatus::Failed->value, 'failure_reason' => $e->getMessage(), 'attempts' => $followUp->attempts + 1]);
+
+                continue;
+            }
+
+            // The comms_log entry IS the record of the send (and what the budget counts).
             CommsLog::query()->create([
                 'user_id' => $user->id,
                 'channel' => $followUp->channel->value,

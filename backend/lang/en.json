@@ -170,5 +170,13 @@
   "share.status_on_site": "On site",
   "share.status_completed": "Completed",
   "share.expires": "This link expires :time.",
-  "share.reassurance": "Shared with you for peace of mind."
+  "share.reassurance": "Shared with you for peace of mind.",
+  "followup.generic.title": "A quick reminder",
+  "followup.generic.body": "Open the app to continue.",
+  "followup.review_request.title": "How did it go?",
+  "followup.review_request.body": "Leave a review for your provider.",
+  "followup.review_reminder.title": "Still time to review",
+  "followup.review_reminder.body": "Your review helps other customers choose well.",
+  "followup.warranty_expiring.title": "Warranty expiring soon",
+  "followup.warranty_expiring.body": "Your warranty ends soon. Open a claim if anything needs fixing."
 }
