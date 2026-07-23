@@ -146,6 +146,30 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/verification-documents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List the caller's verification documents
+         * @description The caller's own submitted documents and their review status. Storage paths are never returned.
+         */
+        get: operations["listVerificationDocuments"];
+        put?: never;
+        /**
+         * Submit a verification document
+         * @description Upload an identity/licence document for human admin review. The file is encrypted at rest in a bucket separate from public media and only ever served through a signed short-TTL URL. The document's kind fixes the tier it works toward — tier cannot be self-assigned.
+         */
+        post: operations["submitVerificationDocument"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/devices": {
         parameters: {
             query?: never;
@@ -1096,6 +1120,22 @@ export interface components {
             submitted_at?: string | null;
             media?: components["schemas"]["Media"][];
         };
+        VerificationDocument: {
+            /** Format: uuid */
+            id: string;
+            /** @enum {string} */
+            kind: "national_id_front" | "national_id_back" | "selfie" | "trade_license" | "insurance_cert" | "rccm" | "niu";
+            /** @enum {string} */
+            status: "pending" | "approved" | "rejected" | "expired";
+            grants_tier: number;
+            reject_reason?: string | null;
+            /** Format: date-time */
+            reviewed_at?: string | null;
+            /** Format: date-time */
+            expires_at?: string | null;
+            /** Format: date-time */
+            created_at: string;
+        };
         Quotation: {
             /** Format: uuid */
             id: string;
@@ -1609,6 +1649,73 @@ export interface operations {
                     };
                 };
             };
+        };
+    };
+    listVerificationDocuments: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The caller's documents */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["VerificationDocument"][];
+                    };
+                };
+            };
+            401: components["responses"]["Problem"];
+        };
+    };
+    submitVerificationDocument: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description A client-generated UUID. Replaying it returns the stored response (CLAUDE.md rule */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": {
+                    /** @enum {string} */
+                    kind: "national_id_front" | "national_id_back" | "selfie" | "trade_license" | "insurance_cert" | "rccm" | "niu";
+                    /**
+                     * Format: binary
+                     * @description Image (jpeg/png/webp) or PDF, max 10 MB.
+                     */
+                    file: string;
+                    /**
+                     * Format: date-time
+                     * @description Optional expiry for a licence/insurance cert.
+                     */
+                    expires_at?: string | null;
+                };
+            };
+        };
+        responses: {
+            /** @description The submitted document */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["VerificationDocument"];
+                    };
+                };
+            };
+            401: components["responses"]["Problem"];
+            422: components["responses"]["ValidationProblem"];
         };
     };
     registerDevice: {

@@ -141,8 +141,19 @@ Task IDs come from `docs/05-build-plan.md`.
 | P5-05 | Push notifications (FCM) via outbox | **DONE** — provider-agnostic `PushSender` abstraction + normalised `PushMessage`; `FakePushSender` (records sends, default) + `FcmPushSender` (HTTP v1, one request/token, per-token failure logged not thrown — live delivery pends real project creds); config-selected in `NotificationsServiceProvider` (`config/notifications.php`, default `fake`). Push **rides the transactional outbox**: `NotifyOnOutboxMessage` subscribes to the `OutboxMessagePublished` seam and, for a relayed `message.created`, notifies the conversation's participants **except the sender** on their non-revoked devices, **each in their own comms locale** (`push.*` i18n keys, parity OK). New endpoints: none (server-internal). 4 tests incl. **sender-excluded + per-locale copy + sole-participant no-op** |
 | P5-01, P5-02 | Ionic PWA/Android/iOS + secure token storage; offline-first cache (Drift) + write queue | not started (client/native — need device builds) |
 
-Phases 6–8: not started (see build plan). **Phase 5's cleanly-backend tasks (P5-03/04/05/06) are done;
-P5-01/02 are the native/offline client build, which lands with the app UI work.** P3-11/13 (auto-approve timer, deposit-capture-on-agreement) still parked — the work-submission side now exists (work sessions), but agreement-time escrow capture is the remaining dependency.
+**Phase 5's cleanly-backend tasks (P5-03/04/05/06) are done; P5-01/02 are the native/offline client
+build, which lands with the app UI work.**
+
+### Phase 6 — Trust, safety, reputation
+
+| ID | Task | Status |
+|---|---|---|
+| P6-01 | `verification_documents` + encrypted bucket + signed 60s URLs | **DONE** — `verification_documents` (native `doc_kind`/`doc_status`; `grants_tier` fixed by kind so tier can't be self-assigned; reject-reason CHECK) stored in a **separate `verification` disk, encrypted at rest by the app** (`VerificationStorage` via `Crypt` — on-disk bytes are never the plaintext even if the bucket is misconfigured); sha256 of the plaintext recorded. Access is a **signed short-TTL app route** (`SignedDocumentUrl`, 60s; `GET /verification-documents/{document}/view` under `signed` middleware) — deliberately through the app, not a presigned bucket URL, so P6-02 can log every view. `SubmitVerificationDocument`; `GET`/`POST /v1/verification-documents` (paths never returned). OpenAPI + TS client. 5 tests incl. **encrypted-at-rest, signed-URL streams within TTL, expired→403, tampered→403** |
+| P6-02 | Filament review queue; every document **view** writes an activity log | pending |
+| P6-03 | Verification tiers feed `identity_verified`; `AcceptPaidJob` reads tier from job mode + skill `risk_tier` | partial — the gate already keys required tier on mode+risk (`AcceptPaidJob`) and the resolver reads `verification_tier`; **pending: the approval flow that raises the tier from approved documents** (lands with P6-02) |
+| P6-04..P6-13 | panic/safety, share-link, watchdog, reports/blocks, reviews, ratings, disputes, warranties, metrics | not started |
+
+Phases 7–8: not started (see build plan). P3-11/13 (auto-approve timer, deposit-capture-on-agreement) still parked — the work-submission side now exists (work sessions), but agreement-time escrow capture is the remaining dependency.
 
 ## Design debt (tracked)
 
@@ -172,6 +183,14 @@ P5-01/02 are the native/offline client build, which lands with the app UI work.*
   - **Still owed:** Ionic app screens and Blade public/SEO pages (Phase 5+) must meet the bar when built.
 
 ## What was done, most recent first
+
+- **P6-01 — verification documents (encrypted + signed 60s URLs)**: `verification_documents` stored
+  in a **separate bucket, encrypted at rest by the app** (Crypt), with the plaintext sha256 recorded.
+  The kind fixes the tier it grants, so tier can't be self-assigned. Access is a **signed short-TTL
+  app route** (60s), deliberately routed through the app rather than a presigned bucket URL — because
+  doc 04 requires *every view* to be logged (P6-02), which a direct bucket link makes impossible.
+  `GET`/`POST /v1/verification-documents` (paths never leaked). 5 tests incl. encrypted-at-rest +
+  URL-expires-403 + tampered-403. Backend **287 green**, PHPStan L6, Pint clean.
 
 - **P5-05 — push notifications via the outbox**: a provider-agnostic `PushSender` (Fake default +
   FCM HTTP v1 adapter, config-selected — the app never names a transport) and a listener on the

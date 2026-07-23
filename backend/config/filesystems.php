@@ -60,6 +60,22 @@ return [
             'report' => false,
         ],
 
+        // Verification documents — a SEPARATE bucket with separate credentials from public media
+        // (doc 04). Contents are additionally encrypted at rest by the app. Never public.
+        'verification' => [
+            'driver' => env('VERIFICATION_DISK_DRIVER', 'local'),
+            'root' => storage_path('app/verification'),
+            'key' => env('VERIFICATION_AWS_ACCESS_KEY_ID'),
+            'secret' => env('VERIFICATION_AWS_SECRET_ACCESS_KEY'),
+            'region' => env('VERIFICATION_AWS_DEFAULT_REGION'),
+            'bucket' => env('VERIFICATION_AWS_BUCKET'),
+            'endpoint' => env('VERIFICATION_AWS_ENDPOINT'),
+            'use_path_style_endpoint' => env('VERIFICATION_AWS_USE_PATH_STYLE_ENDPOINT', true),
+            'visibility' => 'private',
+            'throw' => false,
+            'report' => false,
+        ],
+
     ],
 
     /*

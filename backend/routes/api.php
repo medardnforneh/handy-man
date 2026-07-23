@@ -24,6 +24,7 @@ use App\Http\Controllers\Api\V1\QuotationController;
 use App\Http\Controllers\Api\V1\Reference\NoteController;
 use App\Http\Controllers\Api\V1\SiteVisitController;
 use App\Http\Controllers\Api\V1\SkillController;
+use App\Http\Controllers\Api\V1\VerificationDocumentController;
 use App\Http\Controllers\Api\V1\WorkSessionController;
 use Illuminate\Support\Facades\Route;
 
@@ -110,6 +111,11 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
         Route::post('/engagements/{engagement}/status', [WorkSessionController::class, 'status'])->name('engagements.status');
         // On-site job report (P5-04). Multipart; before/after photos are EXIF-stripped server-side.
         Route::post('/engagements/{engagement}/report', [WorkSessionController::class, 'report'])->name('engagements.report');
+
+        // Verification documents (P6-01). Upload own identity/licence docs for admin review; the file
+        // is encrypted at rest and only ever served via a signed short-TTL URL. Paths never returned.
+        Route::get('/verification-documents', [VerificationDocumentController::class, 'index'])->name('verification-documents.index');
+        Route::post('/verification-documents', [VerificationDocumentController::class, 'store'])->name('verification-documents.store');
 
         // Device registration / push token capture (P1-04).
         Route::post('/devices', [DeviceController::class, 'store'])->name('devices.store');

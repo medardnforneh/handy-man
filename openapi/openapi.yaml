@@ -204,6 +204,41 @@ paths:
                     items:
                       $ref: "#/components/schemas/Skill"
 
+  /verification-documents:
+    get:
+      tags: [Platform]
+      operationId: listVerificationDocuments
+      summary: List the caller's verification documents
+      description: The caller's own submitted documents and their review status. Storage paths are never returned.
+      responses:
+        "200": { description: The caller's documents, content: { application/json: { schema: { type: object, required: [data], properties: { data: { type: array, items: { $ref: "#/components/schemas/VerificationDocument" } } } } } } }
+        "401": { $ref: "#/components/responses/Problem" }
+    post:
+      tags: [Platform]
+      operationId: submitVerificationDocument
+      summary: Submit a verification document
+      description: >
+        Upload an identity/licence document for human admin review. The file is encrypted at rest in
+        a bucket separate from public media and only ever served through a signed short-TTL URL. The
+        document's kind fixes the tier it works toward — tier cannot be self-assigned.
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [kind, file]
+              properties:
+                kind: { type: string, enum: [national_id_front, national_id_back, selfie, trade_license, insurance_cert, rccm, niu] }
+                file: { type: string, format: binary, description: "Image (jpeg/png/webp) or PDF, max 10 MB." }
+                expires_at: { type: [string, "null"], format: date-time, description: "Optional expiry for a licence/insurance cert." }
+      responses:
+        "201": { description: The submitted document, content: { application/json: { schema: { type: object, required: [data], properties: { data: { $ref: "#/components/schemas/VerificationDocument" } } } } } }
+        "401": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/ValidationProblem" }
+
   /devices:
     post:
       tags: [Platform]
@@ -1454,6 +1489,19 @@ components:
         media:
           type: array
           items: { $ref: "#/components/schemas/Media" }
+
+    VerificationDocument:
+      type: object
+      required: [id, kind, status, grants_tier, created_at]
+      properties:
+        id: { type: string, format: uuid }
+        kind: { type: string, enum: [national_id_front, national_id_back, selfie, trade_license, insurance_cert, rccm, niu] }
+        status: { type: string, enum: [pending, approved, rejected, expired] }
+        grants_tier: { type: integer, minimum: 0, maximum: 3 }
+        reject_reason: { type: [string, "null"] }
+        reviewed_at: { type: [string, "null"], format: date-time }
+        expires_at: { type: [string, "null"], format: date-time }
+        created_at: { type: string, format: date-time }
 
     Quotation:
       type: object
