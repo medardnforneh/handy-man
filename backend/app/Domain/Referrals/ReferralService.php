@@ -51,10 +51,20 @@ final class ReferralService
             throw new ReferralRefused('already_referred');
         }
 
+        // Fraud control (P8-02): a referrer over the weekly velocity limit gets their new referrals
+        // flagged for a human — not blocked (a legit power-referrer exists), not auto-rewarded.
+        $recent = Referral::query()
+            ->where('referrer_party_id', $referrerPartyId)
+            ->where('created_at', '>=', now()->subWeek())
+            ->count();
+        $overLimit = $recent >= (int) config('referrals.weekly_velocity_limit', 5);
+
         return Referral::query()->create([
             'referrer_party_id' => $referrerPartyId,
             'referee_party_id' => $refereePartyId,
             'status' => 'pending',
+            'flagged_for_review' => $overLimit,
+            'flag_reason' => $overLimit ? 'weekly_velocity' : null,
             'created_at' => now(),
         ]);
     }
@@ -69,6 +79,7 @@ final class ReferralService
             $referral = Referral::query()
                 ->where('referee_party_id', $refereePartyId)
                 ->where('status', 'pending')
+                ->where('flagged_for_review', false) // a flagged referral waits for admin review
                 ->lockForUpdate()
                 ->first();
 
@@ -94,6 +105,16 @@ final class ReferralService
 
             return $referral;
         });
+    }
+
+    /**
+     * An admin clears a flagged referral (P8-02); if the referee already completed a job while it was
+     * held, it qualifies immediately.
+     */
+    public function clearReview(Referral $referral): void
+    {
+        $referral->update(['flagged_for_review' => false, 'flag_reason' => null]);
+        $this->qualify($referral->referee_party_id);
     }
 
     private function generateCode(): string

@@ -16,6 +16,8 @@ use Illuminate\Support\Carbon;
  * @property string $referrer_party_id
  * @property string $referee_party_id
  * @property string $status
+ * @property bool $flagged_for_review
+ * @property string|null $flag_reason
  * @property string|null $reward_transaction_id
  * @property Carbon|null $qualified_at
  */
@@ -30,11 +32,12 @@ final class Referral extends Model
     public const UPDATED_AT = null;
 
     protected $fillable = [
-        'referrer_party_id', 'referee_party_id', 'status', 'reward_transaction_id', 'qualified_at', 'created_at',
+        'referrer_party_id', 'referee_party_id', 'status', 'flagged_for_review', 'flag_reason',
+        'reward_transaction_id', 'qualified_at', 'created_at',
     ];
 
     protected function casts(): array
     {
-        return ['qualified_at' => 'datetime'];
+        return ['flagged_for_review' => 'boolean', 'qualified_at' => 'datetime'];
     }
 }
