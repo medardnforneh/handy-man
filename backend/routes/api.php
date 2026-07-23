@@ -22,6 +22,7 @@ use App\Http\Controllers\Api\V1\PaymentWebhookController;
 use App\Http\Controllers\Api\V1\PayoutController;
 use App\Http\Controllers\Api\V1\ProfileController;
 use App\Http\Controllers\Api\V1\ProviderController;
+use App\Http\Controllers\Api\V1\ProviderMetricsController;
 use App\Http\Controllers\Api\V1\QuotationController;
 use App\Http\Controllers\Api\V1\Reference\NoteController;
 use App\Http\Controllers\Api\V1\ReviewController;
@@ -64,6 +65,9 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
 
     // Published reviews for a party (P6-08) — public reputation signal.
     Route::get('/providers/{party}/reviews', [ReviewController::class, 'forParty'])->name('providers.reviews.index');
+
+    // Provider performance metrics (P6-12) — public; display-safe (sample-floor enforced).
+    Route::get('/providers/{party}/metrics', [ProviderMetricsController::class, 'forParty'])->name('providers.metrics');
 
     // Payment gateway webhooks (P3-05) — public + server-to-server; authenticity is the signature,
     // not a token. Exempt from the Idempotency-Key requirement (see config/api.php exempt_paths).

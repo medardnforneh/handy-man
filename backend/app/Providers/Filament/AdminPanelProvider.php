@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Widgets\LeakageWatchWidget;
 use App\Filament\Widgets\OverviewWidget;
 use Filament\Auth\MultiFactor\App\AppAuthentication;
 use Filament\Http\Middleware\Authenticate;
@@ -55,6 +56,7 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->widgets([
                 OverviewWidget::class,
+                LeakageWatchWidget::class,
             ])
             ->middleware([
                 EncryptCookies::class,

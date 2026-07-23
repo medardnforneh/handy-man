@@ -146,6 +146,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/providers/{party}/metrics": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * A provider's display-safe performance metrics
+         * @description Rolling (90-day) metrics. A rate computed from below the sample-size floor is returned null — never "100% on-time (1 job)". The repeat-customer rate and leakage flag are internal admin signals and are not exposed here.
+         */
+        get: operations["providerMetrics"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/engagements/{engagement}/warranty": {
         parameters: {
             query?: never;
@@ -2020,6 +2040,37 @@ export interface operations {
                 content: {
                     "application/json": {
                         data: components["schemas"]["Skill"][];
+                    };
+                };
+            };
+        };
+    };
+    providerMetrics: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                party: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Display-safe metrics */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            jobs_completed_90d: number;
+                            rating_avg?: number | null;
+                            rating_count: number;
+                            /** @description Null below the sample-size floor. */
+                            on_time_rate?: number | null;
+                            on_time_sample: number;
+                        };
                     };
                 };
             };

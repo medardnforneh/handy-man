@@ -159,7 +159,10 @@ build, which lands with the app UI work.**
 | P6-06 | Check-in-overdue watchdog | **DONE** — `RaiseOverdueCheckIns` + `safety:check-in-watchdog` command: an assignment past `scheduled_from` + grace with **no `work_session`** (never checked in) on an onsite/hybrid job raises a `check_in_overdue` `safety_alert` + `safety.alert_raised` outbox — deduped against an open alert, mode-gated via the policy. Reuses the P5-03 audit trail. 5 tests incl. **overdue-flagged, checked-in-not-flagged, remote-skipped, within-grace-skipped, dedupe** |
 | P6-10 | Dispute flow + admin adjudication → balanced adjustment txn | **DONE** — `disputes` (category/status CHECKs; links `resolution_transaction_id` + `resolved_by_user_id`). `RaiseDispute` (party-gated; `dispute.raised` outbox, never auto-moves money); `AdjudicateDispute` — a human decision that, when it moves money, posts a **balanced `Adjustment` ledger transaction stamped with the admin's id** and referenced to the dispute (mirrors `ResolveReconciliationException`), else resolves with no ledger effect; writes `dispute.adjudicated` to the audit log; once-only. `POST /v1/engagements/{engagement}/disputes`, `GET /v1/disputes`; Filament dispute queue (adjudicate = resolve/reject + note). 5 tests incl. **balanced adjustment attributable to a named admin + no-money dismissal** |
 | P6-11 | `warranties` + `warranty_claims` + **remedy job spawning** | **DONE** — `warranties` (one per engagement; duration/window CHECKs) + `warranty_claims`. `IssueWarranty` (provider); `FileWarrantyClaim` (customer) **spawns a REAL remedy job**: a job cloned from the original (`RMD-` ref, status engaged), its own engagement whose **origin is the warranty claim** (a third engagement origin — added `warranty_claim_id` + widened `engagements_origin_check`), agreed 0 (free), and a **real lead assignment to the original worker** — links `remedy_job_id`, sets warranty `claimed`, `warranty.claim_filed` outbox. `POST /v1/engagements/{engagement}/warranty`, `POST /v1/warranties/{warranty}/claims`. 5 tests incl. **claim → linked job + real assignment to original worker** |
-| P6-12, P6-13 | provider metrics, repeat-customer leakage proxy | not started |
+| P6-12 | `provider_metrics` — 90-day rolling, sample-size floor ~5 | **DONE** — `ProviderMetrics` service: `jobs_completed_90d`, rating (from the cache), and an **on-time rate** (booked assignment whose work session ended ≤ `scheduled_to`) that is **returned null below the sample floor** (5) — "100% on-time (1 job)" is never displayed. Public `GET /v1/providers/{party}/metrics` returns only the display-safe subset (never the internal signals). Config-driven window/floor. Tests incl. **below-floor → null, at-floor → computed** |
+| P6-13 | `repeat_customer_rate` surfaced to admin as a **leakage proxy** | **DONE** — same service computes the repeat rate `(completions − distinct customers) / completions` and a **leakage flag** = many completions (≥8) + low repeat (<15%) — a signal to look, **flagged never accused**, and never in the public metrics. A Filament `LeakageWatchWidget` (dashboard, admin-only) lists flagged providers with their completion count + repeat rate. Tests incl. **high-completion/low-repeat flagged, healthy-repeat not, below-threshold not** |
+
+**Phase 6 (trust, safety, reputation) complete.**
 
 Phases 7–8: not started (see build plan). P3-11/13 (auto-approve timer, deposit-capture-on-agreement) still parked — the work-submission side now exists (work sessions), but agreement-time escrow capture is the remaining dependency.
 
@@ -191,6 +194,14 @@ Phases 7–8: not started (see build plan). P3-11/13 (auto-approve timer, deposi
   - **Still owed:** Ionic app screens and Blade public/SEO pages (Phase 5+) must meet the bar when built.
 
 ## What was done, most recent first
+
+- **P6-12 + P6-13 — provider metrics + leakage proxy → Phase 6 complete**: a `ProviderMetrics` service
+  with two disciplines. **Sample-size floor** (P6-12): an on-time rate from fewer than 5 data points
+  is returned null — "100% on-time (1 job)" is never shown; public `GET /v1/providers/{party}/metrics`
+  exposes only the display-safe subset. **Leakage proxy** (P6-13): many completions + few repeat
+  customers sets a **flag for a human — flagged, never accused** — surfaced admin-only via a Filament
+  `LeakageWatchWidget`, never in the public metrics. 12 tests. Backend **334 green**, PHPStan L6, Pint
+  clean. **Phase 6 is now complete (13/13).**
 
 - **P6-11 — warranties + claims + remedy-job spawning**: `warranties` (one per engagement) +
   `warranty_claims`. A claim **spawns a real remedy job** — cloned from the original (`RMD-` ref),

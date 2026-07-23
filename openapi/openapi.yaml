@@ -204,6 +204,36 @@ paths:
                     items:
                       $ref: "#/components/schemas/Skill"
 
+  /providers/{party}/metrics:
+    get:
+      tags: [Platform]
+      operationId: providerMetrics
+      summary: A provider's display-safe performance metrics
+      description: >
+        Rolling (90-day) metrics. A rate computed from below the sample-size floor is returned null —
+        never "100% on-time (1 job)". The repeat-customer rate and leakage flag are internal admin
+        signals and are not exposed here.
+      parameters:
+        - { name: party, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        "200":
+          description: Display-safe metrics
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: object
+                    required: [jobs_completed_90d, rating_count, on_time_sample]
+                    properties:
+                      jobs_completed_90d: { type: integer }
+                      rating_avg: { type: [number, "null"] }
+                      rating_count: { type: integer }
+                      on_time_rate: { type: [number, "null"], description: "Null below the sample-size floor." }
+                      on_time_sample: { type: integer }
+
   /engagements/{engagement}/warranty:
     post:
       tags: [Platform]
