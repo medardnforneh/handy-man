@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\V1\CashSettlementController;
 use App\Http\Controllers\Api\V1\ConsentController;
 use App\Http\Controllers\Api\V1\DeliverableController;
 use App\Http\Controllers\Api\V1\DeviceController;
+use App\Http\Controllers\Api\V1\DisputeController;
 use App\Http\Controllers\Api\V1\EngagementShareController;
 use App\Http\Controllers\Api\V1\EscrowController;
 use App\Http\Controllers\Api\V1\JobController;
@@ -120,6 +121,10 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
 
         // Reviews (P6-08). Submit a double-blind review of the engagement's other party.
         Route::post('/engagements/{engagement}/reviews', [ReviewController::class, 'store'])->name('engagements.reviews.store');
+
+        // Disputes (P6-10). A party raises a dispute; admin adjudicates in the panel.
+        Route::get('/disputes', [DisputeController::class, 'index'])->name('disputes.index');
+        Route::post('/engagements/{engagement}/disputes', [DisputeController::class, 'store'])->name('engagements.disputes.store');
 
         // Reports + blocks (P6-07). A block is honoured in search, ranking and offers.
         Route::get('/blocks', [SafetyController::class, 'blocks'])->name('blocks.index');

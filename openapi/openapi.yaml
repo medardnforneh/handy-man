@@ -204,6 +204,40 @@ paths:
                     items:
                       $ref: "#/components/schemas/Skill"
 
+  /disputes:
+    get:
+      tags: [Platform]
+      operationId: listDisputes
+      summary: List the caller's disputes
+      responses:
+        "200": { description: The caller's disputes, content: { application/json: { schema: { type: object, required: [data], properties: { data: { type: array, items: { $ref: "#/components/schemas/Dispute" } } } } } } }
+        "401": { $ref: "#/components/responses/Problem" }
+
+  /engagements/{engagement}/disputes:
+    post:
+      tags: [Platform]
+      operationId: raiseDispute
+      summary: Raise a dispute on an engagement (party)
+      description: A party to the engagement raises a dispute. It queues a human adjudication and alerts staff; it never auto-moves money.
+      parameters:
+        - { name: engagement, in: path, required: true, schema: { type: string, format: uuid } }
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [category, body]
+              properties:
+                category: { type: string, enum: [quality, payment, no_show, scope, safety, other] }
+                body: { type: string, maxLength: 5000 }
+      responses:
+        "201": { description: The raised dispute, content: { application/json: { schema: { type: object, required: [data], properties: { data: { $ref: "#/components/schemas/Dispute" } } } } } }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/ValidationProblem" }
+
   /engagements/{engagement}/reviews:
     post:
       tags: [Platform]
@@ -1709,6 +1743,18 @@ components:
         media:
           type: array
           items: { $ref: "#/components/schemas/Media" }
+
+    Dispute:
+      type: object
+      required: [id, engagement_id, category, status, created_at]
+      properties:
+        id: { type: string, format: uuid }
+        engagement_id: { type: string, format: uuid }
+        category: { type: string, enum: [quality, payment, no_show, scope, safety, other] }
+        status: { type: string, enum: [open, reviewing, resolved, rejected] }
+        resolution_note: { type: [string, "null"] }
+        created_at: { type: string, format: date-time }
+        resolved_at: { type: [string, "null"], format: date-time }
 
     SafetyAlert:
       type: object

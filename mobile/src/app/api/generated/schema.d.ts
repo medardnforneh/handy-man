@@ -146,6 +146,43 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/disputes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List the caller's disputes */
+        get: operations["listDisputes"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/engagements/{engagement}/disputes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Raise a dispute on an engagement (party)
+         * @description A party to the engagement raises a dispute. It queues a human adjudication and alerts staff; it never auto-moves money.
+         */
+        post: operations["raiseDispute"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/engagements/{engagement}/reviews": {
         parameters: {
             query?: never;
@@ -1310,6 +1347,21 @@ export interface components {
             submitted_at?: string | null;
             media?: components["schemas"]["Media"][];
         };
+        Dispute: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            engagement_id: string;
+            /** @enum {string} */
+            category: "quality" | "payment" | "no_show" | "scope" | "safety" | "other";
+            /** @enum {string} */
+            status: "open" | "reviewing" | "resolved" | "rejected";
+            resolution_note?: string | null;
+            /** Format: date-time */
+            created_at: string;
+            /** Format: date-time */
+            resolved_at?: string | null;
+        };
         SafetyAlert: {
             /** Format: uuid */
             id: string;
@@ -1904,6 +1956,67 @@ export interface operations {
                     };
                 };
             };
+        };
+    };
+    listDisputes: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The caller's disputes */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["Dispute"][];
+                    };
+                };
+            };
+            401: components["responses"]["Problem"];
+        };
+    };
+    raiseDispute: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description A client-generated UUID. Replaying it returns the stored response (CLAUDE.md rule */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                engagement: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @enum {string} */
+                    category: "quality" | "payment" | "no_show" | "scope" | "safety" | "other";
+                    body: string;
+                };
+            };
+        };
+        responses: {
+            /** @description The raised dispute */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["Dispute"];
+                    };
+                };
+            };
+            401: components["responses"]["Problem"];
+            403: components["responses"]["Problem"];
+            422: components["responses"]["ValidationProblem"];
         };
     };
     submitReview: {
