@@ -319,6 +319,37 @@ paths:
         "403": { $ref: "#/components/responses/Problem" }
         "422": { $ref: "#/components/responses/ValidationProblem" }
 
+  /referral-code:
+    get:
+      tags: [Platform]
+      operationId: referralCode
+      summary: The caller's referral code
+      responses:
+        "200": { description: The code, content: { application/json: { schema: { type: object, required: [data], properties: { data: { type: object, properties: { code: { type: string } } } } } } } }
+        "401": { $ref: "#/components/responses/Problem" }
+
+  /referrals/claim:
+    post:
+      tags: [Platform]
+      operationId: claimReferral
+      summary: Claim a referral code (referee)
+      description: Guarded against self-referral and a duplicate referee. Qualification + the ledger-backed reward happen server-side on the referee's first completed job.
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [code]
+              properties:
+                code: { type: string, maxLength: 32 }
+      responses:
+        "201": { description: The pending referral, content: { application/json: { schema: { type: object, required: [data], properties: { data: { type: object, properties: { id: { type: string, format: uuid }, status: { type: string } } } } } } } }
+        "401": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/ValidationProblem" }
+
   /provider/customers:
     get:
       tags: [Platform]

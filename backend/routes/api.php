@@ -28,6 +28,7 @@ use App\Http\Controllers\Api\V1\ProviderCustomerController;
 use App\Http\Controllers\Api\V1\ProviderMetricsController;
 use App\Http\Controllers\Api\V1\QuotationController;
 use App\Http\Controllers\Api\V1\Reference\NoteController;
+use App\Http\Controllers\Api\V1\ReferralController;
 use App\Http\Controllers\Api\V1\ReviewController;
 use App\Http\Controllers\Api\V1\SafetyController;
 use App\Http\Controllers\Api\V1\SiteVisitController;
@@ -144,6 +145,10 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
         // Follow-ups (P7-07). The target reads their nudges and records a response action.
         Route::get('/follow-ups', [FollowUpController::class, 'index'])->name('follow-ups.index');
         Route::post('/follow-ups/{followUp}/respond', [FollowUpController::class, 'respond'])->name('follow-ups.respond');
+
+        // Referrals (P8-01). Fetch your code; claim one as a referee (guarded).
+        Route::get('/referral-code', [ReferralController::class, 'code'])->name('referral-code');
+        Route::post('/referrals/claim', [ReferralController::class, 'claim'])->name('referrals.claim');
 
         // Provider CRM (P7-08). Customer book + manual re-engagement (same budget) + do-not-contact.
         Route::get('/provider/customers', [ProviderCustomerController::class, 'index'])->name('provider.customers.index');

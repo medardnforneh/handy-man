@@ -181,7 +181,14 @@ build, which lands with the app UI work.**
 
 **Phase 7 complete (backend): 8/8 tasks. P7-05 live WhatsApp templates + the pipeline UI are the external/UI remainders.**
 
-Phase 8: not started (see build plan). P3-11/13 (auto-approve timer, deposit-capture-on-agreement) still parked — the auto-approve timer is now unblocked by the follow-up engine; agreement-time escrow capture remains.
+### Phase 8 — Growth and scale
+
+| ID | Task | Status |
+|---|---|---|
+| P8-01 | Referrals: codes, qualify-on-first-completed-paid-job, ledger-backed | **DONE** — `referral_codes` + `referrals` (one per referee UNIQUE; not-self CHECK). `ReferralService`: `codeFor` mints a code; `claim` guards **self-referral + duplicate + unknown code**; `qualify` (on `engagement.completed` for the referee, via `QualifyReferralOnCompletion` listener) books a **ledger-backed reward** — DR platform_revenue / CR `promo_liability`[referrer] (`TxnKind::ReferralReward`) — a real liability, idempotent. `GET /v1/referral-code`, `POST /v1/referrals/claim`. 4 tests incl. **ledger-balanced reward + self/dup blocked** |
+| P8-02..P8-06 | referral fraud controls, dispatch mode, bidding flag, rebooking, admin analytics | not started |
+
+P3-13 (deposit-capture-on-agreement) still parked — collection lands via the intent path; auto-capture at acceptance is the remaining piece.
 
 ## Design debt (tracked)
 

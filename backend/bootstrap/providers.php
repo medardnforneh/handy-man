@@ -7,6 +7,7 @@ use App\Providers\FollowUpsServiceProvider;
 use App\Providers\HorizonServiceProvider;
 use App\Providers\MoneyServiceProvider;
 use App\Providers\NotificationsServiceProvider;
+use App\Providers\ReferralsServiceProvider;
 
 return [
     AccessServiceProvider::class,
@@ -16,4 +17,5 @@ return [
     HorizonServiceProvider::class,
     MoneyServiceProvider::class,
     NotificationsServiceProvider::class,
+    ReferralsServiceProvider::class,
 ];
