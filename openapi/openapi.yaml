@@ -204,6 +204,48 @@ paths:
                     items:
                       $ref: "#/components/schemas/Skill"
 
+  /engagements/{engagement}/reviews:
+    post:
+      tags: [Platform]
+      operationId: submitReview
+      summary: Submit a double-blind review (party)
+      description: >
+        A party reviews the engagement's other side. The review stays hidden until BOTH parties
+        submit or the 14-day window closes — then both reveal at once. One review per author per
+        engagement. 403 if the caller is not a party; 409 if they already reviewed.
+      parameters:
+        - { name: engagement, in: path, required: true, schema: { type: string, format: uuid } }
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [rating]
+              properties:
+                rating: { type: integer, minimum: 1, maximum: 5 }
+                body: { type: [string, "null"], maxLength: 5000 }
+                private_note: { type: [string, "null"], maxLength: 5000, description: "Never published; for the subject's eyes only." }
+                subject_worker_user_id: { type: [string, "null"], format: uuid, description: "The specific worker, when the provider is an org." }
+      responses:
+        "201": { description: The submitted (pending) review, content: { application/json: { schema: { type: object, required: [data], properties: { data: { $ref: "#/components/schemas/Review" } } } } } }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "409": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/ValidationProblem" }
+
+  /providers/{party}/reviews:
+    get:
+      tags: [Platform]
+      operationId: listPartyReviews
+      summary: Published reviews for a party
+      description: The public reputation signal — only published (revealed) reviews. Pending reviews are never returned.
+      parameters:
+        - { name: party, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        "200": { description: Published reviews, content: { application/json: { schema: { type: object, required: [data], properties: { data: { type: array, items: { $ref: "#/components/schemas/Review" } } } } } } }
+
   /blocks:
     get:
       tags: [Platform]
@@ -1555,6 +1597,21 @@ components:
         media:
           type: array
           items: { $ref: "#/components/schemas/Media" }
+
+    Review:
+      type: object
+      required: [id, engagement_id, author_party_id, subject_party_id, visibility, submitted_at, window_closes_at]
+      properties:
+        id: { type: string, format: uuid }
+        engagement_id: { type: string, format: uuid }
+        author_party_id: { type: string, format: uuid }
+        subject_party_id: { type: string, format: uuid }
+        visibility: { type: string, enum: [pending, published, withheld] }
+        rating: { type: [integer, "null"], minimum: 1, maximum: 5, description: "Null until published." }
+        body: { type: [string, "null"], description: "Null until published." }
+        submitted_at: { type: string, format: date-time }
+        published_at: { type: [string, "null"], format: date-time }
+        window_closes_at: { type: string, format: date-time }
 
     Block:
       type: object

@@ -146,6 +146,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/engagements/{engagement}/reviews": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Submit a double-blind review (party)
+         * @description A party reviews the engagement's other side. The review stays hidden until BOTH parties submit or the 14-day window closes — then both reveal at once. One review per author per engagement. 403 if the caller is not a party; 409 if they already reviewed.
+         */
+        post: operations["submitReview"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/providers/{party}/reviews": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Published reviews for a party
+         * @description The public reputation signal — only published (revealed) reviews. Pending reviews are never returned.
+         */
+        get: operations["listPartyReviews"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/blocks": {
         parameters: {
             query?: never;
@@ -1178,6 +1218,28 @@ export interface components {
             submitted_at?: string | null;
             media?: components["schemas"]["Media"][];
         };
+        Review: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            engagement_id: string;
+            /** Format: uuid */
+            author_party_id: string;
+            /** Format: uuid */
+            subject_party_id: string;
+            /** @enum {string} */
+            visibility: "pending" | "published" | "withheld";
+            /** @description Null until published. */
+            rating?: number | null;
+            /** @description Null until published. */
+            body?: string | null;
+            /** Format: date-time */
+            submitted_at: string;
+            /** Format: date-time */
+            published_at?: string | null;
+            /** Format: date-time */
+            window_closes_at: string;
+        };
         Block: {
             /** Format: uuid */
             party_id: string;
@@ -1726,6 +1788,75 @@ export interface operations {
                 content: {
                     "application/json": {
                         data: components["schemas"]["Skill"][];
+                    };
+                };
+            };
+        };
+    };
+    submitReview: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description A client-generated UUID. Replaying it returns the stored response (CLAUDE.md rule */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                engagement: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    rating: number;
+                    body?: string | null;
+                    /** @description Never published; for the subject's eyes only. */
+                    private_note?: string | null;
+                    /**
+                     * Format: uuid
+                     * @description The specific worker, when the provider is an org.
+                     */
+                    subject_worker_user_id?: string | null;
+                };
+            };
+        };
+        responses: {
+            /** @description The submitted (pending) review */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["Review"];
+                    };
+                };
+            };
+            401: components["responses"]["Problem"];
+            403: components["responses"]["Problem"];
+            409: components["responses"]["Problem"];
+            422: components["responses"]["ValidationProblem"];
+        };
+    };
+    listPartyReviews: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                party: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Published reviews */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["Review"][];
                     };
                 };
             };

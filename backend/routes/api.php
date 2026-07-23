@@ -22,6 +22,7 @@ use App\Http\Controllers\Api\V1\ProfileController;
 use App\Http\Controllers\Api\V1\ProviderController;
 use App\Http\Controllers\Api\V1\QuotationController;
 use App\Http\Controllers\Api\V1\Reference\NoteController;
+use App\Http\Controllers\Api\V1\ReviewController;
 use App\Http\Controllers\Api\V1\SafetyController;
 use App\Http\Controllers\Api\V1\SiteVisitController;
 use App\Http\Controllers\Api\V1\SkillController;
@@ -57,6 +58,9 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
     // Skills catalog (P1-07) — public discovery (no app bundle needed, doc 08).
     Route::get('/skills', [SkillController::class, 'index'])->name('skills.index');
     Route::get('/skills/search', [SkillController::class, 'search'])->name('skills.search');
+
+    // Published reviews for a party (P6-08) — public reputation signal.
+    Route::get('/providers/{party}/reviews', [ReviewController::class, 'forParty'])->name('providers.reviews.index');
 
     // Payment gateway webhooks (P3-05) — public + server-to-server; authenticity is the signature,
     // not a token. Exempt from the Idempotency-Key requirement (see config/api.php exempt_paths).
@@ -112,6 +116,9 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
         Route::post('/engagements/{engagement}/status', [WorkSessionController::class, 'status'])->name('engagements.status');
         // On-site job report (P5-04). Multipart; before/after photos are EXIF-stripped server-side.
         Route::post('/engagements/{engagement}/report', [WorkSessionController::class, 'report'])->name('engagements.report');
+
+        // Reviews (P6-08). Submit a double-blind review of the engagement's other party.
+        Route::post('/engagements/{engagement}/reviews', [ReviewController::class, 'store'])->name('engagements.reviews.store');
 
         // Reports + blocks (P6-07). A block is honoured in search, ranking and offers.
         Route::get('/blocks', [SafetyController::class, 'blocks'])->name('blocks.index');

@@ -152,7 +152,9 @@ build, which lands with the app UI work.**
 | P6-02 | Filament review queue; every document **view** writes an activity log | **DONE** — append-only `activity_logs` (DB trigger forbids UPDATE/DELETE; actor/action/subject/context/ip) + `ActivityLogger`; the signed-URL **view controller logs every view** (`verification_document.viewed`, capturing the admin + IP) — reads, not just edits (the insider-threat control). Filament `VerificationDocumentResource` under a "Trust & safety" nav group: oldest-pending-first queue, pending badge, Open-document (signed URL) / Approve / Reject actions routing through the domain Action (never a row edit). 1 test (view-is-logged) |
 | P6-03 | Verification tiers feed `identity_verified`; `AcceptPaidJob` reads tier from job mode + skill `risk_tier` | **DONE** — `ReviewVerificationDocument` (approve/reject, reviewer-attributed, once-only) **raises the party's `verification_tier` to the tier the document grants** and invalidates the cached `identity_verified` fact; the gate (already mode+risk-keyed) now becomes fully data-driven from real approved documents. 3 tests incl. **tier-1 provider refused a tier-3 on-site job, allowed after approval; a remote high-risk job needs only the lighter check** |
 | P6-07 | `reports` + `blocks`; blocks honoured in search, ranking, offers | **DONE** — `reports` (category incl. first-class `off_platform`; not-self CHECK; feeds admin queue + `report.filed` outbox alert, never auto-penalises) + `blocks` (composite PK, not-self CHECK). `Block::partyIdsAround`/`existsBetween` honour a block **bidirectionally**; wired into **all three paths** — `ProviderSearch` (search + ranking) excludes blocked parties, `CreateDirectOffer` refuses (`PartyBlocked` 422). `BlockParty`/`UnblockParty`/`ReportParty`; `GET/POST/DELETE /v1/blocks`, `POST /v1/reports`; Filament report queue. OpenAPI + TS client. 6 tests incl. **block honoured in search (either direction) + offer refused** |
-| P6-04, P6-05, P6-06, P6-08..P6-13 | panic/safety + SMS, share-link, check-in watchdog, reviews, ratings, disputes, warranties, metrics | not started |
+| P6-08 | Reviews: double-blind, 14-day window, simultaneous reveal | **DONE** — `reviews` (native `review_visibility`; UNIQUE(engagement, author); not-self + 1–5 CHECKs; `private_note` never published). `SubmitReview` rests each review `pending` — content withheld even from an API peek — until BOTH parties submit (revealed at once) or the shared window closes; the first submission fixes `window_closes_at`, the second inherits it. `RevealDueReviews` + `reviews:reveal` command publish a lone review when its 14-day window expires. `POST /v1/engagements/{engagement}/reviews`; public `GET /v1/providers/{party}/reviews` (published only). OpenAPI + TS client. Tests incl. **hidden-until-both, window-expiry reveal, dup 409, non-party 403** |
+| P6-09 | Bayesian shrinkage rating display | **DONE** — `RatingCalculator` shrinks toward the prior mean (4.0, weight 10 pseudo-reviews): `(w·mean + Σ)/(w + n)`; recomputed into `provider_profiles.rating_avg` (shrunk) + `rating_count` (RAW, for P6-12's sample-size floor) on every publish. Test: **1×5★ → 4.09 ranks below 200×4.8 → 4.76; unrated shows null, not the bare prior** |
+| P6-04, P6-05, P6-06, P6-10..P6-13 | panic/safety + SMS, share-link, check-in watchdog, disputes, warranties, metrics | not started |
 
 Phases 7–8: not started (see build plan). P3-11/13 (auto-approve timer, deposit-capture-on-agreement) still parked — the work-submission side now exists (work sessions), but agreement-time escrow capture is the remaining dependency.
 
@@ -184,6 +186,15 @@ Phases 7–8: not started (see build plan). P3-11/13 (auto-approve timer, deposi
   - **Still owed:** Ionic app screens and Blade public/SEO pages (Phase 5+) must meet the bar when built.
 
 ## What was done, most recent first
+
+- **P6-08 + P6-09 — double-blind reviews + shrinkage ratings**: `reviews` are two-way and
+  **double-blind** — each rests `pending` (content withheld even from an API peek) until BOTH parties
+  submit, revealed at once, or the shared 14-day window closes (`reviews:reveal` publishes a lone
+  review so a silent no-show can't bury an honest one). The first submission fixes the window; the
+  second inherits it, so both sides share one deadline. The displayed rating is a **Bayesian shrinkage
+  estimator** (`RatingCalculator`, prior 4.0 × weight 10) recomputed into `provider_profiles` on
+  publish: **1×5★ → 4.09 ranks below 200×4.8 → 4.76**. `POST /v1/engagements/{engagement}/reviews`,
+  public `GET /v1/providers/{party}/reviews`. 12 tests. Backend **303 green**, PHPStan L6, Pint clean.
 
 - **P6-07 — reports + blocks (honoured in all three paths)**: `reports` (with a first-class
   `off_platform` category — leakage is the core risk) feed the admin queue + a `report.filed` outbox
