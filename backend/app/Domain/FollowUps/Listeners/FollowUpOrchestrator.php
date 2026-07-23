@@ -9,6 +9,7 @@ use App\Domain\FollowUps\FollowUpKind;
 use App\Domain\FollowUps\FollowUpScheduler;
 use App\Events\OutboxMessagePublished;
 use App\Models\Engagement;
+use App\Models\Quotation;
 use App\Models\User;
 use App\Models\Warranty;
 use Illuminate\Support\Carbon;
@@ -34,8 +35,61 @@ final class FollowUpOrchestrator
             'warranty.issued' => $this->onWarrantyIssued($event->payload),
             'deliverable.submitted' => $this->onDeliverableSubmitted($event->payload),
             'deliverable.accepted', 'deliverable.rejected' => $this->onDeliverableReviewed($event->payload),
+            'quote.submitted' => $this->onQuoteSubmitted($payloadQuotationId = $event->payload['quotation_id'] ?? null),
+            'quote.accepted' => $this->cancelQuoteFollowUps($event->payload['quotation_id'] ?? null),
+            'quote.revised' => $this->onQuoteRevised($event->payload),
             default => null,
         };
+    }
+
+    /**
+     * The unconverted-quote nudge (P2.5-06) — the highest-ROI message on the list; the lead is already
+     * paid for. quote_pending_customer nudges the customer to decide; quote_expiring warns before the
+     * quote lapses. Both cancel when the quote is accepted or revised.
+     */
+    private function onQuoteSubmitted(mixed $quotationId): void
+    {
+        $quotation = is_string($quotationId) ? Quotation::query()->find($quotationId) : null;
+        $customer = $quotation !== null ? $this->quotationCustomer($quotation) : null;
+        if ($quotation === null || $customer === null) {
+            return;
+        }
+
+        $channel = $this->ladder->pick($customer);
+        $this->scheduler->schedule(
+            FollowUpKind::QuotePendingCustomer, $customer, $channel,
+            now()->addHours((int) config('followups.quote_pending_hours', 24)),
+            'quotation', $quotation->id, quotationId: $quotation->id,
+        );
+        $this->scheduler->schedule(
+            FollowUpKind::QuoteExpiring, $customer, $channel,
+            Carbon::parse((string) $quotation->valid_until)->subHours((int) config('followups.quote_expiring_lead_hours', 24)),
+            'quotation', $quotation->id, quotationId: $quotation->id,
+        );
+    }
+
+    /**
+     * @param  array<string, mixed>  $payload
+     */
+    private function onQuoteRevised(array $payload): void
+    {
+        $this->cancelQuoteFollowUps($payload['supersedes_id'] ?? null); // the old quote is dead
+        $this->onQuoteSubmitted($payload['quotation_id'] ?? null);      // the new one gets its nudges
+    }
+
+    private function cancelQuoteFollowUps(mixed $quotationId): void
+    {
+        if (is_string($quotationId)) {
+            $this->scheduler->cancelByPrefix("quote_pending_customer:quotation:{$quotationId}", 'quote_settled');
+            $this->scheduler->cancelByPrefix("quote_expiring:quotation:{$quotationId}", 'quote_settled');
+        }
+    }
+
+    private function quotationCustomer(Quotation $quotation): ?User
+    {
+        $engagementJob = $quotation->job()->first();
+
+        return $engagementJob !== null ? User::query()->find($engagementJob->created_by_user_id) : null;
     }
 
     /**

@@ -18,4 +18,13 @@ return [
         'whatsapp' => ['day' => 3],
         'email' => ['day' => 2],
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Unconverted-quote nudges (P2.5-06)
+    |--------------------------------------------------------------------------
+    | The highest-ROI message on the list — the lead is already paid for.
+    */
+    'quote_pending_hours' => (int) env('FOLLOWUPS_QUOTE_PENDING_HOURS', 24),
+    'quote_expiring_lead_hours' => (int) env('FOLLOWUPS_QUOTE_EXPIRING_LEAD_HOURS', 24),
 ];
