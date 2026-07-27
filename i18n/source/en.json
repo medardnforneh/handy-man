@@ -61,6 +61,8 @@
     "chats.empty": "No conversations yet.",
     "account.title": "Your account",
     "account.language": "Language",
+    "account.addresses": "Saved addresses",
+    "account.add_address": "Add an address",
     "account.appearance": "Appearance",
     "account.theme_system": "Follow system",
     "account.theme_light": "Light",

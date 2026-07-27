@@ -6,6 +6,33 @@
 
 <ion-content [fullscreen]="true">
   <div class="page">
+    <!-- Profile header -->
+    <div class="ident">
+      <div class="hm-avatar id-av accent-brand" aria-hidden="true">{{ me.initials }}</div>
+      <div class="id-info">
+        <b>{{ me.name }}</b>
+        <small class="hm-muted">{{ me.phone }}</small>
+      </div>
+    </div>
+
+    <!-- Saved addresses -->
+    <div class="hm-section-head"><h2>{{ 'account.addresses' | translate }}</h2></div>
+    <ion-list class="addrs hm-card" lines="full">
+      @for (addr of addresses; track addr.id) {
+        <ion-item class="hm-tap">
+          <ion-icon slot="start" name="location-outline" aria-hidden="true"></ion-icon>
+          <ion-label>
+            <b>{{ addr.label }}</b>
+            <p class="hm-muted">{{ addr.line }}</p>
+          </ion-label>
+        </ion-item>
+      }
+      <ion-item button="true" detail="false" class="hm-tap add">
+        <ion-icon slot="start" name="add" aria-hidden="true"></ion-icon>
+        <ion-label>{{ 'account.add_address' | translate }}</ion-label>
+      </ion-item>
+    </ion-list>
+
     <div class="hm-section-head"><h2>{{ 'account.language' | translate }}</h2></div>
     <ion-segment class="choice" [value]="locale()">
       @for (code of supported; track code) {

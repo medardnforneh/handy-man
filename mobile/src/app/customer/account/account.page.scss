@@ -16,6 +16,24 @@ ion-title {
   margin: 0 auto;
 }
 
+// ---- Profile header ----------------------------------------------------
+.ident {
+  display: flex;
+  align-items: center;
+  gap: var(--hm-space-md);
+  padding: var(--hm-space-md) 0 var(--hm-space-sm);
+
+  .id-av { width: 60px; height: 60px; border-radius: 50%; font-size: 1.2rem; text-transform: uppercase; }
+  .id-info { min-width: 0; }
+  .id-info b { font-size: 1.15rem; font-weight: 800; letter-spacing: -0.02em; }
+  .id-info small { display: block; font-size: 0.85rem; margin-top: 0.1rem; font-variant-numeric: tabular-nums; }
+}
+
+.addrs ion-icon { color: var(--hm-color-text-muted); font-size: 1.2rem; }
+.addrs b { font-size: 0.92rem; }
+.addrs p { font-size: 0.78rem; margin: 0.1rem 0 0; }
+.add ion-icon { color: var(--hm-color-brand-primary); }
+
 .choice {
   --background: var(--hm-color-surface-sunken);
   border-radius: var(--hm-radius-md);

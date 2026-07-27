@@ -101,6 +101,8 @@
   "account": {
     "title": "Your account",
     "language": "Language",
+    "addresses": "Saved addresses",
+    "add_address": "Add an address",
     "appearance": "Appearance",
     "theme_system": "Follow system",
     "theme_light": "Light",

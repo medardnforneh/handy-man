@@ -14,6 +14,9 @@ import {
  */
 @Injectable({ providedIn: 'root' })
 export class CustomerService {
+  /** The signed-in customer (from the profile once auth lands; a fixture for now). */
+  readonly me = { name: 'Jean Mballa', initials: 'JM', phone: '+237 6 99 88 77 66' };
+
   private readonly providers: Provider[] = [
     { id: 'p1', name: 'Atelier Nkeng', initials: 'AN', skill: 'Plomberie', rating: 4.9, mode: 'onsite', distanceKm: 2.1, verified: true, accent: 'brand' },
     { id: 'p2', name: 'Marie Fotso', initials: 'MF', skill: 'Design graphique', rating: 4.8, mode: 'remote', distanceKm: null, verified: true, accent: 'info' },

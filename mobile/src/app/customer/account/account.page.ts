@@ -5,6 +5,8 @@ import { IonicModule } from '@ionic/angular';
 import { TranslatePipe } from '@ngx-translate/core';
 import { AuthService } from '../../core/auth.service';
 import { Locale, LocaleService, SUPPORTED_LOCALES } from '../../core/locale.service';
+import { SavedAddress } from '../customer.models';
+import { CustomerService } from '../customer.service';
 
 type ThemeChoice = 'system' | 'light' | 'dark';
 
@@ -22,7 +24,10 @@ export class AccountPage {
   private readonly locales = inject(LocaleService);
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly customers = inject(CustomerService);
 
+  readonly me = this.customers.me;
+  readonly addresses: SavedAddress[] = this.customers.listAddresses();
   readonly supported = SUPPORTED_LOCALES;
   readonly locale = signal<Locale>(this.locales.current);
   readonly theme = signal<ThemeChoice>('system');

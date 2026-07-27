@@ -101,6 +101,8 @@
   "account": {
     "title": "Votre compte",
     "language": "Langue",
+    "addresses": "Adresses enregistrées",
+    "add_address": "Ajouter une adresse",
     "appearance": "Apparence",
     "theme_system": "Suivre le système",
     "theme_light": "Clair",
