@@ -1,8 +1,18 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
+import { ApiService } from '../api/api.service';
 import {
   Category, ChatSummary, EngagementMode, JobDetail, JobSummary, NewJobInput, Provider,
   ProviderProfile, SavedAddress, WorkspaceThread,
 } from './customer.models';
+
+/** Two-letter initials from a name; a phone-only "name" falls back to a neutral glyph. */
+function initialsOf(name: string): string {
+  if (/^\+?\d/.test(name.trim())) {
+    return '👤';
+  }
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  return (parts[0]?.[0] ?? '') + (parts[1]?.[0] ?? '');
+}
 
 /**
  * Customer-section data.
@@ -14,8 +24,27 @@ import {
  */
 @Injectable({ providedIn: 'root' })
 export class CustomerService {
-  /** The signed-in customer (from the profile once auth lands; a fixture for now). */
-  readonly me = { name: 'Jean Mballa', initials: 'JM', phone: '+237 6 99 88 77 66' };
+  private readonly api = inject(ApiService);
+
+  /**
+   * The signed-in customer. Loaded from `GET /auth/me` when a session token is present, else the
+   * offline fixture stands in — so the account identity is real when connected and demoable when not.
+   */
+  readonly me = signal({ name: 'Jean Mballa', initials: 'JM', phone: '+237 6 99 88 77 66' });
+
+  constructor() {
+    void this.loadMe();
+  }
+
+  private async loadMe(): Promise<void> {
+    try {
+      const u = await this.api.me();
+      const name = u.display_name ?? u.phone_e164;
+      this.me.set({ name, initials: initialsOf(name), phone: u.phone_e164 });
+    } catch {
+      // No session / offline — keep the fixture identity.
+    }
+  }
 
   private readonly providers: Provider[] = [
     { id: 'p1', name: 'Atelier Nkeng', initials: 'AN', skill: 'Plomberie', rating: 4.9, mode: 'onsite', distanceKm: 2.1, verified: true, accent: 'brand' },

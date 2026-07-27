@@ -27,4 +27,13 @@ export class ApiService {
     }
     return data;
   }
+
+  /** The signed-in user (P1-03) — requires the Bearer. Drives the account/profile identity. */
+  async me() {
+    const { data, error } = await api.GET('/auth/me');
+    if (error) {
+      throw error;
+    }
+    return data.data;
+  }
 }

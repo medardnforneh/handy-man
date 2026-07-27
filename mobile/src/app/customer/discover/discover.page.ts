@@ -22,8 +22,8 @@ export class DiscoverPage {
   private readonly customers = inject(CustomerService);
   private readonly router = inject(Router);
 
-  /** Signed-in customer's initials for the avatar (comes from the profile once auth lands). */
-  readonly userInitials = 'JM';
+  /** Signed-in customer's initials for the avatar — real when a session is present (GET /auth/me). */
+  readonly userInitials = this.customers.me;
 
   readonly categories: Category[] = this.customers.listCategories();
   readonly mode = signal<ModeFilter>('onsite');

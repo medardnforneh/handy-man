@@ -4,13 +4,17 @@ import { api } from '../api/client';
 import { tokenStore } from '../api/token-store';
 
 const AUTH_KEY = 'authed';
+const TOKEN_KEY = 'access_token';
 
 /**
  * Session state for the customer app. OTP-first, phone-primary (doc 02): the user proves a phone
- * number, no password. Today this is fixture-driven so the onboarding flow is complete and demoable
- * offline; the two seams (`requestOtp` → POST /v1/auth/otp/request, `verifyOtp` → /verify) are where
- * the generated client drops in, returning the same shapes. `ensureReady()` lets the route guard
- * wait for the persisted flag before deciding, so an authed user is never bounced to Welcome on boot.
+ * number, no password. `requestOtp`/`verifyOtp` call the real API (P1-02/03) with an offline fixture
+ * fallback; a successful verify stores the Sanctum access token, which is also PERSISTED so it
+ * survives an app reload (else the persisted `authed` flag would leave a token-less session that
+ * silently falls back to fixtures). `load()` rehydrates it into the client on boot. `ensureReady()`
+ * lets the route guard wait for that before deciding, so an authed user is never bounced to Welcome.
+ * (Refresh-token rotation on a 401 — POST /auth/refresh — is the next hardening step; the access
+ * token here lives ~15 min.)
  */
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -61,6 +65,7 @@ export class AuthService {
         return false; // reachable backend rejected the code (wrong/expired) — a real failure
       }
       tokenStore.set(data.tokens.access_token);
+      await Preferences.set({ key: TOKEN_KEY, value: data.tokens.access_token });
       await this.markAuthed();
       return true;
     } catch {
@@ -79,11 +84,16 @@ export class AuthService {
     this.authed.set(false);
     this.pendingPhone = '';
     tokenStore.set(null); // drop the bearer so no stale token rides the next request
+    await Preferences.remove({ key: TOKEN_KEY });
     await Preferences.set({ key: AUTH_KEY, value: '0' });
   }
 
   private async load(): Promise<void> {
     const stored = (await Preferences.get({ key: AUTH_KEY })).value;
     this.authed.set(stored === '1');
+    const token = (await Preferences.get({ key: TOKEN_KEY })).value;
+    if (token !== null) {
+      tokenStore.set(token); // rehydrate the Bearer so authenticated calls work after a reload
+    }
   }
 }
