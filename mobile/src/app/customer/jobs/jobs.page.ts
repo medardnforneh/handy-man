@@ -38,7 +38,7 @@ export class JobsPage {
   }
 
   open(job: JobSummary): void {
-    void this.router.navigate(['/workspace', job.id]);
+    void this.router.navigate(['/job', job.id]);
   }
 
   postRequest(): void {

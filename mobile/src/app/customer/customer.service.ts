@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import {
-  Category, ChatSummary, EngagementMode, JobSummary, NewJobInput, Provider, ProviderProfile,
-  SavedAddress, WorkspaceThread,
+  Category, ChatSummary, EngagementMode, JobDetail, JobSummary, NewJobInput, Provider,
+  ProviderProfile, SavedAddress, WorkspaceThread,
 } from './customer.models';
 
 /**
@@ -128,6 +128,56 @@ export class CustomerService {
 
   listAddresses(): SavedAddress[] {
     return this.addresses;
+  }
+
+  private readonly details: Record<string, JobDetail> = {
+    j1: {
+      id: 'j1', reference: 'JOB-7K2M9', title: 'Fuite sous l’évier', status: 'in_progress', mode: 'onsite',
+      providerName: 'Atelier Nkeng', providerInitials: 'AN', providerId: 'p1', accent: 'brand',
+      addressLine: 'Rue 1.234, Akwa, Douala', currency: 'XAF',
+      agreedMinor: 900000, escrowHeldMinor: 700000, releasedMinor: 200000,
+      milestones: [
+        { id: 'm1', title: 'Deposit', amountMinor: 200000, status: 'paid' },
+        { id: 'm2', title: 'Balance', amountMinor: 700000, status: 'submitted' },
+      ],
+    },
+    j3: {
+      id: 'j3', reference: 'JOB-9BZ3C', title: 'Installation split', status: 'engaged', mode: 'onsite',
+      providerName: 'Douala Cool Services', providerInitials: 'DC', providerId: 'p3', accent: 'warning',
+      addressLine: 'Boulevard de la Liberté, Bonanjo, Douala', currency: 'XAF',
+      agreedMinor: 1250000, escrowHeldMinor: 0, releasedMinor: 0,
+      milestones: [
+        { id: 'm1', title: 'Deposit', amountMinor: 300000, status: 'pending' },
+        { id: 'm2', title: 'Balance', amountMinor: 950000, status: 'pending' },
+      ],
+    },
+  };
+
+  /** The full job overview. Falls back to a minimal detail synthesised from the list summary. */
+  jobDetail(id: string): JobDetail {
+    const found = this.details[id];
+    if (found) {
+      return found;
+    }
+    const job = this.jobs.find((j) => j.id === id);
+    return {
+      id, reference: job?.reference ?? 'JOB-—', title: job?.title ?? '', status: job?.status ?? 'open',
+      mode: 'onsite', providerName: job?.providerName ?? null, providerInitials: null, providerId: null,
+      accent: 'muted', addressLine: null, currency: 'XAF',
+      agreedMinor: job?.amountMinor ?? 0, escrowHeldMinor: 0, releasedMinor: 0, milestones: [],
+    };
+  }
+
+  /** Approve a submitted milestone — releases its escrow slice (fixture: mark paid, move to released). */
+  approveMilestone(jobId: string, milestoneId: string): void {
+    const detail = this.details[jobId];
+    const milestone = detail?.milestones.find((m) => m.id === milestoneId);
+    if (!detail || !milestone || milestone.status === 'paid') {
+      return;
+    }
+    milestone.status = 'paid';
+    detail.escrowHeldMinor = Math.max(0, detail.escrowHeldMinor - milestone.amountMinor);
+    detail.releasedMinor += milestone.amountMinor;
   }
 
   /**

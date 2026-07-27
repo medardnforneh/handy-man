@@ -31,6 +31,12 @@ const routes: Routes = [
     loadComponent: () => import('./customer/provider/provider.page').then((m) => m.ProviderPage),
   },
   {
+    // Job overview (money, milestones, provider, location) — distinct from the chat workspace.
+    path: 'job/:id',
+    canActivate: [authGuard],
+    loadComponent: () => import('./customer/job-detail/job-detail.page').then((m) => m.JobDetailPage),
+  },
+  {
     // The engagement workspace is pushed over the tabs (full-screen thread).
     path: 'workspace/:id',
     canActivate: [authGuard],

@@ -87,6 +87,35 @@ export interface SavedAddress {
   line: string;
 }
 
+export type MilestoneStatus = 'pending' | 'in_progress' | 'submitted' | 'paid';
+
+/** One milestone in a job's plan — the customer approves a `submitted` one to release its escrow slice. */
+export interface MilestoneView {
+  id: string;
+  title: string;
+  amountMinor: number;
+  status: MilestoneStatus;
+}
+
+/** The full job overview (distinct from the chat workspace): money, milestones, provider, location. */
+export interface JobDetail {
+  id: string;
+  reference: string;
+  title: string;
+  status: JobStatus;
+  mode: EngagementMode;
+  providerName: string | null;
+  providerInitials: string | null;
+  providerId: string | null;
+  accent: Accent;
+  addressLine: string | null;
+  currency: string;
+  agreedMinor: number;
+  escrowHeldMinor: number;
+  releasedMinor: number;
+  milestones: MilestoneView[];
+}
+
 /** What the "post a request" form collects — mirrors CreateJob (doc 06: address only off-remote). */
 export interface NewJobInput {
   title: string;

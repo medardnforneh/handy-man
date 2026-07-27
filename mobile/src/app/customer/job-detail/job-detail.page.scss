@@ -1,0 +1,146 @@
+// Shared primitives (.hm-card, .hm-pill, .hm-avatar, .hm-section-head…) load globally — see angular.json.
+// SEMANTIC TOKENS ONLY — never a literal colour (doc 08; enforced by `npm run lint:colors`).
+
+ion-toolbar {
+  --background: var(--hm-color-surface-base);
+  --border-width: 0;
+}
+
+ion-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.page {
+  padding: 0 var(--hm-space-md) var(--hm-space-xl);
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+// ---- Head --------------------------------------------------------------
+.head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--hm-space-sm);
+  margin: var(--hm-space-sm) 0 var(--hm-space-md);
+
+  h1 {
+    margin: 0;
+    font-size: 1.35rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+  }
+
+  .hm-pill { flex: none; margin-top: 0.2rem; }
+}
+
+// ---- Provider ----------------------------------------------------------
+.prov {
+  display: flex;
+  align-items: center;
+  gap: var(--hm-space-sm);
+  width: 100%;
+  padding: var(--hm-space-sm) var(--hm-space-md);
+  margin-bottom: var(--hm-space-md);
+  text-align: start;
+  color: inherit;
+  cursor: pointer;
+
+  .prov-av { width: 44px; height: 44px; border-radius: 50%; font-size: 0.85rem; }
+  .prov-info { flex: 1; min-width: 0; b { font-size: 0.95rem; } small { display: block; font-size: 0.76rem; } }
+  .chev { color: var(--hm-color-text-muted); font-size: 1.1rem; flex: none; }
+
+  &[disabled] { opacity: 1; cursor: default; }
+}
+
+// ---- Money -------------------------------------------------------------
+.money {
+  padding: var(--hm-space-md);
+}
+
+.mrow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--hm-space-sm);
+  font-size: 0.88rem;
+
+  & + .mrow { margin-top: 0.6rem; }
+
+  .hm-muted { display: inline-flex; align-items: center; gap: 0.35rem; }
+  ion-icon { font-size: 0.95rem; }
+
+  span:last-child { font-weight: 700; font-variant-numeric: tabular-nums; }
+  small { color: var(--hm-color-text-muted); font-weight: 600; font-size: 0.7rem; margin-inline-start: 0.15rem; }
+
+  &.big {
+    padding-bottom: 0.6rem;
+    margin-bottom: 0.2rem;
+    border-bottom: 1px solid var(--hm-color-border-subtle);
+
+    .val { font-size: 1.15rem; }
+  }
+}
+
+// ---- Milestones --------------------------------------------------------
+.milestones { display: flex; flex-direction: column; gap: var(--hm-space-sm); }
+
+.ms {
+  padding: var(--hm-space-md);
+
+  .ms-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--hm-space-sm);
+
+    b { font-size: 0.92rem; }
+  }
+
+  .ms-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--hm-space-sm);
+    margin-top: 0.5rem;
+
+    .amt { font-weight: 700; font-variant-numeric: tabular-nums; }
+    small { color: var(--hm-color-text-muted); font-weight: 600; font-size: 0.7rem; margin-inline-start: 0.15rem; }
+
+    ion-button { --border-radius: var(--hm-radius-md); font-weight: 700; margin: 0; }
+  }
+}
+
+// ---- Location ----------------------------------------------------------
+.loc {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  padding: var(--hm-space-md);
+  font-size: 0.88rem;
+
+  ion-icon { color: var(--hm-color-brand-primary); font-size: 1.1rem; flex: none; }
+
+  &.remote {
+    padding: var(--hm-space-md);
+    border: 1px dashed var(--hm-color-border-strong);
+    border-radius: var(--hm-radius-md);
+  }
+}
+
+// ---- Footer CTA --------------------------------------------------------
+ion-footer {
+  background: var(--hm-color-surface-base);
+
+  .cta {
+    padding: var(--hm-space-sm) var(--hm-space-md);
+    max-width: 720px;
+    margin: 0 auto;
+    border-top: 1px solid var(--hm-color-border-subtle);
+  }
+
+  ion-button { --border-radius: var(--hm-radius-md); font-weight: 700; margin: 0; }
+}

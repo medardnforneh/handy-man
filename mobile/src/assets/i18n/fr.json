@@ -280,5 +280,23 @@
     "budget_ph": "Votre estimation",
     "post": "Publier la demande",
     "posted": "Demande publiée"
+  },
+  "jobdetail": {
+    "your_provider": "Votre prestataire",
+    "agreed": "Convenu",
+    "escrow_held": "Sous séquestre",
+    "released": "Versé",
+    "released_toast": "Jalon approuvé — fonds versés",
+    "milestones": "Jalons",
+    "approve": "Approuver",
+    "location": "Lieu",
+    "remote": "Travail à distance — pas de visite",
+    "open_chat": "Ouvrir la discussion"
+  },
+  "milestone": {
+    "pending": "En attente",
+    "in_progress": "En cours",
+    "submitted": "Soumis",
+    "paid": "Payé"
   }
 }

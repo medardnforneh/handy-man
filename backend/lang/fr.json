@@ -216,5 +216,19 @@
   "auth.otp_invalid": "Ce code n’est pas correct. Réessayez.",
   "auth.verify": "Vérifier",
   "auth.resend": "Renvoyer le code",
-  "auth.resend_in": "Renvoyer dans {{s}} s"
+  "auth.resend_in": "Renvoyer dans {{s}} s",
+  "jobdetail.your_provider": "Votre prestataire",
+  "jobdetail.agreed": "Convenu",
+  "jobdetail.escrow_held": "Sous séquestre",
+  "jobdetail.released": "Versé",
+  "jobdetail.released_toast": "Jalon approuvé — fonds versés",
+  "jobdetail.milestones": "Jalons",
+  "jobdetail.approve": "Approuver",
+  "jobdetail.location": "Lieu",
+  "jobdetail.remote": "Travail à distance — pas de visite",
+  "jobdetail.open_chat": "Ouvrir la discussion",
+  "milestone.pending": "En attente",
+  "milestone.in_progress": "En cours",
+  "milestone.submitted": "Soumis",
+  "milestone.paid": "Payé"
 }

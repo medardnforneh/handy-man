@@ -216,5 +216,19 @@
     "auth.otp_invalid": "That code isn’t right. Try again.",
     "auth.verify": "Verify",
     "auth.resend": "Resend code",
-    "auth.resend_in": "Resend in {{s}}s"
+    "auth.resend_in": "Resend in {{s}}s",
+    "jobdetail.your_provider": "Your provider",
+    "jobdetail.agreed": "Agreed",
+    "jobdetail.escrow_held": "In escrow",
+    "jobdetail.released": "Released",
+    "jobdetail.released_toast": "Milestone approved — funds released",
+    "jobdetail.milestones": "Milestones",
+    "jobdetail.approve": "Approve",
+    "jobdetail.location": "Location",
+    "jobdetail.remote": "Remote work — no site visit",
+    "jobdetail.open_chat": "Open chat",
+    "milestone.pending": "Pending",
+    "milestone.in_progress": "In progress",
+    "milestone.submitted": "Submitted",
+    "milestone.paid": "Paid"
 }

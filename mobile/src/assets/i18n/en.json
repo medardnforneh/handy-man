@@ -280,5 +280,23 @@
     "budget_ph": "Your estimate",
     "post": "Post request",
     "posted": "Request posted"
+  },
+  "jobdetail": {
+    "your_provider": "Your provider",
+    "agreed": "Agreed",
+    "escrow_held": "In escrow",
+    "released": "Released",
+    "released_toast": "Milestone approved — funds released",
+    "milestones": "Milestones",
+    "approve": "Approve",
+    "location": "Location",
+    "remote": "Remote work — no site visit",
+    "open_chat": "Open chat"
+  },
+  "milestone": {
+    "pending": "Pending",
+    "in_progress": "In progress",
+    "submitted": "Submitted",
+    "paid": "Paid"
   }
 }

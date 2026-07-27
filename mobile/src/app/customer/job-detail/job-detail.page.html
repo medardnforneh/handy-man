@@ -1,0 +1,86 @@
+<ion-header [translucent]="true" class="ion-no-border">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/tabs/jobs" [text]="''"></ion-back-button>
+    </ion-buttons>
+    <ion-title>{{ job().reference }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <div class="page">
+    <!-- Title + status -->
+    <div class="head">
+      <h1>{{ job().title }}</h1>
+      <span [class]="'hm-pill ' + tone(job().status)">{{ 'status.' + job().status | translate }}</span>
+    </div>
+
+    <!-- Provider -->
+    @if (job().providerName) {
+      <button class="prov hm-card hm-tap" type="button" [disabled]="!job().providerId" (click)="openProvider()">
+        <div [class]="'hm-avatar prov-av accent-' + job().accent" aria-hidden="true">{{ job().providerInitials }}</div>
+        <div class="prov-info">
+          <b>{{ job().providerName }}</b>
+          <small class="hm-muted">{{ 'jobdetail.your_provider' | translate }}</small>
+        </div>
+        @if (job().providerId) {
+          <ion-icon class="chev" name="chevron-forward" aria-hidden="true"></ion-icon>
+        }
+      </button>
+    }
+
+    <!-- Money -->
+    <div class="money hm-card">
+      <div class="mrow big">
+        <span class="hm-muted">{{ 'jobdetail.agreed' | translate }}</span>
+        <span class="val">{{ job().agreedMinor | money }} <small>{{ 'money.currency' | translate }}</small></span>
+      </div>
+      <div class="mrow">
+        <span class="hm-muted"><ion-icon name="lock-closed-outline" aria-hidden="true"></ion-icon>{{ 'jobdetail.escrow_held' | translate }}</span>
+        <span>{{ job().escrowHeldMinor | money }} <small>{{ 'money.currency' | translate }}</small></span>
+      </div>
+      <div class="mrow">
+        <span class="hm-muted"><ion-icon name="checkmark-done-outline" aria-hidden="true"></ion-icon>{{ 'jobdetail.released' | translate }}</span>
+        <span>{{ job().releasedMinor | money }} <small>{{ 'money.currency' | translate }}</small></span>
+      </div>
+    </div>
+
+    <!-- Milestones -->
+    @if (job().milestones.length > 0) {
+      <div class="hm-section-head"><h2>{{ 'jobdetail.milestones' | translate }}</h2></div>
+      <div class="milestones">
+        @for (m of job().milestones; track m.id) {
+          <div class="ms hm-card">
+            <div class="ms-top">
+              <b>{{ m.title }}</b>
+              <span [class]="'hm-pill ' + milestoneTone(m.status)">{{ 'milestone.' + m.status | translate }}</span>
+            </div>
+            <div class="ms-bottom">
+              <span class="amt">{{ m.amountMinor | money }} <small>{{ 'money.currency' | translate }}</small></span>
+              @if (m.status === 'submitted') {
+                <ion-button size="small" class="hm-tap" (click)="approve(m.id)">{{ 'jobdetail.approve' | translate }}</ion-button>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Location -->
+    <div class="hm-section-head"><h2>{{ 'jobdetail.location' | translate }}</h2></div>
+    @if (job().mode === 'remote') {
+      <p class="loc remote hm-muted"><ion-icon name="globe-outline" aria-hidden="true"></ion-icon>{{ 'jobdetail.remote' | translate }}</p>
+    } @else {
+      <p class="loc hm-card"><ion-icon name="location-outline" aria-hidden="true"></ion-icon>{{ job().addressLine }}</p>
+    }
+  </div>
+</ion-content>
+
+<ion-footer class="ion-no-border">
+  <div class="cta">
+    <ion-button expand="block" fill="outline" class="hm-tap" (click)="openChat()">
+      <ion-icon name="chatbubble-ellipses-outline" slot="start" aria-hidden="true"></ion-icon>
+      {{ 'jobdetail.open_chat' | translate }}
+    </ion-button>
+  </div>
+</ion-footer>
