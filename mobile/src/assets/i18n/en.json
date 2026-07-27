@@ -23,7 +23,16 @@
     "logout": "Log out",
     "phone": "Phone number",
     "otp_prompt": "Enter the code we sent you",
-    "language_prompt": "Choose your language"
+    "language_prompt": "Choose your language",
+    "phone_placeholder": "6 XX XX XX XX",
+    "phone_hint": "We’ll text you a 6-digit code.",
+    "send_code": "Send code",
+    "terms": "By continuing you agree to our Terms and Privacy Policy.",
+    "otp_sent": "Code sent to {{phone}}",
+    "otp_invalid": "That code isn’t right. Try again.",
+    "verify": "Verify",
+    "resend": "Resend code",
+    "resend_in": "Resend in {{s}}s"
   },
   "language": {
     "french": "Français",

@@ -1,0 +1,44 @@
+<ion-content [fullscreen]="true">
+  <div class="page">
+    <!-- Brand -->
+    <div class="brand">
+      <div class="mark" aria-hidden="true"><ion-icon name="construct"></ion-icon></div>
+      <h1>{{ 'app.name' | translate }}</h1>
+      <p class="tagline">{{ 'app.tagline' | translate }}</p>
+    </div>
+
+    <!-- Language offer (first launch, doc 09) -->
+    <label class="lbl">{{ 'auth.language_prompt' | translate }}</label>
+    <ion-segment class="choice" [value]="locale()">
+      @for (code of supported; track code) {
+        <ion-segment-button class="hm-tap" [value]="code" (click)="setLocale(code)">
+          <ion-label>{{ (code === 'fr' ? 'language.french' : 'language.english') | translate }}</ion-label>
+        </ion-segment-button>
+      }
+    </ion-segment>
+
+    <!-- Phone -->
+    <label class="lbl">{{ 'auth.phone' | translate }}</label>
+    <div class="phone field">
+      <span class="cc" aria-hidden="true">{{ countryCode }}</span>
+      <ion-input
+        class="hm-tap"
+        inputmode="tel"
+        [value]="local()"
+        (ionInput)="onPhone($any($event.target).value)"
+        [placeholder]="'auth.phone_placeholder' | translate"
+        [attr.aria-label]="'auth.phone' | translate"
+      ></ion-input>
+    </div>
+    <p class="hint hm-muted">{{ 'auth.phone_hint' | translate }}</p>
+  </div>
+</ion-content>
+
+<ion-footer class="ion-no-border">
+  <div class="cta">
+    <ion-button expand="block" class="hm-tap" [disabled]="!canSend()" (click)="sendCode()">
+      {{ 'auth.send_code' | translate }}
+    </ion-button>
+    <p class="terms hm-muted">{{ 'auth.terms' | translate }}</p>
+  </div>
+</ion-footer>

@@ -1,0 +1,52 @@
+<ion-header [translucent]="true" class="ion-no-border">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/welcome" [text]="''"></ion-back-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <div class="page">
+    <h1>{{ 'auth.otp_prompt' | translate }}</h1>
+    <p class="sent hm-muted">{{ 'auth.otp_sent' | translate:{ phone: phone } }}</p>
+
+    <!-- One hidden input drives six cells; tapping the row focuses it. -->
+    <label class="code" [class.err]="error()">
+      <input
+        class="capture"
+        type="text"
+        inputmode="numeric"
+        autocomplete="one-time-code"
+        maxlength="6"
+        [value]="code()"
+        (input)="onCode($any($event.target).value)"
+        [attr.aria-label]="'auth.otp_prompt' | translate"
+        autofocus
+      />
+      @for (i of cells; track i) {
+        <span class="cell" [class.filled]="charAt(i)" [class.active]="code().length === i">{{ charAt(i) }}</span>
+      }
+    </label>
+
+    @if (error()) {
+      <p class="error">{{ 'auth.otp_invalid' | translate }}</p>
+    }
+
+    <div class="resend">
+      @if (resendIn() > 0) {
+        <span class="hm-muted">{{ 'auth.resend_in' | translate:{ s: resendIn() } }}</span>
+      } @else {
+        <button type="button" class="link hm-tap" (click)="resend()">{{ 'auth.resend' | translate }}</button>
+      }
+    </div>
+  </div>
+</ion-content>
+
+<ion-footer class="ion-no-border">
+  <div class="cta">
+    <ion-button expand="block" class="hm-tap" [disabled]="!canVerify()" (click)="verify()">
+      {{ 'auth.verify' | translate }}
+    </ion-button>
+  </div>
+</ion-footer>

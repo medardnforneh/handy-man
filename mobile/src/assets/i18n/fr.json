@@ -23,7 +23,16 @@
     "logout": "Se déconnecter",
     "phone": "Numéro de téléphone",
     "otp_prompt": "Saisissez le code que nous vous avons envoyé",
-    "language_prompt": "Choisissez votre langue"
+    "language_prompt": "Choisissez votre langue",
+    "phone_placeholder": "6 XX XX XX XX",
+    "phone_hint": "Nous vous enverrons un code à 6 chiffres par SMS.",
+    "send_code": "Envoyer le code",
+    "terms": "En continuant, vous acceptez nos Conditions et notre Politique de confidentialité.",
+    "otp_sent": "Code envoyé au {{phone}}",
+    "otp_invalid": "Ce code n’est pas correct. Réessayez.",
+    "verify": "Vérifier",
+    "resend": "Renvoyer le code",
+    "resend_in": "Renvoyer dans {{s}} s"
   },
   "language": {
     "french": "Français",

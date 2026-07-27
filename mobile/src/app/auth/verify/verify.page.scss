@@ -1,0 +1,113 @@
+// Shared primitives (.hm-muted, .hm-tap…) load once globally — see angular.json styles.
+// SEMANTIC TOKENS ONLY — never a literal colour (doc 08; enforced by `npm run lint:colors`).
+
+ion-toolbar {
+  --background: var(--hm-color-surface-base);
+  --border-width: 0;
+}
+
+ion-content {
+  --background: var(--hm-color-surface-base);
+}
+
+.page {
+  padding: var(--hm-space-md) var(--hm-space-md) var(--hm-space-lg);
+  max-width: 440px;
+  margin: 0 auto;
+}
+
+h1 {
+  margin: var(--hm-space-sm) 0 0.35rem;
+  font-size: 1.4rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+.sent {
+  margin: 0 0 var(--hm-space-xl);
+  font-size: 0.9rem;
+}
+
+// ---- Code cells --------------------------------------------------------
+.code {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 0.5rem;
+  cursor: text;
+
+  // The capture input sits invisibly over the whole row.
+  .capture {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    border: 0;
+    background: transparent;
+    // Keep the caret off-screen so only the cells read as the field.
+    color: transparent;
+    caret-color: transparent;
+    font-size: 16px; // avoids iOS zoom-on-focus
+  }
+
+  .cell {
+    display: grid;
+    place-items: center;
+    height: 56px;
+    border-radius: var(--hm-radius-md);
+    background: var(--hm-color-surface-raised);
+    border: 1.5px solid var(--hm-color-border-subtle);
+    font-size: 1.4rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: var(--hm-color-text-primary);
+    transition: border-color 0.12s ease;
+
+    &.filled { border-color: var(--hm-color-border-strong); }
+    &.active { border-color: var(--hm-color-brand-primary); }
+  }
+
+  &.err .cell { border-color: var(--hm-color-status-danger); }
+}
+
+.error {
+  margin: var(--hm-space-sm) 0 0;
+  color: var(--hm-color-status-danger);
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.resend {
+  margin-top: var(--hm-space-lg);
+  text-align: center;
+  font-size: 0.85rem;
+
+  .link {
+    background: none;
+    border: 0;
+    padding: 0.4rem 0.6rem;
+    color: var(--hm-color-brand-primary);
+    font-weight: 700;
+    font-size: 0.85rem;
+    cursor: pointer;
+  }
+}
+
+// ---- Footer CTA --------------------------------------------------------
+ion-footer {
+  background: var(--hm-color-surface-base);
+
+  .cta {
+    padding: var(--hm-space-sm) var(--hm-space-md) var(--hm-space-md);
+    max-width: 440px;
+    margin: 0 auto;
+  }
+
+  ion-button {
+    --border-radius: var(--hm-radius-md);
+    font-weight: 700;
+    margin: 0;
+  }
+}

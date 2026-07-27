@@ -1,7 +1,9 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { TranslatePipe } from '@ngx-translate/core';
+import { AuthService } from '../../core/auth.service';
 import { Locale, LocaleService, SUPPORTED_LOCALES } from '../../core/locale.service';
 
 type ThemeChoice = 'system' | 'light' | 'dark';
@@ -18,10 +20,17 @@ type ThemeChoice = 'system' | 'light' | 'dark';
 })
 export class AccountPage {
   private readonly locales = inject(LocaleService);
+  private readonly auth = inject(AuthService);
+  private readonly router = inject(Router);
 
   readonly supported = SUPPORTED_LOCALES;
   readonly locale = signal<Locale>(this.locales.current);
   readonly theme = signal<ThemeChoice>('system');
+
+  async logout(): Promise<void> {
+    await this.auth.logout();
+    void this.router.navigate(['/welcome']);
+  }
 
   async setLocale(locale: Locale): Promise<void> {
     await this.locales.choose(locale);

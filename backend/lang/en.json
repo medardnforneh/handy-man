@@ -207,5 +207,14 @@
   "newjob.budget": "Budget (optional)",
   "newjob.budget_ph": "Your estimate",
   "newjob.post": "Post request",
-  "newjob.posted": "Request posted"
+  "newjob.posted": "Request posted",
+  "auth.phone_placeholder": "6 XX XX XX XX",
+  "auth.phone_hint": "We’ll text you a 6-digit code.",
+  "auth.send_code": "Send code",
+  "auth.terms": "By continuing you agree to our Terms and Privacy Policy.",
+  "auth.otp_sent": "Code sent to {{phone}}",
+  "auth.otp_invalid": "That code isn’t right. Try again.",
+  "auth.verify": "Verify",
+  "auth.resend": "Resend code",
+  "auth.resend_in": "Resend in {{s}}s"
 }

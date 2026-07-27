@@ -207,5 +207,14 @@
   "newjob.budget": "Budget (facultatif)",
   "newjob.budget_ph": "Votre estimation",
   "newjob.post": "Publier la demande",
-  "newjob.posted": "Demande publiée"
+  "newjob.posted": "Demande publiée",
+  "auth.phone_placeholder": "6 XX XX XX XX",
+  "auth.phone_hint": "Nous vous enverrons un code à 6 chiffres par SMS.",
+  "auth.send_code": "Envoyer le code",
+  "auth.terms": "En continuant, vous acceptez nos Conditions et notre Politique de confidentialité.",
+  "auth.otp_sent": "Code envoyé au {{phone}}",
+  "auth.otp_invalid": "Ce code n’est pas correct. Réessayez.",
+  "auth.verify": "Vérifier",
+  "auth.resend": "Renvoyer le code",
+  "auth.resend_in": "Renvoyer dans {{s}} s"
 }
