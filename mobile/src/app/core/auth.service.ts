@@ -5,6 +5,7 @@ import { tokenStore } from '../api/token-store';
 
 const AUTH_KEY = 'authed';
 const TOKEN_KEY = 'access_token';
+const REFRESH_KEY = 'refresh_token';
 
 /**
  * Session state for the customer app. OTP-first, phone-primary (doc 02): the user proves a phone
@@ -21,8 +22,12 @@ export class AuthService {
   readonly authed = signal(false);
   private readonly ready: Promise<void>;
   private pendingPhone = '';
+  /** One in-flight refresh shared by every 401 that races, so the rotating token isn't reused. */
+  private refreshing: Promise<string | null> | null = null;
 
   constructor() {
+    // Register synchronously so the client can rotate the token before load() resolves.
+    tokenStore.setRefreshHandler(() => this.refreshAccessToken());
     this.ready = this.load();
   }
 
@@ -64,8 +69,7 @@ export class AuthService {
       if (error !== undefined || data === undefined) {
         return false; // reachable backend rejected the code (wrong/expired) — a real failure
       }
-      tokenStore.set(data.tokens.access_token);
-      await Preferences.set({ key: TOKEN_KEY, value: data.tokens.access_token });
+      await this.storeTokens(data.tokens.access_token, data.tokens.refresh_token);
       await this.markAuthed();
       return true;
     } catch {
@@ -80,11 +84,49 @@ export class AuthService {
     await Preferences.set({ key: AUTH_KEY, value: '1' });
   }
 
+  /**
+   * Rotate the access token on a 401 (P1-03). Deduped so racing 401s share one refresh — the backend
+   * detects refresh-token reuse and revokes the family, so the latest token must be used exactly once.
+   * A failed refresh logs out (the session is truly gone).
+   */
+  private refreshAccessToken(): Promise<string | null> {
+    this.refreshing ??= (async () => {
+      try {
+        const refresh = (await Preferences.get({ key: REFRESH_KEY })).value;
+        if (refresh === null) {
+          return null;
+        }
+        const { data, error } = await api.POST('/auth/refresh', {
+          body: { refresh_token: refresh },
+          params: { header: { 'Idempotency-Key': crypto.randomUUID() } },
+        });
+        if (error !== undefined || data === undefined) {
+          await this.logout();
+          return null;
+        }
+        await this.storeTokens(data.access_token, data.refresh_token);
+        return data.access_token;
+      } catch {
+        return null; // network error — keep the session, let the caller see the 401
+      } finally {
+        this.refreshing = null;
+      }
+    })();
+    return this.refreshing;
+  }
+
+  private async storeTokens(accessToken: string, refreshToken: string): Promise<void> {
+    tokenStore.set(accessToken);
+    await Preferences.set({ key: TOKEN_KEY, value: accessToken });
+    await Preferences.set({ key: REFRESH_KEY, value: refreshToken });
+  }
+
   async logout(): Promise<void> {
     this.authed.set(false);
     this.pendingPhone = '';
     tokenStore.set(null); // drop the bearer so no stale token rides the next request
     await Preferences.remove({ key: TOKEN_KEY });
+    await Preferences.remove({ key: REFRESH_KEY });
     await Preferences.set({ key: AUTH_KEY, value: '0' });
   }
 
