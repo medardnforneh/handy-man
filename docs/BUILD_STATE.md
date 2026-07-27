@@ -3,7 +3,7 @@
 > Living tracker for the build. Updated as work progresses. Source of truth for **where we
 > are** and **how this machine is set up**. Read this first when resuming.
 
-_Last updated: 2026-07-27_
+_Last updated: 2026-07-27 (mobile customer + provider app sections built)_
 
 ## Environment (this dev machine — Windows 10 Pro, non-admin)
 
@@ -221,9 +221,40 @@ build, which lands with the app UI work.**
     exception) + a loginable superadmin, so `/admin` is full when served. Run
     `php artisan db:seed --class=Database\Seeders\DemoSeeder`; log in at `/admin` with
     `admin@handyman.cm` / `password` (enrol 2FA once).
-  - **Still owed:** Ionic app screens and Blade public/SEO pages (Phase 5+) must meet the bar when built.
+  - **Ionic app — customer + provider sections substantially built** (see the top "what was done"
+    entry). Both are token-driven (light+dark, no-literal-colour + no-bare-string linters clean),
+    English-default with a working FR/EN switch, and the responsive shell now really shows a side
+    rail on web (the split-pane `ion-tabs` overlap bug was fixed) and a tab bar on phones.
+  - **Still owed:** Blade public/SEO pages; native/offline (Capacitor build, secure token storage,
+    Drift offline cache — P5-01/02); wiring the fixture services to the generated API client; and
+    real-time/media surfaces (voice notes, presence, reconnect — P4-04..07).
 
 ## What was done, most recent first
+
+- **Ionic app — customer + provider sections built out (fixture-driven, API-shaped)**. All screens are
+  standalone Angular 20 components on the generated design tokens; every user string runs through the
+  shared i18n source (parity gate ~286 keys × 2), English default with an Account/Welcome FR/EN switch.
+  - **i18n was silently broken and is fixed**: ngx-translate v18's `provideTranslateService()` without
+    a `loader` registered a no-op loader that shadowed the HTTP loader, so every key rendered raw. Now
+    the HTTP loader is passed into `provideTranslateService({ loader })`. (`ng build` green is NOT proof
+    a screen renders — verify in a browser; reliable recipe: `npm run build` then serve `mobile/www`
+    with a tiny SPA static server on **port 4200**, the port the Chrome extension already has host
+    permission for.)
+  - **Responsive shell rail fixed (both shells)**: the split-pane side rail was in the DOM but hidden
+    because `ion-tabs` defaults to `position:absolute` and painted over it; giving `ion-tabs`
+    `position:relative` inside the active pane (≥768px) makes it flow beside the 270px rail.
+  - **Onboarding**: Welcome (brand, first-launch FR/EN offer, +237 phone) → Verify (6-cell OTP, resend
+    timer, autofocus) → app. `AuthService` (fixture, with requestOtp/verifyOtp seams) + `authGuard`/
+    `guestGuard`; Account "Log out" clears the session.
+  - **Customer**: Discover → Provider profile (shrinkage rating + sample-floored metrics + double-blind
+    reviews) → Request a quote / Post-a-request (conditional-address rule, doc 06) → Jobs → Job detail
+    (money/escrow/milestones + approve) → Workspace (chat-as-state-machine, pre-existing).
+  - **Provider ("Offer services")**: a tab shell (Home / Opportunities / Work / Earnings) mirroring the
+    customer shell; Home dashboard (wallet hero + stats + previews); Opportunities feed → Lead + quote
+    composer (SubmitQuotation shape); Work → Work detail (**check-in gated to on-site/hybrid**, status
+    chips, submit report — P5-03/04/06); Earnings (payable balance + status-coded payout history).
+  - Data still comes from typed fixture services whose shapes match the API, so swapping in the
+    generated `openapi-fetch` client is a per-method change. No backend code touched.
 
 - **P3-13 — agreement-time deposit capture → every backend build-plan task now done**:
   `CaptureDepositOnAgreement` collects the deposit (the position-0 milestone) into escrow the moment
