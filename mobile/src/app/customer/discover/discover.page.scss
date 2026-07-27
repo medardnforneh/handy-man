@@ -126,6 +126,21 @@ ion-searchbar {
   padding: var(--hm-space-sm);
   margin-bottom: var(--hm-space-sm);
 
+  // The avatar + info area is a single tap target that opens the profile.
+  .pro-open {
+    display: flex;
+    align-items: center;
+    gap: var(--hm-space-sm);
+    flex: 1;
+    min-width: 0;
+    background: none;
+    border: 0;
+    padding: 0;
+    text-align: start;
+    cursor: pointer;
+    color: inherit;
+  }
+
   .pro-av {
     width: 52px;
     height: 52px;

@@ -34,8 +34,13 @@ export class DiscoverPage {
     this.providers.set(this.customers.listProviders(mode));
   }
 
+  openProfile(provider: Provider): void {
+    // Tapping a provider opens their public profile (reviews + metrics) before requesting a quote.
+    void this.router.navigate(['/provider', provider.id]);
+  }
+
   openWorkspace(provider: Provider): void {
-    // Requesting a quote opens the engagement workspace for the conversation it creates.
+    // The quick "Quote" shortcut opens the engagement workspace for the conversation it creates.
     void this.router.navigate(['/workspace', provider.id]);
   }
 }

@@ -1,0 +1,227 @@
+// Shared primitives (.hm-card, .hm-pill, .hm-avatar…) load once globally — see angular.json styles.
+// SEMANTIC TOKENS ONLY — never a literal colour (doc 08; enforced by `npm run lint:colors`).
+
+ion-toolbar {
+  --background: var(--hm-color-surface-base);
+  --border-width: 0;
+}
+
+ion-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.page {
+  padding: 0 var(--hm-space-md) var(--hm-space-xl);
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+// ---- Hero --------------------------------------------------------------
+.hero {
+  display: grid;
+  place-items: center;
+  text-align: center;
+  padding: var(--hm-space-lg) var(--hm-space-md);
+  margin-top: var(--hm-space-sm);
+
+  .hero-av {
+    width: 72px;
+    height: 72px;
+    font-size: 1.4rem;
+    border-radius: 50%;
+    margin-bottom: var(--hm-space-sm);
+  }
+
+  .hero-name {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+
+    b {
+      font-size: 1.2rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+
+    .verified {
+      color: var(--hm-color-brand-primary);
+      font-size: 1rem;
+    }
+  }
+
+  .hero-sub {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 0.25rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+
+    ion-icon {
+      font-size: 0.85rem;
+      vertical-align: -1px;
+      margin-inline-end: 0.15rem;
+    }
+  }
+}
+
+.dot {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--hm-color-border-strong);
+  flex: none;
+}
+
+.rate {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: var(--hm-space-sm);
+
+  .stars {
+    display: inline-flex;
+    color: var(--hm-color-status-warning);
+    font-size: 0.95rem;
+  }
+
+  .score { font-size: 0.95rem; font-weight: 800; }
+  .count { font-size: 0.8rem; }
+}
+
+// ---- Metrics -----------------------------------------------------------
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--hm-space-sm);
+  margin-top: var(--hm-space-md);
+}
+
+.stat {
+  display: grid;
+  place-items: center;
+  gap: 0.15rem;
+  padding: var(--hm-space-md) 0.35rem;
+  text-align: center;
+
+  b {
+    font-size: 1.25rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+
+    &.pending {
+      font-size: 0.9rem;
+      color: var(--hm-color-text-muted);
+      font-weight: 700;
+    }
+  }
+
+  small { font-size: 0.7rem; }
+}
+
+.floor-note {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: var(--hm-space-sm) 0 0;
+  font-size: 0.78rem;
+
+  ion-icon { color: var(--hm-color-brand-primary); font-size: 0.95rem; flex: none; }
+}
+
+// ---- Skills ------------------------------------------------------------
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.chip {
+  padding: 0.3rem 0.7rem;
+  border-radius: var(--hm-radius-pill);
+  background: var(--hm-color-surface-sunken);
+  border: 1px solid var(--hm-color-border-subtle);
+  color: var(--hm-color-text-primary);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+// ---- About -------------------------------------------------------------
+.about {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--hm-color-text-primary);
+}
+
+.since {
+  margin: 0.4rem 0 0;
+  font-size: 0.78rem;
+}
+
+// ---- Reviews -----------------------------------------------------------
+.review {
+  display: flex;
+  gap: var(--hm-space-sm);
+  padding: var(--hm-space-md);
+  margin-bottom: var(--hm-space-sm);
+
+  .rev-av {
+    width: 40px;
+    height: 40px;
+    font-size: 0.8rem;
+    border-radius: 50%;
+  }
+
+  .rev-body { flex: 1; min-width: 0; }
+
+  .rev-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--hm-space-sm);
+
+    b { font-size: 0.9rem; }
+  }
+
+  .rev-stars {
+    display: inline-flex;
+    color: var(--hm-color-status-warning);
+    font-size: 0.8rem;
+    flex: none;
+  }
+
+  .rev-text {
+    margin: 0.35rem 0 0.5rem;
+    font-size: 0.85rem;
+    line-height: 1.45;
+  }
+
+  .rev-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+  }
+}
+
+// ---- Sticky CTA --------------------------------------------------------
+ion-footer {
+  background: var(--hm-color-surface-base);
+
+  .cta {
+    padding: var(--hm-space-sm) var(--hm-space-md);
+    max-width: 720px;
+    margin: 0 auto;
+    border-top: 1px solid var(--hm-color-border-subtle);
+  }
+
+  ion-button {
+    --border-radius: var(--hm-radius-md);
+    font-weight: 700;
+    margin: 0;
+  }
+}

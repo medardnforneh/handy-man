@@ -178,5 +178,18 @@
     "followup.review_reminder.title": "Il est encore temps de noter",
     "followup.review_reminder.body": "Votre avis aide les autres clients a bien choisir.",
     "followup.warranty_expiring.title": "Garantie bientot expiree",
-    "followup.warranty_expiring.body": "Votre garantie se termine bientot. Ouvrez une reclamation si besoin."
+    "followup.warranty_expiring.body": "Votre garantie se termine bientot. Ouvrez une reclamation si besoin.",
+    "provider.rating_count": "{{count}} avis",
+    "provider.unrated": "Pas encore de note",
+    "provider.building": "En cours",
+    "provider.new_note": "Nouveau prestataire — historique en construction.",
+    "provider.stat.completed": "Missions (90 j)",
+    "provider.stat.on_time": "Ponctualité",
+    "provider.stat.response": "Répond en",
+    "provider.skills": "Compétences",
+    "provider.about": "À propos",
+    "provider.reviews": "Avis",
+    "provider.no_reviews": "Pas encore d’avis",
+    "provider.member_since": "Membre depuis {{year}}",
+    "provider.request_quote": "Demander un devis"
 }

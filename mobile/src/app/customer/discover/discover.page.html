@@ -58,30 +58,32 @@
 
     @for (p of providers(); track p.id) {
       <div class="hm-card pro">
-        <div class="hm-avatar pro-av" [class]="'hm-avatar pro-av accent-' + p.accent" aria-hidden="true">{{ p.initials }}</div>
+        <button class="pro-open hm-tap" type="button" (click)="openProfile(p)">
+          <div class="hm-avatar pro-av" [class]="'hm-avatar pro-av accent-' + p.accent" aria-hidden="true">{{ p.initials }}</div>
 
-        <div class="pro-info">
-          <div class="pro-name">
-            <b>{{ p.name }}</b>
-            @if (p.verified) {
-              <ion-icon
-                class="verified"
-                name="shield-checkmark"
-                [attr.aria-label]="'discover.verified' | translate"
-              ></ion-icon>
-            }
+          <div class="pro-info">
+            <div class="pro-name">
+              <b>{{ p.name }}</b>
+              @if (p.verified) {
+                <ion-icon
+                  class="verified"
+                  name="shield-checkmark"
+                  [attr.aria-label]="'discover.verified' | translate"
+                ></ion-icon>
+              }
+            </div>
+            <div class="pro-meta">
+              <span class="rating"><ion-icon name="star" aria-hidden="true"></ion-icon>{{ p.rating }}</span>
+              <span class="dot" aria-hidden="true"></span>
+              <span>{{ p.skill }}</span>
+              @if (p.mode === 'remote') {
+                <span class="hm-pill tone-info">{{ 'discover.mode.remote' | translate }}</span>
+              } @else {
+                <span class="hm-pill tone-brand">{{ 'discover.distance' | translate:{ km: p.distanceKm } }}</span>
+              }
+            </div>
           </div>
-          <div class="pro-meta">
-            <span class="rating"><ion-icon name="star" aria-hidden="true"></ion-icon>{{ p.rating }}</span>
-            <span class="dot" aria-hidden="true"></span>
-            <span>{{ p.skill }}</span>
-            @if (p.mode === 'remote') {
-              <span class="hm-pill tone-info">{{ 'discover.mode.remote' | translate }}</span>
-            } @else {
-              <span class="hm-pill tone-brand">{{ 'discover.distance' | translate:{ km: p.distanceKm } }}</span>
-            }
-          </div>
-        </div>
+        </button>
 
         <ion-button class="hm-tap" size="small" (click)="openWorkspace(p)">
           {{ 'discover.quote' | translate }}

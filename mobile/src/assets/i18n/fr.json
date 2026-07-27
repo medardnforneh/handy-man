@@ -236,5 +236,22 @@
       "title": "Garantie bientot expiree",
       "body": "Votre garantie se termine bientot. Ouvrez une reclamation si besoin."
     }
+  },
+  "provider": {
+    "rating_count": "{{count}} avis",
+    "unrated": "Pas encore de note",
+    "building": "En cours",
+    "new_note": "Nouveau prestataire — historique en construction.",
+    "stat": {
+      "completed": "Missions (90 j)",
+      "on_time": "Ponctualité",
+      "response": "Répond en"
+    },
+    "skills": "Compétences",
+    "about": "À propos",
+    "reviews": "Avis",
+    "no_reviews": "Pas encore d’avis",
+    "member_since": "Membre depuis {{year}}",
+    "request_quote": "Demander un devis"
   }
 }

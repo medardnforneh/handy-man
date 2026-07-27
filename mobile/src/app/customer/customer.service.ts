@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import {
-  Category, ChatSummary, EngagementMode, JobSummary, Provider, WorkspaceThread,
+  Category, ChatSummary, EngagementMode, JobSummary, Provider, ProviderProfile, WorkspaceThread,
 } from './customer.models';
 
 /**
@@ -64,8 +64,51 @@ export class CustomerService {
     },
   };
 
+  private readonly profiles: Record<string, ProviderProfile> = {
+    p1: {
+      id: 'p1', name: 'Atelier Nkeng', initials: 'AN', headline: 'Plomberie', accent: 'brand',
+      verified: true, mode: 'onsite', city: 'Douala, Akwa', ratingAvg: 4.76, ratingCount: 128,
+      jobsCompleted90d: 34, onTimeRate: 0.94, responseTime: '~1h', memberSince: '2024',
+      skills: ['Plomberie', 'Fuites', 'Chauffe-eau', 'Sanitaires'],
+      about: 'Équipe de plombiers basée à Akwa. Interventions rapides, devis clairs, garantie sur la main-d’œuvre.',
+      reviews: [
+        { id: 'r1', authorInitials: 'JM', authorName: 'Jean M.', rating: 5, comment: 'Ponctuel et propre. La fuite est réglée depuis un mois.', date: 'Il y a 3 j', mode: 'onsite', accent: 'brand' },
+        { id: 'r2', authorInitials: 'SB', authorName: 'Sandrine B.', rating: 5, comment: 'Très professionnel, devis respecté au franc près.', date: 'Il y a 2 sem', mode: 'onsite', accent: 'info' },
+        { id: 'r3', authorInitials: 'PT', authorName: 'Paul T.', rating: 4, comment: 'Bon travail, un léger retard le matin.', date: 'Il y a 1 mois', mode: 'onsite', accent: 'muted' },
+      ],
+    },
+    p2: {
+      id: 'p2', name: 'Marie Fotso', initials: 'MF', headline: 'Design graphique', accent: 'info',
+      verified: true, mode: 'remote', city: 'À distance', ratingAvg: 4.8, ratingCount: 41,
+      jobsCompleted90d: 12, onTimeRate: 0.98, responseTime: '~2h', memberSince: '2023',
+      skills: ['Logo', 'Identité visuelle', 'Print', 'Réseaux sociaux'],
+      about: 'Designer indépendante. Identités de marque et supports print pour PME camerounaises.',
+      reviews: [
+        { id: 'r1', authorInitials: 'AK', authorName: 'Aline K.', rating: 5, comment: 'Maquettes livrées avant l’échéance. Superbe travail.', date: 'Il y a 5 j', mode: 'remote', accent: 'info' },
+        { id: 'r2', authorInitials: 'RN', authorName: 'René N.', rating: 5, comment: 'Communication fluide, plusieurs allers-retours sans souci.', date: 'Il y a 3 sem', mode: 'remote', accent: 'brand' },
+      ],
+    },
+    // A newly-onboarded provider: too few reviews to show an on-time rate (P6-12 floor),
+    // and the display rating is still shrinking toward the prior — never a bare "5.0 (1)".
+    p3: {
+      id: 'p3', name: 'Douala Cool Services', initials: 'DC', headline: 'Climatisation', accent: 'warning',
+      verified: false, mode: 'onsite', city: 'Douala, Bonapriso', ratingAvg: 4.21, ratingCount: 3,
+      jobsCompleted90d: 2, onTimeRate: null, responseTime: '~4h', memberSince: '2026',
+      skills: ['Installation split', 'Entretien', 'Recharge gaz'],
+      about: 'Nouvelle équipe spécialisée en climatisation résidentielle et petits commerces.',
+      reviews: [
+        { id: 'r1', authorInitials: 'FE', authorName: 'Franck E.', rating: 5, comment: 'Installation nickel, équipe sympa.', date: 'Il y a 1 sem', mode: 'onsite', accent: 'warning' },
+      ],
+    },
+  };
+
   listCategories(): Category[] {
     return this.cats;
+  }
+
+  /** The public provider profile (reviews + display-safe metrics). Falls back to a sensible default. */
+  provider(id: string): ProviderProfile {
+    return this.profiles[id] ?? this.profiles['p1'];
   }
 
   /** Providers filtered by the discover mode segment. `both` returns everything. */

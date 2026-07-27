@@ -7,6 +7,11 @@ const routes: Routes = [
     loadChildren: () => import('./tabs/tabs.routes').then((m) => m.routes),
   },
   {
+    // The public provider profile is pushed over the tabs (reviews + metrics + request a quote).
+    path: 'provider/:id',
+    loadComponent: () => import('./customer/provider/provider.page').then((m) => m.ProviderPage),
+  },
+  {
     // The engagement workspace is pushed over the tabs (full-screen thread).
     path: 'workspace/:id',
     loadComponent: () => import('./customer/workspace/workspace.page').then((m) => m.WorkspacePage),

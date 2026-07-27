@@ -236,5 +236,22 @@
       "title": "Warranty expiring soon",
       "body": "Your warranty ends soon. Open a claim if anything needs fixing."
     }
+  },
+  "provider": {
+    "rating_count": "{{count}} reviews",
+    "unrated": "No ratings yet",
+    "building": "Building",
+    "new_note": "New provider — building a track record.",
+    "stat": {
+      "completed": "Jobs (90d)",
+      "on_time": "On-time",
+      "response": "Responds in"
+    },
+    "skills": "Skills",
+    "about": "About",
+    "reviews": "Reviews",
+    "no_reviews": "No reviews yet",
+    "member_since": "Member since {{year}}",
+    "request_quote": "Request a quote"
   }
 }

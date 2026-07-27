@@ -178,5 +178,18 @@
     "followup.review_reminder.title": "Still time to review",
     "followup.review_reminder.body": "Your review helps other customers choose well.",
     "followup.warranty_expiring.title": "Warranty expiring soon",
-    "followup.warranty_expiring.body": "Your warranty ends soon. Open a claim if anything needs fixing."
+    "followup.warranty_expiring.body": "Your warranty ends soon. Open a claim if anything needs fixing.",
+    "provider.rating_count": "{{count}} reviews",
+    "provider.unrated": "No ratings yet",
+    "provider.building": "Building",
+    "provider.new_note": "New provider — building a track record.",
+    "provider.stat.completed": "Jobs (90d)",
+    "provider.stat.on_time": "On-time",
+    "provider.stat.response": "Responds in",
+    "provider.skills": "Skills",
+    "provider.about": "About",
+    "provider.reviews": "Reviews",
+    "provider.no_reviews": "No reviews yet",
+    "provider.member_since": "Member since {{year}}",
+    "provider.request_quote": "Request a quote"
 }

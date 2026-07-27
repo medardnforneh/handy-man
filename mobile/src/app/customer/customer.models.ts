@@ -32,6 +32,43 @@ export interface Category {
   icon: string;
 }
 
+/** A published review (double-blind, P6-08) — the private note is never sent to the client. */
+export interface ProviderReview {
+  id: string;
+  authorInitials: string;
+  authorName: string;
+  rating: number;
+  comment: string;
+  date: string;
+  mode: EngagementMode;
+  accent: Accent;
+}
+
+/**
+ * The public provider profile — mirrors `GET /v1/providers/{party}/reviews` + `/metrics`.
+ * `ratingAvg` is the Bayesian-shrunk display rating (P6-09) and is null when unrated; `onTimeRate`
+ * is null below the sample-size floor (P6-12) so "100% (1 job)" is never shown.
+ */
+export interface ProviderProfile {
+  id: string;
+  name: string;
+  initials: string;
+  headline: string;
+  accent: Accent;
+  verified: boolean;
+  mode: EngagementMode;
+  city: string;
+  ratingAvg: number | null;
+  ratingCount: number;
+  jobsCompleted90d: number;
+  onTimeRate: number | null;
+  responseTime: string;
+  memberSince: string;
+  skills: string[];
+  about: string;
+  reviews: ProviderReview[];
+}
+
 export interface JobSummary {
   id: string;
   reference: string;
