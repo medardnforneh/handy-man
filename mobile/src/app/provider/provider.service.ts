@@ -12,6 +12,21 @@ export class ProviderService {
   readonly name = 'Atelier Nkeng';
   readonly initials = 'AN';
   readonly verified = true;
+  readonly rating = 4.9;
+  readonly verificationTier = 2; // 0 none · 1 phone · 2 ID · 3 ID + license (P6-03)
+  readonly skills = ['Plomberie', 'Fuites', 'Chauffe-eau', 'Sanitaires'];
+  readonly serviceArea = 'Douala — rayon de 15 km';
+
+  /** Whether the provider is currently accepting new jobs (a soft availability switch). */
+  private available = true;
+
+  isAvailable(): boolean {
+    return this.available;
+  }
+
+  setAvailable(value: boolean): void {
+    this.available = value;
+  }
 
   private readonly wallet: ProviderWallet = {
     availableMinor: 640000, pendingPayoutMinor: 150000, currency: 'XAF',

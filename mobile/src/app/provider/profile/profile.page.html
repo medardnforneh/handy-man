@@ -1,0 +1,99 @@
+<ion-header [translucent]="true" class="ion-no-border">
+  <ion-toolbar>
+    <ion-title>{{ 'pro.tab.profile' | translate }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <div class="page">
+    <!-- Identity -->
+    <div class="ident">
+      <div class="hm-avatar id-av accent-brand" aria-hidden="true">{{ initials }}</div>
+      <div class="id-name">
+        <b>{{ name }}</b>
+        @if (fullyVerified) {
+          <ion-icon class="verified" name="shield-checkmark" [attr.aria-label]="'discover.verified' | translate"></ion-icon>
+        }
+      </div>
+      <span class="rating"><ion-icon name="star" aria-hidden="true"></ion-icon>{{ rating }}</span>
+    </div>
+
+    <!-- Verification -->
+    <div class="hm-section-head"><h2>{{ 'pro.verification' | translate }}</h2></div>
+    @if (fullyVerified) {
+      <div class="verif hm-card ok">
+        <ion-icon name="shield-checkmark" aria-hidden="true"></ion-icon>
+        <div class="v-text">
+          <b>{{ 'pro.verified_title' | translate }}</b>
+          <small class="hm-muted">{{ 'pro.tier' | translate:{ n: verificationTier } }}</small>
+        </div>
+      </div>
+    } @else {
+      <div class="verif hm-card warn">
+        <ion-icon name="alert-circle" aria-hidden="true"></ion-icon>
+        <div class="v-text">
+          <b>{{ 'pro.verify_title' | translate }}</b>
+          <small class="hm-muted">{{ 'pro.verify_body' | translate }}</small>
+        </div>
+        <ion-button size="small" class="hm-tap">{{ 'pro.verify_cta' | translate }}</ion-button>
+      </div>
+    }
+
+    <!-- Availability -->
+    <ion-item class="avail hm-card" lines="none">
+      <ion-icon slot="start" name="power-outline" aria-hidden="true"></ion-icon>
+      <ion-label>
+        <b>{{ 'pro.availability' | translate }}</b>
+        <p class="hm-muted">{{ (available() ? 'pro.available_on' : 'pro.available_off') | translate }}</p>
+      </ion-label>
+      <ion-toggle slot="end" [checked]="available()" (ionChange)="toggleAvailability($any($event.detail).checked)"></ion-toggle>
+    </ion-item>
+
+    <!-- Skills -->
+    <div class="hm-section-head"><h2>{{ 'provider.skills' | translate }}</h2></div>
+    <div class="chips">
+      @for (skill of skills; track skill) {
+        <span class="chip">{{ skill }}</span>
+      }
+    </div>
+
+    <!-- Service area -->
+    <div class="hm-section-head"><h2>{{ 'pro.service_area' | translate }}</h2></div>
+    <p class="area hm-card"><ion-icon name="map-outline" aria-hidden="true"></ion-icon>{{ serviceArea }}</p>
+
+    <!-- Preferences -->
+    <div class="hm-section-head"><h2>{{ 'account.language' | translate }}</h2></div>
+    <ion-segment class="choice" [value]="locale()">
+      @for (code of supported; track code) {
+        <ion-segment-button class="hm-tap" [value]="code" (click)="setLocale(code)">
+          <ion-label>{{ (code === 'fr' ? 'language.french' : 'language.english') | translate }}</ion-label>
+        </ion-segment-button>
+      }
+    </ion-segment>
+
+    <div class="hm-section-head"><h2>{{ 'account.appearance' | translate }}</h2></div>
+    <ion-segment class="choice" [value]="theme()">
+      <ion-segment-button class="hm-tap" value="system" (click)="setTheme('system')">
+        <ion-label>{{ 'account.theme_system' | translate }}</ion-label>
+      </ion-segment-button>
+      <ion-segment-button class="hm-tap" value="light" (click)="setTheme('light')">
+        <ion-label>{{ 'account.theme_light' | translate }}</ion-label>
+      </ion-segment-button>
+      <ion-segment-button class="hm-tap" value="dark" (click)="setTheme('dark')">
+        <ion-label>{{ 'account.theme_dark' | translate }}</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+
+    <!-- Account actions -->
+    <ion-list class="actions hm-card" lines="full">
+      <ion-item button="true" detail="true" class="hm-tap" (click)="backToCustomer()">
+        <ion-icon slot="start" name="swap-horizontal-outline" aria-hidden="true"></ion-icon>
+        <ion-label>{{ 'pro.back_to_customer' | translate }}</ion-label>
+      </ion-item>
+      <ion-item button="true" detail="true" class="hm-tap" (click)="logout()">
+        <ion-icon slot="start" name="log-out-outline" aria-hidden="true"></ion-icon>
+        <ion-label>{{ 'auth.logout' | translate }}</ion-label>
+      </ion-item>
+    </ion-list>
+  </div>
+</ion-content>

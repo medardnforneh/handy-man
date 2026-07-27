@@ -22,6 +22,10 @@ export const routes: Routes = [
         path: 'earnings',
         loadComponent: () => import('../earnings/earnings.page').then((m) => m.ProviderEarningsPage),
       },
+      {
+        path: 'profile',
+        loadComponent: () => import('../profile/profile.page').then((m) => m.ProviderProfilePage),
+      },
       { path: '', redirectTo: 'home', pathMatch: 'full' },
     ],
   },

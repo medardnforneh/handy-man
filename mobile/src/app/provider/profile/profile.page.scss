@@ -1,0 +1,128 @@
+// Shared primitives (.hm-card, .hm-avatar, .hm-section-head…) load globally — see angular.json.
+// SEMANTIC TOKENS ONLY — never a literal colour (doc 08; enforced by `npm run lint:colors`).
+
+ion-toolbar {
+  --background: var(--hm-color-surface-base);
+  --border-width: 0;
+}
+
+ion-title { font-weight: 800; letter-spacing: -0.02em; }
+
+.page {
+  padding: var(--hm-space-sm) var(--hm-space-md) var(--hm-space-xl);
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+// ---- Identity ----------------------------------------------------------
+.ident {
+  display: grid;
+  place-items: center;
+  text-align: center;
+  gap: 0.2rem;
+  padding: var(--hm-space-md) 0 var(--hm-space-sm);
+
+  .id-av { width: 72px; height: 72px; border-radius: 50%; font-size: 1.4rem; margin-bottom: 0.3rem; }
+
+  .id-name {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+
+    b { font-size: 1.2rem; font-weight: 800; letter-spacing: -0.02em; }
+    .verified { color: var(--hm-color-brand-primary); font-size: 1rem; }
+  }
+
+  .rating {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+    color: var(--hm-color-status-warning);
+    font-weight: 700;
+    font-size: 0.9rem;
+  }
+}
+
+// ---- Verification ------------------------------------------------------
+.verif {
+  display: flex;
+  align-items: center;
+  gap: var(--hm-space-sm);
+  padding: var(--hm-space-md);
+
+  ion-icon { font-size: 1.6rem; flex: none; }
+  .v-text { flex: 1; min-width: 0; b { font-size: 0.92rem; } small { display: block; font-size: 0.78rem; margin-top: 0.1rem; } }
+
+  &.ok ion-icon { color: var(--hm-color-status-success); }
+  &.warn ion-icon { color: var(--hm-color-status-warning); }
+
+  ion-button { --border-radius: var(--hm-radius-md); font-weight: 700; flex: none; }
+}
+
+// ---- Availability ------------------------------------------------------
+.avail {
+  --background: var(--hm-color-surface-raised);
+  --padding-start: var(--hm-space-md);
+  --inner-padding-end: var(--hm-space-md);
+  margin-top: var(--hm-space-md);
+  border-radius: var(--hm-radius-lg);
+
+  ion-icon { color: var(--hm-color-brand-primary); font-size: 1.3rem; }
+  b { font-size: 0.92rem; }
+  p { font-size: 0.78rem; margin: 0.1rem 0 0; }
+  ion-toggle { --track-background-checked: var(--hm-color-brand-primary); }
+}
+
+// ---- Skills ------------------------------------------------------------
+.chips { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+
+.chip {
+  padding: 0.3rem 0.7rem;
+  border-radius: var(--hm-radius-pill);
+  background: var(--hm-color-surface-sunken);
+  border: 1px solid var(--hm-color-border-subtle);
+  color: var(--hm-color-text-primary);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+// ---- Service area ------------------------------------------------------
+.area {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  padding: var(--hm-space-md);
+  font-size: 0.88rem;
+
+  ion-icon { color: var(--hm-color-brand-primary); font-size: 1.1rem; flex: none; }
+}
+
+// ---- Preferences segments ----------------------------------------------
+.choice {
+  --background: var(--hm-color-surface-sunken);
+  border-radius: var(--hm-radius-md);
+
+  ion-segment-button {
+    --color: var(--hm-color-text-muted);
+    --color-checked: var(--hm-color-text-primary);
+    --indicator-color: var(--hm-color-surface-raised);
+    --border-radius: var(--hm-radius-sm);
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: none;
+    min-height: 42px;
+  }
+}
+
+// ---- Account actions ---------------------------------------------------
+.actions {
+  margin-top: var(--hm-space-lg);
+  overflow: hidden;
+
+  ion-item {
+    --background: var(--hm-color-surface-raised);
+    --color: var(--hm-color-text-primary);
+    ion-icon { color: var(--hm-color-text-muted); font-size: 1.2rem; }
+  }
+}

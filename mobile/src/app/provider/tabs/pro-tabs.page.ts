@@ -29,6 +29,7 @@ export class ProTabsPage {
     { tab: 'opportunities', icon: 'briefcase-outline', label: 'pro.tab.opportunities' },
     { tab: 'work', icon: 'construct-outline', label: 'pro.tab.work' },
     { tab: 'earnings', icon: 'wallet-outline', label: 'pro.tab.earnings' },
+    { tab: 'profile', icon: 'person-outline', label: 'pro.tab.profile' },
   ];
 
   backToCustomer(): void {
