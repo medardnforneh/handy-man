@@ -121,4 +121,11 @@ ion-tab-button ion-label {
   ion-tab-bar {
     display: none;
   }
+
+  // ion-tabs is absolutely positioned by default, which makes it cover the rail inside the
+  // split pane. As the split pane's main pane it must flow BESIDE the rail — position it relative
+  // so its `.split-pane-main` flex sizing applies instead of filling the whole pane.
+  ion-tabs {
+    position: relative;
+  }
 }
