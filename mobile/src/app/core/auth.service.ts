@@ -1,5 +1,6 @@
 import { Injectable, signal } from '@angular/core';
 import { Preferences } from '@capacitor/preferences';
+import { tokenStore } from '../api/token-store';
 
 const AUTH_KEY = 'authed';
 
@@ -48,6 +49,7 @@ export class AuthService {
   async logout(): Promise<void> {
     this.authed.set(false);
     this.pendingPhone = '';
+    tokenStore.set(null); // drop the bearer so no stale token rides the next request
     await Preferences.set({ key: AUTH_KEY, value: '0' });
   }
 

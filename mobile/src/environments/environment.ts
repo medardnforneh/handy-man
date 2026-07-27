@@ -3,7 +3,10 @@
 // The list of file replacements can be found in `angular.json`.
 
 export const environment = {
-  production: false
+  production: false,
+  // Dev: the app (served on another port) talks to the Laravel API on :8000.
+  apiBaseUrl: 'http://127.0.0.1:8000/api/v1',
+  appVersion: '1.0.0',
 };
 
 /*
