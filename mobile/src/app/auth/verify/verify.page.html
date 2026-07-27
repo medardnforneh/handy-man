@@ -14,6 +14,7 @@
     <!-- One hidden input drives six cells; tapping the row focuses it. -->
     <label class="code" [class.err]="error()">
       <input
+        #capture
         class="capture"
         type="text"
         inputmode="numeric"
@@ -22,7 +23,6 @@
         [value]="code()"
         (input)="onCode($any($event.target).value)"
         [attr.aria-label]="'auth.otp_prompt' | translate"
-        autofocus
       />
       @for (i of cells; track i) {
         <span class="cell" [class.filled]="charAt(i)" [class.active]="code().length === i">{{ charAt(i) }}</span>

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
+import { Component, DestroyRef, ElementRef, ViewChild, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { TranslatePipe } from '@ngx-translate/core';
@@ -31,12 +31,19 @@ export class VerifyPage {
   readonly cells = [0, 1, 2, 3, 4, 5];
   readonly canVerify = computed(() => this.code().length === 6);
 
+  @ViewChild('capture') private captureRef?: ElementRef<HTMLInputElement>;
+
   constructor() {
     if (this.phone === '') {
       void this.router.navigate(['/welcome']);
       return;
     }
     this.startResendTimer(inject(DestroyRef));
+  }
+
+  /** Focus the code field once the page transition has settled, so the user can type immediately. */
+  ionViewDidEnter(): void {
+    this.captureRef?.nativeElement.focus();
   }
 
   onCode(value: string | null | undefined): void {
