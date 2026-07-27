@@ -323,6 +323,21 @@
     "message_ph": "Un mot au client…",
     "send_quote": "Envoyer le devis",
     "quote_sent": "Devis envoyé",
-    "lead_unavailable": "Cette opportunité n’est plus disponible."
+    "lead_unavailable": "Cette opportunité n’est plus disponible.",
+    "tab": {
+      "home": "Accueil",
+      "opportunities": "Offres",
+      "work": "Travaux",
+      "earnings": "Revenus"
+    },
+    "back_to_customer": "Retour client",
+    "no_work": "Aucun travail en cours",
+    "payout_history": "Historique des retraits",
+    "no_payouts": "Aucun retrait"
+  },
+  "payout": {
+    "paid": "Versé",
+    "pending": "En attente",
+    "failed": "Échoué"
   }
 }

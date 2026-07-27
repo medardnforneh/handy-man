@@ -37,13 +37,14 @@ const routes: Routes = [
     loadComponent: () => import('./customer/job-detail/job-detail.page').then((m) => m.JobDetailPage),
   },
   {
-    // Provider section ("Offer services"): dashboard + lead/quote composer.
+    // Provider section ("Offer services") — its own tab shell (home / opportunities / work / earnings).
     path: 'pro',
     canActivate: [authGuard],
-    loadComponent: () => import('./provider/home/home.page').then((m) => m.ProviderHomePage),
+    loadChildren: () => import('./provider/tabs/pro-tabs.routes').then((m) => m.routes),
   },
   {
-    path: 'pro/lead/:id',
+    // Lead detail + quote composer, pushed over the provider tabs.
+    path: 'opportunity/:id',
     canActivate: [authGuard],
     loadComponent: () => import('./provider/lead/lead.page').then((m) => m.ProviderLeadPage),
   },

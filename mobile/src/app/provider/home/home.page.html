@@ -1,8 +1,5 @@
 <ion-header [translucent]="true" class="ion-no-border">
   <ion-toolbar>
-    <ion-buttons slot="start">
-      <ion-back-button defaultHref="/tabs/account" [text]="''"></ion-back-button>
-    </ion-buttons>
     <ion-title>{{ 'pro.title' | translate }}</ion-title>
     <ion-buttons slot="end">
       <div class="hm-avatar top-av accent-brand" aria-hidden="true">{{ initials }}</div>
@@ -58,9 +55,9 @@
     <!-- Opportunities -->
     <div class="hm-section-head">
       <h2>{{ 'pro.opportunities' | translate }}</h2>
-      <span class="count">{{ leads().length }}</span>
+      <a (click)="seeOpportunities()">{{ 'discover.see_all' | translate }} ({{ leadCount }})</a>
     </div>
-    @for (lead of leads(); track lead.id) {
+    @for (lead of leads; track lead.id) {
       <button class="lead hm-card hm-tap" type="button" (click)="openLead(lead)">
         <div [class]="'hm-avatar lead-av accent-' + lead.accent" aria-hidden="true">
           <ion-icon name="briefcase" aria-hidden="true"></ion-icon>
@@ -87,7 +84,10 @@
     }
 
     <!-- Active work -->
-    <div class="hm-section-head"><h2>{{ 'pro.active_work' | translate }}</h2></div>
+    <div class="hm-section-head">
+      <h2>{{ 'pro.active_work' | translate }}</h2>
+      <a (click)="seeWork()">{{ 'discover.see_all' | translate }}</a>
+    </div>
     @for (work of active; track work.id) {
       <button class="work hm-card hm-tap" type="button" (click)="openWork(work)">
         <div [class]="'hm-avatar work-av accent-' + work.accent" aria-hidden="true">{{ work.customerName.charAt(0) }}</div>

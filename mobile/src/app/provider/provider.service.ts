@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { ActiveWork, Lead, ProviderStats, ProviderWallet } from './provider.models';
+import { ActiveWork, Lead, Payout, ProviderStats, ProviderWallet } from './provider.models';
 
 /**
  * Provider-section data. Fixture-driven today (the shapes match the API), so swapping in the
@@ -43,8 +43,19 @@ export class ProviderService {
     { id: 'a3', reference: 'JOB-2HW6P', title: 'Étagères sur mesure', customerName: 'Paul T.', status: 'work_submitted', mode: 'onsite', accent: 'warning' },
   ];
 
+  private readonly payouts: Payout[] = [
+    { id: 'po1', reference: 'PO-4KX92', amountMinor: 150000, status: 'pending', date: 'Aujourd’hui' },
+    { id: 'po2', reference: 'PO-9TA31', amountMinor: 425000, status: 'paid', date: '18 juil.' },
+    { id: 'po3', reference: 'PO-2MB77', amountMinor: 300000, status: 'paid', date: '9 juil.' },
+    { id: 'po4', reference: 'PO-6RC08', amountMinor: 180000, status: 'failed', date: '2 juil.' },
+  ];
+
   getWallet(): ProviderWallet {
     return this.wallet;
+  }
+
+  listPayouts(): Payout[] {
+    return this.payouts;
   }
 
   getStats(): ProviderStats {

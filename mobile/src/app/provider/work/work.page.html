@@ -1,0 +1,25 @@
+<ion-header [translucent]="true" class="ion-no-border">
+  <ion-toolbar>
+    <ion-title>{{ 'pro.active_work' | translate }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <div class="page">
+    @for (work of active; track work.id) {
+      <button class="work hm-card hm-tap" type="button" (click)="open(work)">
+        <div [class]="'hm-avatar work-av accent-' + work.accent" aria-hidden="true">{{ work.customerName.charAt(0) }}</div>
+        <div class="work-info">
+          <b>{{ work.title }}</b>
+          <small class="hm-muted">{{ work.reference }} · {{ work.customerName }}</small>
+        </div>
+        <span [class]="'hm-pill ' + tone(work.status)">{{ 'status.' + work.status | translate }}</span>
+      </button>
+    } @empty {
+      <div class="empty">
+        <ion-icon name="construct-outline" aria-hidden="true"></ion-icon>
+        <p class="hm-empty">{{ 'pro.no_work' | translate }}</p>
+      </div>
+    }
+  </div>
+</ion-content>

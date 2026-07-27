@@ -254,5 +254,16 @@
   "pro.message_ph": "Un mot au client…",
   "pro.send_quote": "Envoyer le devis",
   "pro.quote_sent": "Devis envoyé",
-  "pro.lead_unavailable": "Cette opportunité n’est plus disponible."
+  "pro.lead_unavailable": "Cette opportunité n’est plus disponible.",
+  "pro.tab.home": "Accueil",
+  "pro.tab.opportunities": "Offres",
+  "pro.tab.work": "Travaux",
+  "pro.tab.earnings": "Revenus",
+  "pro.back_to_customer": "Retour client",
+  "pro.no_work": "Aucun travail en cours",
+  "pro.payout_history": "Historique des retraits",
+  "pro.no_payouts": "Aucun retrait",
+  "payout.paid": "Versé",
+  "payout.pending": "En attente",
+  "payout.failed": "Échoué"
 }

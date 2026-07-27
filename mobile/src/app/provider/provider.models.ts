@@ -51,3 +51,14 @@ export interface QuoteLine {
   label: string;
   amountMinor: number;
 }
+
+export type PayoutStatus = 'paid' | 'pending' | 'failed';
+
+/** A settlement to the provider's mobile-money account (P3-08). */
+export interface Payout {
+  id: string;
+  reference: string;
+  amountMinor: number;
+  status: PayoutStatus;
+  date: string;
+}

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { IonicModule, ToastController } from '@ionic/angular';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
@@ -30,8 +30,9 @@ export class ProviderHomePage {
   readonly verified = this.provider.verified;
   readonly wallet = this.provider.getWallet();
   readonly stats = this.provider.getStats();
-  readonly leads = signal<Lead[]>(this.provider.listLeads());
-  readonly active = this.provider.listActive();
+  readonly leads = this.provider.listLeads().slice(0, 2);
+  readonly leadCount = this.provider.listLeads().length;
+  readonly active = this.provider.listActive().slice(0, 2);
 
   readonly hasOnTime = computed(() => this.stats.onTimeRate !== null);
 
@@ -49,11 +50,19 @@ export class ProviderHomePage {
   }
 
   openLead(lead: Lead): void {
-    void this.router.navigate(['/pro/lead', lead.id]);
+    void this.router.navigate(['/opportunity', lead.id]);
   }
 
   openWork(work: ActiveWork): void {
     void this.router.navigate(['/workspace', work.id]);
+  }
+
+  seeOpportunities(): void {
+    void this.router.navigate(['/pro/opportunities']);
+  }
+
+  seeWork(): void {
+    void this.router.navigate(['/pro/work']);
   }
 
   async withdraw(): Promise<void> {

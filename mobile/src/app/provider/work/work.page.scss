@@ -1,0 +1,40 @@
+// Shared primitives (.hm-card, .hm-pill, .hm-avatar, .hm-empty…) load globally — see angular.json.
+// SEMANTIC TOKENS ONLY — never a literal colour (doc 08; enforced by `npm run lint:colors`).
+
+ion-toolbar {
+  --background: var(--hm-color-surface-base);
+  --border-width: 0;
+}
+
+ion-title { font-weight: 800; letter-spacing: -0.02em; }
+
+.page {
+  padding: var(--hm-space-sm) var(--hm-space-md) var(--hm-space-xl);
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.work {
+  display: flex;
+  align-items: center;
+  gap: var(--hm-space-sm);
+  width: 100%;
+  padding: var(--hm-space-sm) var(--hm-space-md);
+  margin-bottom: var(--hm-space-sm);
+  text-align: start;
+  color: inherit;
+  cursor: pointer;
+
+  .work-av { width: 40px; height: 40px; border-radius: 50%; font-size: 0.85rem; text-transform: uppercase; }
+  .work-info { flex: 1; min-width: 0; b { font-size: 0.9rem; } small { display: block; font-size: 0.76rem; } }
+  .hm-pill { flex: none; }
+}
+
+.empty {
+  display: grid;
+  place-items: center;
+  gap: var(--hm-space-sm);
+  padding-top: var(--hm-space-xl);
+
+  ion-icon { font-size: 2.5rem; color: var(--hm-color-text-muted); opacity: 0.5; }
+}

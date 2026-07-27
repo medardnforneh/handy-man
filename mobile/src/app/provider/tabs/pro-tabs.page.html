@@ -1,0 +1,53 @@
+<!-- One shell, two shapes: the split pane promotes the menu to a permanent side rail from `md` up
+     (see pro-tabs.page.scss, which hides the tab bar at the same breakpoint); below that the bottom
+     tab bar is the navigation. Mirrors the customer shell. -->
+<ion-split-pane contentId="pro-tabs-content" when="(min-width: 768px)">
+  <ion-menu contentId="pro-tabs-content" type="overlay" [swipeGesture]="false">
+    <ion-content class="hm-rail">
+      <div class="brand">
+        <span class="mark" aria-hidden="true">
+          <ion-icon name="hammer-outline"></ion-icon>
+        </span>
+        <span class="brand-text">
+          <strong>{{ 'app.name' | translate }}</strong>
+          <small>{{ 'pro.title' | translate }}</small>
+        </span>
+      </div>
+
+      <p class="rail-label">{{ 'pro.title' | translate }}</p>
+
+      <ion-list lines="none">
+        @for (item of items; track item.tab) {
+          <ion-item
+            class="hm-tap"
+            [routerLink]="['/pro', item.tab]"
+            routerLinkActive="active"
+            [detail]="false"
+            button
+          >
+            <ion-icon slot="start" [name]="item.icon" aria-hidden="true"></ion-icon>
+            <ion-label>{{ item.label | translate }}</ion-label>
+          </ion-item>
+        }
+      </ion-list>
+
+      <ion-list lines="none" class="rail-foot">
+        <ion-item class="hm-tap" [detail]="false" button (click)="backToCustomer()">
+          <ion-icon slot="start" name="swap-horizontal-outline" aria-hidden="true"></ion-icon>
+          <ion-label>{{ 'pro.back_to_customer' | translate }}</ion-label>
+        </ion-item>
+      </ion-list>
+    </ion-content>
+  </ion-menu>
+
+  <ion-tabs id="pro-tabs-content">
+    <ion-tab-bar slot="bottom">
+      @for (item of items; track item.tab) {
+        <ion-tab-button [tab]="item.tab" class="hm-tap">
+          <ion-icon [name]="item.icon" aria-hidden="true"></ion-icon>
+          <ion-label>{{ item.label | translate }}</ion-label>
+        </ion-tab-button>
+      }
+    </ion-tab-bar>
+  </ion-tabs>
+</ion-split-pane>

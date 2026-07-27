@@ -323,6 +323,21 @@
     "message_ph": "A note to the customer…",
     "send_quote": "Send quote",
     "quote_sent": "Quote sent",
-    "lead_unavailable": "This opportunity is no longer available."
+    "lead_unavailable": "This opportunity is no longer available.",
+    "tab": {
+      "home": "Home",
+      "opportunities": "Leads",
+      "work": "Work",
+      "earnings": "Earnings"
+    },
+    "back_to_customer": "Back to customer",
+    "no_work": "No active work",
+    "payout_history": "Payout history",
+    "no_payouts": "No payouts yet"
+  },
+  "payout": {
+    "paid": "Paid",
+    "pending": "Pending",
+    "failed": "Failed"
   }
 }

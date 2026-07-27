@@ -57,6 +57,6 @@ export class ProviderLeadPage {
       duration: 2000, position: 'top', color: 'success',
     });
     await toast.present();
-    void this.router.navigate(['/pro']);
+    void this.router.navigate(['/pro/opportunities']);
   }
 }

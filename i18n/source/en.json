@@ -254,5 +254,16 @@
     "pro.message_ph": "A note to the customer…",
     "pro.send_quote": "Send quote",
     "pro.quote_sent": "Quote sent",
-    "pro.lead_unavailable": "This opportunity is no longer available."
+    "pro.lead_unavailable": "This opportunity is no longer available.",
+    "pro.tab.home": "Home",
+    "pro.tab.opportunities": "Leads",
+    "pro.tab.work": "Work",
+    "pro.tab.earnings": "Earnings",
+    "pro.back_to_customer": "Back to customer",
+    "pro.no_work": "No active work",
+    "pro.payout_history": "Payout history",
+    "pro.no_payouts": "No payouts yet",
+    "payout.paid": "Paid",
+    "payout.pending": "Pending",
+    "payout.failed": "Failed"
 }

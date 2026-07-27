@@ -1,0 +1,79 @@
+// Shared primitives (.hm-card, .hm-pill, .hm-section-head, .hm-empty…) load globally — see angular.json.
+// SEMANTIC TOKENS ONLY — never a literal colour (doc 08; enforced by `npm run lint:colors`).
+
+ion-toolbar {
+  --background: var(--hm-color-surface-base);
+  --border-width: 0;
+}
+
+ion-title { font-weight: 800; letter-spacing: -0.02em; }
+
+.page {
+  padding: var(--hm-space-sm) var(--hm-space-md) var(--hm-space-xl);
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+// ---- Wallet ------------------------------------------------------------
+.wallet {
+  padding: var(--hm-space-lg) var(--hm-space-md);
+  border-radius: var(--hm-radius-lg);
+  background: var(--hm-color-brand-primary);
+  color: var(--hm-color-brand-onPrimary);
+  margin-bottom: var(--hm-space-md);
+
+  .wl { font-size: 0.8rem; font-weight: 600; opacity: 0.85; }
+
+  .bal {
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    margin-top: 0.1rem;
+
+    small { font-size: 0.85rem; font-weight: 600; opacity: 0.85; margin-inline-start: 0.25rem; }
+  }
+
+  .pending { display: block; font-size: 0.78rem; opacity: 0.85; margin-top: 0.2rem; }
+
+  .withdraw {
+    margin-top: var(--hm-space-md);
+    --background: var(--hm-color-brand-onPrimary);
+    --color: var(--hm-color-brand-primary);
+    --border-radius: var(--hm-radius-md);
+    font-weight: 700;
+  }
+}
+
+// ---- Payout rows -------------------------------------------------------
+.payout {
+  display: flex;
+  align-items: center;
+  gap: var(--hm-space-sm);
+  padding: var(--hm-space-sm) var(--hm-space-md);
+  margin-bottom: var(--hm-space-sm);
+
+  .pic {
+    display: grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    flex: none;
+    border-radius: 50%;
+    font-size: 1.1rem;
+
+    &.tone-success { color: var(--hm-color-status-success); background: color-mix(in srgb, var(--hm-color-status-success) 14%, transparent); }
+    &.tone-warning { color: var(--hm-color-status-warning); background: color-mix(in srgb, var(--hm-color-status-warning) 14%, transparent); }
+    &.tone-danger { color: var(--hm-color-status-danger); background: color-mix(in srgb, var(--hm-color-status-danger) 14%, transparent); }
+  }
+
+  .p-info {
+    flex: 1;
+    min-width: 0;
+
+    b { font-size: 0.95rem; font-variant-numeric: tabular-nums; }
+    small.hm-muted { display: block; font-size: 0.74rem; }
+    b small { color: var(--hm-color-text-muted); font-weight: 600; font-size: 0.7rem; margin-inline-start: 0.15rem; }
+  }
+
+  .hm-pill { flex: none; }
+}

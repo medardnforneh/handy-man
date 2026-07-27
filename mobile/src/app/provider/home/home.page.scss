@@ -23,6 +23,8 @@ ion-title { font-size: 0.95rem; font-weight: 700; }
   margin: 0 auto;
 }
 
+.hm-section-head a { cursor: pointer; }
+
 .hello {
   margin: var(--hm-space-sm) 0 var(--hm-space-md);
 

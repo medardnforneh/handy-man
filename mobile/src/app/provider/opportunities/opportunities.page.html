@@ -1,0 +1,38 @@
+<ion-header [translucent]="true" class="ion-no-border">
+  <ion-toolbar>
+    <ion-title>{{ 'pro.opportunities' | translate }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <div class="page">
+    @for (lead of leads(); track lead.id) {
+      <button class="lead hm-card hm-tap" type="button" (click)="openLead(lead)">
+        <div [class]="'hm-avatar lead-av accent-' + lead.accent" aria-hidden="true">
+          <ion-icon name="briefcase" aria-hidden="true"></ion-icon>
+        </div>
+        <div class="lead-info">
+          <b>{{ lead.title }}</b>
+          <div class="lead-meta hm-muted">
+            <span>{{ lead.skill }}</span>
+            <span class="dot" aria-hidden="true"></span>
+            <span><ion-icon name="location-outline" aria-hidden="true"></ion-icon>{{ lead.area }}</span>
+          </div>
+          <div class="lead-foot">
+            @if (lead.budgetMinor) {
+              <span class="budget">{{ lead.budgetMinor | money }} <small>{{ 'money.currency' | translate }}</small></span>
+            } @else {
+              <span class="hm-pill tone-neutral">{{ 'pro.quote_requested' | translate }}</span>
+            }
+            <span class="ago hm-muted">{{ lead.postedAgo }}</span>
+          </div>
+        </div>
+      </button>
+    } @empty {
+      <div class="empty">
+        <ion-icon name="briefcase-outline" aria-hidden="true"></ion-icon>
+        <p class="hm-empty">{{ 'pro.no_opportunities' | translate }}</p>
+      </div>
+    }
+  </div>
+</ion-content>
