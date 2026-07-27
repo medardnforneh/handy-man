@@ -20,12 +20,19 @@ import { AppRoutingModule } from './app-routing.module';
     // source (i18n/source/*.json) by `npm run i18n:build`. EN is the default and the fallback,
     // matching the backend's APP_LOCALE; the LocaleService switches at runtime once the device
     // locale is detected or the user picks. enforceLoading makes a missing file fail loudly.
-    provideTranslateHttpLoader({
-      prefix: './assets/i18n/',
-      suffix: '.json',
-      enforceLoading: true,
+    //
+    // The HTTP loader MUST be passed into provideTranslateService via `loader`: called on its own,
+    // provideTranslateService registers a no-op loader for the TranslateLoader token, which (being
+    // declared last) would override provideTranslateHttpLoader and leave every key untranslated.
+    provideTranslateService({
+      loader: provideTranslateHttpLoader({
+        prefix: './assets/i18n/',
+        suffix: '.json',
+        enforceLoading: true,
+      }),
+      fallbackLang: 'en',
+      lang: 'en',
     }),
-    provideTranslateService({ fallbackLang: 'en', lang: 'en' }),
   ],
   bootstrap: [AppComponent],
 })
