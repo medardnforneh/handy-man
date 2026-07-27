@@ -339,5 +339,28 @@
     "paid": "Versé",
     "pending": "En attente",
     "failed": "Échoué"
+  },
+  "work": {
+    "customer": "Client",
+    "arrival": "Arrivée",
+    "check_in": "Pointer l’arrivée",
+    "check_in_hint": "Partage votre position et l’heure avec le client.",
+    "checked_in": "Arrivée pointée",
+    "check_out": "Pointer le départ",
+    "update_status": "Mettre à jour le statut",
+    "status": {
+      "engaged": "Pas commencé",
+      "on_the_way": "En route",
+      "arrived": "Arrivé",
+      "started": "Commencé",
+      "paused": "En pause",
+      "completed": "Terminé"
+    },
+    "report": "Rapport",
+    "submit_report": "Soumettre le rapport",
+    "report_hint": "Photos avant/après et un résumé du travail.",
+    "report_submitted": "Rapport soumis",
+    "checked_in_toast": "Arrivée pointée",
+    "report_toast": "Rapport soumis"
   }
 }

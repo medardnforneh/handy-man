@@ -1,0 +1,143 @@
+// Shared primitives (.hm-card, .hm-pill, .hm-avatar, .hm-section-head…) load globally — see angular.json.
+// SEMANTIC TOKENS ONLY — never a literal colour (doc 08; enforced by `npm run lint:colors`).
+
+ion-toolbar {
+  --background: var(--hm-color-surface-base);
+  --border-width: 0;
+}
+
+ion-title { font-size: 0.95rem; font-weight: 700; }
+
+.page {
+  padding: 0 var(--hm-space-md) var(--hm-space-xl);
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--hm-space-sm);
+  margin: var(--hm-space-sm) 0 var(--hm-space-md);
+
+  h1 { margin: 0; font-size: 1.3rem; font-weight: 800; letter-spacing: -0.02em; text-wrap: balance; }
+  .hm-pill { flex: none; margin-top: 0.2rem; }
+}
+
+// ---- Customer ----------------------------------------------------------
+.cust {
+  display: flex;
+  align-items: center;
+  gap: var(--hm-space-sm);
+  padding: var(--hm-space-sm) var(--hm-space-md);
+  margin-bottom: var(--hm-space-md);
+
+  .cust-av { width: 44px; height: 44px; border-radius: 50%; font-size: 0.85rem; text-transform: uppercase; }
+  .cust-info { flex: 1; min-width: 0; b { font-size: 0.95rem; } small { display: block; font-size: 0.76rem; } }
+}
+
+// ---- Location ----------------------------------------------------------
+.loc {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  padding: var(--hm-space-md);
+  font-size: 0.88rem;
+
+  ion-icon { color: var(--hm-color-brand-primary); font-size: 1.1rem; flex: none; }
+
+  &.remote { border: 1px dashed var(--hm-color-border-strong); border-radius: var(--hm-radius-md); }
+}
+
+// ---- Check-in ----------------------------------------------------------
+.checkin {
+  --border-radius: var(--hm-radius-md);
+  font-weight: 700;
+  margin: 0;
+}
+
+.hint {
+  margin: var(--hm-space-sm) 0 0;
+  font-size: 0.78rem;
+}
+
+.checked {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: var(--hm-space-md);
+
+  ion-icon { color: var(--hm-color-status-success); font-size: 1.4rem; flex: none; }
+  .c-text { font-weight: 700; font-size: 0.9rem; }
+
+  .link {
+    margin-inline-start: auto;
+    background: none;
+    border: 0;
+    padding: 0.3rem 0.5rem;
+    color: var(--hm-color-brand-primary);
+    font-weight: 700;
+    font-size: 0.82rem;
+    cursor: pointer;
+  }
+}
+
+// ---- Status chips ------------------------------------------------------
+.statuses {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.schip {
+  padding: 0.5rem 0.9rem;
+  border-radius: var(--hm-radius-pill);
+  background: var(--hm-color-surface-raised);
+  border: 1.5px solid var(--hm-color-border-subtle);
+  color: var(--hm-color-text-muted);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.12s ease, color 0.12s ease, background 0.12s ease;
+
+  &.active {
+    border-color: var(--hm-color-brand-primary);
+    background: color-mix(in srgb, var(--hm-color-brand-primary) 12%, transparent);
+    color: var(--hm-color-brand-primary);
+  }
+}
+
+// ---- Report ------------------------------------------------------------
+.report {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  width: 100%;
+  padding: var(--hm-space-md);
+  background: none;
+  border: 1px dashed var(--hm-color-border-strong);
+  border-radius: var(--hm-radius-md);
+  color: var(--hm-color-text-muted);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+
+  ion-icon { font-size: 1.25rem; color: var(--hm-color-brand-primary); }
+}
+
+// ---- Footer CTA --------------------------------------------------------
+ion-footer {
+  background: var(--hm-color-surface-base);
+
+  .cta {
+    padding: var(--hm-space-sm) var(--hm-space-md);
+    max-width: 720px;
+    margin: 0 auto;
+    border-top: 1px solid var(--hm-color-border-subtle);
+  }
+
+  ion-button { --border-radius: var(--hm-radius-md); font-weight: 700; margin: 0; }
+}

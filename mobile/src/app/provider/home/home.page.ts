@@ -54,7 +54,7 @@ export class ProviderHomePage {
   }
 
   openWork(work: ActiveWork): void {
-    void this.router.navigate(['/workspace', work.id]);
+    void this.router.navigate(['/work', work.id]);
   }
 
   seeOpportunities(): void {

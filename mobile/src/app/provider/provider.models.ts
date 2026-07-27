@@ -45,6 +45,24 @@ export interface ActiveWork {
   accent: Accent;
 }
 
+/** The provider's live status on a job (mirrors ProviderStatus / P5-06; `arrived` set by check-in). */
+export type WorkStatus = 'engaged' | 'on_the_way' | 'arrived' | 'started' | 'paused' | 'completed';
+
+/** The provider's execution view of one job: check-in, status, and report submission (P5-03/04/06). */
+export interface WorkDetail {
+  id: string;
+  reference: string;
+  title: string;
+  customerName: string;
+  customerInitials: string;
+  mode: EngagementMode;
+  addressLine: string | null;
+  accent: Accent;
+  checkedIn: boolean;
+  status: WorkStatus;
+  reportSubmitted: boolean;
+}
+
 /** A line in the quote the provider composes for a lead. */
 export interface QuoteLine {
   id: string;

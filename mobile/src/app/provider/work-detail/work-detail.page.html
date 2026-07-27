@@ -1,0 +1,91 @@
+<ion-header [translucent]="true" class="ion-no-border">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/pro/work" [text]="''"></ion-back-button>
+    </ion-buttons>
+    <ion-title>{{ work().reference }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <div class="page">
+    <!-- Title + current status -->
+    <div class="head">
+      <h1>{{ work().title }}</h1>
+      <span class="hm-pill tone-info">{{ 'work.status.' + work().status | translate }}</span>
+    </div>
+
+    <!-- Customer -->
+    <div class="cust hm-card">
+      <div [class]="'hm-avatar cust-av accent-' + work().accent" aria-hidden="true">{{ work().customerInitials }}</div>
+      <div class="cust-info">
+        <b>{{ work().customerName }}</b>
+        <small class="hm-muted">{{ 'work.customer' | translate }}</small>
+      </div>
+    </div>
+
+    <!-- Location -->
+    <div class="hm-section-head"><h2>{{ 'jobdetail.location' | translate }}</h2></div>
+    @if (work().mode === 'remote') {
+      <p class="loc remote hm-muted"><ion-icon name="globe-outline" aria-hidden="true"></ion-icon>{{ 'jobdetail.remote' | translate }}</p>
+    } @else {
+      <p class="loc hm-card"><ion-icon name="location-outline" aria-hidden="true"></ion-icon>{{ work().addressLine }}</p>
+    }
+
+    <!-- Check-in (on-site/hybrid only) -->
+    @if (canCheckIn()) {
+      <div class="hm-section-head"><h2>{{ 'work.arrival' | translate }}</h2></div>
+      @if (!work().checkedIn) {
+        <ion-button expand="block" class="checkin hm-tap" (click)="checkIn()">
+          <ion-icon name="location" slot="start" aria-hidden="true"></ion-icon>
+          {{ 'work.check_in' | translate }}
+        </ion-button>
+        <p class="hint hm-muted">{{ 'work.check_in_hint' | translate }}</p>
+      } @else {
+        <div class="checked hm-card">
+          <ion-icon name="checkmark-circle" aria-hidden="true"></ion-icon>
+          <span class="c-text">{{ 'work.checked_in' | translate }}</span>
+          <button type="button" class="link hm-tap" (click)="checkOut()">{{ 'work.check_out' | translate }}</button>
+        </div>
+      }
+    }
+
+    <!-- Status -->
+    <div class="hm-section-head"><h2>{{ 'work.update_status' | translate }}</h2></div>
+    <div class="statuses">
+      @for (s of statuses; track s) {
+        <button
+          type="button"
+          class="schip hm-tap"
+          [class.active]="work().status === s"
+          [attr.aria-pressed]="work().status === s"
+          (click)="setStatus(s)"
+        >{{ 'work.status.' + s | translate }}</button>
+      }
+    </div>
+
+    <!-- Report -->
+    <div class="hm-section-head"><h2>{{ 'work.report' | translate }}</h2></div>
+    @if (!work().reportSubmitted) {
+      <button type="button" class="report hm-tap" (click)="submitReport()">
+        <ion-icon name="camera-outline" aria-hidden="true"></ion-icon>
+        <span>{{ 'work.submit_report' | translate }}</span>
+      </button>
+      <p class="hint hm-muted">{{ 'work.report_hint' | translate }}</p>
+    } @else {
+      <div class="checked hm-card">
+        <ion-icon name="checkmark-circle" aria-hidden="true"></ion-icon>
+        <span class="c-text">{{ 'work.report_submitted' | translate }}</span>
+      </div>
+    }
+  </div>
+</ion-content>
+
+<ion-footer class="ion-no-border">
+  <div class="cta">
+    <ion-button expand="block" fill="outline" class="hm-tap" (click)="openChat()">
+      <ion-icon name="chatbubble-ellipses-outline" slot="start" aria-hidden="true"></ion-icon>
+      {{ 'jobdetail.open_chat' | translate }}
+    </ion-button>
+  </div>
+</ion-footer>

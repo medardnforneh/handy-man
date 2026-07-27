@@ -339,5 +339,28 @@
     "paid": "Paid",
     "pending": "Pending",
     "failed": "Failed"
+  },
+  "work": {
+    "customer": "Customer",
+    "arrival": "Arrival",
+    "check_in": "Check in",
+    "check_in_hint": "Shares your location and time with the customer.",
+    "checked_in": "Checked in",
+    "check_out": "Check out",
+    "update_status": "Update status",
+    "status": {
+      "engaged": "Not started",
+      "on_the_way": "On the way",
+      "arrived": "Arrived",
+      "started": "Started",
+      "paused": "Paused",
+      "completed": "Completed"
+    },
+    "report": "Job report",
+    "submit_report": "Submit report",
+    "report_hint": "Before/after photos and a summary of the work.",
+    "report_submitted": "Report submitted",
+    "checked_in_toast": "Checked in",
+    "report_toast": "Report submitted"
   }
 }

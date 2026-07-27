@@ -49,6 +49,12 @@ const routes: Routes = [
     loadComponent: () => import('./provider/lead/lead.page').then((m) => m.ProviderLeadPage),
   },
   {
+    // Provider work detail (check-in, status, report), pushed over the provider tabs.
+    path: 'work/:id',
+    canActivate: [authGuard],
+    loadComponent: () => import('./provider/work-detail/work-detail.page').then((m) => m.ProviderWorkDetailPage),
+  },
+  {
     // The engagement workspace is pushed over the tabs (full-screen thread).
     path: 'workspace/:id',
     canActivate: [authGuard],

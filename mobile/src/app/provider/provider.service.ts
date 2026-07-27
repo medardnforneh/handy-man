@@ -1,5 +1,7 @@
 import { Injectable } from '@angular/core';
-import { ActiveWork, Lead, Payout, ProviderStats, ProviderWallet } from './provider.models';
+import {
+  ActiveWork, Lead, Payout, ProviderStats, ProviderWallet, WorkDetail, WorkStatus,
+} from './provider.models';
 
 /**
  * Provider-section data. Fixture-driven today (the shapes match the API), so swapping in the
@@ -70,8 +72,71 @@ export class ProviderService {
     return this.leads.find((l) => l.id === id) ?? null;
   }
 
+  private readonly workDetails: Record<string, WorkDetail> = {
+    j1: {
+      id: 'j1', reference: 'JOB-7K2M9', title: 'Fuite sous l’évier', customerName: 'Jean M.',
+      customerInitials: 'JM', mode: 'onsite', addressLine: 'Rue 1.234, Akwa, Douala', accent: 'brand',
+      checkedIn: false, status: 'engaged', reportSubmitted: false,
+    },
+    a2: {
+      id: 'a2', reference: 'JOB-5RN8K', title: 'Tableau électrique', customerName: 'Sandrine B.',
+      customerInitials: 'SB', mode: 'onsite', addressLine: 'Bonapriso, Douala', accent: 'info',
+      checkedIn: false, status: 'engaged', reportSubmitted: false,
+    },
+    a3: {
+      id: 'a3', reference: 'JOB-2HW6P', title: 'Étagères sur mesure', customerName: 'Paul T.',
+      customerInitials: 'PT', mode: 'remote', addressLine: null, accent: 'warning',
+      checkedIn: false, status: 'started', reportSubmitted: false,
+    },
+  };
+
   listActive(): ActiveWork[] {
     return this.active;
+  }
+
+  /** The provider's execution view of a job. Falls back to a minimal detail from the active list. */
+  workDetail(id: string): WorkDetail {
+    const found = this.workDetails[id];
+    if (found) {
+      return found;
+    }
+    const work = this.active.find((w) => w.id === id);
+    return {
+      id, reference: work?.reference ?? 'JOB-—', title: work?.title ?? '',
+      customerName: work?.customerName ?? '', customerInitials: (work?.customerName ?? '?').charAt(0),
+      mode: work?.mode ?? 'onsite', addressLine: null, accent: work?.accent ?? 'muted',
+      checkedIn: false, status: 'engaged', reportSubmitted: false,
+    };
+  }
+
+  checkIn(id: string): void {
+    const w = this.workDetails[id];
+    if (w) {
+      w.checkedIn = true;
+      w.status = 'arrived';
+    }
+  }
+
+  checkOut(id: string): void {
+    const w = this.workDetails[id];
+    if (w) {
+      w.checkedIn = false;
+    }
+  }
+
+  setWorkStatus(id: string, status: WorkStatus): void {
+    const w = this.workDetails[id];
+    if (w) {
+      w.status = status;
+    }
+  }
+
+  submitReport(id: string): void {
+    const w = this.workDetails[id];
+    if (w) {
+      w.reportSubmitted = true;
+      w.status = 'completed';
+    }
   }
 
   /** Decline a lead — drops it from the feed (fixture). */
