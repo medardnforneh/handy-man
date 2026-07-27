@@ -59,6 +59,8 @@
     "status.cancelled": "Cancelled",
     "chats.title": "Chats",
     "chats.empty": "No conversations yet.",
+    "chats.search": "Search conversations",
+    "chats.no_match": "No conversations match your search.",
     "account.title": "Your account",
     "account.language": "Language",
     "account.addresses": "Saved addresses",

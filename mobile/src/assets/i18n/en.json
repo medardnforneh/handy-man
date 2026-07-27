@@ -96,7 +96,9 @@
   },
   "chats": {
     "title": "Chats",
-    "empty": "No conversations yet."
+    "empty": "No conversations yet.",
+    "search": "Search conversations",
+    "no_match": "No conversations match your search."
   },
   "account": {
     "title": "Your account",

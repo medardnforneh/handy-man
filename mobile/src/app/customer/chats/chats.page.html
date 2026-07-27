@@ -6,8 +6,18 @@
 
 <ion-content [fullscreen]="true">
   <div class="page">
-    @for (chat of chats; track chat.id) {
-      <button class="chat hm-tap" type="button" (click)="open(chat)">
+    @if (hasChats) {
+      <ion-searchbar
+        class="hm-tap"
+        [value]="query()"
+        (ionInput)="onSearch($any($event.target).value)"
+        [placeholder]="'chats.search' | translate"
+        [attr.aria-label]="'chats.search' | translate"
+      ></ion-searchbar>
+    }
+
+    @for (chat of chats(); track chat.id) {
+      <button class="chat hm-tap" type="button" [class.is-unread]="chat.unread" (click)="open(chat)">
         <div [class]="'hm-avatar chat-av accent-' + chat.accent" aria-hidden="true">{{ chat.initials }}</div>
 
         <div class="body">
@@ -25,7 +35,10 @@
         </div>
       </button>
     } @empty {
-      <p class="hm-empty">{{ 'chats.empty' | translate }}</p>
+      <div class="empty">
+        <ion-icon name="chatbubbles-outline" aria-hidden="true"></ion-icon>
+        <p class="hm-empty">{{ (hasChats ? 'chats.no_match' : 'chats.empty') | translate }}</p>
+      </div>
     }
   </div>
 </ion-content>

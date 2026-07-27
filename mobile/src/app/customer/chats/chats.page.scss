@@ -16,6 +16,18 @@ ion-title {
   margin: 0 auto;
 }
 
+ion-searchbar {
+  --background: var(--hm-color-surface-raised);
+  --color: var(--hm-color-text-primary);
+  --placeholder-color: var(--hm-color-text-muted);
+  --border-radius: var(--hm-radius-md);
+  --box-shadow: none;
+  border: 1px solid var(--hm-color-border-subtle);
+  border-radius: var(--hm-radius-md);
+  padding: 0;
+  margin-bottom: var(--hm-space-sm);
+}
+
 .chat {
   display: flex;
   align-items: center;
@@ -31,6 +43,12 @@ ion-title {
   cursor: pointer;
 
   &:last-of-type { border-bottom: 0; }
+
+  // Unread threads read louder: the name goes full-strength and the preview stops looking muted.
+  &.is-unread {
+    b { font-weight: 800; }
+    .preview { color: var(--hm-color-text-primary); font-weight: 600; }
+  }
 }
 
 .chat-av {
@@ -87,4 +105,13 @@ ion-title {
   display: block;
   margin-top: 0.1rem;
   font-size: 0.68rem;
+}
+
+.empty {
+  display: grid;
+  place-items: center;
+  gap: var(--hm-space-sm);
+  padding-top: var(--hm-space-xl);
+
+  ion-icon { font-size: 2.5rem; color: var(--hm-color-text-muted); opacity: 0.5; }
 }
