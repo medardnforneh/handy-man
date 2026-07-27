@@ -3,7 +3,7 @@
 > Living tracker for the build. Updated as work progresses. Source of truth for **where we
 > are** and **how this machine is set up**. Read this first when resuming.
 
-_Last updated: 2026-07-23_
+_Last updated: 2026-07-27_
 
 ## Environment (this dev machine — Windows 10 Pro, non-admin)
 
@@ -120,9 +120,9 @@ Task IDs come from `docs/05-build-plan.md`.
 | P3-15 | cash settlement recording | **DONE** — new `provider_receivable` (asset) account kind; `cash_settlements` table; `RecordCashSettlement` books the 15% commission as revenue AND as a provider debt (DR provider_receivable / CR platform_revenue) and marks a named milestone paid — no escrow involved; provider-gated `POST /v1/engagements/{engagement}/cash-settlements`; 3 tests. Makes honest self-reporting first-class (builds provider history) |
 | P3-09 | nightly reconciliation + `reconciliation_exceptions` + admin alert | **DONE** — `reconcile:nightly` resolves stuck payments/payouts (via the pollers), then integrity-checks the ledger: a succeeded intent missing its ledger txn, and (with `--wallet-cash`) a `platform_cash` vs wallet mismatch → a `reconciliation_exceptions` row + outbox `reconciliation.exception` alert, **never auto-corrected**; one-open-per-(kind,ref) partial unique index dedupes re-runs; `ResolveReconciliationException` applies a human's balanced adjustment stamped with `created_by_user_id`; 5 tests |
 | P3-11 | auto-approve timer (72h) | **DONE** (Phase 7) — `AutoApproveDeliverables` + `deliverables:auto-approve` command auto-accept a submitted deliverable left un-reviewed past the window (72h, config) through the same `ReviewDeliverable` Action (narration/outbox/escrow fire as a manual accept would); the orchestrator schedules an `auto_approve_warning` follow-up 24h before and cancels it on review. 2 tests |
-| P3-13 | deposit-capture-on-agreement | deferred — agreement-time escrow capture (collection already lands via the intent path; auto-capture at acceptance is the remaining piece) |
+| P3-13 | deposit-capture-on-agreement | **DONE** — `CaptureDepositOnAgreement` collects the deposit (the position-0 milestone) into escrow the moment an engagement forms, riding the committed `engagement.created` outbox seam so the gateway call lands outside the acceptance txn (`CaptureDepositOnEngagement` listener, wired in `MoneyServiceProvider::boot`). Idempotent on a deterministic key (`deposit-capture:{engagement}`) so the at-least-once relay never double-charges; offer-path engagements carry no milestones so capture nothing. 3 tests |
 
-**Phase 3 (Money) complete** except P3-11/13, which are parked until Phase 5 provides work-submission and agreement-time capture.
+**Phase 3 (Money) complete** — P3-11 (auto-approve timer) landed on the follow-up engine and P3-13 (agreement-time deposit capture) is done.
 
 ### Phase 4 — The engagement workspace
 
@@ -194,7 +194,7 @@ build, which lands with the app UI work.**
 
 **Phase 8 (growth and scale) complete: 6/6.**
 
-P3-13 (deposit-capture-on-agreement) is the one remaining backend piece — collection already lands via the intent path; the auto-capture at agreement time is a payment-flow wiring that pairs with the client checkout UX (Phase 5 native). All other backend build-plan tasks are done.
+**Every backend build-plan task is now done** (P3-13 — agreement-time deposit capture — was the last one). What remains is the client/native/realtime UI work: the Ionic PWA/Android/iOS build + offline write queue (P5-01/02), the engagement-workspace realtime/media surfaces (P4-04..07), and the public/SEO Blade pages — plus external dependencies awaiting real credentials (CinetPay live sandbox, FCM project, WhatsApp template approval).
 
 ## Design debt (tracked)
 
@@ -224,6 +224,15 @@ P3-13 (deposit-capture-on-agreement) is the one remaining backend piece — coll
   - **Still owed:** Ionic app screens and Blade public/SEO pages (Phase 5+) must meet the bar when built.
 
 ## What was done, most recent first
+
+- **P3-13 — agreement-time deposit capture → every backend build-plan task now done**:
+  `CaptureDepositOnAgreement` collects the deposit (the position-0 milestone) into escrow the moment
+  an engagement forms, so a provider knows the money is committed before starting work — rather than
+  leaving the customer to fund it manually. It rides the committed `engagement.created` outbox seam
+  (`CaptureDepositOnEngagement`, wired in `MoneyServiceProvider::boot`) so the gateway call lands
+  **outside** the acceptance transaction (doc 03), and is **idempotent** on a deterministic key
+  (`deposit-capture:{engagement}`) so the at-least-once relay never double-charges. Offer-path
+  engagements carry no milestones → they capture nothing. 3 tests. PHPStan L6 + Pint clean.
 
 - **Phase 8 (growth & scale) — complete**: P8-01 referrals (codes, qualify-on-first-completed-job,
   **ledger-backed** reward DR platform_revenue / CR promo_liability; self/dup blocked); P8-02 fraud
