@@ -1,0 +1,104 @@
+// Shared primitives (.hm-card, .hm-pill, .hm-section-head, .field…) load globally — see angular.json.
+// SEMANTIC TOKENS ONLY — never a literal colour (doc 08; enforced by `npm run lint:colors`).
+
+ion-toolbar {
+  --background: var(--hm-color-surface-base);
+  --border-width: 0;
+}
+
+ion-title { font-size: 0.95rem; font-weight: 700; }
+
+.page {
+  padding: 0 var(--hm-space-md) var(--hm-space-xl);
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+h1 {
+  margin: var(--hm-space-sm) 0 0.35rem;
+  font-size: 1.3rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+.meta {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  font-size: 0.8rem;
+
+  ion-icon { vertical-align: -1px; margin-inline-end: 0.1rem; }
+}
+
+.dot { width: 3px; height: 3px; border-radius: 50%; background: var(--hm-color-border-strong); flex: none; }
+
+.budget-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--hm-space-sm);
+  margin: var(--hm-space-md) 0;
+  font-size: 0.9rem;
+
+  .budget { font-weight: 800; font-variant-numeric: tabular-nums; }
+  small { color: var(--hm-color-text-muted); font-weight: 600; font-size: 0.7rem; margin-inline-start: 0.15rem; }
+}
+
+.details {
+  margin: 0;
+  padding: var(--hm-space-md);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+// ---- Quote composer ----------------------------------------------------
+.lbl {
+  display: block;
+  margin: var(--hm-space-md) 0 var(--hm-space-sm);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--hm-color-text-muted);
+}
+
+.field {
+  --background: var(--hm-color-surface-raised);
+  --color: var(--hm-color-text-primary);
+  --placeholder-color: var(--hm-color-text-muted);
+  --padding-start: 0.85rem;
+  --padding-end: 0.85rem;
+  --border-radius: var(--hm-radius-md);
+  background: var(--hm-color-surface-raised);
+  border: 1px solid var(--hm-color-border-subtle);
+  border-radius: var(--hm-radius-md);
+}
+
+ion-textarea.field {
+  --padding-top: 0.6rem;
+  --padding-bottom: 0.6rem;
+}
+
+.amount {
+  display: flex;
+  align-items: center;
+  padding-inline-end: 0.85rem;
+
+  ion-input { flex: 1; }
+
+  .cur { font-size: 0.8rem; font-weight: 700; color: var(--hm-color-text-muted); flex: none; }
+}
+
+// ---- Footer CTA --------------------------------------------------------
+ion-footer {
+  background: var(--hm-color-surface-base);
+
+  .cta {
+    padding: var(--hm-space-sm) var(--hm-space-md);
+    max-width: 720px;
+    margin: 0 auto;
+    border-top: 1px solid var(--hm-color-border-subtle);
+  }
+
+  ion-button { --border-radius: var(--hm-radius-md); font-weight: 700; margin: 0; }
+}

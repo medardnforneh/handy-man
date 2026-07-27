@@ -1,0 +1,170 @@
+// Shared primitives (.hm-card, .hm-pill, .hm-avatar, .hm-section-head…) load globally — see angular.json.
+// SEMANTIC TOKENS ONLY — never a literal colour (doc 08; enforced by `npm run lint:colors`).
+
+ion-toolbar {
+  --background: var(--hm-color-surface-base);
+  --border-width: 0;
+}
+
+ion-title { font-size: 0.95rem; font-weight: 700; }
+
+.top-av {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  font-size: 0.72rem;
+  margin-inline-end: var(--hm-space-md);
+  text-transform: uppercase;
+}
+
+.page {
+  padding: 0 var(--hm-space-md) var(--hm-space-xl);
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.hello {
+  margin: var(--hm-space-sm) 0 var(--hm-space-md);
+
+  h1 { margin: 0; font-size: 1.1rem; font-weight: 600; color: var(--hm-color-text-muted); }
+
+  .who {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 1.5rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+
+    .verified { color: var(--hm-color-brand-primary); font-size: 1rem; }
+  }
+}
+
+// ---- Wallet ------------------------------------------------------------
+.wallet {
+  padding: var(--hm-space-lg) var(--hm-space-md);
+  border-radius: var(--hm-radius-lg);
+  background: var(--hm-color-brand-primary);
+  color: var(--hm-color-brand-onPrimary);
+  margin-bottom: var(--hm-space-md);
+
+  .wl { font-size: 0.8rem; font-weight: 600; opacity: 0.85; }
+
+  .bal {
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    margin-top: 0.1rem;
+
+    small { font-size: 0.85rem; font-weight: 600; opacity: 0.85; margin-inline-start: 0.25rem; }
+  }
+
+  .pending { display: block; font-size: 0.78rem; opacity: 0.85; margin-top: 0.2rem; }
+
+  .withdraw {
+    margin-top: var(--hm-space-md);
+    --background: var(--hm-color-brand-onPrimary);
+    --color: var(--hm-color-brand-primary);
+    --border-radius: var(--hm-radius-md);
+    font-weight: 700;
+  }
+}
+
+// ---- Stats -------------------------------------------------------------
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--hm-space-sm);
+  margin-bottom: var(--hm-space-sm);
+}
+
+.stat {
+  display: grid;
+  place-items: center;
+  gap: 0.15rem;
+  padding: var(--hm-space-md) 0.35rem;
+  text-align: center;
+
+  b {
+    font-size: 1.25rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+
+    &.rating { display: inline-flex; align-items: center; gap: 0.2rem; color: var(--hm-color-status-warning); }
+    &.pending { font-size: 0.9rem; color: var(--hm-color-text-muted); font-weight: 700; }
+  }
+
+  small { font-size: 0.68rem; }
+}
+
+.count {
+  display: inline-grid;
+  place-items: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 0.4rem;
+  border-radius: var(--hm-radius-pill);
+  background: color-mix(in srgb, var(--hm-color-brand-primary) 14%, transparent);
+  color: var(--hm-color-brand-primary);
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+// ---- Lead cards --------------------------------------------------------
+.lead {
+  display: flex;
+  gap: var(--hm-space-sm);
+  width: 100%;
+  padding: var(--hm-space-md);
+  margin-bottom: var(--hm-space-sm);
+  text-align: start;
+  color: inherit;
+  cursor: pointer;
+
+  .lead-av { width: 44px; height: 44px; border-radius: var(--hm-radius-md); ion-icon { font-size: 1.2rem; } }
+  .lead-info { flex: 1; min-width: 0; }
+
+  b { font-size: 0.95rem; display: block; }
+
+  .lead-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+    margin-top: 0.2rem;
+    font-size: 0.78rem;
+
+    ion-icon { vertical-align: -1px; margin-inline-end: 0.1rem; }
+  }
+
+  .lead-foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--hm-space-sm);
+    margin-top: 0.5rem;
+
+    .budget { font-weight: 700; font-variant-numeric: tabular-nums; }
+    small { color: var(--hm-color-text-muted); font-weight: 600; font-size: 0.7rem; margin-inline-start: 0.15rem; }
+    .ago { font-size: 0.72rem; }
+  }
+}
+
+.dot { width: 3px; height: 3px; border-radius: 50%; background: var(--hm-color-border-strong); flex: none; }
+
+// ---- Active work -------------------------------------------------------
+.work {
+  display: flex;
+  align-items: center;
+  gap: var(--hm-space-sm);
+  width: 100%;
+  padding: var(--hm-space-sm) var(--hm-space-md);
+  margin-bottom: var(--hm-space-sm);
+  text-align: start;
+  color: inherit;
+  cursor: pointer;
+
+  .work-av { width: 40px; height: 40px; border-radius: 50%; font-size: 0.85rem; text-transform: uppercase; }
+  .work-info { flex: 1; min-width: 0; b { font-size: 0.9rem; } small { display: block; font-size: 0.76rem; } }
+  .hm-pill { flex: none; }
+}

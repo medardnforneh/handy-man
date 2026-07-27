@@ -298,5 +298,31 @@
     "in_progress": "In progress",
     "submitted": "Submitted",
     "paid": "Paid"
+  },
+  "pro": {
+    "title": "Provider",
+    "greeting": "Welcome back",
+    "available": "Available to withdraw",
+    "payout_pending": "{{amount}} payout in progress",
+    "withdraw": "Withdraw",
+    "active_jobs": "Active",
+    "rating": "Rating",
+    "opportunities": "New opportunities",
+    "quote_requested": "Quote requested",
+    "no_opportunities": "No opportunities right now",
+    "active_work": "Active work",
+    "payout_requested": "Payout requested",
+    "lead": "Opportunity",
+    "customer_budget": "Customer budget",
+    "your_quote": "Your quote",
+    "price": "Your price",
+    "price_ph": "Total amount",
+    "deposit": "Deposit (optional)",
+    "deposit_ph": "Upfront amount",
+    "message": "Message (optional)",
+    "message_ph": "A note to the customer…",
+    "send_quote": "Send quote",
+    "quote_sent": "Quote sent",
+    "lead_unavailable": "This opportunity is no longer available."
   }
 }

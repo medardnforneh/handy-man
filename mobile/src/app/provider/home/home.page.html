@@ -1,0 +1,102 @@
+<ion-header [translucent]="true" class="ion-no-border">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/tabs/account" [text]="''"></ion-back-button>
+    </ion-buttons>
+    <ion-title>{{ 'pro.title' | translate }}</ion-title>
+    <ion-buttons slot="end">
+      <div class="hm-avatar top-av accent-brand" aria-hidden="true">{{ initials }}</div>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <div class="page">
+    <div class="hello">
+      <h1>{{ 'pro.greeting' | translate }}</h1>
+      <span class="who">
+        {{ name }}
+        @if (verified) {
+          <ion-icon class="verified" name="shield-checkmark" [attr.aria-label]="'discover.verified' | translate"></ion-icon>
+        }
+      </span>
+    </div>
+
+    <!-- Wallet -->
+    <div class="wallet">
+      <span class="wl">{{ 'pro.available' | translate }}</span>
+      <div class="bal">{{ wallet.availableMinor | money }} <small>{{ 'money.currency' | translate }}</small></div>
+      @if (wallet.pendingPayoutMinor > 0) {
+        <span class="pending">{{ 'pro.payout_pending' | translate:{ amount: (wallet.pendingPayoutMinor | money) } }} {{ 'money.currency' | translate }}</span>
+      }
+      <ion-button expand="block" class="withdraw hm-tap" (click)="withdraw()">
+        <ion-icon name="cash-outline" slot="start" aria-hidden="true"></ion-icon>
+        {{ 'pro.withdraw' | translate }}
+      </ion-button>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats">
+      <div class="stat hm-card">
+        <b>{{ stats.activeJobs }}</b>
+        <small class="hm-muted">{{ 'pro.active_jobs' | translate }}</small>
+      </div>
+      <div class="stat hm-card">
+        <b class="rating"><ion-icon name="star" aria-hidden="true"></ion-icon>{{ stats.rating ?? '—' }}</b>
+        <small class="hm-muted">{{ 'pro.rating' | translate }}</small>
+      </div>
+      <div class="stat hm-card">
+        @if (hasOnTime()) {
+          <b>{{ onTimePercent() }}%</b>
+        } @else {
+          <b class="pending">{{ 'provider.building' | translate }}</b>
+        }
+        <small class="hm-muted">{{ 'provider.stat.on_time' | translate }}</small>
+      </div>
+    </div>
+
+    <!-- Opportunities -->
+    <div class="hm-section-head">
+      <h2>{{ 'pro.opportunities' | translate }}</h2>
+      <span class="count">{{ leads().length }}</span>
+    </div>
+    @for (lead of leads(); track lead.id) {
+      <button class="lead hm-card hm-tap" type="button" (click)="openLead(lead)">
+        <div [class]="'hm-avatar lead-av accent-' + lead.accent" aria-hidden="true">
+          <ion-icon name="briefcase" aria-hidden="true"></ion-icon>
+        </div>
+        <div class="lead-info">
+          <b>{{ lead.title }}</b>
+          <div class="lead-meta hm-muted">
+            <span>{{ lead.skill }}</span>
+            <span class="dot" aria-hidden="true"></span>
+            <span><ion-icon name="location-outline" aria-hidden="true"></ion-icon>{{ lead.area }}</span>
+          </div>
+          <div class="lead-foot">
+            @if (lead.budgetMinor) {
+              <span class="budget">{{ lead.budgetMinor | money }} <small>{{ 'money.currency' | translate }}</small></span>
+            } @else {
+              <span class="hm-pill tone-neutral">{{ 'pro.quote_requested' | translate }}</span>
+            }
+            <span class="ago hm-muted">{{ lead.postedAgo }}</span>
+          </div>
+        </div>
+      </button>
+    } @empty {
+      <p class="hm-empty">{{ 'pro.no_opportunities' | translate }}</p>
+    }
+
+    <!-- Active work -->
+    <div class="hm-section-head"><h2>{{ 'pro.active_work' | translate }}</h2></div>
+    @for (work of active; track work.id) {
+      <button class="work hm-card hm-tap" type="button" (click)="openWork(work)">
+        <div [class]="'hm-avatar work-av accent-' + work.accent" aria-hidden="true">{{ work.customerName.charAt(0) }}</div>
+        <div class="work-info">
+          <b>{{ work.title }}</b>
+          <small class="hm-muted">{{ work.reference }} · {{ work.customerName }}</small>
+        </div>
+        <span [class]="'hm-pill ' + tone(work.status)">{{ 'status.' + work.status | translate }}</span>
+      </button>
+    }
+  </div>
+</ion-content>

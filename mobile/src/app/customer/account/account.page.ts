@@ -27,6 +27,10 @@ export class AccountPage {
   readonly locale = signal<Locale>(this.locales.current);
   readonly theme = signal<ThemeChoice>('system');
 
+  offerServices(): void {
+    void this.router.navigate(['/pro']);
+  }
+
   async logout(): Promise<void> {
     await this.auth.logout();
     void this.router.navigate(['/welcome']);

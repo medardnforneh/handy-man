@@ -37,6 +37,17 @@ const routes: Routes = [
     loadComponent: () => import('./customer/job-detail/job-detail.page').then((m) => m.JobDetailPage),
   },
   {
+    // Provider section ("Offer services"): dashboard + lead/quote composer.
+    path: 'pro',
+    canActivate: [authGuard],
+    loadComponent: () => import('./provider/home/home.page').then((m) => m.ProviderHomePage),
+  },
+  {
+    path: 'pro/lead/:id',
+    canActivate: [authGuard],
+    loadComponent: () => import('./provider/lead/lead.page').then((m) => m.ProviderLeadPage),
+  },
+  {
     // The engagement workspace is pushed over the tabs (full-screen thread).
     path: 'workspace/:id',
     canActivate: [authGuard],

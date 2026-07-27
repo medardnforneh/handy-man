@@ -298,5 +298,31 @@
     "in_progress": "En cours",
     "submitted": "Soumis",
     "paid": "Payé"
+  },
+  "pro": {
+    "title": "Prestataire",
+    "greeting": "Bon retour",
+    "available": "Disponible au retrait",
+    "payout_pending": "Retrait de {{amount}} en cours",
+    "withdraw": "Retirer",
+    "active_jobs": "En cours",
+    "rating": "Note",
+    "opportunities": "Nouvelles opportunités",
+    "quote_requested": "Devis demandé",
+    "no_opportunities": "Aucune opportunité pour l’instant",
+    "active_work": "Travaux en cours",
+    "payout_requested": "Retrait demandé",
+    "lead": "Opportunité",
+    "customer_budget": "Budget du client",
+    "your_quote": "Votre devis",
+    "price": "Votre prix",
+    "price_ph": "Montant total",
+    "deposit": "Acompte (facultatif)",
+    "deposit_ph": "Montant initial",
+    "message": "Message (facultatif)",
+    "message_ph": "Un mot au client…",
+    "send_quote": "Envoyer le devis",
+    "quote_sent": "Devis envoyé",
+    "lead_unavailable": "Cette opportunité n’est plus disponible."
   }
 }

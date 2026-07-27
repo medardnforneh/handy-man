@@ -1,0 +1,71 @@
+<ion-header [translucent]="true" class="ion-no-border">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/pro" [text]="''"></ion-back-button>
+    </ion-buttons>
+    <ion-title>{{ lead()?.reference ?? ('pro.lead' | translate) }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  @if (lead(); as l) {
+    <div class="page">
+      <!-- Request -->
+      <h1>{{ l.title }}</h1>
+      <div class="meta hm-muted">
+        <span>{{ l.skill }}</span>
+        <span class="dot" aria-hidden="true"></span>
+        <span><ion-icon name="location-outline" aria-hidden="true"></ion-icon>{{ l.area }}</span>
+        <span class="dot" aria-hidden="true"></span>
+        <span>{{ l.postedAgo }}</span>
+      </div>
+
+      <div class="budget-row">
+        @if (l.budgetMinor) {
+          <span class="hm-muted">{{ 'pro.customer_budget' | translate }}</span>
+          <span class="budget">{{ l.budgetMinor | money }} <small>{{ 'money.currency' | translate }}</small></span>
+        } @else {
+          <span class="hm-pill tone-neutral">{{ 'pro.quote_requested' | translate }}</span>
+        }
+      </div>
+
+      <p class="details hm-card">{{ l.details }}</p>
+
+      <!-- Quote composer -->
+      <div class="hm-section-head"><h2>{{ 'pro.your_quote' | translate }}</h2></div>
+
+      <label class="lbl">{{ 'pro.price' | translate }}</label>
+      <div class="amount field">
+        <ion-input class="hm-tap" inputmode="numeric" [value]="price()" (ionInput)="onPrice($any($event.target).value)"
+          [placeholder]="'pro.price_ph' | translate" [attr.aria-label]="'pro.price' | translate"></ion-input>
+        <span class="cur">{{ 'money.currency' | translate }}</span>
+      </div>
+
+      <label class="lbl">{{ 'pro.deposit' | translate }}</label>
+      <div class="amount field">
+        <ion-input class="hm-tap" inputmode="numeric" [value]="deposit()" (ionInput)="onDeposit($any($event.target).value)"
+          [placeholder]="'pro.deposit_ph' | translate" [attr.aria-label]="'pro.deposit' | translate"></ion-input>
+        <span class="cur">{{ 'money.currency' | translate }}</span>
+      </div>
+
+      <label class="lbl">{{ 'pro.message' | translate }}</label>
+      <ion-textarea class="field" [autoGrow]="true" [rows]="3" [value]="message()"
+        (ionInput)="onMessage($any($event.target).value)" [placeholder]="'pro.message_ph' | translate"
+        [attr.aria-label]="'pro.message' | translate"></ion-textarea>
+    </div>
+  } @else {
+    <div class="page">
+      <p class="hm-empty">{{ 'pro.lead_unavailable' | translate }}</p>
+    </div>
+  }
+</ion-content>
+
+@if (lead()) {
+  <ion-footer class="ion-no-border">
+    <div class="cta">
+      <ion-button expand="block" class="hm-tap" [disabled]="!canSend()" (click)="send()">
+        {{ 'pro.send_quote' | translate }}
+      </ion-button>
+    </div>
+  </ion-footer>
+}

@@ -30,7 +30,7 @@
 
     <div class="hm-section-head"><h2>{{ 'account.help' | translate }}</h2></div>
     <ion-list class="hm-card" lines="full">
-      <ion-item button="true" detail="true" class="hm-tap">
+      <ion-item button="true" detail="true" class="hm-tap" (click)="offerServices()">
         <ion-label>{{ 'nav.provider' | translate }}</ion-label>
       </ion-item>
       <ion-item button="true" detail="true" class="hm-tap" (click)="logout()">
