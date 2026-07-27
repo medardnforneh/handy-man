@@ -1,6 +1,11 @@
 <ion-header [translucent]="true" class="ion-no-border">
   <ion-toolbar>
     <ion-title>{{ 'jobs.title' | translate }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button class="new-btn hm-tap" (click)="postRequest()" [attr.aria-label]="'newjob.title' | translate">
+        <ion-icon slot="icon-only" name="add" aria-hidden="true"></ion-icon>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
@@ -33,7 +38,19 @@
         }
       </button>
     } @empty {
-      <p class="hm-empty">{{ 'jobs.empty' | translate }}</p>
+      <div class="empty">
+        <p class="hm-empty">{{ 'jobs.empty' | translate }}</p>
+        <ion-button class="hm-tap" (click)="postRequest()">
+          <ion-icon name="add" slot="start" aria-hidden="true"></ion-icon>
+          {{ 'newjob.title' | translate }}
+        </ion-button>
+      </div>
     }
   </div>
+
+  <ion-fab slot="fixed" vertical="bottom" horizontal="end">
+    <ion-fab-button class="fab" (click)="postRequest()" [attr.aria-label]="'newjob.title' | translate">
+      <ion-icon name="add" aria-hidden="true"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
 </ion-content>

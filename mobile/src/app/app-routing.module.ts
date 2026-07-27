@@ -7,6 +7,11 @@ const routes: Routes = [
     loadChildren: () => import('./tabs/tabs.routes').then((m) => m.routes),
   },
   {
+    // Post a request — the new-job form, pushed over the tabs.
+    path: 'new-job',
+    loadComponent: () => import('./customer/new-job/new-job.page').then((m) => m.NewJobPage),
+  },
+  {
     // The public provider profile is pushed over the tabs (reviews + metrics + request a quote).
     path: 'provider/:id',
     loadComponent: () => import('./customer/provider/provider.page').then((m) => m.ProviderPage),

@@ -191,5 +191,21 @@
   "provider.reviews": "Reviews",
   "provider.no_reviews": "No reviews yet",
   "provider.member_since": "Member since {{year}}",
-  "provider.request_quote": "Request a quote"
+  "provider.request_quote": "Request a quote",
+  "newjob.title": "Post a request",
+  "newjob.what": "What do you need?",
+  "newjob.what_ph": "e.g. Fix a leak under the sink",
+  "newjob.category": "Category",
+  "newjob.mode": "Type of work",
+  "newjob.hybrid": "Hybrid",
+  "newjob.address": "Address",
+  "newjob.remote_note": "No address needed for remote work.",
+  "newjob.details": "Details",
+  "newjob.details_ph": "Describe the work, access, timing…",
+  "newjob.photos": "Photos",
+  "newjob.add_photo": "Add a photo",
+  "newjob.budget": "Budget (optional)",
+  "newjob.budget_ph": "Your estimate",
+  "newjob.post": "Post request",
+  "newjob.posted": "Request posted"
 }

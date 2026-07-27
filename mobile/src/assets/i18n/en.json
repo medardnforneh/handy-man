@@ -253,5 +253,23 @@
     "no_reviews": "No reviews yet",
     "member_since": "Member since {{year}}",
     "request_quote": "Request a quote"
+  },
+  "newjob": {
+    "title": "Post a request",
+    "what": "What do you need?",
+    "what_ph": "e.g. Fix a leak under the sink",
+    "category": "Category",
+    "mode": "Type of work",
+    "hybrid": "Hybrid",
+    "address": "Address",
+    "remote_note": "No address needed for remote work.",
+    "details": "Details",
+    "details_ph": "Describe the work, access, timing…",
+    "photos": "Photos",
+    "add_photo": "Add a photo",
+    "budget": "Budget (optional)",
+    "budget_ph": "Your estimate",
+    "post": "Post request",
+    "posted": "Request posted"
   }
 }

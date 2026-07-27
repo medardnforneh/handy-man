@@ -41,6 +41,10 @@ export class JobsPage {
     void this.router.navigate(['/workspace', job.id]);
   }
 
+  postRequest(): void {
+    void this.router.navigate(['/new-job']);
+  }
+
   /** Milestone slots for the progress bar. */
   slots(job: JobSummary): number[] {
     return Array.from({ length: Math.max(job.milestonesTotal, 0) }, (_, i) => i);

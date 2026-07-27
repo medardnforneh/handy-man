@@ -1,0 +1,190 @@
+// Shared primitives (.hm-card, .hm-section-head, .hm-muted…) load once globally — see angular.json.
+// SEMANTIC TOKENS ONLY — never a literal colour (doc 08; enforced by `npm run lint:colors`).
+
+ion-toolbar {
+  --background: var(--hm-color-surface-base);
+  --border-width: 0;
+}
+
+ion-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.page {
+  padding: 0 var(--hm-space-md) var(--hm-space-xl);
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.hm-section-head h2 {
+  font-size: 0.95rem;
+}
+
+// ---- Text fields -------------------------------------------------------
+.field {
+  --background: var(--hm-color-surface-raised);
+  --color: var(--hm-color-text-primary);
+  --placeholder-color: var(--hm-color-text-muted);
+  --padding-start: 0.85rem;
+  --padding-end: 0.85rem;
+  --border-radius: var(--hm-radius-md);
+  background: var(--hm-color-surface-raised);
+  border: 1px solid var(--hm-color-border-subtle);
+  border-radius: var(--hm-radius-md);
+}
+
+ion-textarea.field {
+  --padding-top: 0.6rem;
+  --padding-bottom: 0.6rem;
+}
+
+// ---- Category picker ---------------------------------------------------
+.picks {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: var(--hm-space-sm);
+}
+
+.pick {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  padding: var(--hm-space-md) 0.4rem;
+  background: var(--hm-color-surface-raised);
+  border: 1px solid var(--hm-color-border-subtle);
+  border-radius: var(--hm-radius-lg);
+  color: var(--hm-color-text-muted);
+  cursor: pointer;
+  transition: border-color 0.12s ease, color 0.12s ease, background 0.12s ease;
+
+  ion-icon { font-size: 1.4rem; color: var(--hm-color-brand-primary); }
+  span { font-size: 0.72rem; font-weight: 600; }
+
+  &.selected {
+    border-color: var(--hm-color-brand-primary);
+    background: color-mix(in srgb, var(--hm-color-brand-primary) 10%, transparent);
+    color: var(--hm-color-text-primary);
+  }
+}
+
+// ---- Mode segment ------------------------------------------------------
+.choice {
+  --background: var(--hm-color-surface-sunken);
+  border-radius: var(--hm-radius-md);
+
+  ion-segment-button {
+    --color: var(--hm-color-text-muted);
+    --color-checked: var(--hm-color-text-primary);
+    --indicator-color: var(--hm-color-surface-raised);
+    --border-radius: var(--hm-radius-sm);
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: none;
+    min-height: 40px;
+  }
+}
+
+// ---- Address picker ----------------------------------------------------
+.addrs {
+  display: flex;
+  flex-direction: column;
+  gap: var(--hm-space-sm);
+}
+
+.addr {
+  display: flex;
+  align-items: center;
+  gap: var(--hm-space-sm);
+  padding: var(--hm-space-md);
+  text-align: start;
+  cursor: pointer;
+  color: inherit;
+  transition: border-color 0.12s ease, background 0.12s ease;
+
+  .pin { font-size: 1.2rem; color: var(--hm-color-brand-primary); flex: none; }
+
+  .addr-text {
+    flex: 1;
+    min-width: 0;
+
+    b { font-size: 0.9rem; }
+    small { display: block; font-size: 0.78rem; margin-top: 0.1rem; }
+  }
+
+  .tick { font-size: 1.25rem; color: var(--hm-color-border-strong); flex: none; }
+
+  &.selected {
+    border-color: var(--hm-color-brand-primary);
+    background: color-mix(in srgb, var(--hm-color-brand-primary) 8%, transparent);
+
+    .tick { color: var(--hm-color-brand-primary); }
+  }
+}
+
+.remote-note {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0;
+  padding: var(--hm-space-md);
+  border: 1px dashed var(--hm-color-border-strong);
+  border-radius: var(--hm-radius-md);
+  font-size: 0.82rem;
+
+  ion-icon { color: var(--hm-color-brand-primary); font-size: 1.1rem; flex: none; }
+}
+
+// ---- Add photo ---------------------------------------------------------
+.addphoto {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  width: 100%;
+  padding: var(--hm-space-md);
+  background: none;
+  border: 1px dashed var(--hm-color-border-strong);
+  border-radius: var(--hm-radius-md);
+  color: var(--hm-color-text-muted);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+
+  ion-icon { font-size: 1.25rem; color: var(--hm-color-brand-primary); }
+}
+
+// ---- Budget ------------------------------------------------------------
+.budget {
+  display: flex;
+  align-items: center;
+  padding-inline-end: 0.85rem;
+
+  ion-input { flex: 1; }
+
+  .cur {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--hm-color-text-muted);
+    flex: none;
+  }
+}
+
+// ---- Sticky CTA --------------------------------------------------------
+ion-footer {
+  background: var(--hm-color-surface-base);
+
+  .cta {
+    padding: var(--hm-space-sm) var(--hm-space-md);
+    max-width: 720px;
+    margin: 0 auto;
+    border-top: 1px solid var(--hm-color-border-subtle);
+  }
+
+  ion-button {
+    --border-radius: var(--hm-radius-md);
+    font-weight: 700;
+    margin: 0;
+  }
+}

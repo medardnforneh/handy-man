@@ -80,6 +80,23 @@ export interface JobSummary {
   milestonesTotal: number;
 }
 
+/** A saved address the customer can attach to an on-site/hybrid job (never needed for remote). */
+export interface SavedAddress {
+  id: string;
+  label: string;
+  line: string;
+}
+
+/** What the "post a request" form collects — mirrors CreateJob (doc 06: address only off-remote). */
+export interface NewJobInput {
+  title: string;
+  categoryId: string;
+  mode: EngagementMode;
+  addressId: string | null;
+  details: string;
+  budgetMinor: number | null;
+}
+
 export interface ChatSummary {
   id: string;
   providerName: string;

@@ -78,3 +78,29 @@ ion-title {
     &.done { background: var(--hm-color-brand-primary); }
   }
 }
+
+.new-btn {
+  --color: var(--hm-color-brand-primary);
+  --padding-start: 0.4rem;
+  --padding-end: 0.4rem;
+
+  ion-icon { font-size: 1.4rem; }
+}
+
+.empty {
+  display: grid;
+  place-items: center;
+  gap: var(--hm-space-sm);
+
+  ion-button {
+    --border-radius: var(--hm-radius-md);
+    font-weight: 700;
+  }
+}
+
+.fab ion-icon { font-size: 1.5rem; }
+
+.fab {
+  --background: var(--hm-color-brand-primary);
+  --color: var(--hm-color-brand-onPrimary);
+}

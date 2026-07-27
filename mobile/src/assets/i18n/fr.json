@@ -253,5 +253,23 @@
     "no_reviews": "Pas encore d’avis",
     "member_since": "Membre depuis {{year}}",
     "request_quote": "Demander un devis"
+  },
+  "newjob": {
+    "title": "Publier une demande",
+    "what": "De quoi avez-vous besoin ?",
+    "what_ph": "ex. Réparer une fuite sous l’évier",
+    "category": "Catégorie",
+    "mode": "Type de travail",
+    "hybrid": "Hybride",
+    "address": "Adresse",
+    "remote_note": "Aucune adresse requise pour le travail à distance.",
+    "details": "Détails",
+    "details_ph": "Décrivez le travail, l’accès, le moment…",
+    "photos": "Photos",
+    "add_photo": "Ajouter une photo",
+    "budget": "Budget (facultatif)",
+    "budget_ph": "Votre estimation",
+    "post": "Publier la demande",
+    "posted": "Demande publiée"
   }
 }

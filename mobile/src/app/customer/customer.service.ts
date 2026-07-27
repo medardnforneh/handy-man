@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import {
-  Category, ChatSummary, EngagementMode, JobSummary, Provider, ProviderProfile, WorkspaceThread,
+  Category, ChatSummary, EngagementMode, JobSummary, NewJobInput, Provider, ProviderProfile,
+  SavedAddress, WorkspaceThread,
 } from './customer.models';
 
 /**
@@ -35,6 +36,11 @@ export class CustomerService {
     { id: 'j3', reference: 'JOB-9BZ3C', title: 'Installation split', status: 'engaged', providerName: 'Douala Cool Services', amountMinor: 1250000, milestonesDone: 0, milestonesTotal: 2 },
     { id: 'j4', reference: 'JOB-5RN8K', title: 'Tableau électrique', status: 'completed', providerName: 'Yaoundé Élec', amountMinor: 3100000, milestonesDone: 3, milestonesTotal: 3 },
     { id: 'j5', reference: 'JOB-2HW6P', title: 'Étagères sur mesure', status: 'open', providerName: null, amountMinor: 620000, milestonesDone: 0, milestonesTotal: 0 },
+  ];
+
+  private readonly addresses: SavedAddress[] = [
+    { id: 'a1', label: 'Domicile', line: 'Rue 1.234, Akwa, Douala' },
+    { id: 'a2', label: 'Bureau', line: 'Boulevard de la Liberté, Bonanjo, Douala' },
   ];
 
   private readonly chats: ChatSummary[] = [
@@ -118,6 +124,31 @@ export class CustomerService {
 
   listJobs(): JobSummary[] {
     return this.jobs;
+  }
+
+  listAddresses(): SavedAddress[] {
+    return this.addresses;
+  }
+
+  /**
+   * Post a new request — mirrors CreateJob + PublishJob (doc 06): a fresh `open` job with no
+   * provider yet. A remote job carries no address (the conditional-address rule). Returns the id.
+   */
+  createJob(input: NewJobInput): string {
+    const seq = this.jobs.length + 1;
+    const id = `new-${seq}`;
+    const category = this.cats.find((c) => c.id === input.categoryId);
+    this.jobs.unshift({
+      id,
+      reference: `JOB-${id.toUpperCase()}`,
+      title: input.title.trim() || (category?.label ?? ''),
+      status: 'open',
+      providerName: null,
+      amountMinor: input.budgetMinor ?? 0,
+      milestonesDone: 0,
+      milestonesTotal: 0,
+    });
+    return id;
   }
 
   listChats(): ChatSummary[] {

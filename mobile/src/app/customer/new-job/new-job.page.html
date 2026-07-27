@@ -1,0 +1,122 @@
+<ion-header [translucent]="true" class="ion-no-border">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/tabs/jobs" [text]="''"></ion-back-button>
+    </ion-buttons>
+    <ion-title>{{ 'newjob.title' | translate }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <div class="page">
+    <!-- What -->
+    <div class="hm-section-head"><h2>{{ 'newjob.what' | translate }}</h2></div>
+    <ion-input
+      class="field hm-tap"
+      [value]="title()"
+      (ionInput)="onTitle($any($event.target).value)"
+      [placeholder]="'newjob.what_ph' | translate"
+      [attr.aria-label]="'newjob.what' | translate"
+    ></ion-input>
+
+    <!-- Category -->
+    <div class="hm-section-head"><h2>{{ 'newjob.category' | translate }}</h2></div>
+    <div class="picks">
+      @for (cat of categories; track cat.id) {
+        <button
+          type="button"
+          class="pick hm-tap"
+          [class.selected]="categoryId() === cat.id"
+          [attr.aria-pressed]="categoryId() === cat.id"
+          (click)="categoryId.set(cat.id)"
+        >
+          <ion-icon [name]="cat.icon" aria-hidden="true"></ion-icon>
+          <span>{{ cat.label }}</span>
+        </button>
+      }
+    </div>
+
+    <!-- Mode -->
+    <div class="hm-section-head"><h2>{{ 'newjob.mode' | translate }}</h2></div>
+    <ion-segment class="choice" [value]="mode()">
+      <ion-segment-button class="hm-tap" value="onsite" (click)="setMode('onsite')">
+        <ion-label>{{ 'discover.mode.onsite' | translate }}</ion-label>
+      </ion-segment-button>
+      <ion-segment-button class="hm-tap" value="remote" (click)="setMode('remote')">
+        <ion-label>{{ 'discover.mode.remote' | translate }}</ion-label>
+      </ion-segment-button>
+      <ion-segment-button class="hm-tap" value="hybrid" (click)="setMode('hybrid')">
+        <ion-label>{{ 'newjob.hybrid' | translate }}</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+
+    <!-- Address — conditional on the engagement mode (doc 06) -->
+    @if (needsAddress()) {
+      <div class="hm-section-head"><h2>{{ 'newjob.address' | translate }}</h2></div>
+      <div class="addrs">
+        @for (addr of addresses; track addr.id) {
+          <button
+            type="button"
+            class="addr hm-card hm-tap"
+            [class.selected]="addressId() === addr.id"
+            [attr.aria-pressed]="addressId() === addr.id"
+            (click)="addressId.set(addr.id)"
+          >
+            <ion-icon class="pin" name="location-outline" aria-hidden="true"></ion-icon>
+            <span class="addr-text">
+              <b>{{ addr.label }}</b>
+              <small class="hm-muted">{{ addr.line }}</small>
+            </span>
+            <ion-icon class="tick" [name]="addressId() === addr.id ? 'checkmark-circle' : 'ellipse-outline'" aria-hidden="true"></ion-icon>
+          </button>
+        }
+      </div>
+    } @else {
+      <p class="remote-note hm-muted">
+        <ion-icon name="globe-outline" aria-hidden="true"></ion-icon>
+        {{ 'newjob.remote_note' | translate }}
+      </p>
+    }
+
+    <!-- Details -->
+    <div class="hm-section-head"><h2>{{ 'newjob.details' | translate }}</h2></div>
+    <ion-textarea
+      class="field"
+      [autoGrow]="true"
+      [rows]="3"
+      [value]="details()"
+      (ionInput)="onDetails($any($event.target).value)"
+      [placeholder]="'newjob.details_ph' | translate"
+      [attr.aria-label]="'newjob.details' | translate"
+    ></ion-textarea>
+
+    <!-- Photos (capture lands with the native build) -->
+    <div class="hm-section-head"><h2>{{ 'newjob.photos' | translate }}</h2></div>
+    <button type="button" class="addphoto hm-tap">
+      <ion-icon name="camera-outline" aria-hidden="true"></ion-icon>
+      <span>{{ 'newjob.add_photo' | translate }}</span>
+    </button>
+
+    <!-- Budget -->
+    <div class="hm-section-head"><h2>{{ 'newjob.budget' | translate }}</h2></div>
+    <div class="budget field">
+      <ion-input
+        class="hm-tap"
+        inputmode="numeric"
+        [value]="budget()"
+        (ionInput)="onBudget($any($event.target).value)"
+        [placeholder]="'newjob.budget_ph' | translate"
+        [attr.aria-label]="'newjob.budget' | translate"
+      ></ion-input>
+      <span class="cur">{{ 'money.currency' | translate }}</span>
+    </div>
+  </div>
+</ion-content>
+
+<ion-footer class="ion-no-border">
+  <div class="cta">
+    <ion-button expand="block" class="hm-tap" [disabled]="!canPost()" (click)="post()">
+      {{ 'newjob.post' | translate }}
+    </ion-button>
+  </div>
+</ion-footer>
