@@ -7,6 +7,9 @@ namespace App\Providers;
 use App\Domain\Money\Gateways\CinetPayGateway;
 use App\Domain\Money\Gateways\FakeGateway;
 use App\Domain\Money\Gateways\PaymentGateway;
+use App\Domain\Money\Listeners\CaptureDepositOnEngagement;
+use App\Events\OutboxMessagePublished;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 use InvalidArgumentException;
 
@@ -17,6 +20,13 @@ use InvalidArgumentException;
  */
 final class MoneyServiceProvider extends ServiceProvider
 {
+    public function boot(): void
+    {
+        // Agreement-time deposit capture (P3-13) rides the outbox seam so the gateway call lands
+        // after the acceptance transaction has committed.
+        Event::listen(OutboxMessagePublished::class, CaptureDepositOnEngagement::class);
+    }
+
     public function register(): void
     {
         $this->app->singleton(PaymentGateway::class, function (): PaymentGateway {
