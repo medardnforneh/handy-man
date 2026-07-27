@@ -5,14 +5,14 @@ import { IonicModule } from '@ionic/angular';
 import { TranslatePipe } from '@ngx-translate/core';
 import { AuthService } from '../../core/auth.service';
 import { Locale, LocaleService, SUPPORTED_LOCALES } from '../../core/locale.service';
+import { ThemeChoice, ThemeService } from '../../core/theme.service';
 import { SavedAddress } from '../customer.models';
 import { CustomerService } from '../customer.service';
 
-type ThemeChoice = 'system' | 'light' | 'dark';
-
 /**
- * Account — language (FR/EN are both first-class, doc 09) and appearance. The theme choice writes
- * `data-theme` on the root, which the generated token stylesheet honours over the system preference.
+ * Account — profile, saved addresses, language (FR/EN are both first-class, doc 09) and appearance.
+ * Language and theme are owned by their services (persisted, applied on boot); this page just reflects
+ * and sets them.
  */
 @Component({
   selector: 'app-account',
@@ -22,6 +22,7 @@ type ThemeChoice = 'system' | 'light' | 'dark';
 })
 export class AccountPage {
   private readonly locales = inject(LocaleService);
+  private readonly themes = inject(ThemeService);
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
   private readonly customers = inject(CustomerService);
@@ -30,7 +31,7 @@ export class AccountPage {
   readonly addresses: SavedAddress[] = this.customers.listAddresses();
   readonly supported = SUPPORTED_LOCALES;
   readonly locale = signal<Locale>(this.locales.current);
-  readonly theme = signal<ThemeChoice>('system');
+  readonly theme = signal<ThemeChoice>(this.themes.current);
 
   offerServices(): void {
     void this.router.navigate(['/pro']);
@@ -48,11 +49,6 @@ export class AccountPage {
 
   setTheme(choice: ThemeChoice): void {
     this.theme.set(choice);
-    const root = document.documentElement;
-    if (choice === 'system') {
-      root.removeAttribute('data-theme');
-    } else {
-      root.setAttribute('data-theme', choice);
-    }
+    void this.themes.set(choice);
   }
 }

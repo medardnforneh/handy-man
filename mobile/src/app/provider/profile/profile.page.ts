@@ -5,9 +5,8 @@ import { IonicModule } from '@ionic/angular';
 import { TranslatePipe } from '@ngx-translate/core';
 import { AuthService } from '../../core/auth.service';
 import { Locale, LocaleService, SUPPORTED_LOCALES } from '../../core/locale.service';
+import { ThemeChoice, ThemeService } from '../../core/theme.service';
 import { ProviderService } from '../provider.service';
-
-type ThemeChoice = 'system' | 'light' | 'dark';
 
 /**
  * Provider profile — the "you" tab: how the provider appears to customers, their verification tier
@@ -24,6 +23,7 @@ type ThemeChoice = 'system' | 'light' | 'dark';
 export class ProviderProfilePage {
   private readonly provider = inject(ProviderService);
   private readonly locales = inject(LocaleService);
+  private readonly themes = inject(ThemeService);
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
 
@@ -36,7 +36,7 @@ export class ProviderProfilePage {
 
   readonly supported = SUPPORTED_LOCALES;
   readonly locale = signal<Locale>(this.locales.current);
-  readonly theme = signal<ThemeChoice>('system');
+  readonly theme = signal<ThemeChoice>(this.themes.current);
   readonly available = signal(this.provider.isAvailable());
 
   /** Tier 2 (ID) or above is "identity verified" for on-site paid work (P6-03). */
@@ -54,12 +54,7 @@ export class ProviderProfilePage {
 
   setTheme(choice: ThemeChoice): void {
     this.theme.set(choice);
-    const root = document.documentElement;
-    if (choice === 'system') {
-      root.removeAttribute('data-theme');
-    } else {
-      root.setAttribute('data-theme', choice);
-    }
+    void this.themes.set(choice);
   }
 
   backToCustomer(): void {
