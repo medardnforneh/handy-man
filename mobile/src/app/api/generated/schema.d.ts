@@ -1022,6 +1022,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/provider/work": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The provider's active-work list
+         * @description The provider's engagements still in flight (not yet completed or cancelled), newest first — a compact list for the Work tab. The check-in / status / report actions live on the work-detail screen and target POST /engagements/{engagement}/*.
+         */
+        get: operations["providerWork"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/payment-intents": {
         parameters: {
             query?: never;
@@ -1423,6 +1443,24 @@ export interface components {
             created_at?: string;
             /** @description The PII-minimised job, embedded in the provider's opportunity feed (coarse location only). */
             job?: components["schemas"]["Job"] | null;
+        };
+        ProviderWork: {
+            /**
+             * Format: uuid
+             * @description The engagement id — the check-in/status/report actions target it.
+             */
+            id: string;
+            /** Format: uuid */
+            job_id: string;
+            reference: string;
+            title: string;
+            customer_name?: string | null;
+            /** @enum {string} */
+            engagement_mode: "onsite" | "remote" | "hybrid";
+            /** @enum {string} */
+            job_status: "draft" | "open" | "offered" | "engaged" | "scheduled" | "in_progress" | "work_submitted" | "completed" | "cancelled";
+            /** Format: date-time */
+            accepted_at: string;
         };
         Engagement: {
             /** Format: uuid */
@@ -3988,6 +4026,29 @@ export interface operations {
                 content: {
                     "application/json": {
                         data: components["schemas"]["Offer"][];
+                    };
+                };
+            };
+            401: components["responses"]["Problem"];
+        };
+    };
+    providerWork: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The provider's active work */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["ProviderWork"][];
                     };
                 };
             };

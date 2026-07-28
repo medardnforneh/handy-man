@@ -28,6 +28,7 @@ use App\Http\Controllers\Api\V1\ProviderCustomerController;
 use App\Http\Controllers\Api\V1\ProviderEarningsController;
 use App\Http\Controllers\Api\V1\ProviderMetricsController;
 use App\Http\Controllers\Api\V1\ProviderOpportunityController;
+use App\Http\Controllers\Api\V1\ProviderWorkController;
 use App\Http\Controllers\Api\V1\QuotationController;
 use App\Http\Controllers\Api\V1\Reference\NoteController;
 use App\Http\Controllers\Api\V1\ReferralController;
@@ -112,6 +113,8 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
         Route::get('/provider/earnings', [ProviderEarningsController::class, 'show'])->name('provider.earnings');
         // Provider's opportunity feed (P2-05/06) — live incoming direct offers (coarse, PII-minimised).
         Route::get('/provider/opportunities', [ProviderOpportunityController::class, 'index'])->name('provider.opportunities');
+        // Provider's active-work list (P5-03) — engagements still in flight, newest first.
+        Route::get('/provider/work', [ProviderWorkController::class, 'index'])->name('provider.work');
         // Provider payout request (P3-08).
         Route::post('/provider/payouts', [PayoutController::class, 'store'])->name('provider.payouts.store');
 

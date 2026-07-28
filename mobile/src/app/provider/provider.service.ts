@@ -248,6 +248,28 @@ export class ProviderService {
     return this.active;
   }
 
+  /**
+   * The real active-work list (GET /provider/work) — the provider's in-flight engagements. The row id
+   * is the ENGAGEMENT id, which the work-detail check-in/status/report actions target. Returns null
+   * when there's no session / offline, so the caller keeps the fixture list.
+   */
+  async fetchActive(): Promise<ActiveWork[] | null> {
+    try {
+      const rows = await this.api.work();
+      return rows.map((w) => ({
+        id: w.id,
+        reference: w.reference,
+        title: w.title,
+        customerName: w.customer_name ?? '',
+        status: w.job_status as ActiveWork['status'],
+        mode: w.engagement_mode,
+        accent: accentFor(w.id),
+      }));
+    } catch {
+      return null;
+    }
+  }
+
   /** The provider's execution view of a job. Falls back to a minimal detail from the active list. */
   workDetail(id: string): WorkDetail {
     const found = this.workDetails[id];

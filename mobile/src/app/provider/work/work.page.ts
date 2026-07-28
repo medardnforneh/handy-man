@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { TranslatePipe } from '@ngx-translate/core';
@@ -18,7 +18,19 @@ export class ProviderWorkPage {
   private readonly provider = inject(ProviderService);
   private readonly router = inject(Router);
 
-  readonly active = this.provider.listActive();
+  /** Fixture list first (instant, offline-safe); the real engagements replace it once loaded. */
+  readonly active = signal<ActiveWork[]>(this.provider.listActive());
+
+  constructor() {
+    void this.load();
+  }
+
+  private async load(): Promise<void> {
+    const real = await this.provider.fetchActive();
+    if (real !== null) {
+      this.active.set(real);
+    }
+  }
 
   tone(status: JobStatus): string {
     switch (status) {

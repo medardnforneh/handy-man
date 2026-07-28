@@ -6,9 +6,9 @@
 
 <ion-content [fullscreen]="true">
   <div class="page">
-    @for (work of active; track work.id) {
+    @for (work of active(); track work.id) {
       <button class="work hm-card hm-tap" type="button" (click)="open(work)">
-        <div [class]="'hm-avatar work-av accent-' + work.accent" aria-hidden="true">{{ work.customerName.charAt(0) }}</div>
+        <div [class]="'hm-avatar work-av accent-' + work.accent" aria-hidden="true">{{ work.customerName.charAt(0) || '•' }}</div>
         <div class="work-info">
           <b>{{ work.title }}</b>
           <small class="hm-muted">{{ work.reference }} · {{ work.customerName }}</small>

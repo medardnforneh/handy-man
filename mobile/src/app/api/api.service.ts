@@ -171,6 +171,15 @@ export class ApiService {
     return data.data;
   }
 
+  /** The provider's active-work list (P5-03) — engagements still in flight, newest first. */
+  async work() {
+    const { data, error } = await api.GET('/provider/work');
+    if (error) {
+      throw error;
+    }
+    return data.data;
+  }
+
   /** Accept a direct offer → forms the engagement (P2-06). Provider-gated; may 409 on a fact gate. */
   async acceptOffer(offerId: string) {
     const { data, error } = await api.POST('/offers/{offer}/accept', {

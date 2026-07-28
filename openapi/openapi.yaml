@@ -1343,6 +1343,29 @@ paths:
                     items: { $ref: "#/components/schemas/Offer" }
         "401": { $ref: "#/components/responses/Problem" }
 
+  /provider/work:
+    get:
+      tags: [Platform]
+      operationId: providerWork
+      summary: The provider's active-work list
+      description: >
+        The provider's engagements still in flight (not yet completed or cancelled), newest first — a
+        compact list for the Work tab. The check-in / status / report actions live on the work-detail
+        screen and target POST /engagements/{engagement}/*.
+      responses:
+        "200":
+          description: The provider's active work
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: "#/components/schemas/ProviderWork" }
+        "401": { $ref: "#/components/responses/Problem" }
+
   /payment-intents:
     post:
       tags: [Platform]
@@ -1880,6 +1903,19 @@ components:
         job:
           description: The PII-minimised job, embedded in the provider's opportunity feed (coarse location only).
           oneOf: [{ $ref: "#/components/schemas/Job" }, { type: "null" }]
+
+    ProviderWork:
+      type: object
+      required: [id, job_id, reference, title, engagement_mode, job_status, accepted_at]
+      properties:
+        id: { type: string, format: uuid, description: The engagement id — the check-in/status/report actions target it. }
+        job_id: { type: string, format: uuid }
+        reference: { type: string }
+        title: { type: string }
+        customer_name: { type: [string, "null"] }
+        engagement_mode: { type: string, enum: [onsite, remote, hybrid] }
+        job_status: { type: string, enum: [draft, open, offered, engaged, scheduled, in_progress, work_submitted, completed, cancelled] }
+        accepted_at: { type: string, format: date-time }
 
     Engagement:
       type: object
