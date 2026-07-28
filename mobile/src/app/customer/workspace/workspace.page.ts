@@ -84,6 +84,12 @@ export class WorkspacePage implements OnDestroy {
       return;
     }
     this.thread.set(fresh);
+
+    // ALWAYS rejoin, even on the same channel. When Reverb restarts it loses every subscription,
+    // and pusher-js's automatic re-subscribe can fail and then never retry — leaving a connected
+    // socket whose channel is silently `subscribed: false`, so no further message ever arrives
+    // (observed). Tearing down and rejoining is what actually revives it. The rejoin can't loop:
+    // the new channel's first `subscribed` fire is skipped by design.
     this.listen(fresh.engagementId);
   }
 
@@ -93,19 +99,24 @@ export class WorkspacePage implements OnDestroy {
       return;
     }
 
-    this.unsubscribe = this.realtime.onEngagementMessage(engagementId, (live) => {
-      this.thread.update((current) => {
-        if (current === null) {
-          return current;
-        }
-        // The sender already appended it locally on send, and at-least-once delivery can repeat a
-        // frame — so dedupe on id rather than trusting the socket to fire exactly once.
-        if (current.messages.some((m) => m.id === live.id)) {
-          return current;
-        }
-        return { ...current, messages: [...current.messages, this.customers.mapLiveMessage(live)] };
-      });
-    });
+    this.unsubscribe = this.realtime.onEngagementMessage(
+      engagementId,
+      (live) => {
+        this.thread.update((current) => {
+          if (current === null) {
+            return current;
+          }
+          // The sender already appended it locally on send, and at-least-once delivery can repeat a
+          // frame — so dedupe on id rather than trusting the socket to fire exactly once.
+          if (current.messages.some((m) => m.id === live.id)) {
+            return current;
+          }
+          return { ...current, messages: [...current.messages, this.customers.mapLiveMessage(live)] };
+        });
+      },
+      // Live again on this channel — whatever we missed while away is only in REST.
+      () => void this.reconcile(),
+    );
   }
 
   onDraft(value: string | null | undefined): void {

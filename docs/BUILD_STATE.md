@@ -265,16 +265,27 @@ build, which lands with the app UI work.**
     caught it. A green prod build is not proof the dev configuration compiles.
   - 399 backend tests green (5 new), PHPStan L6 + Pint clean, mobile build green, client drift clean,
     i18n parity 386 × 2, colour + bare-string linters clean.
-  - **Reconnect reconciliation (P4-07) — written but NOT VERIFIED.** The workspace now refetches the
-    thread when the socket comes back and when the tab/app returns to the foreground, because
-    anything sent while disconnected was never delivered and REST is the authoritative record.
-    **Treat this as unproven**: the first implementation reached into `echo.connector.pusher` and
-    silently did nothing (verified failing — a message posted while Reverb was down did NOT appear
-    after it came back). It was rewritten to construct the Pusher client explicitly and pass it to
-    Echo via `client`, so connection state hangs off a reference we own rather than Echo internals —
-    but the browser tooling became unresponsive before that rewrite could be re-tested. **Re-run the
-    drop/restore check before trusting it**: load a thread, kill Reverb, post a message over the API,
-    restart Reverb, and confirm the message appears without a reload.
+  - **Reconnect reconciliation (P4-07) — VERIFIED.** The workspace refetches the thread when the
+    channel re-subscribes and when the tab/app returns to the foreground: anything sent while
+    disconnected was never delivered, and REST is the authoritative record. Getting here took three
+    attempts and each failure taught something worth keeping:
+    1. Binding via `echo.connector.pusher` silently resolved to nothing — Echo's internals are
+       private and version-dependent. Fixed by constructing the Pusher client ourselves and handing
+       it to Echo via `client`, so connection state hangs off a reference we own.
+    2. Raw connection state was still the wrong signal. A server that dies and returns drives
+       `connected → connecting → unavailable → connected`, and that path did not deliver a usable
+       edge. The signal that actually matters is **channel re-subscription** — "am I live again" —
+       so reconciliation now hangs off `subscribed()`, skipping the first fire (the caller has just
+       fetched over REST).
+    3. **A restart leaves the channel dead even though the socket reconnects.** Reverb loses every
+       subscription; pusher-js's automatic re-subscribe failed and never retried, leaving a
+       `connected` socket whose channel was silently `subscribed: false` — reconciliation masked it
+       for the missed message while no *further* live message would ever arrive. Reconcile therefore
+       **always tears down and rejoins the channel**, which is what revives it. (An earlier
+       "avoid pointless churn" guard was exactly wrong and was removed.)
+    Verified end-to-end on the real failing cycle: load a thread → kill Reverb → post over the API →
+    restart Reverb → the missed message appears **without a reload**, the channel reports
+    `subscribed: true` again, and a message posted *after* the reconnect arrives live. No duplicates.
   - **Still open on realtime**: typing indicators and presence (P4-04's remainder) and voice notes
     (P4-05).
 

@@ -136,7 +136,11 @@ export class RealtimeService {
    * Listen for new messages on an engagement's private channel. Returns an unsubscribe function —
    * or a no-op when realtime isn't available, so callers never need to branch.
    */
-  onEngagementMessage(engagementId: string, handler: (message: LiveMessage) => void): Unsubscribe {
+  onEngagementMessage(
+    engagementId: string,
+    handler: (message: LiveMessage) => void,
+    onResubscribed?: () => void,
+  ): Unsubscribe {
     const echo = this.connect();
     if (echo === null) {
       return () => undefined;
@@ -144,7 +148,24 @@ export class RealtimeService {
 
     const name = `engagement.${engagementId}`;
     try {
-      echo.private(name).listen('.message.posted', (payload: LiveMessage) => handler(payload));
+      const channel = echo.private(name);
+      channel.listen('.message.posted', (payload: LiveMessage) => handler(payload));
+
+      // Re-subscription is the signal that actually matters: it means we are live on this channel
+      // again, whatever route the socket took to get there. Raw connection states are not enough —
+      // a server that dies and returns drives `unavailable -> connected`, which in practice did not
+      // deliver a usable 'connected' edge, so anything sent meanwhile was silently lost. The FIRST
+      // subscription is skipped because the caller has just fetched over REST.
+      if (onResubscribed !== undefined) {
+        let first = true;
+        channel.subscribed(() => {
+          if (first) {
+            first = false;
+            return;
+          }
+          onResubscribed();
+        });
+      }
     } catch {
       return () => undefined;
     }
