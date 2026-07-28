@@ -39,6 +39,8 @@ use App\Http\Controllers\Api\V1\SkillController;
 use App\Http\Controllers\Api\V1\VerificationDocumentController;
 use App\Http\Controllers\Api\V1\WarrantyController;
 use App\Http\Controllers\Api\V1\WorkSessionController;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -105,6 +107,13 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
     | via the global api middleware.
     */
     Route::middleware('auth:sanctum')->group(function (): void {
+        // Reverb channel authorization for TOKEN clients (P4-03/04). Laravel's own
+        // /broadcasting/auth sits on the web (session) group, which a Bearer-authenticated mobile
+        // client can't use — so Echo points here instead. Same channel rules either way: this
+        // delegates to the callbacks in routes/channels.php.
+        Route::post('/broadcasting/auth', fn (Request $request) => Broadcast::auth($request))
+            ->name('broadcasting.auth');
+
         // Payment intents (P3-04) — start a MoMo collection (escrow or lead credits).
         Route::post('/payment-intents', [PaymentIntentController::class, 'store'])->name('payment-intents.store');
         // Provider's prepaid lead-credit balance (P3-07).

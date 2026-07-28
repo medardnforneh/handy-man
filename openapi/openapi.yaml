@@ -1443,10 +1443,30 @@ paths:
       tags: [Platform]
       operationId: listMessages
       summary: The workspace conversation thread (participants only)
+      description: >
+        The thread, plus the ids the client needs to go live. The thread is keyed by the JOB but the
+        realtime channel is keyed by the ENGAGEMENT (`private-engagement.{id}`, P4-03/04), so
+        `meta.engagement_id` is returned here rather than making the client hunt for it. REST stays
+        authoritative: a reconnecting client refetches this and reconciles (P4-07).
       parameters:
         - { name: job, in: path, required: true, schema: { type: string, format: uuid } }
       responses:
-        "200": { description: The thread, content: { application/json: { schema: { type: object, required: [data], properties: { data: { type: array, items: { $ref: "#/components/schemas/Message" } } } } } } }
+        "200":
+          description: The thread
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data: { type: array, items: { $ref: "#/components/schemas/Message" } }
+                  meta:
+                    type: object
+                    properties:
+                      conversation_id: { type: string, format: uuid }
+                      engagement_id:
+                        description: Subscribe to `private-engagement.{id}` for live messages. Null if no engagement exists yet.
+                        oneOf: [{ type: string, format: uuid }, { type: "null" }]
         "401": { $ref: "#/components/responses/Problem" }
         "403": { $ref: "#/components/responses/Problem" }
         "404": { $ref: "#/components/responses/Problem" }

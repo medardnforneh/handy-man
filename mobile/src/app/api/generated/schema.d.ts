@@ -1109,7 +1109,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** The workspace conversation thread (participants only) */
+        /**
+         * The workspace conversation thread (participants only)
+         * @description The thread, plus the ids the client needs to go live. The thread is keyed by the JOB but the realtime channel is keyed by the ENGAGEMENT (`private-engagement.{id}`, P4-03/04), so `meta.engagement_id` is returned here rather than making the client hunt for it. REST stays authoritative: a reconnecting client refetches this and reconciles (P4-07).
+         */
         get: operations["listMessages"];
         put?: never;
         /**
@@ -4264,6 +4267,12 @@ export interface operations {
                 content: {
                     "application/json": {
                         data: components["schemas"]["Message"][];
+                        meta?: {
+                            /** Format: uuid */
+                            conversation_id?: string;
+                            /** @description Subscribe to `private-engagement.{id}` for live messages. Null if no engagement exists yet. */
+                            engagement_id?: string | null;
+                        };
                     };
                 };
             };

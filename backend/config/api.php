@@ -73,6 +73,9 @@ return [
         'require_on_mutations' => (bool) env('API_IDEMPOTENCY_REQUIRED', true),
         'exempt_paths' => [
             'api/v1/webhooks/*', // gateway webhooks are server-to-server; they carry no Idempotency-Key
+            // Channel authorization is a handshake, not a mutation — Echo issues it and has no
+            // Idempotency-Key to give; replaying one would be meaningless anyway.
+            'api/v1/broadcasting/auth',
         ],
     ],
 

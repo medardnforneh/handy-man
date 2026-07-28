@@ -8,6 +8,7 @@ use App\Providers\HorizonServiceProvider;
 use App\Providers\MoneyServiceProvider;
 use App\Providers\NotificationsServiceProvider;
 use App\Providers\ReferralsServiceProvider;
+use App\Providers\WorkspaceServiceProvider;
 
 return [
     AccessServiceProvider::class,
@@ -18,4 +19,5 @@ return [
     MoneyServiceProvider::class,
     NotificationsServiceProvider::class,
     ReferralsServiceProvider::class,
+    WorkspaceServiceProvider::class,
 ];

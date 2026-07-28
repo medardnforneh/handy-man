@@ -9,6 +9,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\PostMessageRequest;
 use App\Http\Resources\Api\V1\MessageResource;
 use App\Models\Conversation;
+use App\Models\Engagement;
 use App\Models\Job;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
@@ -27,7 +28,16 @@ final class MessageController extends Controller
         $user = $request->user();
         $conversation = $this->participantConversation($job, $user);
 
-        return MessageResource::collection($conversation->messages()->get());
+        // The thread is keyed by the job, but the live channel is keyed by the ENGAGEMENT
+        // (`engagement.{id}`, P4-03/04) — so hand the client the id it needs to subscribe rather
+        // than making it hunt for one it may not be entitled to read elsewhere.
+        $engagementId = Engagement::query()->where('job_id', $job->id)->value('id');
+
+        return MessageResource::collection($conversation->messages()->get())
+            ->additional(['meta' => [
+                'conversation_id' => $conversation->id,
+                'engagement_id' => $engagementId,
+            ]]);
     }
 
     public function store(PostMessageRequest $request, Job $job, PostMessage $action): JsonResponse
