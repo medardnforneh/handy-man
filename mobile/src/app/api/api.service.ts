@@ -168,7 +168,9 @@ export class ApiService {
     if (error) {
       throw error;
     }
-    return data.data;
+    // `meta.engagement_id` names the live channel: the thread is keyed by the job, the channel by
+    // the engagement (P4-03/04).
+    return { messages: data.data, engagementId: data.meta?.engagement_id ?? null };
   }
 
   /** Post a free-form text message to the thread (P4-02). Structured kinds are rejected server-side. */

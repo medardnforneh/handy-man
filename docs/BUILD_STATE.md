@@ -231,6 +231,44 @@ build, which lands with the app UI work.**
 
 ## What was done, most recent first
 
+- **Live workspace messages over Reverb (P4-04) — and a channel-auth bug that had never worked.**
+  Realtime was scaffolded but inert: the channels were authorized and unit-tested (P4-03), yet
+  **nothing in `app/` implemented `ShouldBroadcast`**, so no event was ever emitted.
+  - **Broadcast rides the outbox**, which the Narrator's own contract already demanded ("fan-out is
+    driven off the outbox — never inline"). `BroadcastOnOutboxMessage` turns a relayed
+    `message.created` into `MessagePosted` on `private-engagement.{id}`, the sibling of the existing
+    push listener. That ordering is the whole point: the Narrator writes INSIDE the transition's
+    transaction (rule #11), so an inline broadcast would announce messages a rollback then erased —
+    there is a test for exactly that. `ShouldBroadcastNow` because the relay is already a worker.
+  - **Bug: channel authorization had never worked over HTTP.** Channels were registered with array
+    callables `[ChannelAccess::class, 'method']`; Laravel reflects the callback to extract route
+    parameters and reflection rejects arrays (`ReflectionFunction must be of type Closure|string`),
+    so the rule never ran and every subscription was refused. The existing tests missed it because
+    they called `ChannelAccess` directly, and the one HTTP test asserted only the unauthenticated
+    403 — which passes for the wrong reason. Now closures (logic still in the unit-tested
+    `ChannelAccess`), plus an HTTP test asserting a participant gets 200 and a stranger 403.
+  - **Bug: a Bearer client could not authorize at all** — Laravel's `/broadcasting/auth` sits on the
+    web (session) group. Added `POST /api/v1/broadcasting/auth` behind `auth:sanctum`
+    (idempotency-exempt: a handshake, not a mutation) and named both guards on the channels.
+  - **Client**: `laravel-echo` + `pusher-js`; a `RealtimeService` that degrades to silence (an
+    unreachable Reverb leaves the app fully usable on REST — `connect()` never throws). The workspace
+    **fetches first, then subscribes**, so a message landing mid-load is in the fetched thread rather
+    than lost between the two, and **dedupes on message id** because the sender's own refetch and the
+    broadcast both deliver it. Logout disconnects the socket, which was authorized with the dropped
+    token. The thread read now returns `meta.engagement_id` (thread keyed by job, channel by
+    engagement).
+  - **Verified live** with Reverb + the relay running: the provider's open workspace received a
+    message posted by the customer over the API **without a reload** (channel auth POST 200, text
+    appeared in the DOM), and sending from the UI produced exactly **one** copy — the dedupe holding.
+  - A typing footnote worth keeping: `npm run build` uses the PROD environment, so it could not catch
+    `scheme: 'http' as const` making the TLS comparison a type error in the DEV config. The dev server
+    caught it. A green prod build is not proof the dev configuration compiles.
+  - 399 backend tests green (5 new), PHPStan L6 + Pint clean, mobile build green, client drift clean,
+    i18n parity 386 × 2, colour + bare-string linters clean.
+  - **Still open on realtime**: typing indicators and presence (P4-04's remainder), voice notes
+    (P4-05), and explicit reconnect reconciliation (P4-07 — today a reconnect is covered only by
+    re-entering the screen).
+
 - **Verified the customer discovery loop end-to-end, and fixed the provider's broken "Open chat".**
   - **The party-id fix is confirmed working in the app**: an open job → "Find providers" → the match
     card → the profile (URL now carries the **party** id) → "Send an offer" landed a real `job_offers`

@@ -269,6 +269,8 @@ export class CustomerService {
       skill: 'Plomberie',
       status: 'in_progress',
       accent: 'brand',
+      // A fixture thread has no engagement to subscribe to — it stays static, which is correct.
+      engagementId: null,
       messages: [
         { id: 'm1', kind: 'text', mine: false, body: 'Bonjour, j’ai regardé les photos. Je peux passer demain matin pour un devis.', time: '08:12' },
         { id: 'm2', kind: 'text', mine: true, body: 'Parfait, merci !', time: '08:14' },
@@ -495,7 +497,7 @@ export class CustomerService {
    */
   async fetchThread(jobId: string): Promise<WorkspaceThread | null> {
     try {
-      const [detail, apiMessages] = await Promise.all([
+      const [detail, thread] = await Promise.all([
         this.fetchJobDetail(jobId),
         this.api.messages(jobId),
       ]);
@@ -511,11 +513,23 @@ export class CustomerService {
         skill: detail.title,
         status: detail.status,
         accent: detail.accent,
-        messages: apiMessages.map((m) => mapMessage(m, this.me().id)),
+        messages: thread.messages.map((m) => mapMessage(m, this.me().id)),
+        engagementId: thread.engagementId,
       };
     } catch {
       return null;
     }
+  }
+
+  /**
+   * Map one BROADCAST message onto the thread's display model. Reverb sends the same shape the REST
+   * read does (MessagePosted::broadcastWith), so this is the fetched-message mapper — a live message
+   * and a fetched one render through identical code.
+   */
+  mapLiveMessage(m: {
+    id: string; kind: string; body?: string | null; sender_user_id?: string | null; created_at: string;
+  }): WorkspaceMessage {
+    return mapMessage(m, this.me().id);
   }
 
   /** Post a free-form message to the thread, then re-fetch it. Returns null on failure (offline / demo). */

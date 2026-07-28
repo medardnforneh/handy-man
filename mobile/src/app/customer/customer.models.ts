@@ -189,4 +189,6 @@ export interface WorkspaceThread {
   status: JobStatus;
   accent: Accent;
   messages: WorkspaceMessage[];
+  /** The live channel's key (`private-engagement.{id}`), or null on a fixture/unengaged thread. */
+  engagementId: string | null;
 }

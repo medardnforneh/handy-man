@@ -8,6 +8,16 @@ export const environment = {
   // machine. Start it with `php artisan serve --port=8100` from backend/.
   apiBaseUrl: 'http://127.0.0.1:8100/api/v1',
   appVersion: '1.0.0',
+  // Reverb (P4-03/04). Must match backend/.env REVERB_APP_KEY / REVERB_PORT — start it with
+  // `php artisan reverb:start` from backend/.
+  // `scheme` is deliberately the full union, not a literal: narrowing it to 'http' would make the
+  // `scheme === 'https'` TLS check a compile error in this configuration only.
+  reverb: {
+    key: 'bwnksdabq0wufulekwsw',
+    host: '127.0.0.1',
+    port: 8080,
+    scheme: 'http' as 'http' | 'https',
+  },
 };
 
 /*

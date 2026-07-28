@@ -1,7 +1,8 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 import { Preferences } from '@capacitor/preferences';
 import { api } from '../api/client';
 import { tokenStore } from '../api/token-store';
+import { RealtimeService } from './realtime.service';
 
 const AUTH_KEY = 'authed';
 const TOKEN_KEY = 'access_token';
@@ -19,6 +20,8 @@ const REFRESH_KEY = 'refresh_token';
  */
 @Injectable({ providedIn: 'root' })
 export class AuthService {
+  private readonly realtime = inject(RealtimeService);
+
   readonly authed = signal(false);
   private readonly ready: Promise<void>;
   private pendingPhone = '';
@@ -125,6 +128,9 @@ export class AuthService {
     this.authed.set(false);
     this.pendingPhone = '';
     tokenStore.set(null); // drop the bearer so no stale token rides the next request
+    // Close the socket too: it was authorized with the token we just dropped, so leaving it open
+    // would keep streaming this user's threads into the next session.
+    this.realtime.disconnect();
     await Preferences.remove({ key: TOKEN_KEY });
     await Preferences.remove({ key: REFRESH_KEY });
     await Preferences.set({ key: AUTH_KEY, value: '0' });

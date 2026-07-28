@@ -1,8 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, signal } from '@angular/core';
+import { Component, OnDestroy, inject, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { TranslatePipe } from '@ngx-translate/core';
+import { RealtimeService, Unsubscribe } from '../../core/realtime.service';
 import { CustomerService } from '../customer.service';
 import { JobStatus, WorkspaceThread } from '../customer.models';
 import { MoneyPipe } from '../money.pipe';
@@ -20,8 +21,9 @@ import { MoneyPipe } from '../money.pipe';
   styleUrls: ['./workspace.page.scss'],
   imports: [CommonModule, IonicModule, TranslatePipe, MoneyPipe],
 })
-export class WorkspacePage {
+export class WorkspacePage implements OnDestroy {
   private readonly customers = inject(CustomerService);
+  private readonly realtime = inject(RealtimeService);
   private readonly route = inject(ActivatedRoute);
 
   private readonly jobId = this.route.snapshot.paramMap.get('id') ?? '';
@@ -31,15 +33,49 @@ export class WorkspacePage {
   readonly draft = signal('');
   readonly sending = signal(false);
 
+  private unsubscribe: Unsubscribe = () => undefined;
+
   constructor() {
     void this.loadReal();
   }
 
+  ngOnDestroy(): void {
+    this.unsubscribe();
+  }
+
+  /**
+   * Fetch first, THEN subscribe: REST is authoritative and the socket only carries what happens
+   * afterwards (P4-07). Doing it in this order means a message that lands mid-load is already in the
+   * fetched thread rather than lost between the two.
+   */
   private async loadReal(): Promise<void> {
     const real = await this.customers.fetchThread(this.jobId);
-    if (real !== null) {
-      this.thread.set(real);
+    if (real === null) {
+      return;
     }
+    this.thread.set(real);
+    this.listen(real.engagementId);
+  }
+
+  private listen(engagementId: string | null): void {
+    this.unsubscribe();
+    if (engagementId === null) {
+      return;
+    }
+
+    this.unsubscribe = this.realtime.onEngagementMessage(engagementId, (live) => {
+      this.thread.update((current) => {
+        if (current === null) {
+          return current;
+        }
+        // The sender already appended it locally on send, and at-least-once delivery can repeat a
+        // frame — so dedupe on id rather than trusting the socket to fire exactly once.
+        if (current.messages.some((m) => m.id === live.id)) {
+          return current;
+        }
+        return { ...current, messages: [...current.messages, this.customers.mapLiveMessage(live)] };
+      });
+    });
   }
 
   onDraft(value: string | null | undefined): void {
