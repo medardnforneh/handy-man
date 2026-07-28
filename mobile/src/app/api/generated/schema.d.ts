@@ -982,6 +982,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/provider/earnings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The provider's earnings summary — payable balance, reserved payouts, lead credits, and payout history
+         * @description A read model for the provider's Earnings screen. `payable_available` is what can be withdrawn now — the provider_payable balance minus funds already reserved by pending/processing payouts. `payable_pending` is that reserved amount. `lead_credits` is the prepaid lead-credit balance. `payouts` lists the provider's payouts, newest first.
+         */
+        get: operations["providerEarnings"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/payment-intents": {
         parameters: {
             query?: never;
@@ -3893,6 +3913,34 @@ export interface operations {
                     "application/json": {
                         data: {
                             available: components["schemas"]["Money"];
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["Problem"];
+        };
+    };
+    providerEarnings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Earnings summary */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            payable_available: components["schemas"]["Money"];
+                            payable_pending: components["schemas"]["Money"];
+                            lead_credits: components["schemas"]["Money"];
+                            payouts: components["schemas"]["Payout"][];
                         };
                     };
                 };

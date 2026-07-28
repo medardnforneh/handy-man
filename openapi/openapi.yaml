@@ -1288,6 +1288,37 @@ paths:
         "200": { description: Available lead credits, content: { application/json: { schema: { type: object, required: [data], properties: { data: { type: object, required: [available], properties: { available: { $ref: "#/components/schemas/Money" } } } } } } } }
         "401": { $ref: "#/components/responses/Problem" }
 
+  /provider/earnings:
+    get:
+      tags: [Platform]
+      operationId: providerEarnings
+      summary: The provider's earnings summary — payable balance, reserved payouts, lead credits, and payout history
+      description: >
+        A read model for the provider's Earnings screen. `payable_available` is what can be withdrawn
+        now — the provider_payable balance minus funds already reserved by pending/processing payouts.
+        `payable_pending` is that reserved amount. `lead_credits` is the prepaid lead-credit balance.
+        `payouts` lists the provider's payouts, newest first.
+      responses:
+        "200":
+          description: Earnings summary
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: object
+                    required: [payable_available, payable_pending, lead_credits, payouts]
+                    properties:
+                      payable_available: { $ref: "#/components/schemas/Money" }
+                      payable_pending: { $ref: "#/components/schemas/Money" }
+                      lead_credits: { $ref: "#/components/schemas/Money" }
+                      payouts:
+                        type: array
+                        items: { $ref: "#/components/schemas/Payout" }
+        "401": { $ref: "#/components/responses/Problem" }
+
   /payment-intents:
     post:
       tags: [Platform]

@@ -1,14 +1,31 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
+import { ApiService } from '../api/api.service';
 import {
-  ActiveWork, Lead, Payout, ProviderStats, ProviderWallet, WorkDetail, WorkStatus,
+  ActiveWork, Lead, Payout, PayoutStatus, ProviderStats, ProviderWallet, WorkDetail, WorkStatus,
 } from './provider.models';
 
+/** Map the API payment status onto the provider's simple payout badge (paid / pending / failed). */
+function mapPayoutStatus(status: string): PayoutStatus {
+  switch (status) {
+    case 'succeeded':
+      return 'paid';
+    case 'failed':
+    case 'expired':
+      return 'failed';
+    default:
+      return 'pending'; // pending / processing
+  }
+}
+
 /**
- * Provider-section data. Fixture-driven today (the shapes match the API), so swapping in the
- * generated client is a per-method change. Kept synchronous for now.
+ * Provider-section data. Fixture-driven for the surfaces without a read endpoint yet; Earnings now
+ * loads from the real API (GET /provider/earnings) with the fixture standing in when offline. The
+ * shapes match the API, so wiring the rest is a per-method change.
  */
 @Injectable({ providedIn: 'root' })
 export class ProviderService {
+  private readonly api = inject(ApiService);
+
   readonly name = 'Atelier Nkeng';
   readonly initials = 'AN';
   readonly verified = true;
@@ -73,6 +90,32 @@ export class ProviderService {
 
   listPayouts(): Payout[] {
     return this.payouts;
+  }
+
+  /**
+   * The real earnings summary (GET /provider/earnings) — the withdrawable payable balance (net of
+   * reserved payouts), the reserved amount, and the payout history. Returns null when there's no
+   * session / offline, so the caller keeps the demo wallet + payouts.
+   */
+  async fetchEarnings(): Promise<{ wallet: ProviderWallet; payouts: Payout[] } | null> {
+    try {
+      const e = await this.api.earnings();
+      const wallet: ProviderWallet = {
+        availableMinor: e.payable_available.amount_minor,
+        pendingPayoutMinor: e.payable_pending.amount_minor,
+        currency: e.payable_available.currency,
+      };
+      const payouts: Payout[] = e.payouts.map((p) => ({
+        id: p.id,
+        reference: (p.external_ref ?? p.id).slice(0, 12).toUpperCase(),
+        amountMinor: p.amount.amount_minor,
+        status: mapPayoutStatus(p.status),
+        date: new Date(p.requested_at).toLocaleDateString(),
+      }));
+      return { wallet, payouts };
+    } catch {
+      return null;
+    }
   }
 
   getStats(): ProviderStats {

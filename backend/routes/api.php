@@ -25,6 +25,7 @@ use App\Http\Controllers\Api\V1\PayoutController;
 use App\Http\Controllers\Api\V1\ProfileController;
 use App\Http\Controllers\Api\V1\ProviderController;
 use App\Http\Controllers\Api\V1\ProviderCustomerController;
+use App\Http\Controllers\Api\V1\ProviderEarningsController;
 use App\Http\Controllers\Api\V1\ProviderMetricsController;
 use App\Http\Controllers\Api\V1\QuotationController;
 use App\Http\Controllers\Api\V1\Reference\NoteController;
@@ -106,6 +107,8 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
         Route::post('/payment-intents', [PaymentIntentController::class, 'store'])->name('payment-intents.store');
         // Provider's prepaid lead-credit balance (P3-07).
         Route::get('/provider/credits', [LeadCreditController::class, 'balance'])->name('provider.credits');
+        // Provider's earnings summary (P3-07/08) — payable balance, reserved payouts, credits, history.
+        Route::get('/provider/earnings', [ProviderEarningsController::class, 'show'])->name('provider.earnings');
         // Provider payout request (P3-08).
         Route::post('/provider/payouts', [PayoutController::class, 'store'])->name('provider.payouts.store');
 

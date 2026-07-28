@@ -7,21 +7,23 @@
 <ion-content [fullscreen]="true">
   <div class="page">
     <!-- Wallet -->
-    <div class="wallet">
-      <span class="wl">{{ 'pro.available' | translate }}</span>
-      <div class="bal">{{ wallet.availableMinor | money }} <small>{{ 'money.currency' | translate }}</small></div>
-      @if (wallet.pendingPayoutMinor > 0) {
-        <span class="pending">{{ 'pro.payout_pending' | translate:{ amount: (wallet.pendingPayoutMinor | money) } }} {{ 'money.currency' | translate }}</span>
-      }
-      <ion-button expand="block" class="withdraw hm-tap" (click)="withdraw()">
-        <ion-icon name="cash-outline" slot="start" aria-hidden="true"></ion-icon>
-        {{ 'pro.withdraw' | translate }}
-      </ion-button>
-    </div>
+    @if (wallet(); as w) {
+      <div class="wallet">
+        <span class="wl">{{ 'pro.available' | translate }}</span>
+        <div class="bal">{{ w.availableMinor | money }} <small>{{ 'money.currency' | translate }}</small></div>
+        @if (w.pendingPayoutMinor > 0) {
+          <span class="pending">{{ 'pro.payout_pending' | translate:{ amount: (w.pendingPayoutMinor | money) } }} {{ 'money.currency' | translate }}</span>
+        }
+        <ion-button expand="block" class="withdraw hm-tap" [disabled]="w.availableMinor <= 0" (click)="withdraw()">
+          <ion-icon name="cash-outline" slot="start" aria-hidden="true"></ion-icon>
+          {{ 'pro.withdraw' | translate }}
+        </ion-button>
+      </div>
+    }
 
     <!-- Payout history -->
     <div class="hm-section-head"><h2>{{ 'pro.payout_history' | translate }}</h2></div>
-    @for (p of payouts; track p.id) {
+    @for (p of payouts(); track p.id) {
       <div class="payout hm-card">
         <div class="pic" [class]="'pic ' + tone(p.status)" aria-hidden="true">
           <ion-icon [name]="p.status === 'failed' ? 'close' : (p.status === 'paid' ? 'checkmark' : 'time-outline')"></ion-icon>

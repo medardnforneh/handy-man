@@ -1,9 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { IonicModule, ToastController } from '@ionic/angular';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { MoneyPipe } from '../../customer/money.pipe';
-import { PayoutStatus } from '../provider.models';
+import { Payout, PayoutStatus, ProviderWallet } from '../provider.models';
 import { ProviderService } from '../provider.service';
 
 /** Earnings tab — the payable balance the provider can withdraw and the history of payouts (P3-08). */
@@ -18,8 +18,21 @@ export class ProviderEarningsPage {
   private readonly toasts = inject(ToastController);
   private readonly translate = inject(TranslateService);
 
-  readonly wallet = this.provider.getWallet();
-  readonly payouts = this.provider.listPayouts();
+  /** Fixture wallet/history first (instant, offline-safe); the real earnings replace them once loaded. */
+  readonly wallet = signal<ProviderWallet>(this.provider.getWallet());
+  readonly payouts = signal<Payout[]>(this.provider.listPayouts());
+
+  constructor() {
+    void this.load();
+  }
+
+  private async load(): Promise<void> {
+    const real = await this.provider.fetchEarnings();
+    if (real !== null) {
+      this.wallet.set(real.wallet);
+      this.payouts.set(real.payouts);
+    }
+  }
 
   tone(status: PayoutStatus): string {
     switch (status) {

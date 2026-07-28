@@ -162,6 +162,15 @@ export class ApiService {
     return data.data;
   }
 
+  /** The provider's earnings summary (P3-07/08) — payable balance, reserved payouts, credits, history. */
+  async earnings() {
+    const { data, error } = await api.GET('/provider/earnings');
+    if (error) {
+      throw error;
+    }
+    return data.data;
+  }
+
   /** Send a direct offer to a provider for one of the caller's jobs (P2-05). Owner-gated, idempotent. */
   async createDirectOffer(jobId: string, providerPartyId: string, message?: string) {
     const { data, error } = await api.POST('/jobs/{job}/offers', {
