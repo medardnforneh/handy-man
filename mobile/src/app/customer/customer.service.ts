@@ -2,9 +2,24 @@ import { Injectable, inject, signal } from '@angular/core';
 import { ApiService } from '../api/api.service';
 import { LocaleService } from '../core/locale.service';
 import {
-  Category, ChatSummary, EngagementMode, JobDetail, JobStatus, JobSummary, NewJobInput, Provider,
-  ProviderProfile, SavedAddress, WorkspaceThread,
+  Category, ChatSummary, EngagementMode, JobDetail, JobStatus, JobSummary, MilestoneStatus,
+  NewJobInput, Provider, ProviderProfile, SavedAddress, WorkspaceThread,
 } from './customer.models';
+
+/** Map the API milestone status onto the app's display set. */
+function mapMilestoneStatus(status: string): MilestoneStatus {
+  switch (status) {
+    case 'paid':
+    case 'approved':
+      return 'paid';
+    case 'submitted':
+      return 'submitted';
+    case 'in_progress':
+      return 'in_progress';
+    default:
+      return 'pending'; // pending / rejected
+  }
+}
 
 /** Two-letter initials from a name; a phone-only "name" falls back to a neutral glyph. */
 function initialsOf(name: string): string {
@@ -260,6 +275,62 @@ export class CustomerService {
     milestone.status = 'paid';
     detail.escrowHeldMinor = Math.max(0, detail.escrowHeldMinor - milestone.amountMinor);
     detail.releasedMinor += milestone.amountMinor;
+  }
+
+  /**
+   * The full job detail from the API (GET /jobs/{id}) — provider, money, and milestone timeline.
+   * Escrow-held / released are derived from the milestones (paid = released, the rest still held),
+   * a display view that matches the fixture semantics without a second ledger round-trip. Returns
+   * null when there's no session / the backend is unreachable, so callers keep the fixture.
+   */
+  async fetchJobDetail(id: string): Promise<JobDetail | null> {
+    try {
+      const j = await this.api.job(id);
+      const eng = j.engagement ?? null;
+      const milestones = (eng?.milestones ?? []).map((m) => ({
+        id: m.id, title: m.title, amountMinor: m.amount_minor, status: mapMilestoneStatus(m.status),
+      }));
+      const released = milestones.filter((m) => m.status === 'paid').reduce((s, m) => s + m.amountMinor, 0);
+      const agreed = eng?.agreed_amount_minor ?? j.budget?.amount_minor ?? 0;
+      const providerName = eng?.provider_name ?? null;
+      const loc = j.location ?? null;
+      const addressLine = loc ? (loc.line1 ?? [loc.quarter, loc.city].filter(Boolean).join(', ')) : null;
+
+      return {
+        id: j.id,
+        reference: j.reference,
+        title: j.title,
+        status: j.status as JobStatus,
+        mode: j.engagement_mode,
+        providerName,
+        providerInitials: providerName ? providerName.slice(0, 2).toUpperCase() : null,
+        providerId: null,
+        accent: 'brand',
+        addressLine,
+        currency: eng?.currency ?? 'XAF',
+        agreedMinor: agreed,
+        escrowHeldMinor: Math.max(0, agreed - released),
+        releasedMinor: released,
+        milestones,
+      };
+    } catch {
+      return null;
+    }
+  }
+
+  /** Approve a milestone on the real backend then re-fetch the detail; falls back to the fixture. */
+  async approveAndRefresh(jobId: string, milestoneId: string): Promise<JobDetail> {
+    try {
+      await this.api.approveMilestone(milestoneId);
+      const real = await this.fetchJobDetail(jobId);
+      if (real !== null) {
+        return real;
+      }
+    } catch {
+      // fall through to the fixture path (offline / demo job)
+    }
+    this.approveMilestone(jobId, milestoneId);
+    return this.jobDetail(jobId);
   }
 
   /**

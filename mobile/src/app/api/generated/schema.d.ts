@@ -1821,6 +1821,14 @@ export interface components {
                 currency?: string;
                 milestones_done?: number;
                 milestones_total?: number;
+                milestones?: {
+                    /** Format: uuid */
+                    id: string;
+                    title: string;
+                    amount_minor: number;
+                    /** @enum {string} */
+                    status: "pending" | "in_progress" | "submitted" | "approved" | "rejected" | "paid";
+                }[];
             };
             /** Format: date-time */
             published_at?: string | null;

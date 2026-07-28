@@ -45,4 +45,23 @@ export class ApiService {
     }
     return data.data;
   }
+
+  /** One job with its full engagement summary + milestone list (owner view). */
+  async job(id: string) {
+    const { data, error } = await api.GET('/jobs/{job}', { params: { path: { job: id } } });
+    if (error) {
+      throw error;
+    }
+    return data.data;
+  }
+
+  /** Approve a milestone — releases its escrow slice to the provider (P3-10). Customer-gated. */
+  async approveMilestone(milestoneId: string): Promise<void> {
+    const { error } = await api.POST('/milestones/{milestone}/approve', {
+      params: { path: { milestone: milestoneId }, header: { 'Idempotency-Key': crypto.randomUUID() } },
+    });
+    if (error) {
+      throw error;
+    }
+  }
 }

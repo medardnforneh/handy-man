@@ -74,7 +74,7 @@ final class JobResource extends JsonResource
             return null;
         }
 
-        $milestones = $engagement->milestones;
+        $milestones = $engagement->milestones->sortBy('position')->values();
         $done = $milestones->where('status', MilestoneStatus::Paid->value)->count();
 
         return [
@@ -83,6 +83,12 @@ final class JobResource extends JsonResource
             'currency' => $engagement->currency,
             'milestones_done' => $done,
             'milestones_total' => $milestones->count(),
+            'milestones' => $milestones->map(fn ($m) => [
+                'id' => $m->id,
+                'title' => $m->title,
+                'amount_minor' => $m->amount_minor,
+                'status' => $m->status->value,
+            ])->all(),
         ];
     }
 

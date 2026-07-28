@@ -29,6 +29,15 @@ export class JobDetailPage {
   private readonly id = this.route.snapshot.paramMap.get('id') ?? '';
   readonly job = signal<JobDetail>(this.customers.jobDetail(this.id));
 
+  constructor() {
+    // Show the fixture instantly, then swap in the real job (GET /jobs/{id}) if reachable.
+    void this.customers.fetchJobDetail(this.id).then((real) => {
+      if (real !== null) {
+        this.job.set(real);
+      }
+    });
+  }
+
   tone(status: JobStatus): string {
     switch (status) {
       case 'completed': return 'tone-success';
@@ -49,8 +58,7 @@ export class JobDetailPage {
   }
 
   async approve(milestoneId: string): Promise<void> {
-    this.customers.approveMilestone(this.id, milestoneId);
-    this.job.set({ ...this.customers.jobDetail(this.id) });
+    this.job.set(await this.customers.approveAndRefresh(this.id, milestoneId));
     const toast = await this.toasts.create({
       message: this.translate.instant('jobdetail.released_toast'),
       duration: 2000, position: 'top', color: 'success',

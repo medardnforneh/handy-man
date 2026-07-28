@@ -2215,6 +2215,16 @@ components:
                 currency: { type: string }
                 milestones_done: { type: integer }
                 milestones_total: { type: integer }
+                milestones:
+                  type: array
+                  items:
+                    type: object
+                    required: [id, title, amount_minor, status]
+                    properties:
+                      id: { type: string, format: uuid }
+                      title: { type: string }
+                      amount_minor: { type: integer }
+                      status: { type: string, enum: [pending, in_progress, submitted, approved, rejected, paid] }
         published_at: { type: [string, "null"], format: date-time }
         created_at: { type: string, format: date-time }
 

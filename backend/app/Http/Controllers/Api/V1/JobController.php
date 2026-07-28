@@ -71,7 +71,7 @@ final class JobController extends Controller
             throw new NotFoundHttpException;
         }
 
-        return JobResource::make($job->load(['photos', 'address']));
+        return JobResource::make($job->load(['photos', 'address', 'engagement.provider', 'engagement.milestones']));
     }
 
     public function publish(Request $request, Job $job, PublishJob $action): JobResource
