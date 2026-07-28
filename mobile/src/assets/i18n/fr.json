@@ -272,6 +272,7 @@
     "what": "De quoi avez-vous besoin ?",
     "what_ph": "ex. Réparer une fuite sous l’évier",
     "category": "Catégorie",
+    "service": "Service précis",
     "mode": "Type de travail",
     "hybrid": "Hybride",
     "address": "Adresse",

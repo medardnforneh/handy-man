@@ -2,8 +2,9 @@
   <ion-toolbar>
     <ion-title>{{ 'jobs.title' | translate }}</ion-title>
     <ion-buttons slot="end">
-      <ion-button class="new-btn hm-tap" (click)="postRequest()" [attr.aria-label]="'newjob.title' | translate">
+      <ion-button class="new-btn hm-tap" (click)="postRequest()">
         <ion-icon slot="icon-only" name="add" aria-hidden="true"></ion-icon>
+        <span class="sr-only">{{ 'newjob.title' | translate }}</span>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
@@ -49,8 +50,9 @@
   </div>
 
   <ion-fab slot="fixed" vertical="bottom" horizontal="end">
-    <ion-fab-button class="fab" (click)="postRequest()" [attr.aria-label]="'newjob.title' | translate">
+    <ion-fab-button class="fab" (click)="postRequest()">
       <ion-icon name="add" aria-hidden="true"></ion-icon>
+      <span class="sr-only">{{ 'newjob.title' | translate }}</span>
     </ion-fab-button>
   </ion-fab>
 </ion-content>

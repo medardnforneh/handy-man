@@ -64,4 +64,42 @@ export class ApiService {
       throw error;
     }
   }
+
+  /** The signed-in customer's saved addresses (P1-06). */
+  async addresses() {
+    const { data, error } = await api.GET('/addresses');
+    if (error) {
+      throw error;
+    }
+    return data.data;
+  }
+
+  /** Create a job (draft) — mirrors CreateJob (P2-03). Returns the created job. */
+  async createJob(body: {
+    skill_id: string;
+    engagement_mode: 'onsite' | 'remote' | 'hybrid';
+    title: string;
+    description?: string;
+    address_id?: string;
+    budget_minor?: number;
+  }) {
+    const { data, error } = await api.POST('/jobs', {
+      body,
+      params: { header: { 'Idempotency-Key': crypto.randomUUID() } },
+    });
+    if (error) {
+      throw error;
+    }
+    return data.data;
+  }
+
+  /** Publish a draft job (draft → open) so providers can be found (P2-03). */
+  async publishJob(id: string): Promise<void> {
+    const { error } = await api.POST('/jobs/{job}/publish', {
+      params: { path: { job: id }, header: { 'Idempotency-Key': crypto.randomUUID() } },
+    });
+    if (error) {
+      throw error;
+    }
+  }
 }

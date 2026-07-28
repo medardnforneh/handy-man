@@ -1,5 +1,4 @@
-// Shared primitives (.hm-card, .hm-section-head, .hm-muted…) load once globally — see angular.json.
-// SEMANTIC TOKENS ONLY — never a literal colour (doc 08; enforced by `npm run lint:colors`).
+// Shared primitives (.hm-card, .hm-section-head…) load globally. Semantic tokens only (doc 08).
 
 ion-toolbar {
   --background: var(--hm-color-surface-base);
@@ -21,7 +20,7 @@ ion-title {
   font-size: 0.95rem;
 }
 
-// ---- Text fields -------------------------------------------------------
+// ---- Text fields
 .field {
   --background: var(--hm-color-surface-raised);
   --color: var(--hm-color-text-primary);
@@ -39,7 +38,7 @@ ion-textarea.field {
   --padding-bottom: 0.6rem;
 }
 
-// ---- Category picker ---------------------------------------------------
+// ---- Category picker
 .picks {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
@@ -69,7 +68,32 @@ ion-textarea.field {
   }
 }
 
-// ---- Mode segment ------------------------------------------------------
+// ---- Specific service (leaf) chips
+.leaves {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.leaf {
+  padding: 0.5rem 0.9rem;
+  border-radius: var(--hm-radius-pill);
+  background: var(--hm-color-surface-raised);
+  border: 1.5px solid var(--hm-color-border-subtle);
+  color: var(--hm-color-text-muted);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.12s ease, color 0.12s ease, background 0.12s ease;
+
+  &.selected {
+    border-color: var(--hm-color-brand-primary);
+    background: color-mix(in srgb, var(--hm-color-brand-primary) 12%, transparent);
+    color: var(--hm-color-brand-primary);
+  }
+}
+
+// ---- Mode segment
 .choice {
   --background: var(--hm-color-surface-sunken);
   border-radius: var(--hm-radius-md);
@@ -86,7 +110,7 @@ ion-textarea.field {
   }
 }
 
-// ---- Address picker ----------------------------------------------------
+// ---- Address picker
 .addrs {
   display: flex;
   flex-direction: column;
@@ -136,7 +160,7 @@ ion-textarea.field {
   ion-icon { color: var(--hm-color-brand-primary); font-size: 1.1rem; flex: none; }
 }
 
-// ---- Add photo ---------------------------------------------------------
+// ---- Add photo
 .addphoto {
   display: flex;
   align-items: center;
@@ -155,7 +179,7 @@ ion-textarea.field {
   ion-icon { font-size: 1.25rem; color: var(--hm-color-brand-primary); }
 }
 
-// ---- Budget ------------------------------------------------------------
+// ---- Budget
 .budget {
   display: flex;
   align-items: center;
@@ -171,7 +195,7 @@ ion-textarea.field {
   }
 }
 
-// ---- Sticky CTA --------------------------------------------------------
+// ---- Sticky CTA
 ion-footer {
   background: var(--hm-color-surface-base);
 

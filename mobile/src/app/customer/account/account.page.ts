@@ -6,7 +6,6 @@ import { TranslatePipe } from '@ngx-translate/core';
 import { AuthService } from '../../core/auth.service';
 import { Locale, LocaleService, SUPPORTED_LOCALES } from '../../core/locale.service';
 import { ThemeChoice, ThemeService } from '../../core/theme.service';
-import { SavedAddress } from '../customer.models';
 import { CustomerService } from '../customer.service';
 
 /**
@@ -28,7 +27,7 @@ export class AccountPage {
   private readonly customers = inject(CustomerService);
 
   readonly me = this.customers.me;
-  readonly addresses: SavedAddress[] = this.customers.listAddresses();
+  readonly addresses = this.customers.addresses;
   readonly supported = SUPPORTED_LOCALES;
   readonly locale = signal<Locale>(this.locales.current);
   readonly theme = signal<ThemeChoice>(this.themes.current);

@@ -18,7 +18,7 @@
     <!-- Saved addresses -->
     <div class="hm-section-head"><h2>{{ 'account.addresses' | translate }}</h2></div>
     <ion-list class="addrs hm-card" lines="full">
-      @for (addr of addresses; track addr.id) {
+      @for (addr of addresses(); track addr.id) {
         <ion-item class="hm-tap">
           <ion-icon slot="start" name="location-outline" aria-hidden="true"></ion-icon>
           <ion-label>

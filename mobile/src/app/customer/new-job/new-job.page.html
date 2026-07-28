@@ -28,13 +28,29 @@
           class="pick hm-tap"
           [class.selected]="categoryId() === cat.id"
           [attr.aria-pressed]="categoryId() === cat.id"
-          (click)="categoryId.set(cat.id)"
+          (click)="selectCategory(cat.id)"
         >
           <ion-icon [name]="cat.icon" aria-hidden="true"></ion-icon>
           <span>{{ cat.label }}</span>
         </button>
       }
     </div>
+
+    <!-- Specific service (leaf skill) — shown when the chosen category has real leaves -->
+    @if (leaves().length > 0) {
+      <div class="hm-section-head"><h2>{{ 'newjob.service' | translate }}</h2></div>
+      <div class="leaves">
+        @for (leaf of leaves(); track leaf.id) {
+          <button
+            type="button"
+            class="leaf hm-tap"
+            [class.selected]="skillId() === leaf.id"
+            [attr.aria-pressed]="skillId() === leaf.id"
+            (click)="skillId.set(leaf.id)"
+          >{{ leaf.label }}</button>
+        }
+      </div>
+    }
 
     <!-- Mode -->
     <div class="hm-section-head"><h2>{{ 'newjob.mode' | translate }}</h2></div>
@@ -54,7 +70,7 @@
     @if (needsAddress()) {
       <div class="hm-section-head"><h2>{{ 'newjob.address' | translate }}</h2></div>
       <div class="addrs">
-        @for (addr of addresses; track addr.id) {
+        @for (addr of addresses(); track addr.id) {
           <button
             type="button"
             class="addr hm-card hm-tap"

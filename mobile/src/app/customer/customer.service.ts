@@ -79,6 +79,23 @@ export class CustomerService {
     void this.loadMe();
     void this.loadCategories();
     void this.loadJobs();
+    void this.loadAddresses();
+  }
+
+  /** Load the customer's real saved addresses; keep the fixtures when offline. */
+  private async loadAddresses(): Promise<void> {
+    try {
+      const addresses = await this.api.addresses();
+      if (addresses.length > 0) {
+        this.addresses.set(addresses.map((a) => ({
+          id: a.id,
+          label: a.label ?? a.quarter ?? a.city,
+          line: [a.line1, a.quarter, a.city].filter(Boolean).join(', '),
+        })));
+      }
+    } catch {
+      // No session / offline — keep the fixture addresses.
+    }
   }
 
   /** Load the customer's real jobs (with engagement summary); keep the fixtures when offline. */
@@ -119,6 +136,8 @@ export class CustomerService {
           id: s.slug,
           label: s.name ?? s.slug,
           icon: CATEGORY_ICONS[s.slug] ?? 'briefcase-outline',
+          skillId: s.id,
+          leaves: (s.children ?? []).map((c) => ({ id: c.id, label: c.name ?? c.slug })),
         })));
       }
     } catch {
@@ -143,10 +162,11 @@ export class CustomerService {
     { id: 'j5', reference: 'JOB-2HW6P', title: 'Étagères sur mesure', status: 'open', providerName: null, amountMinor: 620000, milestonesDone: 0, milestonesTotal: 0 },
   ]);
 
-  private readonly addresses: SavedAddress[] = [
+  /** The customer's saved addresses — real (GET /addresses) once loaded, fixtures until then / offline. */
+  readonly addresses = signal<SavedAddress[]>([
     { id: 'a1', label: 'Domicile', line: 'Rue 1.234, Akwa, Douala' },
     { id: 'a2', label: 'Bureau', line: 'Boulevard de la Liberté, Bonanjo, Douala' },
-  ];
+  ]);
 
   private readonly chats: ChatSummary[] = [
     { id: 'j1', providerName: 'Atelier Nkeng', initials: 'AN', reference: 'JOB-7K2M9', preview: 'Je peux passer demain matin.', time: '09:22', unread: 2, accent: 'brand' },
@@ -224,7 +244,7 @@ export class CustomerService {
   }
 
   listAddresses(): SavedAddress[] {
-    return this.addresses;
+    return this.addresses();
   }
 
   private readonly details: Record<string, JobDetail> = {
@@ -334,10 +354,29 @@ export class CustomerService {
   }
 
   /**
-   * Post a new request — mirrors CreateJob + PublishJob (doc 06): a fresh `open` job with no
-   * provider yet. A remote job carries no address (the conditional-address rule). Returns the id.
+   * Post a new request — mirrors CreateJob + PublishJob (doc 06). When a real leaf skill is chosen
+   * and the backend is reachable, it creates + publishes a real job and re-loads the list; otherwise
+   * it falls back to prepending a demo job so the offline flow still works. Returns the job id.
    */
-  createJob(input: NewJobInput): string {
+  async createJob(input: NewJobInput): Promise<string> {
+    if (input.skillId !== null) {
+      try {
+        const job = await this.api.createJob({
+          skill_id: input.skillId,
+          engagement_mode: input.mode,
+          title: input.title.trim() || 'Nouvelle demande',
+          description: input.details.trim() || undefined,
+          address_id: input.mode === 'remote' ? undefined : (input.addressId ?? undefined),
+          budget_minor: input.budgetMinor ?? undefined,
+        });
+        await this.api.publishJob(job.id);
+        await this.loadJobs();
+        return job.id;
+      } catch {
+        // fall through to the fixture path
+      }
+    }
+
     const id = `new-${this.jobs().length + 1}`;
     const category = this.categories().find((c) => c.id === input.categoryId);
     const job: JobSummary = {

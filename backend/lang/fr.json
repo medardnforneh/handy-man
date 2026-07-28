@@ -200,6 +200,7 @@
   "newjob.what": "De quoi avez-vous besoin ?",
   "newjob.what_ph": "ex. Réparer une fuite sous l’évier",
   "newjob.category": "Catégorie",
+  "newjob.service": "Service précis",
   "newjob.mode": "Type de travail",
   "newjob.hybrid": "Hybride",
   "newjob.address": "Adresse",

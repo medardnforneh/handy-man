@@ -272,6 +272,7 @@
     "what": "What do you need?",
     "what_ph": "e.g. Fix a leak under the sink",
     "category": "Category",
+    "service": "Specific service",
     "mode": "Type of work",
     "hybrid": "Hybrid",
     "address": "Address",

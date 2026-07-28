@@ -200,6 +200,7 @@
     "newjob.what": "What do you need?",
     "newjob.what_ph": "e.g. Fix a leak under the sink",
     "newjob.category": "Category",
+    "newjob.service": "Specific service",
     "newjob.mode": "Type of work",
     "newjob.hybrid": "Hybrid",
     "newjob.address": "Address",

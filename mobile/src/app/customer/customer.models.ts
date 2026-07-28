@@ -25,11 +25,20 @@ export interface Provider {
   accent: Accent;
 }
 
+/** A specific service (leaf skill) under a category — carries the real skill UUID for job creation. */
+export interface SkillLeaf {
+  id: string;
+  label: string;
+}
+
 export interface Category {
   id: string;
   label: string;
   /** Ionicons name. */
   icon: string;
+  /** The category's real skill UUID + its leaves, present when loaded from GET /skills. */
+  skillId?: string;
+  leaves?: SkillLeaf[];
 }
 
 /** A published review (double-blind, P6-08) — the private note is never sent to the client. */
@@ -120,6 +129,8 @@ export interface JobDetail {
 export interface NewJobInput {
   title: string;
   categoryId: string;
+  /** The chosen leaf skill's real UUID (present when categories came from the API) — CreateJob needs a leaf. */
+  skillId: string | null;
   mode: EngagementMode;
   addressId: string | null;
   details: string;
