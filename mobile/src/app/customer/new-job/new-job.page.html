@@ -22,7 +22,7 @@
     <!-- Category -->
     <div class="hm-section-head"><h2>{{ 'newjob.category' | translate }}</h2></div>
     <div class="picks">
-      @for (cat of categories; track cat.id) {
+      @for (cat of categories(); track cat.id) {
         <button
           type="button"
           class="pick hm-tap"

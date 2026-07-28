@@ -1,5 +1,6 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { ApiService } from '../api/api.service';
+import { LocaleService } from '../core/locale.service';
 import {
   Category, ChatSummary, EngagementMode, JobDetail, JobSummary, NewJobInput, Provider,
   ProviderProfile, SavedAddress, WorkspaceThread,
@@ -14,6 +15,23 @@ function initialsOf(name: string): string {
   return (parts[0]?.[0] ?? '') + (parts[1]?.[0] ?? '');
 }
 
+/** Ionicon per real skill-category slug (from GET /skills); a generic icon covers anything new. */
+const CATEGORY_ICONS: Record<string, string> = {
+  plumbing: 'water-outline',
+  electrical: 'flash-outline',
+  'hvac-and-refrigeration': 'snow-outline',
+  carpentry: 'hammer-outline',
+  masonry: 'construct-outline',
+  painting: 'brush-outline',
+  cleaning: 'sparkles-outline',
+  gardening: 'leaf-outline',
+  'auto-mechanics': 'car-outline',
+  'hair-and-beauty': 'cut-outline',
+  'it-and-networks': 'laptop-outline',
+  'private-tutoring': 'school-outline',
+  tailoring: 'shirt-outline',
+};
+
 /**
  * Customer-section data.
  *
@@ -25,6 +43,7 @@ function initialsOf(name: string): string {
 @Injectable({ providedIn: 'root' })
 export class CustomerService {
   private readonly api = inject(ApiService);
+  private readonly locales = inject(LocaleService);
 
   /**
    * The signed-in customer. Loaded from `GET /auth/me` when a session token is present, else the
@@ -32,8 +51,18 @@ export class CustomerService {
    */
   readonly me = signal({ name: 'Jean Mballa', initials: 'JM', phone: '+237 6 99 88 77 66' });
 
+  /** Discover's category rail — real skill categories (GET /skills) once loaded, curated fixtures until then. */
+  readonly categories = signal<Category[]>([
+    { id: 'plomberie', label: 'Plomberie', icon: 'water-outline' },
+    { id: 'clim', label: 'Climatisation', icon: 'snow-outline' },
+    { id: 'elec', label: 'Électricité', icon: 'flash-outline' },
+    { id: 'design', label: 'Design', icon: 'brush-outline' },
+    { id: 'menuiserie', label: 'Menuiserie', icon: 'hammer-outline' },
+  ]);
+
   constructor() {
     void this.loadMe();
+    void this.loadCategories();
   }
 
   private async loadMe(): Promise<void> {
@@ -46,20 +75,28 @@ export class CustomerService {
     }
   }
 
+  /** Real skill categories drive the discover rail; the curated fixtures stand in when offline. */
+  private async loadCategories(): Promise<void> {
+    try {
+      const skills = await this.api.skills(this.locales.current);
+      if (skills.length > 0) {
+        this.categories.set(skills.map((s) => ({
+          id: s.slug,
+          label: s.name ?? s.slug,
+          icon: CATEGORY_ICONS[s.slug] ?? 'briefcase-outline',
+        })));
+      }
+    } catch {
+      // Offline — keep the curated fixture categories.
+    }
+  }
+
   private readonly providers: Provider[] = [
     { id: 'p1', name: 'Atelier Nkeng', initials: 'AN', skill: 'Plomberie', rating: 4.9, mode: 'onsite', distanceKm: 2.1, verified: true, accent: 'brand' },
     { id: 'p2', name: 'Marie Fotso', initials: 'MF', skill: 'Design graphique', rating: 4.8, mode: 'remote', distanceKm: null, verified: true, accent: 'info' },
     { id: 'p3', name: 'Douala Cool Services', initials: 'DC', skill: 'Climatisation', rating: 4.7, mode: 'onsite', distanceKm: 3.4, verified: false, accent: 'warning' },
     { id: 'p4', name: 'Yaoundé Élec', initials: 'YE', skill: 'Électricité', rating: 4.6, mode: 'onsite', distanceKm: 5.2, verified: true, accent: 'muted' },
     { id: 'p5', name: 'Fresh Design Studio', initials: 'FD', skill: 'Design graphique', rating: 4.5, mode: 'remote', distanceKm: null, verified: false, accent: 'info' },
-  ];
-
-  private readonly cats: Category[] = [
-    { id: 'plomberie', label: 'Plomberie', icon: 'water-outline' },
-    { id: 'clim', label: 'Climatisation', icon: 'snow-outline' },
-    { id: 'elec', label: 'Électricité', icon: 'flash-outline' },
-    { id: 'design', label: 'Design', icon: 'brush-outline' },
-    { id: 'menuiserie', label: 'Menuiserie', icon: 'hammer-outline' },
   ];
 
   private readonly jobs: JobSummary[] = [
@@ -140,10 +177,6 @@ export class CustomerService {
     },
   };
 
-  listCategories(): Category[] {
-    return this.cats;
-  }
-
   /** The public provider profile (reviews + display-safe metrics). Falls back to a sensible default. */
   provider(id: string): ProviderProfile {
     return this.profiles[id] ?? this.profiles['p1'];
@@ -219,7 +252,7 @@ export class CustomerService {
   createJob(input: NewJobInput): string {
     const seq = this.jobs.length + 1;
     const id = `new-${seq}`;
-    const category = this.cats.find((c) => c.id === input.categoryId);
+    const category = this.categories().find((c) => c.id === input.categoryId);
     this.jobs.unshift({
       id,
       reference: `JOB-${id.toUpperCase()}`,

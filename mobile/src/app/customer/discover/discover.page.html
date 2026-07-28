@@ -43,7 +43,7 @@
     </div>
 
     <div class="cats">
-      @for (cat of categories; track cat.id) {
+      @for (cat of categories(); track cat.id) {
         <button class="cat hm-tap" type="button">
           <span class="ic"><ion-icon [name]="cat.icon" aria-hidden="true"></ion-icon></span>
           <span class="cat-label">{{ cat.label }}</span>

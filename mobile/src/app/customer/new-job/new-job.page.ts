@@ -3,7 +3,7 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { IonicModule, ToastController } from '@ionic/angular';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
-import { Category, EngagementMode, SavedAddress } from '../customer.models';
+import { EngagementMode, SavedAddress } from '../customer.models';
 import { CustomerService } from '../customer.service';
 
 /**
@@ -24,7 +24,7 @@ export class NewJobPage {
   private readonly toasts = inject(ToastController);
   private readonly translate = inject(TranslateService);
 
-  readonly categories: Category[] = this.customers.listCategories();
+  readonly categories = this.customers.categories;
   readonly addresses: SavedAddress[] = this.customers.listAddresses();
 
   readonly title = signal('');

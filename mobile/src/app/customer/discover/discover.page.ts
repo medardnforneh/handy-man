@@ -3,7 +3,7 @@ import { Component, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { TranslatePipe } from '@ngx-translate/core';
-import { Category, EngagementMode, Provider } from '../customer.models';
+import { EngagementMode, Provider } from '../customer.models';
 import { CustomerService } from '../customer.service';
 
 type ModeFilter = EngagementMode | 'both';
@@ -25,7 +25,7 @@ export class DiscoverPage {
   /** Signed-in customer's initials for the avatar — real when a session is present (GET /auth/me). */
   readonly userInitials = this.customers.me;
 
-  readonly categories: Category[] = this.customers.listCategories();
+  readonly categories = this.customers.categories;
   readonly mode = signal<ModeFilter>('onsite');
   readonly providers = signal<Provider[]>(this.customers.listProviders('onsite'));
 

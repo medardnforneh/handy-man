@@ -19,13 +19,13 @@ export class ApiService {
     return data;
   }
 
-  /** Public bilingual skills taxonomy (P1-07) — the real source behind the category rail. */
-  async skills() {
-    const { data, error } = await api.GET('/skills');
+  /** Public bilingual skills taxonomy (P1-07) — top-level categories, each with its leaves. */
+  async skills(locale: 'fr' | 'en') {
+    const { data, error } = await api.GET('/skills', { params: { query: { locale } } });
     if (error) {
       throw error;
     }
-    return data;
+    return data.data;
   }
 
   /** The signed-in user (P1-03) — requires the Bearer. Drives the account/profile identity. */
