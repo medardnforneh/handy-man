@@ -3,6 +3,16 @@
     "name": "HandyMan",
     "tagline": "Find trusted help, on-site or remote"
   },
+  "public": {
+    "services_title": "All services",
+    "services_description": "Browse every trade on HandyMan and find someone who does it.",
+    "service_description": "Find trusted {{service}} professionals near you — on-site or remote.",
+    "in_this_category": "In this category",
+    "providers_heading": "Providers offering this",
+    "no_providers_yet": "No one offers this yet. Be the first.",
+    "no_services": "No services listed yet.",
+    "all_services": "All services"
+  },
   "nav": {
     "customer": "Find help",
     "provider": "Offer services",

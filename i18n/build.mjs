@@ -73,9 +73,24 @@ assertParity(dicts);
 
 if (checkOnly) process.exit(0);
 
+/**
+ * The shared source uses ngx-translate's `{{name}}` placeholders. Laravel's translator only
+ * substitutes `:name`, so a parameterised string rendered from Blade would otherwise print the
+ * raw `{{name}}` to the user — which it did, on the public services pages. Convert for the Laravel
+ * output only; the Angular file keeps the `{{name}}` form it expects.
+ */
+function toLaravelPlaceholders(flat) {
+  return Object.fromEntries(
+    Object.entries(flat).map(([key, value]) => [
+      key,
+      typeof value === 'string' ? value.replace(/\{\{\s*(\w+)\s*\}\}/g, ':$1') : value,
+    ]),
+  );
+}
+
 for (const locale of LOCALES) {
   // Laravel flat JSON translations.
-  writeJson(join(root, 'backend', 'lang', `${locale}.json`), dicts[locale]);
+  writeJson(join(root, 'backend', 'lang', `${locale}.json`), toLaravelPlaceholders(dicts[locale]));
 
   // Angular nested JSON for ngx-translate (only if the app exists yet).
   const mobileI18n = join(root, 'mobile', 'src', 'assets', 'i18n');

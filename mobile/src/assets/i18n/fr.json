@@ -3,6 +3,16 @@
     "name": "HandyMan",
     "tagline": "Trouvez de l'aide de confiance, sur place ou à distance"
   },
+  "public": {
+    "services_title": "Tous les services",
+    "services_description": "Parcourez tous les métiers sur HandyMan et trouvez un professionnel.",
+    "service_description": "Trouvez des professionnels de confiance en {{service}} près de chez vous — sur place ou à distance.",
+    "in_this_category": "Dans cette catégorie",
+    "providers_heading": "Prestataires proposant ce service",
+    "no_providers_yet": "Personne ne propose encore ce service. Soyez le premier.",
+    "no_services": "Aucun service listé pour le moment.",
+    "all_services": "Tous les services"
+  },
   "nav": {
     "customer": "Trouver de l'aide",
     "provider": "Proposer des services",

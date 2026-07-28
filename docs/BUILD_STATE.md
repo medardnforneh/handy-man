@@ -233,6 +233,35 @@ build, which lands with the app UI work.**
 
 ## What was done, most recent first
 
+- **Public/SEO surface: a crawlable services directory (doc 08).** The public site was a stub — a hero
+  and two empty cards. The bilingual taxonomy (P1-07) is the natural SEO asset, so it now backs real
+  pages: 13 categories and 41 leaves, each a genuine search term, in both languages.
+  - `GET /services` lists every category with its leaves; `GET /services/{slug}` is one trade — a
+    category page lists its leaves, a leaf page lists **who offers it**. An unknown slug 404s rather
+    than rendering an empty page.
+  - **PII holds the same line as the API**: a visitor here is anonymous and pre-engagement, so a
+    provider shows their public **headline**, verification badge and shrunk rating — never the
+    display name, never a service area or coordinate. Suspended providers are excluded exactly as
+    `ProviderSearch` excludes them. A test asserts the personal name is absent from the HTML.
+  - **SEO head**: per-page `<title>`/description, canonical **without** `?lang=` (a translation is not
+    a separate page), reciprocal `hreflang` for fr/en plus `x-default`, Open Graph, and JSON-LD
+    (`ItemList` for the directory, `Service` for a trade) built in the controller — Blade's `@json`
+    can't parse a multi-line array literal.
+  - `sitemap.xml` (114 URLs — every page × both locales, with `xhtml:link` alternates) and
+    `robots.txt`, which **disallows the grant URLs**: signed verification-document links and share
+    tokens are grants, not content, and must never be indexed.
+  - **Two real bugs found by looking at the rendered page rather than trusting green tests:**
+    1. `public/robots.txt` existed as a STATIC file and shadowed the route — the web server answers
+       it before Laravel ever routes, so the richer robots.txt was dead in production while the test
+       passed (tests bypass static files). Removed the static file.
+    2. **Parameterised translations printed raw on every Blade page.** The shared i18n source uses
+       ngx-translate's `{{name}}`; Laravel substitutes `:name`. The page literally read "Find trusted
+       {{service}} professionals". `i18n/build.mjs` now rewrites placeholders for the **Laravel output
+       only** — the Angular file keeps the form it expects. This affected any parameterised string
+       rendered from Blade, not just this page.
+  - 407 backend tests green (13 in the web suite), PHPStan L6 + Pint clean, i18n parity 394 × 2,
+    colour + bare-string linters clean. Verified in a browser in both languages.
+
 - **Live workspace messages over Reverb (P4-04) — and a channel-auth bug that had never worked.**
   Realtime was scaffolded but inert: the channels were authorized and unit-tested (P4-03), yet
   **nothing in `app/` implemented `ShouldBroadcast`**, so no event was ever emitted.

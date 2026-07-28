@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\EngagementShareViewController;
+use App\Http\Controllers\PublicServiceController;
+use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\VerificationDocumentViewController;
 use Illuminate\Support\Facades\Route;
 
@@ -10,6 +12,16 @@ use Illuminate\Support\Facades\Route;
 // it (doc 08). Locale is resolved per request by the SetLocale middleware (registered on the web
 // group in bootstrap/app.php).
 Route::get('/', fn () => view('public.home'))->name('home');
+
+// The crawlable services directory — the taxonomy (P1-07) is the site's SEO surface. Every trade
+// is a real search term in both languages, and a leaf page lists who offers it (PII-minimised:
+// headline + reputation only, exactly as the API's pre-engagement match list does).
+Route::get('/services', [PublicServiceController::class, 'index'])->name('services.index');
+Route::get('/services/{slug}', [PublicServiceController::class, 'show'])->name('services.show');
+
+// Discovery for crawlers. robots.txt disallows the grant URLs (signed documents, share tokens).
+Route::get('/sitemap.xml', [SitemapController::class, 'sitemap'])->name('sitemap');
+Route::get('/robots.txt', [SitemapController::class, 'robots'])->name('robots');
 
 // Verification document access (P6-01, doc 04). The `signed` middleware enforces the 60s TTL — an
 // expired or tampered URL is 403'd before the controller runs. Not in the /api group (a browser
