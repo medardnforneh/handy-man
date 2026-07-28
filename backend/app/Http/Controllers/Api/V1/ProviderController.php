@@ -34,7 +34,9 @@ final class ProviderController extends Controller
 
         $profile = ProviderProfile::query()
             ->where('party_id', $user->party_id)
-            ->with(['skills', 'serviceAreas'])
+            // `party` for the display name and `skills.skill` for the bilingual labels — without
+            // these the resource's whenLoaded fields silently vanish from the response.
+            ->with(['party', 'skills.skill', 'serviceAreas'])
             ->first();
 
         if ($profile === null) {

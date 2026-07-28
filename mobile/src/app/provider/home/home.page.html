@@ -2,7 +2,7 @@
   <ion-toolbar>
     <ion-title>{{ 'pro.title' | translate }}</ion-title>
     <ion-buttons slot="end">
-      <div class="hm-avatar top-av accent-brand" aria-hidden="true">{{ initials }}</div>
+      <div class="hm-avatar top-av accent-brand" aria-hidden="true">{{ identity().initials }}</div>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
@@ -12,8 +12,8 @@
     <div class="hello">
       <h1>{{ 'pro.greeting' | translate }}</h1>
       <span class="who">
-        {{ name }}
-        @if (verified) {
+        {{ identity().name }}
+        @if (identity().verificationTier >= 2) {
           <ion-icon class="verified" name="shield-checkmark" [attr.aria-label]="'discover.verified' | translate"></ion-icon>
         }
       </span>
@@ -22,9 +22,9 @@
     <!-- Wallet -->
     <div class="wallet">
       <span class="wl">{{ 'pro.available' | translate }}</span>
-      <div class="bal">{{ wallet.availableMinor | money }} <small>{{ 'money.currency' | translate }}</small></div>
-      @if (wallet.pendingPayoutMinor > 0) {
-        <span class="pending">{{ 'pro.payout_pending' | translate:{ amount: (wallet.pendingPayoutMinor | money) } }} {{ 'money.currency' | translate }}</span>
+      <div class="bal">{{ wallet().availableMinor | money }} <small>{{ 'money.currency' | translate }}</small></div>
+      @if (wallet().pendingPayoutMinor > 0) {
+        <span class="pending">{{ 'pro.payout_pending' | translate:{ amount: (wallet().pendingPayoutMinor | money) } }} {{ 'money.currency' | translate }}</span>
       }
       <ion-button expand="block" class="withdraw hm-tap" (click)="withdraw()">
         <ion-icon name="cash-outline" slot="start" aria-hidden="true"></ion-icon>
@@ -35,11 +35,11 @@
     <!-- Stats -->
     <div class="stats">
       <div class="stat hm-card">
-        <b>{{ stats.activeJobs }}</b>
+        <b>{{ stats().activeJobs }}</b>
         <small class="hm-muted">{{ 'pro.active_jobs' | translate }}</small>
       </div>
       <div class="stat hm-card">
-        <b class="rating"><ion-icon name="star" aria-hidden="true"></ion-icon>{{ stats.rating ?? '—' }}</b>
+        <b class="rating"><ion-icon name="star" aria-hidden="true"></ion-icon>{{ stats().rating ?? '—' }}</b>
         <small class="hm-muted">{{ 'pro.rating' | translate }}</small>
       </div>
       <div class="stat hm-card">
@@ -55,9 +55,9 @@
     <!-- Opportunities -->
     <div class="hm-section-head">
       <h2>{{ 'pro.opportunities' | translate }}</h2>
-      <a (click)="seeOpportunities()">{{ 'discover.see_all' | translate }} ({{ leadCount }})</a>
+      <a (click)="seeOpportunities()">{{ 'discover.see_all' | translate }} ({{ leadCount() }})</a>
     </div>
-    @for (lead of leads; track lead.id) {
+    @for (lead of topLeads(); track lead.id) {
       <button class="lead hm-card hm-tap" type="button" (click)="openLead(lead)">
         <div [class]="'hm-avatar lead-av accent-' + lead.accent" aria-hidden="true">
           <ion-icon name="briefcase" aria-hidden="true"></ion-icon>
@@ -88,7 +88,7 @@
       <h2>{{ 'pro.active_work' | translate }}</h2>
       <a (click)="seeWork()">{{ 'discover.see_all' | translate }}</a>
     </div>
-    @for (work of active; track work.id) {
+    @for (work of topActive(); track work.id) {
       <button class="work hm-card hm-tap" type="button" (click)="openWork(work)">
         <div [class]="'hm-avatar work-av accent-' + work.accent" aria-hidden="true">{{ work.customerName.charAt(0) }}</div>
         <div class="work-info">

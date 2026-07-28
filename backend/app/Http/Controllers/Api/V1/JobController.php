@@ -94,6 +94,8 @@ final class JobController extends Controller
 
         abort_unless($job->customer_party_id === $user->party_id, 403);
 
-        return ProviderProfileResource::collection($search->forJob($job)->load('party'));
+        // `skills.skill` so each card carries its own bilingual skill label. Note the resource still
+        // withholds the display name and any precise location from a pre-engagement viewer.
+        return ProviderProfileResource::collection($search->forJob($job)->load('skills.skill'));
     }
 }

@@ -61,6 +61,22 @@ export class ApiService {
     return data.data;
   }
 
+  /**
+   * Persist the UI language server-side (P1-05b). Without this the app's language toggle and the
+   * server's stored `locale` drift apart, and bilingual API payloads (skill labels) come back in a
+   * different language than the chrome around them.
+   */
+  async setLocalePreference(locale: 'fr' | 'en') {
+    const { data, error } = await api.PATCH('/me/preferences', {
+      params: { header: { 'Idempotency-Key': crypto.randomUUID() } },
+      body: { locale },
+    });
+    if (error) {
+      throw error;
+    }
+    return data.data;
+  }
+
   /** The customer's own jobs (P2-03), newest first, with the compact engagement summary. */
   async jobs() {
     const { data, error } = await api.GET('/jobs');
@@ -180,6 +196,19 @@ export class ApiService {
     const { data, error } = await api.GET('/providers/{party}/reviews', {
       params: { path: { party: partyId } },
     });
+    if (error) {
+      throw error;
+    }
+    return data.data;
+  }
+
+  /**
+   * The caller's own provider profile (P1-08) — headline, verification tier, listed skills (with
+   * their bilingual labels) and service areas. 404 until they've created one. `party_id` on the
+   * response is the handle the public metrics/reviews endpoints take.
+   */
+  async providerProfile() {
+    const { data, error } = await api.GET('/provider/profile');
     if (error) {
       throw error;
     }

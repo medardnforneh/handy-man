@@ -231,6 +231,42 @@ build, which lands with the app UI work.**
 
 ## What was done, most recent first
 
+- **Provider Home dashboard + Profile on real data — and three bugs the wiring exposed.** Both screens
+  now read the API; the provider section is fully wired apart from the quote composer.
+  - **Home is COMPOSED, not a new endpoint**: wallet from `GET /provider/earnings`, in-flight count
+    from `GET /provider/work`, reputation from the provider's own public `GET /providers/{party}/metrics`
+    (P6-12). Each panel loads independently and keeps its fixture on failure, so one unavailable read
+    never blanks the screen. Rating and on-time pass the API's **nulls straight through** — they render
+    as "—" / "Building", never a flattering small-sample number. Verified live: 170 000 FCFA payable,
+    2 active, rating "—" and on-time "Building" all matched the API exactly. "Withdraw" now routes to
+    the Earnings screen instead of firing a fake toast (a payout is real money movement, P3-08).
+  - **Profile is real**: display name, verification tier, listed skills as chips, service area. The
+    service area shows a **radius**, not an invented city — the row stores a centre point + radius and
+    nothing else. Empty states for "no skills" / "no service area" were exercised on the seeded
+    provider before skills were added.
+  - **Bug 1 — the client was sending a PROFILE id where a PARTY id was required.** `ProviderProfileResource`
+    exposes `id` (the `provider_profiles` row) and the customer discovery loop used it for
+    `POST /jobs/{job}/offers`, `GET /providers/{party}/metrics` and `/reviews` — all of which take the
+    **party** id. They are different UUIDs, so "send an offer" and the profile screen's metrics/reviews
+    could not have worked. The resource now carries `party_id` explicitly (documented in the spec as
+    "NOT the handle other endpoints take"), and the customer service uses it. A test pins that the two
+    ids differ.
+  - **Bug 2 — `showProfile` never eager-loaded `party`**, so the `whenLoaded` `display_name` silently
+    vanished from every response. Now loaded, along with `skills.skill` so each listed skill carries
+    its **bilingual label** (`name`) instead of making every client keep an id→name table.
+  - **Bug 3 — bilingual API payloads ignored the caller's language.** `SetLocale` is registered on the
+    **web** group only, so on `/api/v1` neither the user's stored `locale` nor Accept-Language ever
+    applied — and it could not simply be added to the api group, because group middleware runs before
+    `auth:sanctum`, leaving `$request->user()` null. New `App\Support\RequestLocale` resolves the
+    documented precedence (`?locale=` → user's stored locale → Accept-Language → default) inside the
+    Resource, where the user IS resolved; `SkillResource` and `ProviderSkillResource` both use it.
+    Compounding it, **`LocaleService.choose()` only ever persisted to the device** and never called
+    `PATCH /me/preferences` (P1-05b), so the app's language toggle and the server's copy drifted apart
+    permanently. It now syncs, best-effort. Verified live: toggling to English flipped the stored
+    locale `fr`→`en` and the skill chips followed the chrome.
+  - 394 backend tests green (2 new), PHPStan L6 + Pint clean, mobile build green, API-client drift gate
+    stable, i18n parity 372 × 2, colour + bare-string linters clean.
+
 - **Mobile ↔ API wiring — the provider execution surface is real (check-in / status / report)**. The
   work-detail screen was the last big fixture-only *mutation* surface; it now drives the P5-03/04/06
   endpoints end-to-end.
@@ -293,10 +329,9 @@ build, which lands with the app UI work.**
     `opcache.enable_cli=1`, which is what `artisan serve`'s cli-server SAPI reads) took requests to
     ~0.25s and the suite to 200s. Dev API port moved to **8100** (8000 taken); `environment.ts`
     follows.
-  - **Still fixture-only on the provider side**: the Home dashboard (wallet + stats — composable from
-    earnings + work + own `GET /providers/{party}/metrics`, no new endpoint) and the provider's own
-    Profile (`GET /provider/profile` exists). Not yet started: Blade public/SEO pages, realtime/media
-    surfaces (P4-04..07), native/offline (P5-01/02).
+  - **Still fixture-only on the provider side** (both done in the pass above): the Home dashboard and
+    the provider's own Profile. Not yet started: Blade public/SEO pages, realtime/media surfaces
+    (P4-04..07), native/offline (P5-01/02).
 
 - **Mobile ↔ API wiring — customer discovery loop + provider read surfaces made real**. Continuing the
   method-by-method migration from fixtures to the generated `openapi-fetch` client (every screen keeps

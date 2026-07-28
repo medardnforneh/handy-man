@@ -5,6 +5,24 @@
  */
 import { Accent, EngagementMode, JobStatus } from '../customer/customer.models';
 
+/**
+ * Who the provider is, as the Home and Profile screens render them. `partyId` is the handle the
+ * public metrics/reviews endpoints take — distinct from the provider_profiles row id (P1-08).
+ * `serviceAreaRadiusKm` is null when no area is set; there is no stored city, so the label is a
+ * radius rather than an invented place name.
+ */
+export interface ProviderIdentity {
+  partyId: string | null;
+  name: string;
+  initials: string;
+  headline: string;
+  verificationTier: number;
+  rating: number | null;
+  ratingCount: number;
+  skills: string[];
+  serviceAreaRadiusKm: number | null;
+}
+
 /** The provider's money at a glance — payable balance and any payout in flight (P3-08). */
 export interface ProviderWallet {
   availableMinor: number;

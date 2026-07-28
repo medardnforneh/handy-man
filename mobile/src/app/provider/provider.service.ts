@@ -1,10 +1,10 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 import { ApiService } from '../api/api.service';
 import { Accent } from '../customer/customer.models';
 import { LocaleService } from '../core/locale.service';
 import {
-  ActiveWork, Lead, Payout, PayoutStatus, ProviderStats, ReportDraft, WorkDetail, WorkStatus,
-  ProviderWallet,
+  ActiveWork, Lead, Payout, PayoutStatus, ProviderIdentity, ProviderStats, ReportDraft, WorkDetail,
+  WorkStatus, ProviderWallet,
 } from './provider.models';
 
 /** The outcome of one execution mutation: accepted, or refused with the server's own explanation. */
@@ -88,13 +88,53 @@ export class ProviderService {
   /** Engagement ids the API has confirmed — the switch that routes mutations to the server. */
   private readonly realWork = new Set<string>();
 
-  readonly name = 'Atelier Nkeng';
-  readonly initials = 'AN';
-  readonly verified = true;
-  readonly rating = 4.9;
-  readonly verificationTier = 2; // 0 none · 1 phone · 2 ID · 3 ID + license (P6-03)
-  readonly skills = ['Plomberie', 'Fuites', 'Chauffe-eau', 'Sanitaires'];
-  readonly serviceArea = 'Douala — rayon de 15 km';
+  /**
+   * Who the provider is. Starts as the fixture so the section renders instantly and stays demoable
+   * offline; `fetchProfile()` replaces it with the real profile. Screens read the SIGNAL, not a
+   * snapshot, so they pick the real values up when it lands.
+   */
+  readonly identity = signal<ProviderIdentity>({
+    partyId: null,
+    name: 'Atelier Nkeng',
+    initials: 'AN',
+    headline: 'Plomberie',
+    verificationTier: 2, // 0 none · 1 phone · 2 ID · 3 ID + license (P6-03)
+    rating: 4.9,
+    ratingCount: 68,
+    skills: ['Plomberie', 'Fuites', 'Chauffe-eau', 'Sanitaires'],
+    serviceAreaRadiusKm: 15,
+  });
+
+  /**
+   * The caller's own provider profile (GET /provider/profile). A 404 means they haven't created one
+   * yet — that is a legitimate state, not an error, so we keep the fixture and return null.
+   */
+  async fetchProfile(): Promise<ProviderIdentity | null> {
+    try {
+      const p = await this.api.providerProfile();
+      const name = p.display_name ?? p.headline ?? '';
+      const skills = (p.skills ?? []).map((s) => s.name ?? '').filter((s) => s !== '');
+      // Service areas are stored as a centre + radius; with no city on the row we show the radius
+      // rather than invent a place name.
+      const area = (p.service_areas ?? [])[0];
+
+      const identity: ProviderIdentity = {
+        partyId: p.party_id,
+        name,
+        initials: initialsOf(name),
+        headline: p.headline ?? skills[0] ?? '',
+        verificationTier: p.verification_tier,
+        rating: p.rating_avg === null || p.rating_avg === undefined ? null : Number(p.rating_avg),
+        ratingCount: p.rating_count ?? 0,
+        skills,
+        serviceAreaRadiusKm: area?.radius_m ? Math.round(area.radius_m / 1000) : null,
+      };
+      this.identity.set(identity);
+      return identity;
+    } catch {
+      return null;
+    }
+  }
 
   /** Whether the provider is currently accepting new jobs (a soft availability switch). */
   private available = true;
@@ -182,6 +222,42 @@ export class ProviderService {
 
   getStats(): ProviderStats {
     return this.stats;
+  }
+
+  /**
+   * The Home dashboard's stats, COMPOSED from what already exists rather than a new endpoint:
+   * the in-flight count from the work list, and reputation from the provider's own public metrics
+   * (P6-12 — `rating_avg` and `on_time_rate` come back null below the sample floor, and we pass that
+   * null straight through; "100% on-time (1 job)" must never be displayed).
+   *
+   * Needs the party id, which only the profile carries, so it loads that first. Returns null when
+   * there's no session / offline, so the caller keeps the fixture stats.
+   */
+  async fetchStats(): Promise<ProviderStats | null> {
+    try {
+      const identity = this.identity().partyId !== null ? this.identity() : await this.fetchProfile();
+      if (identity === null || identity.partyId === null) {
+        return null;
+      }
+
+      const [metrics, active] = await Promise.all([
+        this.api.providerMetrics(identity.partyId),
+        this.api.work(),
+      ]);
+
+      return {
+        activeJobs: active.length,
+        rating: metrics.rating_avg === null || metrics.rating_avg === undefined
+          ? null
+          : Number(metrics.rating_avg),
+        completed90d: metrics.jobs_completed_90d ?? 0,
+        onTimeRate: metrics.on_time_rate === null || metrics.on_time_rate === undefined
+          ? null
+          : Number(metrics.on_time_rate),
+      };
+    } catch {
+      return null;
+    }
   }
 
   listLeads(): Lead[] {

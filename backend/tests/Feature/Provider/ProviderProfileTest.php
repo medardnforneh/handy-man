@@ -98,3 +98,59 @@ it('derives identity_verified as the stronger of the phone check and the ID tier
     app(FactDeriver::class)->forget($user, Fact::IdentityVerified);
     expect(app(FactDeriver::class)->derive($user, Fact::IdentityVerified)->level)->toBe(2);
 });
+
+it('returns the PARTY id and bilingual skill labels on the provider’s own profile', function () {
+    $user = User::factory()->create(['locale' => 'fr']);
+    $skill = Skill::factory()->create(['name_en' => 'Plumbing', 'name_fr' => 'Plomberie', 'is_leaf' => true]);
+
+    Sanctum::actingAs($user);
+    providerPost($this, '/api/v1/provider/profile', ['headline' => 'Atelier Nkeng'])->assertOk();
+    providerPost($this, '/api/v1/provider/skills', [
+        'skill_id' => $skill->id, 'price_model' => 'quote_only',
+    ])->assertCreated();
+
+    // `party_id` is the handle every OTHER endpoint takes (offers, metrics, reviews) — the profile
+    // row's own `id` is not interchangeable with it, and a client that confuses them sends garbage.
+    $response = $this->getJson('/api/v1/provider/profile')->assertOk();
+    $response->assertJsonPath('data.party_id', $user->party_id)
+        ->assertJsonPath('data.display_name', $user->party->display_name);
+
+    expect($response->json('data.id'))->not->toBe($user->party_id);
+});
+
+it('labels a provider’s skills in the caller’s own locale, with ?locale= winning', function () {
+    // The user's stored locale must beat Accept-Language: SetLocale is registered on the WEB group
+    // only, so without RequestLocale an API caller would silently get the app default instead.
+    $user = User::factory()->create(['locale' => 'fr']);
+    $skill = Skill::factory()->create(['name_en' => 'Plumbing', 'name_fr' => 'Plomberie', 'is_leaf' => true]);
+
+    Sanctum::actingAs($user);
+    providerPost($this, '/api/v1/provider/profile', ['headline' => 'Atelier Nkeng'])->assertOk();
+    providerPost($this, '/api/v1/provider/skills', [
+        'skill_id' => $skill->id, 'price_model' => 'quote_only',
+    ])->assertCreated();
+
+    $this->getJson('/api/v1/provider/profile', ['Accept-Language' => 'en-GB,en;q=0.9'])
+        ->assertOk()
+        ->assertJsonPath('data.skills.0.name', 'Plomberie');
+
+    // An explicit query parameter still wins over everything.
+    $this->getJson('/api/v1/provider/profile?locale=en')
+        ->assertOk()
+        ->assertJsonPath('data.skills.0.name', 'Plumbing');
+
+});
+
+it('falls back to Accept-Language when there is no session to read a preference from', function () {
+    // `users.locale` is NOT NULL, so that branch is only reachable unauthenticated — which is
+    // exactly the public taxonomy endpoint.
+    Skill::factory()->create(['name_en' => 'Trades', 'name_fr' => 'Métiers', 'is_leaf' => false]);
+
+    $this->getJson('/api/v1/skills', ['Accept-Language' => 'fr-FR,fr;q=0.9'])
+        ->assertOk()
+        ->assertJsonFragment(['name' => 'Métiers']);
+
+    $this->getJson('/api/v1/skills', ['Accept-Language' => 'en-GB,en;q=0.9'])
+        ->assertOk()
+        ->assertJsonFragment(['name' => 'Trades']);
+});

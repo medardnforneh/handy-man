@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Resources\Api\V1;
 
 use App\Models\Skill;
+use App\Support\RequestLocale;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -18,9 +19,7 @@ final class SkillResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        $locale = in_array($request->query('locale'), ['fr', 'en'], true)
-            ? (string) $request->query('locale')
-            : (string) config('app.locale');
+        $locale = RequestLocale::for($request);
 
         return [
             'id' => $this->id,

@@ -20,6 +20,10 @@ final class ProviderProfileResource extends JsonResource
     {
         return [
             'id' => $this->id,
+            // The PARTY id, not the profile row's — this is the handle every other endpoint takes
+            // (offers, public metrics, published reviews), so a client that only has this resource
+            // can still act. It is not a leak: sending an offer requires it by design.
+            'party_id' => $this->party_id,
             'display_name' => $this->whenLoaded('party', fn () => $this->party->display_name),
             'headline' => $this->headline,
             'bio' => $this->bio,

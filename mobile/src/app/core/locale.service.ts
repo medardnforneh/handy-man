@@ -1,6 +1,7 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import { Preferences } from '@capacitor/preferences';
+import { ApiService } from '../api/api.service';
 
 export const SUPPORTED_LOCALES = ['fr', 'en'] as const;
 export type Locale = (typeof SUPPORTED_LOCALES)[number];
@@ -16,6 +17,7 @@ const STORAGE_KEY = 'locale';
  */
 @Injectable({ providedIn: 'root' })
 export class LocaleService {
+  private readonly api = inject(ApiService);
   private currentLocale: Locale = DEFAULT_LOCALE;
   private chosen = false;
 
@@ -31,10 +33,21 @@ export class LocaleService {
     }
   }
 
-  /** The user picked a language explicitly — apply and remember it. */
+  /**
+   * The user picked a language explicitly — apply it, remember it on the device, and tell the
+   * server (P1-05b). The server copy is what bilingual payloads (skill labels) and outbound comms
+   * follow, so skipping it leaves the app's chrome and its data speaking different languages.
+   * Best-effort: an offline device still switches language immediately.
+   */
   async choose(locale: Locale): Promise<void> {
     this.chosen = true;
     await this.apply(locale, true);
+
+    try {
+      await this.api.setLocalePreference(locale);
+    } catch {
+      // No session / offline — the device preference still holds and re-syncs on the next change.
+    }
   }
 
   get current(): Locale {

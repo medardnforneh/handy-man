@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { TranslatePipe } from '@ngx-translate/core';
@@ -27,12 +27,8 @@ export class ProviderProfilePage {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
 
-  readonly name = this.provider.name;
-  readonly initials = this.provider.initials;
-  readonly rating = this.provider.rating;
-  readonly verificationTier = this.provider.verificationTier;
-  readonly skills = this.provider.skills;
-  readonly serviceArea = this.provider.serviceArea;
+  /** Who the provider is — the service's signal, so the real profile replaces the fixture live. */
+  readonly identity = this.provider.identity;
 
   readonly supported = SUPPORTED_LOCALES;
   readonly locale = signal<Locale>(this.locales.current);
@@ -40,7 +36,15 @@ export class ProviderProfilePage {
   readonly available = signal(this.provider.isAvailable());
 
   /** Tier 2 (ID) or above is "identity verified" for on-site paid work (P6-03). */
-  readonly fullyVerified = this.verificationTier >= 2;
+  readonly fullyVerified = computed(() => this.identity().verificationTier >= 2);
+
+  /** Shown as "—" rather than a bare prior when there aren't enough reviews yet (P6-09/P6-12). */
+  readonly hasRating = computed(() => this.identity().rating !== null);
+
+  constructor() {
+    // The profile may already be loaded (Home fetches it too); this just makes the tab self-sufficient.
+    void this.provider.fetchProfile();
+  }
 
   toggleAvailability(value: boolean): void {
     this.available.set(value);

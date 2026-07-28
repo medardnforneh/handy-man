@@ -7,16 +7,21 @@ import {
   WorkspaceThread,
 } from './customer.models';
 
-/** The API's PII-minimised provider resource (GET /jobs/{job}/providers) — headline + reputation, no name. */
+/**
+ * The API's PII-minimised provider resource (GET /jobs/{job}/providers) — headline + reputation, no
+ * name. NOTE `id` is the provider_profiles row id; `party_id` is the handle every other endpoint
+ * takes (offers, metrics, reviews). They are different values — never substitute one for the other.
+ */
 interface ApiProvider {
   id: string;
+  party_id: string;
   headline?: string | null;
   bio?: string | null;
   verification_tier: number;
   rating_avg?: string | null;
   rating_count?: number;
   jobs_completed?: number;
-  skills?: { skill_id?: string }[];
+  skills?: { skill_id?: string; name?: string }[];
   service_areas?: { id?: string }[];
 }
 
@@ -523,10 +528,17 @@ export class CustomerService {
     }
   }
 
-  /** Resolve a leaf-skill UUID to its localised label from the loaded taxonomy; '' when unknown. */
-  private skillLabel(skillId: string): string {
+  /**
+   * The label for one of a provider's listed skills. The API now sends it (bilingual, in the
+   * caller's locale), so that wins; the taxonomy lookup stays as the fallback for a cached response
+   * from before the field existed.
+   */
+  private skillLabel(skill: { skill_id?: string; name?: string }): string {
+    if (typeof skill.name === 'string' && skill.name !== '') {
+      return skill.name;
+    }
     for (const cat of this.categories()) {
-      const leaf = (cat.leaves ?? []).find((l) => l.id === skillId);
+      const leaf = (cat.leaves ?? []).find((l) => l.id === skill.skill_id);
       if (leaf) {
         return leaf.label;
       }
@@ -542,9 +554,10 @@ export class CustomerService {
   /** Map one API provider (search result) onto a discover card. Headline stands in for the name (PII). */
   private mapProviderCard(p: ApiProvider): Provider {
     const headline = p.headline ?? '';
-    const skill = (p.skills ?? []).map((s) => this.skillLabel(s.skill_id ?? '')).find(Boolean) ?? '';
+    const skill = (p.skills ?? []).map((s) => this.skillLabel(s)).find(Boolean) ?? '';
     return {
-      id: p.id,
+      // The PARTY id — this card's id is what the profile screen and "send an offer" pass onward.
+      id: p.party_id,
       name: headline || skill,
       initials: headlineInitials(headline || skill),
       skill,
@@ -552,7 +565,7 @@ export class CustomerService {
       mode: this.providerMode(p),
       distanceKm: null, // the resource never leaks a precise distance (PII); rank order is enough
       verified: verifiedTier(p.verification_tier),
-      accent: accentFor(p.id),
+      accent: accentFor(p.party_id),
     };
   }
 
@@ -582,12 +595,12 @@ export class CustomerService {
         this.api.providerMetrics(partyId),
         this.api.providerReviews(partyId),
       ]);
-      const base = providers.find((p) => p.id === partyId);
+      const base = providers.find((p) => p.party_id === partyId);
       if (!base) {
         return null;
       }
       const headline = base.headline ?? '';
-      const skills = (base.skills ?? []).map((s) => this.skillLabel(s.skill_id ?? '')).filter(Boolean);
+      const skills = (base.skills ?? []).map((s) => this.skillLabel(s)).filter(Boolean);
       return {
         id: partyId,
         name: headline || (skills[0] ?? ''),

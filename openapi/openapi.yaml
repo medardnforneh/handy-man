@@ -2408,9 +2408,16 @@ components:
 
     ProviderProfile:
       type: object
-      required: [id, verification_tier]
+      required: [id, party_id, verification_tier]
       properties:
-        id: { type: string, format: uuid }
+        id: { type: string, format: uuid, description: The provider_profiles row id. NOT the handle other endpoints take — use party_id. }
+        party_id:
+          type: string
+          format: uuid
+          description: >
+            The provider's PARTY id — the handle every other endpoint takes (POST /jobs/{job}/offers,
+            GET /providers/{party}/metrics, GET /providers/{party}/reviews). Distinct from `id`.
+        display_name: { type: [string, "null"], description: Present only where the viewer is entitled to it — withheld from a pre-engagement match list. }
         headline: { type: [string, "null"] }
         bio: { type: [string, "null"] }
         bio_language: { type: [string, "null"] }
@@ -2428,6 +2435,7 @@ components:
             properties:
               id: { type: string, format: uuid }
               skill_id: { type: string, format: uuid }
+              name: { type: string, description: The skill's label in the requested (or app) locale — the taxonomy is bilingual. }
               price_model: { type: string, enum: [hourly, fixed, quote_only] }
               rate: { oneOf: [{ $ref: "#/components/schemas/Money" }, { type: "null" }] }
               years_experience: { type: [integer, "null"] }

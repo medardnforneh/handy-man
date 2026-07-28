@@ -8,24 +8,31 @@
   <div class="page">
     <!-- Identity -->
     <div class="ident">
-      <div class="hm-avatar id-av accent-brand" aria-hidden="true">{{ initials }}</div>
+      <div class="hm-avatar id-av accent-brand" aria-hidden="true">{{ identity().initials }}</div>
       <div class="id-name">
-        <b>{{ name }}</b>
-        @if (fullyVerified) {
+        <b>{{ identity().name }}</b>
+        @if (fullyVerified()) {
           <ion-icon class="verified" name="shield-checkmark" [attr.aria-label]="'discover.verified' | translate"></ion-icon>
         }
       </div>
-      <span class="rating"><ion-icon name="star" aria-hidden="true"></ion-icon>{{ rating }}</span>
+      @if (hasRating()) {
+        <span class="rating">
+          <ion-icon name="star" aria-hidden="true"></ion-icon>{{ identity().rating }}
+          <small class="hm-muted">{{ 'provider.rating_count' | translate:{ count: identity().ratingCount } }}</small>
+        </span>
+      } @else {
+        <span class="rating none hm-muted">{{ 'provider.building' | translate }}</span>
+      }
     </div>
 
     <!-- Verification -->
     <div class="hm-section-head"><h2>{{ 'pro.verification' | translate }}</h2></div>
-    @if (fullyVerified) {
+    @if (fullyVerified()) {
       <div class="verif hm-card ok">
         <ion-icon name="shield-checkmark" aria-hidden="true"></ion-icon>
         <div class="v-text">
           <b>{{ 'pro.verified_title' | translate }}</b>
-          <small class="hm-muted">{{ 'pro.tier' | translate:{ n: verificationTier } }}</small>
+          <small class="hm-muted">{{ 'pro.tier' | translate:{ n: identity().verificationTier } }}</small>
         </div>
       </div>
     } @else {
@@ -52,14 +59,27 @@
     <!-- Skills -->
     <div class="hm-section-head"><h2>{{ 'provider.skills' | translate }}</h2></div>
     <div class="chips">
-      @for (skill of skills; track skill) {
+      @for (skill of identity().skills; track skill) {
         <span class="chip">{{ skill }}</span>
+      } @empty {
+        <p class="hm-empty">{{ 'pro.no_skills' | translate }}</p>
       }
     </div>
 
-    <!-- Service area -->
+    <!-- Service area. There is no city stored on the row, so we state the radius rather than
+         invent a place name (P1-08 stores a centre point + radius). -->
     <div class="hm-section-head"><h2>{{ 'pro.service_area' | translate }}</h2></div>
-    <p class="area hm-card"><ion-icon name="map-outline" aria-hidden="true"></ion-icon>{{ serviceArea }}</p>
+    @if (identity().serviceAreaRadiusKm !== null) {
+      <p class="area hm-card">
+        <ion-icon name="map-outline" aria-hidden="true"></ion-icon>
+        {{ 'pro.service_radius' | translate:{ km: identity().serviceAreaRadiusKm } }}
+      </p>
+    } @else {
+      <p class="area hm-card hm-muted">
+        <ion-icon name="map-outline" aria-hidden="true"></ion-icon>
+        {{ 'pro.no_service_area' | translate }}
+      </p>
+    }
 
     <!-- Preferences -->
     <div class="hm-section-head"><h2>{{ 'account.language' | translate }}</h2></div>

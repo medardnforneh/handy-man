@@ -2001,8 +2001,18 @@ export interface components {
             created_at?: string;
         };
         ProviderProfile: {
-            /** Format: uuid */
+            /**
+             * Format: uuid
+             * @description The provider_profiles row id. NOT the handle other endpoints take — use party_id.
+             */
             id: string;
+            /**
+             * Format: uuid
+             * @description The provider's PARTY id — the handle every other endpoint takes (POST /jobs/{job}/offers, GET /providers/{party}/metrics, GET /providers/{party}/reviews). Distinct from `id`.
+             */
+            party_id: string;
+            /** @description Present only where the viewer is entitled to it — withheld from a pre-engagement match list. */
+            display_name?: string | null;
             headline?: string | null;
             bio?: string | null;
             bio_language?: string | null;
@@ -2018,6 +2028,8 @@ export interface components {
                 id?: string;
                 /** Format: uuid */
                 skill_id?: string;
+                /** @description The skill's label in the requested (or app) locale — the taxonomy is bilingual. */
+                name?: string;
                 /** @enum {string} */
                 price_model?: "hourly" | "fixed" | "quote_only";
                 rate?: components["schemas"]["Money"] | null;
