@@ -28,8 +28,12 @@ final class OfferResource extends JsonResource
                 'amount_minor' => $this->amount_minor,
                 'currency' => $this->currency,
             ],
+            'message' => $this->message,
             'expires_at' => $this->expires_at->toIso8601String(),
             'created_at' => $this->created_at->toIso8601String(),
+            // Embedded for the provider's opportunity feed. JobResource minimises PII on its own — a
+            // provider viewing a pre-engagement job sees only the coarse area, never the exact address.
+            'job' => $this->whenLoaded('job', fn () => JobResource::make($this->job)),
         ];
     }
 }

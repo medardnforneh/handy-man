@@ -357,6 +357,10 @@
     "send_quote": "Envoyer le devis",
     "quote_sent": "Devis envoyé",
     "lead_unavailable": "Cette opportunité n’est plus disponible.",
+    "accept_note": "Acceptez cette offre pour démarrer l’engagement et ouvrir l’espace de travail.",
+    "accept_offer": "Accepter l’offre",
+    "offer_accepted": "Offre acceptée — engagement démarré",
+    "offer_accept_failed": "Impossible d’accepter l’offre. Veuillez réessayer.",
     "tab": {
       "home": "Accueil",
       "opportunities": "Offres",

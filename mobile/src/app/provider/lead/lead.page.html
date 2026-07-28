@@ -13,10 +13,14 @@
       <!-- Request -->
       <h1>{{ l.title }}</h1>
       <div class="meta hm-muted">
-        <span>{{ l.skill }}</span>
-        <span class="dot" aria-hidden="true"></span>
-        <span><ion-icon name="location-outline" aria-hidden="true"></ion-icon>{{ l.area }}</span>
-        <span class="dot" aria-hidden="true"></span>
+        @if (l.skill) {
+          <span>{{ l.skill }}</span>
+          <span class="dot" aria-hidden="true"></span>
+        }
+        @if (l.area) {
+          <span><ion-icon name="location-outline" aria-hidden="true"></ion-icon>{{ l.area }}</span>
+          <span class="dot" aria-hidden="true"></span>
+        }
         <span>{{ l.postedAgo }}</span>
       </div>
 
@@ -31,27 +35,35 @@
 
       <p class="details hm-card">{{ l.details }}</p>
 
-      <!-- Quote composer -->
-      <div class="hm-section-head"><h2>{{ 'pro.your_quote' | translate }}</h2></div>
+      @if (isReal()) {
+        <!-- A real incoming offer: the response is to accept it, forming the engagement. -->
+        <p class="accept-note hm-muted">
+          <ion-icon name="information-circle-outline" aria-hidden="true"></ion-icon>
+          {{ 'pro.accept_note' | translate }}
+        </p>
+      } @else {
+        <!-- Quote composer (demo path) -->
+        <div class="hm-section-head"><h2>{{ 'pro.your_quote' | translate }}</h2></div>
 
-      <label class="lbl">{{ 'pro.price' | translate }}</label>
-      <div class="amount field">
-        <ion-input class="hm-tap" inputmode="numeric" [value]="price()" (ionInput)="onPrice($any($event.target).value)"
-          [placeholder]="'pro.price_ph' | translate" [attr.aria-label]="'pro.price' | translate"></ion-input>
-        <span class="cur">{{ 'money.currency' | translate }}</span>
-      </div>
+        <label class="lbl">{{ 'pro.price' | translate }}</label>
+        <div class="amount field">
+          <ion-input class="hm-tap" inputmode="numeric" [value]="price()" (ionInput)="onPrice($any($event.target).value)"
+            [placeholder]="'pro.price_ph' | translate" [attr.aria-label]="'pro.price' | translate"></ion-input>
+          <span class="cur">{{ 'money.currency' | translate }}</span>
+        </div>
 
-      <label class="lbl">{{ 'pro.deposit' | translate }}</label>
-      <div class="amount field">
-        <ion-input class="hm-tap" inputmode="numeric" [value]="deposit()" (ionInput)="onDeposit($any($event.target).value)"
-          [placeholder]="'pro.deposit_ph' | translate" [attr.aria-label]="'pro.deposit' | translate"></ion-input>
-        <span class="cur">{{ 'money.currency' | translate }}</span>
-      </div>
+        <label class="lbl">{{ 'pro.deposit' | translate }}</label>
+        <div class="amount field">
+          <ion-input class="hm-tap" inputmode="numeric" [value]="deposit()" (ionInput)="onDeposit($any($event.target).value)"
+            [placeholder]="'pro.deposit_ph' | translate" [attr.aria-label]="'pro.deposit' | translate"></ion-input>
+          <span class="cur">{{ 'money.currency' | translate }}</span>
+        </div>
 
-      <label class="lbl">{{ 'pro.message' | translate }}</label>
-      <ion-textarea class="field" [autoGrow]="true" [rows]="3" [value]="message()"
-        (ionInput)="onMessage($any($event.target).value)" [placeholder]="'pro.message_ph' | translate"
-        [attr.aria-label]="'pro.message' | translate"></ion-textarea>
+        <label class="lbl">{{ 'pro.message' | translate }}</label>
+        <ion-textarea class="field" [autoGrow]="true" [rows]="3" [value]="message()"
+          (ionInput)="onMessage($any($event.target).value)" [placeholder]="'pro.message_ph' | translate"
+          [attr.aria-label]="'pro.message' | translate"></ion-textarea>
+      }
     </div>
   } @else {
     <div class="page">
@@ -63,9 +75,16 @@
 @if (lead()) {
   <ion-footer class="ion-no-border">
     <div class="cta">
-      <ion-button expand="block" class="hm-tap" [disabled]="!canSend()" (click)="send()">
-        {{ 'pro.send_quote' | translate }}
-      </ion-button>
+      @if (isReal()) {
+        <ion-button expand="block" class="hm-tap" [disabled]="accepting()" (click)="accept()">
+          <ion-icon name="checkmark-circle-outline" slot="start" aria-hidden="true"></ion-icon>
+          {{ 'pro.accept_offer' | translate }}
+        </ion-button>
+      } @else {
+        <ion-button expand="block" class="hm-tap" [disabled]="!canSend()" (click)="send()">
+          {{ 'pro.send_quote' | translate }}
+        </ion-button>
+      }
     </div>
   </ion-footer>
 }

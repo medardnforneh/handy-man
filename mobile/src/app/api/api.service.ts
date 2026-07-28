@@ -162,6 +162,26 @@ export class ApiService {
     return data.data;
   }
 
+  /** The provider's live incoming direct offers (P2-05/06), each with its PII-minimised job embedded. */
+  async opportunities() {
+    const { data, error } = await api.GET('/provider/opportunities');
+    if (error) {
+      throw error;
+    }
+    return data.data;
+  }
+
+  /** Accept a direct offer → forms the engagement (P2-06). Provider-gated; may 409 on a fact gate. */
+  async acceptOffer(offerId: string) {
+    const { data, error } = await api.POST('/offers/{offer}/accept', {
+      params: { path: { offer: offerId }, header: { 'Idempotency-Key': crypto.randomUUID() } },
+    });
+    if (error) {
+      throw error;
+    }
+    return data.data;
+  }
+
   /** The provider's earnings summary (P3-07/08) — payable balance, reserved payouts, credits, history. */
   async earnings() {
     const { data, error } = await api.GET('/provider/earnings');

@@ -1319,6 +1319,30 @@ paths:
                         items: { $ref: "#/components/schemas/Payout" }
         "401": { $ref: "#/components/responses/Problem" }
 
+  /provider/opportunities:
+    get:
+      tags: [Platform]
+      operationId: providerOpportunities
+      summary: The provider's live incoming direct offers
+      description: >
+        The provider's opportunity feed — pending, unexpired direct offers, newest first. Each offer
+        embeds its job PII-minimised: a provider viewing a pre-engagement job sees only the coarse area
+        (quarter + city), never the exact address or coordinates. The provider accepts an offer via
+        POST /offers/{offer}/accept to form the engagement.
+      responses:
+        "200":
+          description: The provider's live offers
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: "#/components/schemas/Offer" }
+        "401": { $ref: "#/components/responses/Problem" }
+
   /payment-intents:
     post:
       tags: [Platform]
@@ -1850,8 +1874,12 @@ components:
         origin: { type: string, enum: [customer_direct, system_dispatch, provider_bid] }
         status: { type: string, enum: [pending, accepted, declined, withdrawn, expired, superseded] }
         amount: { oneOf: [{ $ref: "#/components/schemas/Money" }, { type: "null" }] }
+        message: { type: [string, "null"] }
         expires_at: { type: string, format: date-time }
         created_at: { type: string, format: date-time }
+        job:
+          description: The PII-minimised job, embedded in the provider's opportunity feed (coarse location only).
+          oneOf: [{ $ref: "#/components/schemas/Job" }, { type: "null" }]
 
     Engagement:
       type: object

@@ -29,11 +29,48 @@ export class ProviderLeadPage {
   private readonly id = this.route.snapshot.paramMap.get('id') ?? '';
   readonly lead = signal<Lead | null>(this.provider.lead(this.id));
 
+  /** A real incoming offer (from GET /provider/opportunities) → the response is Accept, not a quote. */
+  readonly isReal = signal(false);
+  readonly accepting = signal(false);
+
   readonly price = signal('');
   readonly deposit = signal('');
   readonly message = signal('');
 
   readonly canSend = computed(() => Number(this.price()) > 0);
+
+  constructor() {
+    void this.loadReal();
+  }
+
+  private async loadReal(): Promise<void> {
+    const real = await this.provider.fetchLead(this.id);
+    if (real !== null) {
+      this.lead.set(real);
+      this.isReal.set(true);
+    }
+  }
+
+  /** Accept the real direct offer → forms the engagement, then hands off to the provider's work list. */
+  async accept(): Promise<void> {
+    if (this.accepting()) {
+      return;
+    }
+    this.accepting.set(true);
+    const result = await this.provider.acceptOffer(this.id);
+    this.accepting.set(false);
+    if (result.ok) {
+      await this.notify(this.translate.instant('pro.offer_accepted'), 'success');
+      void this.router.navigate(['/pro/work']);
+      return;
+    }
+    await this.notify(result.detail ?? this.translate.instant('pro.offer_accept_failed'), 'danger');
+  }
+
+  private async notify(message: string, color: 'success' | 'danger'): Promise<void> {
+    const toast = await this.toasts.create({ message, duration: 2800, position: 'top', color });
+    await toast.present();
+  }
 
   onPrice(value: string | null | undefined): void {
     this.price.set((value ?? '').replace(/\D/g, ''));

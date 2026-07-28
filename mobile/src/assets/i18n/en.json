@@ -357,6 +357,10 @@
     "send_quote": "Send quote",
     "quote_sent": "Quote sent",
     "lead_unavailable": "This opportunity is no longer available.",
+    "accept_note": "Accept this offer to start the engagement and open the workspace.",
+    "accept_offer": "Accept offer",
+    "offer_accepted": "Offer accepted — engagement started",
+    "offer_accept_failed": "Couldn’t accept the offer. Please try again.",
     "tab": {
       "home": "Home",
       "opportunities": "Leads",

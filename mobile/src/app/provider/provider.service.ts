@@ -1,8 +1,13 @@
 import { Injectable, inject } from '@angular/core';
 import { ApiService } from '../api/api.service';
+import { Accent } from '../customer/customer.models';
+import { LocaleService } from '../core/locale.service';
 import {
-  ActiveWork, Lead, Payout, PayoutStatus, ProviderStats, ProviderWallet, WorkDetail, WorkStatus,
+  ActiveWork, Lead, Payout, PayoutStatus, ProviderStats, WorkDetail, WorkStatus, ProviderWallet,
 } from './provider.models';
+
+/** One entry of the provider opportunity feed (an offer with its PII-minimised job), as the API sends it. */
+type ApiOpportunity = Awaited<ReturnType<ApiService['opportunities']>>[number];
 
 /** Map the API payment status onto the provider's simple payout badge (paid / pending / failed). */
 function mapPayoutStatus(status: string): PayoutStatus {
@@ -17,6 +22,16 @@ function mapPayoutStatus(status: string): PayoutStatus {
   }
 }
 
+/** A deterministic accent from an id, so a lead keeps the same colour across renders. */
+const LEAD_ACCENTS: Accent[] = ['brand', 'info', 'warning', 'muted'];
+function accentFor(id: string): Accent {
+  let sum = 0;
+  for (const ch of id) {
+    sum = (sum + ch.charCodeAt(0)) % LEAD_ACCENTS.length;
+  }
+  return LEAD_ACCENTS[sum];
+}
+
 /**
  * Provider-section data. Fixture-driven for the surfaces without a read endpoint yet; Earnings now
  * loads from the real API (GET /provider/earnings) with the fixture standing in when offline. The
@@ -25,6 +40,10 @@ function mapPayoutStatus(status: string): PayoutStatus {
 @Injectable({ providedIn: 'root' })
 export class ProviderService {
   private readonly api = inject(ApiService);
+  private readonly locales = inject(LocaleService);
+
+  /** Real opportunities cached by offer id, so the lead detail can resolve one after the feed loads. */
+  private readonly realLeads = new Map<string, Lead>();
 
   readonly name = 'Atelier Nkeng';
   readonly initials = 'AN';
@@ -127,7 +146,84 @@ export class ProviderService {
   }
 
   lead(id: string): Lead | null {
-    return this.leads.find((l) => l.id === id) ?? null;
+    return this.realLeads.get(id) ?? this.leads.find((l) => l.id === id) ?? null;
+  }
+
+  /**
+   * The real opportunity feed (GET /provider/opportunities) — the provider's live incoming direct
+   * offers, each mapped from the offer + its PII-minimised job. Caches them by offer id so the lead
+   * detail resolves. Returns null when there's no session / offline, so the caller keeps the fixtures.
+   */
+  async fetchOpportunities(): Promise<Lead[] | null> {
+    try {
+      const offers = await this.api.opportunities();
+      this.realLeads.clear();
+      const leads = offers.map((o) => this.mapOffer(o));
+      for (const lead of leads) {
+        this.realLeads.set(lead.id, lead);
+      }
+      return leads;
+    } catch {
+      return null;
+    }
+  }
+
+  /** Ensure the feed is loaded, then resolve one lead by offer id (deep-link safe). */
+  async fetchLead(id: string): Promise<Lead | null> {
+    if (!this.realLeads.has(id)) {
+      await this.fetchOpportunities();
+    }
+    return this.realLeads.get(id) ?? null;
+  }
+
+  /**
+   * Accept a direct offer → forms the engagement (POST /offers/{offer}/accept). On success the offer
+   * leaves the feed. A fact gate (e.g. missing ID verification for an on-site job) comes back as a
+   * problem+json whose `detail` we surface; any other failure returns a generic flag.
+   */
+  async acceptOffer(offerId: string): Promise<{ ok: boolean; detail?: string }> {
+    try {
+      await this.api.acceptOffer(offerId);
+      this.realLeads.delete(offerId);
+      return { ok: true };
+    } catch (e) {
+      const detail = (e as { detail?: unknown }).detail;
+      return { ok: false, detail: typeof detail === 'string' ? detail : undefined };
+    }
+  }
+
+  /** Map one API offer (+ embedded coarse job) onto the provider's lead card/detail model. */
+  private mapOffer(o: ApiOpportunity): Lead {
+    const job = o.job ?? null;
+    const loc = job?.location ?? null;
+    const area = loc ? [loc.quarter, loc.city].filter(Boolean).join(', ') : '';
+    return {
+      id: o.id,
+      reference: job?.reference ?? '',
+      title: job?.title ?? '',
+      skill: '', // the coarse job carries no skill label; the card leads with the title
+      mode: (job?.engagement_mode ?? 'onsite') as Lead['mode'],
+      area,
+      budgetMinor: o.amount?.amount_minor ?? job?.budget?.amount_minor ?? null,
+      postedAgo: o.created_at ? this.relativeTime(o.created_at) : '',
+      accent: accentFor(o.id),
+      details: job?.description ?? o.message ?? '',
+    };
+  }
+
+  /** A localised "x minutes ago" from an ISO timestamp, in the provider's current UI locale. */
+  private relativeTime(iso: string): string {
+    const diffMs = Date.now() - new Date(iso).getTime();
+    const rtf = new Intl.RelativeTimeFormat(this.locales.current, { numeric: 'auto' });
+    const mins = Math.round(diffMs / 60000);
+    if (Math.abs(mins) < 60) {
+      return rtf.format(-mins, 'minute');
+    }
+    const hours = Math.round(mins / 60);
+    if (Math.abs(hours) < 24) {
+      return rtf.format(-hours, 'hour');
+    }
+    return rtf.format(-Math.round(hours / 24), 'day');
   }
 
   private readonly workDetails: Record<string, WorkDetail> = {

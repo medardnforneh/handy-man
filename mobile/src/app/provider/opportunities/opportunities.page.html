@@ -14,9 +14,15 @@
         <div class="lead-info">
           <b>{{ lead.title }}</b>
           <div class="lead-meta hm-muted">
-            <span>{{ lead.skill }}</span>
-            <span class="dot" aria-hidden="true"></span>
-            <span><ion-icon name="location-outline" aria-hidden="true"></ion-icon>{{ lead.area }}</span>
+            @if (lead.skill) {
+              <span>{{ lead.skill }}</span>
+              <span class="dot" aria-hidden="true"></span>
+            }
+            @if (lead.area) {
+              <span><ion-icon name="location-outline" aria-hidden="true"></ion-icon>{{ lead.area }}</span>
+            } @else {
+              <span><ion-icon name="globe-outline" aria-hidden="true"></ion-icon>{{ 'discover.mode.remote' | translate }}</span>
+            }
           </div>
           <div class="lead-foot">
             @if (lead.budgetMinor) {

@@ -1002,6 +1002,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/provider/opportunities": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The provider's live incoming direct offers
+         * @description The provider's opportunity feed — pending, unexpired direct offers, newest first. Each offer embeds its job PII-minimised: a provider viewing a pre-engagement job sees only the coarse area (quarter + city), never the exact address or coordinates. The provider accepts an offer via POST /offers/{offer}/accept to form the engagement.
+         */
+        get: operations["providerOpportunities"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/payment-intents": {
         parameters: {
             query?: never;
@@ -1396,10 +1416,13 @@ export interface components {
             /** @enum {string} */
             status: "pending" | "accepted" | "declined" | "withdrawn" | "expired" | "superseded";
             amount?: components["schemas"]["Money"] | null;
+            message?: string | null;
             /** Format: date-time */
             expires_at: string;
             /** Format: date-time */
             created_at?: string;
+            /** @description The PII-minimised job, embedded in the provider's opportunity feed (coarse location only). */
+            job?: components["schemas"]["Job"] | null;
         };
         Engagement: {
             /** Format: uuid */
@@ -3942,6 +3965,29 @@ export interface operations {
                             lead_credits: components["schemas"]["Money"];
                             payouts: components["schemas"]["Payout"][];
                         };
+                    };
+                };
+            };
+            401: components["responses"]["Problem"];
+        };
+    };
+    providerOpportunities: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The provider's live offers */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["Offer"][];
                     };
                 };
             };

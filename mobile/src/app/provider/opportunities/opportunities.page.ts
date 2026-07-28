@@ -18,7 +18,19 @@ export class ProviderOpportunitiesPage {
   private readonly provider = inject(ProviderService);
   private readonly router = inject(Router);
 
+  /** Fixture feed first (instant, offline-safe); the real incoming offers replace it once loaded. */
   readonly leads = signal<Lead[]>(this.provider.listLeads());
+
+  constructor() {
+    void this.load();
+  }
+
+  private async load(): Promise<void> {
+    const real = await this.provider.fetchOpportunities();
+    if (real !== null) {
+      this.leads.set(real);
+    }
+  }
 
   openLead(lead: Lead): void {
     void this.router.navigate(['/opportunity', lead.id]);
