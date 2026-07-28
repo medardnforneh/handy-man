@@ -36,4 +36,13 @@ export class ApiService {
     }
     return data.data;
   }
+
+  /** The customer's own jobs (P2-03), newest first, with the compact engagement summary. */
+  async jobs() {
+    const { data, error } = await api.GET('/jobs');
+    if (error) {
+      throw error;
+    }
+    return data.data;
+  }
 }

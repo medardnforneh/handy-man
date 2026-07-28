@@ -18,7 +18,7 @@ export class JobsPage {
   private readonly customers = inject(CustomerService);
   private readonly router = inject(Router);
 
-  readonly jobs: JobSummary[] = this.customers.listJobs();
+  readonly jobs = this.customers.jobs;
 
   tone(status: JobStatus): string {
     switch (status) {

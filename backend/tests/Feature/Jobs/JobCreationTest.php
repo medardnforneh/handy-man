@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 use App\Domain\Jobs\JobStatus;
 use App\Models\Address;
+use App\Models\Engagement;
 use App\Models\Job;
+use App\Models\Milestone;
+use App\Models\Party;
 use App\Models\Skill;
 use App\Models\User;
 use Illuminate\Support\Str;
@@ -119,4 +122,29 @@ it('rejects a job whose address belongs to someone else', function () {
         'skill_id' => $skill->id, 'engagement_mode' => 'onsite',
         'address_id' => $otherAddress->id, 'title' => 'x',
     ])->assertStatus(422);
+});
+
+it('summarises the engagement on the owner’s job list — provider + milestone progress', function () {
+    $customer = User::factory()->create();
+    $provider = Party::factory()->individual()->create(['display_name' => 'Atelier Nkeng']);
+
+    $job = Job::factory()->remote()->status(JobStatus::Engaged)->create([
+        'customer_party_id' => $customer->party_id,
+    ]);
+    $engagement = Engagement::factory()->create([
+        'job_id' => $job->id,
+        'provider_party_id' => $provider->id,
+        'agreed_amount_minor' => 900_000,
+        'currency' => 'XAF',
+    ]);
+    Milestone::factory()->create(['engagement_id' => $engagement->id, 'position' => 0, 'title' => 'Deposit', 'amount_minor' => 200_000, 'status' => 'paid']);
+    Milestone::factory()->create(['engagement_id' => $engagement->id, 'position' => 1, 'title' => 'Balance', 'amount_minor' => 700_000, 'status' => 'pending']);
+
+    Sanctum::actingAs($customer);
+    $this->getJson('/api/v1/jobs')
+        ->assertOk()
+        ->assertJsonPath('data.0.engagement.provider_name', 'Atelier Nkeng')
+        ->assertJsonPath('data.0.engagement.agreed_amount_minor', 900_000)
+        ->assertJsonPath('data.0.engagement.milestones_done', 1)
+        ->assertJsonPath('data.0.engagement.milestones_total', 2);
 });

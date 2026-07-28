@@ -1814,6 +1814,14 @@ export interface components {
                 latitude?: number;
                 longitude?: number;
             };
+            /** @description Compact engagement summary for the owner — provider, agreed money, milestone progress. Null until the job is engaged, and absent for non-owners. */
+            engagement?: null | {
+                provider_name?: string | null;
+                agreed_amount_minor?: number;
+                currency?: string;
+                milestones_done?: number;
+                milestones_total?: number;
+            };
             /** Format: date-time */
             published_at?: string | null;
             /** Format: date-time */

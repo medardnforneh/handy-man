@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Carbon;
 
 /**
@@ -101,5 +102,15 @@ final class Job extends Model
     public function photos(): HasMany
     {
         return $this->hasMany(JobPhoto::class)->orderBy('position');
+    }
+
+    /**
+     * The one engagement this job converged on, if any (unique per job; P2-06).
+     *
+     * @return HasOne<Engagement, $this>
+     */
+    public function engagement(): HasOne
+    {
+        return $this->hasOne(Engagement::class);
     }
 }

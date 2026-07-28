@@ -11,7 +11,7 @@
 
 <ion-content [fullscreen]="true">
   <div class="page">
-    @for (job of jobs; track job.id) {
+    @for (job of jobs(); track job.id) {
       <button class="hm-card job hm-tap" type="button" (click)="open(job)">
         <div class="row">
           <div class="ref">

@@ -2204,6 +2204,17 @@ components:
                 landmark_note: { type: [string, "null"] }
                 latitude: { type: number }
                 longitude: { type: number }
+        engagement:
+          description: Compact engagement summary for the owner — provider, agreed money, milestone progress. Null until the job is engaged, and absent for non-owners.
+          oneOf:
+            - type: "null"
+            - type: object
+              properties:
+                provider_name: { type: [string, "null"] }
+                agreed_amount_minor: { type: integer }
+                currency: { type: string }
+                milestones_done: { type: integer }
+                milestones_total: { type: integer }
         published_at: { type: [string, "null"], format: date-time }
         created_at: { type: string, format: date-time }
 

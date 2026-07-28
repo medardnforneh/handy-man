@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Resources\Api\V1;
 
+use App\Domain\Engagements\MilestoneStatus;
 use App\Domain\Jobs\EngagementModePolicy;
 use App\Models\Job;
 use App\Models\User;
@@ -46,6 +47,9 @@ final class JobResource extends JsonResource
             'requires_verified_provider' => $this->requires_verified_provider,
             'photos' => $this->whenLoaded('photos', fn () => $this->photos->pluck('path')),
             'location' => $this->location($full),
+            // A compact engagement summary for the owner's job list (provider + progress + money),
+            // so a client doesn't need a second round-trip per job. Null until the job is engaged.
+            'engagement' => $full ? $this->engagementSummary() : null,
             'published_at' => $this->published_at?->toIso8601String(),
             'created_at' => $this->created_at->toIso8601String(),
         ];
@@ -55,6 +59,31 @@ final class JobResource extends JsonResource
     {
         // The owner sees everything. (Engaged providers are added when engagements land in P2-07.)
         return $viewer !== null && $this->customer_party_id === $viewer->party_id;
+    }
+
+    /**
+     * Compact engagement summary for the owner's list — provider name, agreed money and milestone
+     * progress. Requires `engagement.provider` + `engagement.milestones` to be eager-loaded.
+     *
+     * @return array<string, mixed>|null
+     */
+    private function engagementSummary(): ?array
+    {
+        $engagement = $this->engagement;
+        if ($engagement === null) {
+            return null;
+        }
+
+        $milestones = $engagement->milestones;
+        $done = $milestones->where('status', MilestoneStatus::Paid->value)->count();
+
+        return [
+            'provider_name' => $engagement->provider?->display_name,
+            'agreed_amount_minor' => $engagement->agreed_amount_minor,
+            'currency' => $engagement->currency,
+            'milestones_done' => $done,
+            'milestones_total' => $milestones->count(),
+        ];
     }
 
     /**

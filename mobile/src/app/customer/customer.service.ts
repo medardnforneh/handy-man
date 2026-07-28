@@ -2,7 +2,7 @@ import { Injectable, inject, signal } from '@angular/core';
 import { ApiService } from '../api/api.service';
 import { LocaleService } from '../core/locale.service';
 import {
-  Category, ChatSummary, EngagementMode, JobDetail, JobSummary, NewJobInput, Provider,
+  Category, ChatSummary, EngagementMode, JobDetail, JobStatus, JobSummary, NewJobInput, Provider,
   ProviderProfile, SavedAddress, WorkspaceThread,
 } from './customer.models';
 
@@ -63,6 +63,26 @@ export class CustomerService {
   constructor() {
     void this.loadMe();
     void this.loadCategories();
+    void this.loadJobs();
+  }
+
+  /** Load the customer's real jobs (with engagement summary); keep the fixtures when offline. */
+  private async loadJobs(): Promise<void> {
+    try {
+      const jobs = await this.api.jobs();
+      this.jobs.set(jobs.map((j) => ({
+        id: j.id,
+        reference: j.reference,
+        title: j.title,
+        status: j.status as JobStatus,
+        providerName: j.engagement?.provider_name ?? null,
+        amountMinor: j.engagement?.agreed_amount_minor ?? j.budget?.amount_minor ?? 0,
+        milestonesDone: j.engagement?.milestones_done ?? 0,
+        milestonesTotal: j.engagement?.milestones_total ?? 0,
+      })));
+    } catch {
+      // No session / offline — keep the demo fixtures.
+    }
   }
 
   private async loadMe(): Promise<void> {
@@ -99,13 +119,14 @@ export class CustomerService {
     { id: 'p5', name: 'Fresh Design Studio', initials: 'FD', skill: 'Design graphique', rating: 4.5, mode: 'remote', distanceKm: null, verified: false, accent: 'info' },
   ];
 
-  private readonly jobs: JobSummary[] = [
+  /** The customer's jobs — real (GET /jobs) once loaded, the demo fixtures until then / when offline. */
+  readonly jobs = signal<JobSummary[]>([
     { id: 'j1', reference: 'JOB-7K2M9', title: 'Fuite sous l’évier', status: 'in_progress', providerName: 'Atelier Nkeng', amountMinor: 900000, milestonesDone: 1, milestonesTotal: 2 },
     { id: 'j2', reference: 'JOB-Q4T1A', title: 'Identité visuelle', status: 'work_submitted', providerName: 'Marie Fotso', amountMinor: 450000, milestonesDone: 1, milestonesTotal: 1 },
     { id: 'j3', reference: 'JOB-9BZ3C', title: 'Installation split', status: 'engaged', providerName: 'Douala Cool Services', amountMinor: 1250000, milestonesDone: 0, milestonesTotal: 2 },
     { id: 'j4', reference: 'JOB-5RN8K', title: 'Tableau électrique', status: 'completed', providerName: 'Yaoundé Élec', amountMinor: 3100000, milestonesDone: 3, milestonesTotal: 3 },
     { id: 'j5', reference: 'JOB-2HW6P', title: 'Étagères sur mesure', status: 'open', providerName: null, amountMinor: 620000, milestonesDone: 0, milestonesTotal: 0 },
-  ];
+  ]);
 
   private readonly addresses: SavedAddress[] = [
     { id: 'a1', label: 'Domicile', line: 'Rue 1.234, Akwa, Douala' },
@@ -187,10 +208,6 @@ export class CustomerService {
     return mode === 'both' ? this.providers : this.providers.filter((p) => p.mode === mode);
   }
 
-  listJobs(): JobSummary[] {
-    return this.jobs;
-  }
-
   listAddresses(): SavedAddress[] {
     return this.addresses;
   }
@@ -224,7 +241,7 @@ export class CustomerService {
     if (found) {
       return found;
     }
-    const job = this.jobs.find((j) => j.id === id);
+    const job = this.jobs().find((j) => j.id === id);
     return {
       id, reference: job?.reference ?? 'JOB-—', title: job?.title ?? '', status: job?.status ?? 'open',
       mode: 'onsite', providerName: job?.providerName ?? null, providerInitials: null, providerId: null,
@@ -250,10 +267,9 @@ export class CustomerService {
    * provider yet. A remote job carries no address (the conditional-address rule). Returns the id.
    */
   createJob(input: NewJobInput): string {
-    const seq = this.jobs.length + 1;
-    const id = `new-${seq}`;
+    const id = `new-${this.jobs().length + 1}`;
     const category = this.categories().find((c) => c.id === input.categoryId);
-    this.jobs.unshift({
+    const job: JobSummary = {
       id,
       reference: `JOB-${id.toUpperCase()}`,
       title: input.title.trim() || (category?.label ?? ''),
@@ -262,7 +278,8 @@ export class CustomerService {
       amountMinor: input.budgetMinor ?? 0,
       milestonesDone: 0,
       milestonesTotal: 0,
-    });
+    };
+    this.jobs.update((list) => [job, ...list]);
     return id;
   }
 

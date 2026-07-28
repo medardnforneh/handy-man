@@ -44,7 +44,7 @@ final class JobController extends Controller
 
         $jobs = Job::query()
             ->where('customer_party_id', $user->party_id)
-            ->with(['photos', 'address'])
+            ->with(['photos', 'address', 'engagement.provider', 'engagement.milestones'])
             ->latest('created_at')
             ->get();
 
