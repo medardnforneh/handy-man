@@ -55,15 +55,10 @@ final class DemoSeeder extends Seeder
         );
         $admin->assignRole('superadmin');
 
-        $skills = collect([
-            ['fr' => 'Plomberie', 'en' => 'Plumbing', 'risk' => 2],
-            ['fr' => 'Climatisation', 'en' => 'Air conditioning', 'risk' => 2],
-            ['fr' => 'Électricité', 'en' => 'Electrical', 'risk' => 3],
-            ['fr' => 'Design graphique', 'en' => 'Graphic design', 'risk' => 1],
-            ['fr' => 'Menuiserie', 'en' => 'Carpentry', 'risk' => 2],
-        ])->map(fn (array $s) => Skill::factory()->create([
-            'name_fr' => $s['fr'], 'name_en' => $s['en'], 'risk_tier' => $s['risk'],
-        ]));
+        // Use the REAL taxonomy (P1-07), not throwaway factory skills — so the app's GET /skills and
+        // the admin panel show a coherent catalog. SkillsSeeder is idempotent (firstOrCreate by slug).
+        $this->call(SkillsSeeder::class);
+        $skills = Skill::query()->where('is_leaf', true)->orderBy('name_en')->limit(5)->get();
 
         $providerNames = ['Atelier Nkeng', 'Douala Cool Services', 'Marie Fotso', 'BTP Cameroun SARL', 'Éric Kamga', 'Fresh Design Studio', 'Yaoundé Élec', 'Bâti-Pro'];
         $customerNames = ['Jean Mbarga', 'Aïcha Bello', 'Paul Etoundi', 'Grace Ngo', 'Samuel Tchoua', 'Fatou Sow', 'Restaurant Le Palmier', 'Boutique Kribi'];
