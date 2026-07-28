@@ -115,6 +115,8 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
         Route::get('/provider/opportunities', [ProviderOpportunityController::class, 'index'])->name('provider.opportunities');
         // Provider's active-work list (P5-03) — engagements still in flight, newest first.
         Route::get('/provider/work', [ProviderWorkController::class, 'index'])->name('provider.work');
+        // One engagement's execution view (P5-03/04/06) — site address + this worker's derived state.
+        Route::get('/provider/work/{engagement}', [ProviderWorkController::class, 'show'])->name('provider.work.show');
         // Provider payout request (P3-08).
         Route::post('/provider/payouts', [PayoutController::class, 'store'])->name('provider.payouts.store');
 

@@ -1366,6 +1366,34 @@ paths:
                     items: { $ref: "#/components/schemas/ProviderWork" }
         "401": { $ref: "#/components/responses/Problem" }
 
+  /provider/work/{engagement}:
+    get:
+      tags: [Platform]
+      operationId: providerWorkDetail
+      summary: One engagement's execution view (worker)
+      description: >
+        Everything the work-detail screen needs in one round-trip. Authorised by the same boundary as
+        the execution actions — an active assignment on the engagement — so anything readable here is
+        something the caller may actually act on (403 otherwise). The viewer is an assigned worker on
+        a formed engagement, so the EXACT site address is included (the coarse-area rule guards the
+        PRE-engagement provider). `supports_check_in`, `checked_in`, `current_status` and
+        `report_submitted` are derived server-side from the same rows the actions write, so the client
+        renders only affordances the server would accept.
+      parameters:
+        - { name: engagement, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        "200":
+          description: The engagement's execution view
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data: { $ref: "#/components/schemas/ProviderWorkDetail" }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+
   /payment-intents:
     post:
       tags: [Platform]
@@ -1915,6 +1943,47 @@ components:
         customer_name: { type: [string, "null"] }
         engagement_mode: { type: string, enum: [onsite, remote, hybrid] }
         job_status: { type: string, enum: [draft, open, offered, engaged, scheduled, in_progress, work_submitted, completed, cancelled] }
+        accepted_at: { type: string, format: date-time }
+
+    ProviderWorkDetail:
+      type: object
+      required: [id, job_id, assignment_id, reference, title, engagement_mode, job_status, agreed_amount, supports_check_in, checked_in, report_submitted, accepted_at]
+      properties:
+        id: { type: string, format: uuid, description: The engagement id — the check-in/status/report actions target it. }
+        job_id: { type: string, format: uuid }
+        assignment_id: { type: string, format: uuid, description: The caller's active assignment, whose execution state this reports. }
+        reference: { type: string }
+        title: { type: string }
+        description: { type: [string, "null"] }
+        customer_name: { type: [string, "null"] }
+        engagement_mode: { type: string, enum: [onsite, remote, hybrid] }
+        job_status: { type: string, enum: [draft, open, offered, engaged, scheduled, in_progress, work_submitted, completed, cancelled] }
+        agreed_amount: { $ref: "#/components/schemas/Money" }
+        scheduled_from: { type: [string, "null"], format: date-time }
+        scheduled_to: { type: [string, "null"], format: date-time }
+        address:
+          description: The EXACT site address — null for modes that have none (remote), per the engagement-mode policy.
+          oneOf:
+            - type: object
+              properties:
+                line1: { type: [string, "null"] }
+                quarter: { type: [string, "null"] }
+                city: { type: [string, "null"] }
+                region: { type: [string, "null"] }
+                country_code: { type: [string, "null"] }
+                landmark_note: { type: [string, "null"] }
+                latitude: { type: number }
+                longitude: { type: number }
+            - type: "null"
+        supports_check_in: { type: boolean, description: False for remote — the client must not render a check-in affordance. }
+        checked_in: { type: boolean, description: Derived from an OPEN work session, not a stored flag. }
+        checked_in_at: { type: [string, "null"], format: date-time }
+        current_status:
+          description: The latest execution status narrated for this worker, or null before any signal.
+          oneOf:
+            - { type: string, enum: [on_the_way, arrived, started, paused, resumed, completed] }
+            - type: "null"
+        report_submitted: { type: boolean }
         accepted_at: { type: string, format: date-time }
 
     Engagement:

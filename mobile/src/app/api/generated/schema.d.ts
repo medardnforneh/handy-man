@@ -1042,6 +1042,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/provider/work/{engagement}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * One engagement's execution view (worker)
+         * @description Everything the work-detail screen needs in one round-trip. Authorised by the same boundary as the execution actions — an active assignment on the engagement — so anything readable here is something the caller may actually act on (403 otherwise). The viewer is an assigned worker on a formed engagement, so the EXACT site address is included (the coarse-area rule guards the PRE-engagement provider). `supports_check_in`, `checked_in`, `current_status` and `report_submitted` are derived server-side from the same rows the actions write, so the client renders only affordances the server would accept.
+         */
+        get: operations["providerWorkDetail"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/payment-intents": {
         parameters: {
             query?: never;
@@ -1459,6 +1479,55 @@ export interface components {
             engagement_mode: "onsite" | "remote" | "hybrid";
             /** @enum {string} */
             job_status: "draft" | "open" | "offered" | "engaged" | "scheduled" | "in_progress" | "work_submitted" | "completed" | "cancelled";
+            /** Format: date-time */
+            accepted_at: string;
+        };
+        ProviderWorkDetail: {
+            /**
+             * Format: uuid
+             * @description The engagement id — the check-in/status/report actions target it.
+             */
+            id: string;
+            /** Format: uuid */
+            job_id: string;
+            /**
+             * Format: uuid
+             * @description The caller's active assignment
+             */
+            assignment_id: string;
+            reference: string;
+            title: string;
+            description?: string | null;
+            customer_name?: string | null;
+            /** @enum {string} */
+            engagement_mode: "onsite" | "remote" | "hybrid";
+            /** @enum {string} */
+            job_status: "draft" | "open" | "offered" | "engaged" | "scheduled" | "in_progress" | "work_submitted" | "completed" | "cancelled";
+            agreed_amount: components["schemas"]["Money"];
+            /** Format: date-time */
+            scheduled_from?: string | null;
+            /** Format: date-time */
+            scheduled_to?: string | null;
+            /** @description The EXACT site address — null for modes that have none (remote), per the engagement-mode policy. */
+            address?: {
+                line1?: string | null;
+                quarter?: string | null;
+                city?: string | null;
+                region?: string | null;
+                country_code?: string | null;
+                landmark_note?: string | null;
+                latitude?: number;
+                longitude?: number;
+            } | null;
+            /** @description False for remote — the client must not render a check-in affordance. */
+            supports_check_in: boolean;
+            /** @description Derived from an OPEN work session */
+            checked_in: boolean;
+            /** Format: date-time */
+            checked_in_at?: string | null;
+            /** @description The latest execution status narrated for this worker, or null before any signal. */
+            current_status?: ("on_the_way" | "arrived" | "started" | "paused" | "resumed" | "completed") | null;
+            report_submitted: boolean;
             /** Format: date-time */
             accepted_at: string;
         };
@@ -4053,6 +4122,32 @@ export interface operations {
                 };
             };
             401: components["responses"]["Problem"];
+        };
+    };
+    providerWorkDetail: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                engagement: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The engagement's execution view */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["ProviderWorkDetail"];
+                    };
+                };
+            };
+            401: components["responses"]["Problem"];
+            403: components["responses"]["Problem"];
         };
     };
     initiatePaymentIntent: {

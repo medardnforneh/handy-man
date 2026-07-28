@@ -46,9 +46,14 @@ export interface ActiveWork {
 }
 
 /** The provider's live status on a job (mirrors ProviderStatus / P5-06; `arrived` set by check-in). */
-export type WorkStatus = 'engaged' | 'on_the_way' | 'arrived' | 'started' | 'paused' | 'completed';
+export type WorkStatus =
+  | 'engaged' | 'on_the_way' | 'arrived' | 'started' | 'paused' | 'resumed' | 'completed';
 
-/** The provider's execution view of one job: check-in, status, and report submission (P5-03/04/06). */
+/**
+ * The provider's execution view of one job: check-in, status, and report submission (P5-03/04/06).
+ * `supportsCheckIn`, `checkedIn`, `status` and `reportSubmitted` come from the server, derived from
+ * the same rows the actions write — the client renders only affordances the server would accept.
+ */
 export interface WorkDetail {
   id: string;
   reference: string;
@@ -58,9 +63,25 @@ export interface WorkDetail {
   mode: EngagementMode;
   addressLine: string | null;
   accent: Accent;
+  supportsCheckIn: boolean;
   checkedIn: boolean;
   status: WorkStatus;
   reportSubmitted: boolean;
+}
+
+/** One materials line on a job report — a label, a quantity, and a per-unit price. */
+export interface ReportMaterial {
+  label: string;
+  qty: number;
+  unitCostMinor: number;
+}
+
+/** What the provider composes on the report sheet before submitting (P5-04). */
+export interface ReportDraft {
+  summary: string;
+  materials: ReportMaterial[];
+  extraChargesMinor: number;
+  photos: { file: File; kind: 'before' | 'after' }[];
 }
 
 /** A line in the quote the provider composes for a lead. */

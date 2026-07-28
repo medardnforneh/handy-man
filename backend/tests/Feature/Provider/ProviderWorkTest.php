@@ -3,9 +3,11 @@
 declare(strict_types=1);
 
 use App\Domain\Jobs\JobStatus;
+use App\Models\Assignment;
 use App\Models\Engagement;
 use App\Models\Job;
 use App\Models\User;
+use Illuminate\Support\Str;
 use Laravel\Sanctum\Sanctum;
 
 /**
@@ -67,4 +69,109 @@ it('excludes another provider’s engagements', function () {
 
 it('requires authentication', function () {
     $this->getJson('/api/v1/provider/work')->assertUnauthorized();
+});
+
+/**
+ * The work-detail read (GET /provider/work/{engagement}) — the single round-trip behind the
+ * work-detail screen. Authorised by the SAME boundary as the execution actions (an active
+ * assignment), and reporting DERIVED state so the client never drifts from the server.
+ *
+ * @param  'onsite'|'remote'  $mode
+ * @return array{provider: User, engagement: Engagement, assignment: Assignment}
+ */
+function assignedWork(string $mode = 'onsite'): array
+{
+    $customer = User::factory()->create();
+    $factory = Job::factory()->status(JobStatus::Engaged);
+    if ($mode === 'remote') {
+        $factory = $factory->remote();
+    }
+    $job = $factory->create([
+        'customer_party_id' => $customer->party_id,
+        'created_by_user_id' => $customer->id,
+    ]);
+
+    $provider = User::factory()->create();
+    $engagement = Engagement::factory()->create([
+        'job_id' => $job->id,
+        'provider_party_id' => $provider->party_id,
+    ]);
+    $assignment = Assignment::factory()->create([
+        'engagement_id' => $engagement->id,
+        'worker_user_id' => $provider->id,
+        'assigned_by_user_id' => $provider->id,
+        'role' => 'lead',
+    ]);
+
+    return compact('provider', 'engagement', 'assignment');
+}
+
+it('returns the exact site address and a not-yet-checked-in state to the assigned worker', function () {
+    ['provider' => $provider, 'engagement' => $engagement, 'assignment' => $assignment] = assignedWork();
+
+    Sanctum::actingAs($provider);
+    $this->getJson("/api/v1/provider/work/{$engagement->id}")
+        ->assertOk()
+        ->assertJsonPath('data.id', $engagement->id)
+        ->assertJsonPath('data.assignment_id', $assignment->id)
+        ->assertJsonPath('data.supports_check_in', true)
+        ->assertJsonPath('data.checked_in', false)
+        ->assertJsonPath('data.current_status', null)
+        ->assertJsonPath('data.report_submitted', false)
+        // Post-engagement, the worker gets the street line — not the coarse area a browsing provider sees.
+        ->assertJsonPath('data.address.line1', $engagement->job->address->line1);
+});
+
+it('derives checked_in and the current status from the rows the actions write', function () {
+    ['provider' => $provider, 'engagement' => $engagement] = assignedWork();
+    $key = fn () => ['Idempotency-Key' => (string) Str::uuid()];
+
+    Sanctum::actingAs($provider);
+    $this->json('POST', "/api/v1/engagements/{$engagement->id}/check-in", [
+        'latitude' => 4.05, 'longitude' => 9.70,
+    ], $key())->assertCreated();
+
+    $this->getJson("/api/v1/provider/work/{$engagement->id}")
+        ->assertOk()
+        ->assertJsonPath('data.checked_in', true)
+        ->assertJsonPath('data.current_status', 'arrived');
+
+    $this->json('POST', "/api/v1/engagements/{$engagement->id}/status", ['status' => 'started'], $key())
+        ->assertCreated();
+
+    $this->getJson("/api/v1/provider/work/{$engagement->id}")
+        ->assertOk()
+        ->assertJsonPath('data.current_status', 'started');
+
+    // Checking out closes the session — the affordance flips back, the status stays.
+    $this->json('POST', "/api/v1/engagements/{$engagement->id}/check-out", [], $key())->assertOk();
+
+    $this->getJson("/api/v1/provider/work/{$engagement->id}")
+        ->assertOk()
+        ->assertJsonPath('data.checked_in', false)
+        ->assertJsonPath('data.current_status', 'started');
+});
+
+it('tells a remote engagement it has no check-in and no address', function () {
+    ['provider' => $provider, 'engagement' => $engagement] = assignedWork('remote');
+
+    Sanctum::actingAs($provider);
+    $this->getJson("/api/v1/provider/work/{$engagement->id}")
+        ->assertOk()
+        ->assertJsonPath('data.supports_check_in', false)
+        ->assertJsonPath('data.address', null);
+});
+
+it('refuses the detail to someone with no active assignment', function () {
+    ['engagement' => $engagement, 'assignment' => $assignment] = assignedWork();
+
+    // A stranger.
+    Sanctum::actingAs(User::factory()->create());
+    $this->getJson("/api/v1/provider/work/{$engagement->id}")->assertForbidden();
+
+    // And the worker themselves once removed from the job — the read follows the action boundary.
+    $worker = $assignment->worker;
+    $assignment->update(['removed_at' => now()]);
+    Sanctum::actingAs($worker);
+    $this->getJson("/api/v1/provider/work/{$engagement->id}")->assertForbidden();
 });

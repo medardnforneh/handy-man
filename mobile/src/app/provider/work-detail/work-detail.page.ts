@@ -1,22 +1,26 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { IonicModule, ToastController } from '@ionic/angular';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
-import { WorkDetail, WorkStatus } from '../provider.models';
-import { ProviderService } from '../provider.service';
+import { ReportDraft, ReportMaterial, WorkDetail, WorkStatus } from '../provider.models';
+import { MutationResult, ProviderService } from '../provider.service';
 
 /**
- * Provider work detail — the execution surface for one job (P5-03/04/06). Check-in shares the
- * provider's arrival (geo + timestamp) and is gated to on-site/hybrid by the engagement mode
- * (EngagementModePolicy) — a remote job exposes no check-in affordance. Structured status signals
- * and the final job report round out "doing the work"; the chat is one tap away.
+ * Provider work detail — the execution surface for one job (P5-03/04/06), on the real endpoints.
+ *
+ * The screen never decides what is allowed: the server's work-detail read tells it whether check-in
+ * exists for this engagement mode (a remote job exposes no check-in affordance, per the
+ * EngagementModePolicy), whether a session is open, the last narrated status, and whether the report
+ * is in. Every mutation re-reads that state, so the UI can't drift from the server — and a refusal
+ * surfaces the server's own `detail` rather than a generic error.
  */
 @Component({
   selector: 'app-provider-work-detail',
   templateUrl: './work-detail.page.html',
   styleUrls: ['./work-detail.page.scss'],
-  imports: [CommonModule, IonicModule, TranslatePipe],
+  imports: [CommonModule, FormsModule, IonicModule, TranslatePipe],
 })
 export class ProviderWorkDetailPage {
   private readonly provider = inject(ProviderService);
@@ -28,43 +32,134 @@ export class ProviderWorkDetailPage {
   private readonly id = this.route.snapshot.paramMap.get('id') ?? '';
   readonly work = signal<WorkDetail>(this.provider.workDetail(this.id));
 
-  /** Check-in is on-site/hybrid only (doc 06); a remote job never offers it. */
-  readonly canCheckIn = computed(() => this.work().mode !== 'remote');
+  /** True while a mutation is in flight — the actions disable so a double tap can't double-post. */
+  readonly busy = signal(false);
+
+  /** Check-in is on-site/hybrid only (doc 06) — the server decides, we only render its answer. */
+  readonly canCheckIn = computed(() => this.work().supportsCheckIn);
 
   /** The status signals a provider can post; `arrived` is reserved to check-in (P5-06). */
-  readonly statuses: WorkStatus[] = ['on_the_way', 'started', 'paused', 'completed'];
+  readonly statuses: WorkStatus[] = ['on_the_way', 'started', 'paused', 'resumed', 'completed'];
 
-  private refresh(): void {
-    this.work.set({ ...this.provider.workDetail(this.id) });
+  // --- Report composer -------------------------------------------------------------------------
+
+  readonly reportOpen = signal(false);
+  readonly summary = signal('');
+  readonly materials = signal<ReportMaterial[]>([]);
+  readonly extraCharges = signal(0);
+  readonly photos = signal<{ file: File; kind: 'before' | 'after' }[]>([]);
+  readonly summaryTouched = signal(false);
+
+  readonly summaryMissing = computed(() => this.summaryTouched() && this.summary().trim() === '');
+
+  async ngOnInit(): Promise<void> {
+    const real = await this.provider.fetchWorkDetail(this.id);
+    if (real) {
+      this.work.set(real);
+    }
   }
 
-  private async toast(key: string): Promise<void> {
+  private async refresh(): Promise<void> {
+    const real = await this.provider.fetchWorkDetail(this.id);
+    this.work.set(real ?? { ...this.provider.workDetail(this.id) });
+  }
+
+  private async toast(key: string, color: 'success' | 'danger' = 'success', message?: string): Promise<void> {
     const t = await this.toasts.create({
-      message: this.translate.instant(key), duration: 1800, position: 'top', color: 'success',
+      message: message ?? this.translate.instant(key), duration: 2200, position: 'top', color,
     });
     await t.present();
   }
 
+  /** Run one mutation with the busy guard, then re-read the server's state either way. */
+  private async run(call: () => Promise<MutationResult>, successKey: string): Promise<boolean> {
+    if (this.busy()) {
+      return false;
+    }
+    this.busy.set(true);
+    try {
+      const result = await call();
+      await this.refresh();
+      if (result.ok) {
+        await this.toast(successKey);
+      } else {
+        await this.toast('work.action_failed', 'danger', result.detail);
+      }
+      return result.ok;
+    } finally {
+      this.busy.set(false);
+    }
+  }
+
   async checkIn(): Promise<void> {
-    this.provider.checkIn(this.id);
-    this.refresh();
-    await this.toast('work.checked_in_toast');
+    await this.run(() => this.provider.checkIn(this.id), 'work.checked_in_toast');
   }
 
-  checkOut(): void {
-    this.provider.checkOut(this.id);
-    this.refresh();
+  async checkOut(): Promise<void> {
+    await this.run(() => this.provider.checkOut(this.id), 'work.checked_out_toast');
   }
 
-  setStatus(status: WorkStatus): void {
-    this.provider.setWorkStatus(this.id, status);
-    this.refresh();
+  async setStatus(status: WorkStatus): Promise<void> {
+    await this.run(() => this.provider.setWorkStatus(this.id, status), 'work.status_toast');
+  }
+
+  openReport(): void {
+    this.summaryTouched.set(false);
+    this.reportOpen.set(true);
+  }
+
+  closeReport(): void {
+    this.reportOpen.set(false);
+  }
+
+  addMaterial(): void {
+    this.materials.update((rows) => [...rows, { label: '', qty: 1, unitCostMinor: 0 }]);
+  }
+
+  removeMaterial(index: number): void {
+    this.materials.update((rows) => rows.filter((_, i) => i !== index));
+  }
+
+  /** Write one field of a materials row back, keeping the array immutable for change detection. */
+  updateMaterial(index: number, patch: Partial<ReportMaterial>): void {
+    this.materials.update((rows) => rows.map((r, i) => (i === index ? { ...r, ...patch } : r)));
+  }
+
+  addPhoto(event: Event, kind: 'before' | 'after'): void {
+    const input = event.target as HTMLInputElement;
+    const chosen = Array.from(input.files ?? []);
+    if (chosen.length > 0) {
+      this.photos.update((rows) => [...rows, ...chosen.map((file) => ({ file, kind }))]);
+    }
+    // Clear the input so picking the same file twice still fires a change.
+    input.value = '';
+  }
+
+  removePhoto(index: number): void {
+    this.photos.update((rows) => rows.filter((_, i) => i !== index));
   }
 
   async submitReport(): Promise<void> {
-    this.provider.submitReport(this.id);
-    this.refresh();
-    await this.toast('work.report_toast');
+    this.summaryTouched.set(true);
+    if (this.summary().trim() === '') {
+      return;
+    }
+    const draft: ReportDraft = {
+      summary: this.summary().trim(),
+      // A blank row is the user abandoning a line, not an error — drop them silently.
+      materials: this.materials().filter((m) => m.label.trim() !== ''),
+      extraChargesMinor: Math.max(0, Math.round(this.extraCharges() || 0)),
+      photos: this.photos(),
+    };
+
+    const ok = await this.run(() => this.provider.submitReport(this.id, draft), 'work.report_toast');
+    if (ok) {
+      this.reportOpen.set(false);
+      this.summary.set('');
+      this.materials.set([]);
+      this.extraCharges.set(0);
+      this.photos.set([]);
+    }
   }
 
   openChat(): void {

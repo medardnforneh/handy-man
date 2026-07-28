@@ -3,8 +3,46 @@ import { ApiService } from '../api/api.service';
 import { Accent } from '../customer/customer.models';
 import { LocaleService } from '../core/locale.service';
 import {
-  ActiveWork, Lead, Payout, PayoutStatus, ProviderStats, WorkDetail, WorkStatus, ProviderWallet,
+  ActiveWork, Lead, Payout, PayoutStatus, ProviderStats, ReportDraft, WorkDetail, WorkStatus,
+  ProviderWallet,
 } from './provider.models';
+
+/** The outcome of one execution mutation: accepted, or refused with the server's own explanation. */
+export interface MutationResult {
+  ok: boolean;
+  detail?: string;
+}
+
+/** Up to two initials from a display name, for the customer avatar. */
+function initialsOf(name: string): string {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) {
+    return '?';
+  }
+  return (parts[0][0] + (parts.length > 1 ? parts[parts.length - 1][0] : '')).toUpperCase();
+}
+
+/**
+ * A best-effort GPS fix for check-in/out. Deliberately forgiving: a short timeout and a null result
+ * on refusal or failure, because the server accepts a session without coordinates — a worker with a
+ * dead GPS must still be able to check in.
+ */
+function currentPosition(): Promise<{ latitude: number; longitude: number; accuracyM?: number } | null> {
+  if (typeof navigator === 'undefined' || !navigator.geolocation) {
+    return Promise.resolve(null);
+  }
+  return new Promise((resolve) => {
+    navigator.geolocation.getCurrentPosition(
+      (pos) => resolve({
+        latitude: pos.coords.latitude,
+        longitude: pos.coords.longitude,
+        accuracyM: pos.coords.accuracy ?? undefined,
+      }),
+      () => resolve(null),
+      { enableHighAccuracy: true, timeout: 8000, maximumAge: 30000 },
+    );
+  });
+}
 
 /** One entry of the provider opportunity feed (an offer with its PII-minimised job), as the API sends it. */
 type ApiOpportunity = Awaited<ReturnType<ApiService['opportunities']>>[number];
@@ -33,9 +71,11 @@ function accentFor(id: string): Accent {
 }
 
 /**
- * Provider-section data. Fixture-driven for the surfaces without a read endpoint yet; Earnings now
- * loads from the real API (GET /provider/earnings) with the fixture standing in when offline. The
- * shapes match the API, so wiring the rest is a per-method change.
+ * Provider-section data. Earnings, opportunities, the work list and the work detail — including its
+ * check-in / status / report mutations — now run against the real API; the remaining surfaces keep
+ * their fixtures. Every method falls back to its fixture when there's no session or the device is
+ * offline, so the whole section stays demoable unconnected, and the shapes match the API so wiring
+ * the rest is a per-method change.
  */
 @Injectable({ providedIn: 'root' })
 export class ProviderService {
@@ -44,6 +84,9 @@ export class ProviderService {
 
   /** Real opportunities cached by offer id, so the lead detail can resolve one after the feed loads. */
   private readonly realLeads = new Map<string, Lead>();
+
+  /** Engagement ids the API has confirmed — the switch that routes mutations to the server. */
+  private readonly realWork = new Set<string>();
 
   readonly name = 'Atelier Nkeng';
   readonly initials = 'AN';
@@ -230,17 +273,17 @@ export class ProviderService {
     j1: {
       id: 'j1', reference: 'JOB-7K2M9', title: 'Fuite sous l’évier', customerName: 'Jean M.',
       customerInitials: 'JM', mode: 'onsite', addressLine: 'Rue 1.234, Akwa, Douala', accent: 'brand',
-      checkedIn: false, status: 'engaged', reportSubmitted: false,
+      supportsCheckIn: true, checkedIn: false, status: 'engaged', reportSubmitted: false,
     },
     a2: {
       id: 'a2', reference: 'JOB-5RN8K', title: 'Tableau électrique', customerName: 'Sandrine B.',
       customerInitials: 'SB', mode: 'onsite', addressLine: 'Bonapriso, Douala', accent: 'info',
-      checkedIn: false, status: 'engaged', reportSubmitted: false,
+      supportsCheckIn: true, checkedIn: false, status: 'engaged', reportSubmitted: false,
     },
     a3: {
       id: 'a3', reference: 'JOB-2HW6P', title: 'Étagères sur mesure', customerName: 'Paul T.',
       customerInitials: 'PT', mode: 'remote', addressLine: null, accent: 'warning',
-      checkedIn: false, status: 'started', reportSubmitted: false,
+      supportsCheckIn: false, checkedIn: false, status: 'started', reportSubmitted: false,
     },
   };
 
@@ -281,37 +324,120 @@ export class ProviderService {
       id, reference: work?.reference ?? 'JOB-—', title: work?.title ?? '',
       customerName: work?.customerName ?? '', customerInitials: (work?.customerName ?? '?').charAt(0),
       mode: work?.mode ?? 'onsite', addressLine: null, accent: work?.accent ?? 'muted',
+      supportsCheckIn: (work?.mode ?? 'onsite') !== 'remote',
       checkedIn: false, status: 'engaged', reportSubmitted: false,
     };
   }
 
-  checkIn(id: string): void {
-    const w = this.workDetails[id];
-    if (w) {
-      w.checkedIn = true;
-      w.status = 'arrived';
+  /**
+   * The real execution view of one engagement (GET /provider/work/{engagement}) — the exact site
+   * address plus this worker's derived state. Remembering that the id is real is what routes the
+   * mutations to the API rather than the fixture. Returns null when there's no session / offline.
+   */
+  async fetchWorkDetail(id: string): Promise<WorkDetail | null> {
+    try {
+      const d = await this.api.workDetail(id);
+      const addr = d.address ?? null;
+      const detail: WorkDetail = {
+        id: d.id,
+        reference: d.reference,
+        title: d.title,
+        customerName: d.customer_name ?? '',
+        customerInitials: initialsOf(d.customer_name ?? ''),
+        mode: d.engagement_mode,
+        addressLine: addr ? [addr.line1, addr.quarter, addr.city].filter(Boolean).join(', ') : null,
+        accent: accentFor(d.id),
+        supportsCheckIn: d.supports_check_in,
+        checkedIn: d.checked_in,
+        // Before any signal the worker is simply engaged — the server has nothing to report yet.
+        status: (d.current_status ?? 'engaged') as WorkStatus,
+        reportSubmitted: d.report_submitted,
+      };
+      this.realWork.add(d.id);
+      return detail;
+    } catch {
+      return null;
     }
   }
 
-  checkOut(id: string): void {
-    const w = this.workDetails[id];
-    if (w) {
-      w.checkedIn = false;
+  /**
+   * Check in at the site (POST /engagements/{id}/check-in) — opens the work session and narrates
+   * `arrived`. Best-effort geo: a device without a fix still checks in, since the server accepts
+   * null coordinates rather than blocking the worker. A second check-in comes back 409.
+   */
+  async checkIn(id: string): Promise<MutationResult> {
+    if (!this.realWork.has(id)) {
+      const w = this.workDetails[id];
+      if (w) {
+        w.checkedIn = true;
+        w.status = 'arrived';
+      }
+      return { ok: true };
     }
+    const fix = await currentPosition();
+    return this.attempt(() => this.api.checkIn(id, fix?.latitude, fix?.longitude, fix?.accuracyM));
   }
 
-  setWorkStatus(id: string, status: WorkStatus): void {
-    const w = this.workDetails[id];
-    if (w) {
-      w.status = status;
+  /** Check out (POST /engagements/{id}/check-out) — closes the open session with the end geo. */
+  async checkOut(id: string): Promise<MutationResult> {
+    if (!this.realWork.has(id)) {
+      const w = this.workDetails[id];
+      if (w) {
+        w.checkedIn = false;
+      }
+      return { ok: true };
     }
+    const fix = await currentPosition();
+    return this.attempt(() => this.api.checkOut(id, fix?.latitude, fix?.longitude, fix?.accuracyM));
   }
 
-  submitReport(id: string): void {
-    const w = this.workDetails[id];
-    if (w) {
-      w.reportSubmitted = true;
-      w.status = 'completed';
+  /** Emit a structured status signal (POST /engagements/{id}/status) — narrated into the timeline. */
+  async setWorkStatus(id: string, status: WorkStatus): Promise<MutationResult> {
+    if (!this.realWork.has(id)) {
+      const w = this.workDetails[id];
+      if (w) {
+        w.status = status;
+      }
+      return { ok: true };
+    }
+    if (status === 'arrived' || status === 'engaged') {
+      // `arrived` belongs to check-in and `engaged` is the absence of a signal (P5-06) — neither is
+      // postable. The chip list never offers them; this is the belt to that braces.
+      return { ok: false };
+    }
+    return this.attempt(() => this.api.recordStatus(id, status));
+  }
+
+  /** Submit the on-site job report (POST /engagements/{id}/report) — summary, materials, photos. */
+  async submitReport(id: string, draft: ReportDraft): Promise<MutationResult> {
+    if (!this.realWork.has(id)) {
+      const w = this.workDetails[id];
+      if (w) {
+        w.reportSubmitted = true;
+        w.status = 'completed';
+      }
+      return { ok: true };
+    }
+    return this.attempt(() => this.api.submitJobReport(id, {
+      summary: draft.summary,
+      extraChargesMinor: draft.extraChargesMinor,
+      materials: draft.materials,
+      photos: draft.photos,
+    }));
+  }
+
+  /**
+   * Run one mutation, surfacing the server's problem+json `detail` on failure — a refusal here is
+   * usually a real rule (remote check-in, a session already open), and the worker deserves to read
+   * it rather than a generic error.
+   */
+  private async attempt(call: () => Promise<unknown>): Promise<MutationResult> {
+    try {
+      await call();
+      return { ok: true };
+    } catch (e) {
+      const detail = (e as { detail?: unknown }).detail;
+      return { ok: false, detail: typeof detail === 'string' ? detail : undefined };
     }
   }
 

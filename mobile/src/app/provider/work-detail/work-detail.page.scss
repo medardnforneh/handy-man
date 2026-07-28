@@ -141,3 +141,135 @@ ion-footer {
 
   ion-button { --border-radius: var(--hm-radius-md); font-weight: 700; margin: 0; }
 }
+
+// ---- Report composer sheet ---------------------------------------------
+.sheet {
+  padding: var(--hm-space-md) var(--hm-space-md) var(--hm-space-xl);
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.field {
+  display: block;
+  margin-bottom: var(--hm-space-md);
+}
+
+.flabel {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--hm-color-text-muted);
+}
+
+.finput,
+.ftext {
+  width: 100%;
+  padding: 0.7rem 0.8rem;
+  background: var(--hm-color-surface-raised);
+  border: 1.5px solid var(--hm-color-border-subtle);
+  border-radius: var(--hm-radius-md);
+  color: var(--hm-color-text-primary);
+  font: inherit;
+  font-size: 0.9rem;
+
+  &::placeholder { color: var(--hm-color-text-muted); }
+
+  &:focus {
+    outline: none;
+    border-color: var(--hm-color-brand-primary);
+  }
+}
+
+.ftext { resize: vertical; line-height: 1.45; }
+
+.err {
+  margin: -0.5rem 0 var(--hm-space-md);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--hm-color-status-danger);
+}
+
+// A materials line: item / qty / unit price, with a remove affordance.
+.mrow {
+  display: grid;
+  grid-template-columns: 1fr 4.5rem 7rem auto;
+  gap: 0.5rem;
+  align-items: center;
+  padding: var(--hm-space-sm);
+  margin-bottom: 0.5rem;
+
+  // On a phone the three fields stack into two rows rather than squeeze illegibly.
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr 1fr auto;
+    .mlabel { grid-column: 1 / -1; }
+  }
+}
+
+.mdel {
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  background: none;
+  border: 0;
+  border-radius: 50%;
+  color: var(--hm-color-text-muted);
+  cursor: pointer;
+
+  ion-icon { font-size: 1.1rem; }
+  &:hover { background: var(--hm-color-surface-sunken); color: var(--hm-color-status-danger); }
+}
+
+// The dashed "add" affordance, shared by materials and photos.
+.ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  width: 100%;
+  padding: 0.7rem var(--hm-space-md);
+  margin-bottom: var(--hm-space-md);
+  background: none;
+  border: 1px dashed var(--hm-color-border-strong);
+  border-radius: var(--hm-radius-md);
+  color: var(--hm-color-text-muted);
+  font-size: 0.86rem;
+  font-weight: 600;
+  cursor: pointer;
+
+  ion-icon { font-size: 1.1rem; color: var(--hm-color-brand-primary); }
+  &:hover { border-color: var(--hm-color-brand-primary); color: var(--hm-color-text-primary); }
+}
+
+.padd {
+  display: flex;
+  gap: 0.5rem;
+
+  .ghost { margin-bottom: 0; }
+
+  @media (max-width: 420px) { flex-direction: column; }
+}
+
+.plist {
+  list-style: none;
+  margin: 0 0 var(--hm-space-sm);
+  padding: 0;
+}
+
+.pitem {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem var(--hm-space-sm);
+  margin-bottom: 0.4rem;
+
+  .pname {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.84rem;
+  }
+}

@@ -3,7 +3,7 @@
 > Living tracker for the build. Updated as work progresses. Source of truth for **where we
 > are** and **how this machine is set up**. Read this first when resuming.
 
-_Last updated: 2026-07-28 (mobile↔API wiring: customer discovery loop + provider read endpoints)_
+_Last updated: 2026-07-28 (mobile↔API wiring: provider execution surface — check-in / status / report)_
 
 ## Environment (this dev machine — Windows 10 Pro, non-admin)
 
@@ -137,7 +137,7 @@ Task IDs come from `docs/05-build-plan.md`.
 
 | ID | Task | Status |
 |---|---|---|
-| P5-03 + P5-06 | `work_sessions` check-in/out (geo + timestamp) + structured provider status actions | **DONE** — `work_sessions` (geography start/end points + GPS accuracy; `work_sessions_span_check`; **partial unique `one_open_session_per_assignment`** — can't check in twice); `CheckIn` opens a session and narrates `arrived` in-transaction (rule #11), gated to onsite/hybrid via `EngagementModePolicy` (**remote → 422 `check-in-not-supported`**, no affordance); `CheckOut` row-locks and closes the open session (pure work-time close — completion stays a separate signal); `RecordStatus` narrates the structured `ProviderStatus` signals (on_the_way/started/paused/resumed/completed — `arrived` reserved to check-in); acting user must be an active assigned worker (provider section queries `assignments` only, no individual-vs-company branch); `POST /v1/engagements/{engagement}/check-in`, `/check-out`, `/status`; OpenAPI + TS client updated; 8 tests incl. **remote-refuses-check-in, double-check-in 409, arrived-not-postable-via-status** |
+| P5-03 + P5-06 | `work_sessions` check-in/out (geo + timestamp) + structured provider status actions | **DONE** — `work_sessions` (geography start/end points + GPS accuracy; `work_sessions_span_check`; **partial unique `one_open_session_per_assignment`** — can't check in twice); `CheckIn` opens a session and narrates `arrived` in-transaction (rule #11), gated to onsite/hybrid via `EngagementModePolicy` (**remote → 422 `check-in-not-supported`**, no affordance); `CheckOut` row-locks and closes the open session (pure work-time close — completion stays a separate signal); `RecordStatus` narrates the structured `ProviderStatus` signals (on_the_way/started/paused/resumed/completed — `arrived` reserved to check-in); acting user must be an active assigned worker (provider section queries `assignments` only, no individual-vs-company branch); `POST /v1/engagements/{engagement}/check-in`, `/check-out`, `/status`; OpenAPI + TS client updated; 8 tests incl. **remote-refuses-check-in, double-check-in 409, arrived-not-postable-via-status**. Later joined by the read side: `GET /v1/provider/work/{engagement}` + `WorkProgress` (checked_in / current_status / report_submitted all DERIVED from the rows the Actions write), authorised by the same active-assignment boundary; 4 tests |
 | P5-04 | `job_reports` + before/after `media`, EXIF stripped server-side | **DONE** — polymorphic `media` table (owner party, attachable type/id, kind, sha256, bytes, `captured_point` geography; CHECKs on bytes/type/kind) + `job_reports` (summary, materials jsonb, extra_charges, signature slot); `StoreMedia` **re-encodes raster images through GD to strip every EXIF/XMP/GPS segment**, records the client-reported geo in `captured_point` server-side (never in the file), and stores sha256/bytes of the CLEAN file; `SubmitJobReport` (worker; attaches before/after photos in one txn); `POST /v1/engagements/{engagement}/report` (multipart); OpenAPI + TS client updated; 4 tests incl. **injected-EXIF-marker gone from stored bytes + geo-in-DB** |
 | P5-05 | Push notifications (FCM) via outbox | **DONE** — provider-agnostic `PushSender` abstraction + normalised `PushMessage`; `FakePushSender` (records sends, default) + `FcmPushSender` (HTTP v1, one request/token, per-token failure logged not thrown — live delivery pends real project creds); config-selected in `NotificationsServiceProvider` (`config/notifications.php`, default `fake`). Push **rides the transactional outbox**: `NotifyOnOutboxMessage` subscribes to the `OutboxMessagePublished` seam and, for a relayed `message.created`, notifies the conversation's participants **except the sender** on their non-revoked devices, **each in their own comms locale** (`push.*` i18n keys, parity OK). New endpoints: none (server-internal). 4 tests incl. **sender-excluded + per-locale copy + sole-participant no-op** |
 | P5-01, P5-02 | Ionic PWA/Android/iOS + secure token storage; offline-first cache (Drift) + write queue | not started (client/native — need device builds) |
@@ -231,6 +231,45 @@ build, which lands with the app UI work.**
 
 ## What was done, most recent first
 
+- **Mobile ↔ API wiring — the provider execution surface is real (check-in / status / report)**. The
+  work-detail screen was the last big fixture-only *mutation* surface; it now drives the P5-03/04/06
+  endpoints end-to-end.
+  - **New read: `GET /provider/work/{engagement}`** — the single round-trip behind the screen.
+    Authorised by the **same boundary as the execution Actions** (an active, non-removed assignment),
+    so anything the screen can read is something the caller may actually act on; a stranger *and* a
+    removed worker both get 403. Post-engagement the worker gets the **exact** site address (the
+    coarse-area rule of `JobResource` guards the *pre*-engagement provider), and whether there is an
+    address at all is the `EngagementModePolicy`'s call, never an inline mode check.
+  - **State is derived, never a stored flag** — a new `WorkProgress` service reads `checked_in` from
+    an OPEN `work_session`, `current_status` from the latest execution kind narrated by *this* worker
+    in the job's conversation (the chat IS the state machine, doc 06), and `report_submitted` from a
+    submitted `job_report`. A read never creates the conversation. So the client can't drift: check
+    out and the affordance flips back; `supports_check_in` is false on remote and the button simply
+    isn't rendered.
+  - **Mobile**: `ApiService` gained `workDetail` / `checkIn` / `checkOut` / `recordStatus` /
+    `submitJobReport` (multipart `FormData` with a pass-through `bodySerializer`, so fetch sets its
+    own boundary). `ProviderService` remembers which engagement ids the API confirmed — that set is
+    the switch routing mutations to the server vs the fixture, so the section stays demoable
+    unconnected. Check-in/out attach a **best-effort** GPS fix (short timeout, null on refusal — the
+    server accepts a session without coordinates, so a dead GPS never blocks a worker).
+  - **A real report composer** replaced the stub button: summary (required client-side, matching the
+    server rule), repeatable materials rows, extra charges, and before/after photo pickers — in an
+    `ion-modal` styled on the tokens, with the materials grid restacking under 480px. Photos are
+    EXIF-stripped server-side (P5-04); the client sends the file as-is.
+  - Every mutation runs through one busy-guarded helper that **re-reads the server state either way**
+    and surfaces the server's problem+json `detail` on refusal (remote check-in, a session already
+    open) rather than a generic error. `resumed` was missing from the status chips and the
+    `WorkStatus` type — added.
+  - Spec-first as always (OpenAPI → regenerated TS client, drift gate holds). **387 backend tests
+    green**, PHPStan L6 + Pint clean, mobile build green, i18n parity 353 keys × 2, no-literal-colour
+    + no-bare-string clean. **Not visually verified** — the Chrome extension wasn't connected this
+    session, so the report sheet has had no browser render check (see the i18n lesson below: a green
+    `ng build` is not proof a screen renders).
+  - **Still fixture-only on the provider side**: the Home dashboard (wallet + stats — composable from
+    earnings + work + own `GET /providers/{party}/metrics`, no new endpoint) and the provider's own
+    Profile (`GET /provider/profile` exists). Not yet started: Blade public/SEO pages, realtime/media
+    surfaces (P4-04..07), native/offline (P5-01/02).
+
 - **Mobile ↔ API wiring — customer discovery loop + provider read surfaces made real**. Continuing the
   method-by-method migration from fixtures to the generated `openapi-fetch` client (every screen keeps
   its fixture as the offline/no-session fallback, so all stay demoable un-connected). This pass:
@@ -255,7 +294,7 @@ build, which lands with the app UI work.**
       server's problem+json `detail`. 4 tests incl. the PII assertion.
     - `GET /provider/work` (P5-03) — the caller's in-flight engagements (job not completed/cancelled),
       newest first; the row id is the ENGAGEMENT id so the work-detail check-in/status/report actions
-      target it. Wired the Work list. 4 tests.
+      target it. Wired the Work list. 4 tests. (The mutations landed in the pass above.)
   - All spec-first (OpenAPI → regenerated TS client, CI drift gate holds); PHPStan L6 + Pint clean;
     mobile builds green; no-literal-colour + no-bare-string + i18n parity (332 keys × 2) all clean.
   - **Still fixture-only on the provider side** (candidates for the next pass): the Home dashboard

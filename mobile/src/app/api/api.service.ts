@@ -1,6 +1,30 @@
 import { Injectable } from '@angular/core';
 import { api } from './client';
 
+/** The structured status signals a worker may emit (P5-06). `arrived` is the server's, via check-in. */
+export type ProviderStatusSignal = 'on_the_way' | 'started' | 'paused' | 'resumed' | 'completed';
+
+/** One line of materials used, priced per unit in minor units. */
+export interface JobReportMaterial {
+  label: string;
+  qty: number;
+  unitCostMinor: number;
+}
+
+/** A before/after photo for the report. The server strips its EXIF and records the geo in the DB. */
+export interface JobReportPhoto {
+  file: File | Blob;
+  kind: 'before' | 'after';
+}
+
+/** The on-site job report a worker submits (P5-04). */
+export interface JobReportInput {
+  summary: string;
+  extraChargesMinor?: number;
+  materials?: JobReportMaterial[];
+  photos?: JobReportPhoto[];
+}
+
 /**
  * The DI surface for real API calls — a thin, typed wrapper over the generated `openapi-fetch`
  * client. Screens keep talking to their fixture services for now; those services will delegate to
@@ -174,6 +198,88 @@ export class ApiService {
   /** The provider's active-work list (P5-03) — engagements still in flight, newest first. */
   async work() {
     const { data, error } = await api.GET('/provider/work');
+    if (error) {
+      throw error;
+    }
+    return data.data;
+  }
+
+  /**
+   * One engagement's execution view (P5-03/04/06) — the exact site address plus THIS worker's
+   * derived state (supports_check_in / checked_in / current_status / report_submitted), so the
+   * work-detail screen renders only affordances the server would accept. 403 without an assignment.
+   */
+  async workDetail(engagementId: string) {
+    const { data, error } = await api.GET('/provider/work/{engagement}', {
+      params: { path: { engagement: engagementId } },
+    });
+    if (error) {
+      throw error;
+    }
+    return data.data;
+  }
+
+  /** Check in at the job site (P5-03) — opens a work session with geo, narrates `arrived`. */
+  async checkIn(engagementId: string, latitude?: number, longitude?: number, accuracyM?: number) {
+    const { data, error } = await api.POST('/engagements/{engagement}/check-in', {
+      params: { path: { engagement: engagementId }, header: { 'Idempotency-Key': crypto.randomUUID() } },
+      body: { latitude, longitude, accuracy_m: accuracyM },
+    });
+    if (error) {
+      throw error;
+    }
+    return data.data;
+  }
+
+  /** Check out (P5-03) — closes the open work session with the end geo. */
+  async checkOut(engagementId: string, latitude?: number, longitude?: number, accuracyM?: number) {
+    const { data, error } = await api.POST('/engagements/{engagement}/check-out', {
+      params: { path: { engagement: engagementId }, header: { 'Idempotency-Key': crypto.randomUUID() } },
+      body: { latitude, longitude, accuracy_m: accuracyM },
+    });
+    if (error) {
+      throw error;
+    }
+    return data.data;
+  }
+
+  /** Emit a structured status signal (P5-06) — narrated into the workspace timeline. */
+  async recordStatus(engagementId: string, status: ProviderStatusSignal) {
+    const { data, error } = await api.POST('/engagements/{engagement}/status', {
+      params: { path: { engagement: engagementId }, header: { 'Idempotency-Key': crypto.randomUUID() } },
+      body: { status },
+    });
+    if (error) {
+      throw error;
+    }
+    return data.data;
+  }
+
+  /**
+   * Submit the on-site job report (P5-04) — summary, materials, extra charges and before/after
+   * photos. Multipart, because photos ride along; the server strips every photo's EXIF.
+   */
+  async submitJobReport(engagementId: string, report: JobReportInput) {
+    const form = new FormData();
+    form.set('summary', report.summary);
+    form.set('extra_charges_minor', String(report.extraChargesMinor ?? 0));
+    (report.materials ?? []).forEach((m, i) => {
+      form.set(`materials[${i}][label]`, m.label);
+      form.set(`materials[${i}][qty]`, String(m.qty));
+      form.set(`materials[${i}][unit_cost_minor]`, String(m.unitCostMinor));
+    });
+    (report.photos ?? []).forEach((p, i) => {
+      form.set(`photos[${i}][file]`, p.file);
+      form.set(`photos[${i}][kind]`, p.kind);
+    });
+
+    const { data, error } = await api.POST('/engagements/{engagement}/report', {
+      params: { path: { engagement: engagementId }, header: { 'Idempotency-Key': crypto.randomUUID() } },
+      // The generated body type describes the multipart FIELDS; the wire form is a FormData that
+      // the serializer passes through untouched, so fetch sets the boundary itself.
+      body: form as never,
+      bodySerializer: (body: unknown) => body as FormData,
+    });
     if (error) {
       throw error;
     }

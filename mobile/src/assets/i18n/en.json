@@ -402,6 +402,7 @@
       "arrived": "Arrived",
       "started": "Started",
       "paused": "Paused",
+      "resumed": "Resumed",
       "completed": "Completed"
     },
     "report": "Job report",
@@ -409,6 +410,26 @@
     "report_hint": "Before/after photos and a summary of the work.",
     "report_submitted": "Report submitted",
     "checked_in_toast": "Checked in",
-    "report_toast": "Report submitted"
+    "checked_out_toast": "Checked out",
+    "status_toast": "Status updated",
+    "report_toast": "Report submitted",
+    "action_failed": "That didn’t go through. Please try again.",
+    "summary": "What was done",
+    "summary_placeholder": "Describe the work you completed.",
+    "summary_required": "Add a short summary before submitting.",
+    "materials": "Materials used",
+    "add_material": "Add a material",
+    "material_label": "Item",
+    "material_qty": "Qty",
+    "material_unit_cost": "Unit price (XAF)",
+    "remove": "Remove",
+    "extra_charges": "Extra charges (XAF)",
+    "photos": "Before / after photos",
+    "add_before": "Add “before”",
+    "add_after": "Add “after”",
+    "photo_before": "Before",
+    "photo_after": "After",
+    "cancel": "Cancel",
+    "send_report": "Send report"
   }
 }

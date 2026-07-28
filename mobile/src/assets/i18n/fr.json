@@ -402,6 +402,7 @@
       "arrived": "Arrivé",
       "started": "Commencé",
       "paused": "En pause",
+      "resumed": "Reprise",
       "completed": "Terminé"
     },
     "report": "Rapport",
@@ -409,6 +410,26 @@
     "report_hint": "Photos avant/après et un résumé du travail.",
     "report_submitted": "Rapport soumis",
     "checked_in_toast": "Arrivée pointée",
-    "report_toast": "Rapport soumis"
+    "checked_out_toast": "Départ pointé",
+    "status_toast": "Statut mis à jour",
+    "report_toast": "Rapport soumis",
+    "action_failed": "L’opération n’a pas abouti. Réessayez.",
+    "summary": "Travail effectué",
+    "summary_placeholder": "Décrivez le travail que vous avez réalisé.",
+    "summary_required": "Ajoutez un bref résumé avant d’envoyer.",
+    "materials": "Matériaux utilisés",
+    "add_material": "Ajouter un matériau",
+    "material_label": "Article",
+    "material_qty": "Qté",
+    "material_unit_cost": "Prix unitaire (XAF)",
+    "remove": "Retirer",
+    "extra_charges": "Frais supplémentaires (XAF)",
+    "photos": "Photos avant / après",
+    "add_before": "Ajouter « avant »",
+    "add_after": "Ajouter « après »",
+    "photo_before": "Avant",
+    "photo_after": "Après",
+    "cancel": "Annuler",
+    "send_report": "Envoyer le rapport"
   }
 }

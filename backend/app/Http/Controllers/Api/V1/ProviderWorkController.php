@@ -6,7 +6,9 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Domain\Jobs\JobStatus;
 use App\Http\Controllers\Controller;
+use App\Http\Resources\Api\V1\ProviderWorkDetailResource;
 use App\Http\Resources\Api\V1\ProviderWorkResource;
+use App\Models\Assignment;
 use App\Models\Engagement;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -36,5 +38,30 @@ final class ProviderWorkController extends Controller
             ->get();
 
         return ProviderWorkResource::collection($engagements);
+    }
+
+    /**
+     * One engagement's execution view. Authorised by the SAME boundary the execution Actions use —
+     * an active assignment on this engagement (WorkSessionController::assignmentFor) — so any
+     * engagement this screen can read is one whose check-in/status/report the caller may actually
+     * drive. Not the provider-party scope of the list: a company's dispatcher reads the job through
+     * the admin surface, a worker through their assignment.
+     */
+    public function show(Request $request, Engagement $engagement): ProviderWorkDetailResource
+    {
+        /** @var User $user */
+        $user = $request->user();
+
+        $assignment = Assignment::query()
+            ->where('engagement_id', $engagement->id)
+            ->where('worker_user_id', $user->id)
+            ->whereNull('removed_at')
+            ->first();
+
+        abort_if($assignment === null, 403, 'You are not assigned to this engagement.');
+
+        $engagement->load(['job.customer', 'job.address']);
+
+        return ProviderWorkDetailResource::make($engagement)->forAssignment($assignment);
     }
 }
