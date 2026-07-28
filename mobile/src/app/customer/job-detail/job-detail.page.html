@@ -78,9 +78,16 @@
 
 <ion-footer class="ion-no-border">
   <div class="cta">
-    <ion-button expand="block" fill="outline" class="hm-tap" (click)="openChat()">
-      <ion-icon name="chatbubble-ellipses-outline" slot="start" aria-hidden="true"></ion-icon>
-      {{ 'jobdetail.open_chat' | translate }}
-    </ion-button>
+    @if (job().status === 'open' && !job().providerName) {
+      <ion-button expand="block" class="hm-tap" (click)="findProviders()">
+        <ion-icon name="people-outline" slot="start" aria-hidden="true"></ion-icon>
+        {{ 'jobdetail.find_providers' | translate }}
+      </ion-button>
+    } @else {
+      <ion-button expand="block" fill="outline" class="hm-tap" (click)="openChat()">
+        <ion-icon name="chatbubble-ellipses-outline" slot="start" aria-hidden="true"></ion-icon>
+        {{ 'jobdetail.open_chat' | translate }}
+      </ion-button>
+    }
   </div>
 </ion-footer>

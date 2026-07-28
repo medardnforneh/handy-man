@@ -70,6 +70,11 @@ export class JobDetailPage {
     void this.router.navigate(['/workspace', this.id]);
   }
 
+  /** An open job with no provider yet → the matched-providers shortlist (GET /jobs/{job}/providers). */
+  findProviders(): void {
+    void this.router.navigate(['/job', this.id, 'providers']);
+  }
+
   openProvider(): void {
     const providerId = this.job().providerId;
     if (providerId) {

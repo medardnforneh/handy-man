@@ -283,7 +283,16 @@
     "reviews": "Avis",
     "no_reviews": "Pas encore d’avis",
     "member_since": "Membre depuis {{year}}",
-    "request_quote": "Demander un devis"
+    "request_quote": "Demander un devis",
+    "reviewer": "Client vérifié",
+    "send_offer": "Envoyer une offre",
+    "offer_sent": "Offre envoyée au prestataire",
+    "offer_failed": "Impossible d’envoyer l’offre. Veuillez réessayer."
+  },
+  "jobproviders": {
+    "title": "Prestataires proposés",
+    "lead": "Prestataires correspondant à votre demande, classés par vérification et note.",
+    "empty": "Aucun prestataire ne correspond encore. Nous continuons à chercher."
   },
   "newjob": {
     "title": "Publier une demande",
@@ -314,7 +323,8 @@
     "approve": "Approuver",
     "location": "Lieu",
     "remote": "Travail à distance — pas de visite",
-    "open_chat": "Ouvrir la discussion"
+    "open_chat": "Ouvrir la discussion",
+    "find_providers": "Trouver des prestataires"
   },
   "milestone": {
     "pending": "En attente",

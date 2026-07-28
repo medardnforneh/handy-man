@@ -283,7 +283,16 @@
     "reviews": "Reviews",
     "no_reviews": "No reviews yet",
     "member_since": "Member since {{year}}",
-    "request_quote": "Request a quote"
+    "request_quote": "Request a quote",
+    "reviewer": "Verified client",
+    "send_offer": "Send an offer",
+    "offer_sent": "Offer sent to the provider",
+    "offer_failed": "Couldn’t send the offer. Please try again."
+  },
+  "jobproviders": {
+    "title": "Matched providers",
+    "lead": "Providers matched to your request, ranked by verification and rating.",
+    "empty": "No providers match this request yet. We’ll keep looking."
   },
   "newjob": {
     "title": "Post a request",
@@ -314,7 +323,8 @@
     "approve": "Approve",
     "location": "Location",
     "remote": "Remote work — no site visit",
-    "open_chat": "Open chat"
+    "open_chat": "Open chat",
+    "find_providers": "Find providers"
   },
   "milestone": {
     "pending": "Pending",

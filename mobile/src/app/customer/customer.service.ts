@@ -2,9 +2,64 @@ import { Injectable, inject, signal } from '@angular/core';
 import { ApiService } from '../api/api.service';
 import { LocaleService } from '../core/locale.service';
 import {
-  Category, ChatSummary, EngagementMode, JobDetail, JobStatus, JobSummary, MilestoneStatus,
-  NewJobInput, Provider, ProviderProfile, SavedAddress, WorkspaceMessage, WorkspaceThread,
+  Accent, Category, ChatSummary, EngagementMode, JobDetail, JobStatus, JobSummary, MilestoneStatus,
+  NewJobInput, Provider, ProviderProfile, ProviderReview, SavedAddress, WorkspaceMessage,
+  WorkspaceThread,
 } from './customer.models';
+
+/** The API's PII-minimised provider resource (GET /jobs/{job}/providers) — headline + reputation, no name. */
+interface ApiProvider {
+  id: string;
+  headline?: string | null;
+  bio?: string | null;
+  verification_tier: number;
+  rating_avg?: string | null;
+  rating_count?: number;
+  jobs_completed?: number;
+  skills?: { skill_id?: string }[];
+  service_areas?: { id?: string }[];
+}
+
+/** The display-safe metrics resource (GET /providers/{party}/metrics). */
+interface ApiMetrics {
+  jobs_completed_90d: number;
+  rating_avg?: number | null;
+  rating_count: number;
+  on_time_rate?: number | null;
+  on_time_sample: number;
+}
+
+/** One published review (GET /providers/{party}/reviews) — author is anonymised (party id only). */
+interface ApiReview {
+  id: string;
+  rating?: number | null;
+  body?: string | null;
+  published_at?: string | null;
+}
+
+/** A deterministic accent from an id, so a provider/review keeps the same colour across renders. */
+const ACCENTS: Accent[] = ['brand', 'info', 'warning', 'muted'];
+function accentFor(id: string): Accent {
+  let sum = 0;
+  for (const ch of id) {
+    sum = (sum + ch.charCodeAt(0)) % ACCENTS.length;
+  }
+  return ACCENTS[sum];
+}
+
+/**
+ * A verification tier ≥ 2 means an approved government-ID document (P6-03) — the badge the customer
+ * trusts. Tier 1 (phone-only) shows no badge.
+ */
+function verifiedTier(tier: number): boolean {
+  return tier >= 2;
+}
+
+/** Two initials from the public headline (never a personal name — the API doesn't send one). */
+function headlineInitials(headline: string): string {
+  const parts = headline.trim().split(/\s+/).filter(Boolean);
+  return ((parts[0]?.[0] ?? '') + (parts[1]?.[0] ?? '')).toUpperCase() || '★';
+}
 
 /**
  * The server-narrated (rule #11) lifecycle kinds render as a system chip in the thread. Free-form
@@ -465,6 +520,124 @@ export class CustomerService {
       return await this.fetchThread(jobId);
     } catch {
       return null;
+    }
+  }
+
+  /** Resolve a leaf-skill UUID to its localised label from the loaded taxonomy; '' when unknown. */
+  private skillLabel(skillId: string): string {
+    for (const cat of this.categories()) {
+      const leaf = (cat.leaves ?? []).find((l) => l.id === skillId);
+      if (leaf) {
+        return leaf.label;
+      }
+    }
+    return '';
+  }
+
+  /** Whether a matched provider serves an on-site area (has a service area) or works remotely. */
+  private providerMode(p: ApiProvider): EngagementMode {
+    return (p.service_areas ?? []).length > 0 ? 'onsite' : 'remote';
+  }
+
+  /** Map one API provider (search result) onto a discover card. Headline stands in for the name (PII). */
+  private mapProviderCard(p: ApiProvider): Provider {
+    const headline = p.headline ?? '';
+    const skill = (p.skills ?? []).map((s) => this.skillLabel(s.skill_id ?? '')).find(Boolean) ?? '';
+    return {
+      id: p.id,
+      name: headline || skill,
+      initials: headlineInitials(headline || skill),
+      skill,
+      rating: p.rating_avg !== null && p.rating_avg !== undefined ? Number(p.rating_avg) : 0,
+      mode: this.providerMode(p),
+      distanceKm: null, // the resource never leaks a precise distance (PII); rank order is enough
+      verified: verifiedTier(p.verification_tier),
+      accent: accentFor(p.id),
+    };
+  }
+
+  /**
+   * The real providers matched to a job (GET /jobs/{job}/providers) — owner-only. Returns null when
+   * there's no session / the job isn't the caller's / offline, so the caller keeps the demo list.
+   */
+  async fetchJobProviders(jobId: string): Promise<Provider[] | null> {
+    try {
+      const list: ApiProvider[] = await this.api.jobProviders(jobId);
+      return list.map((p) => this.mapProviderCard(p));
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * The real public provider profile: the matched-provider resource (for the headline/skills/bio) plus
+   * the display-safe metrics (P6-12) and published double-blind reviews (P6-08). Needs the job context
+   * because the only public source of a provider's headline is the job's match list. Returns null on
+   * failure so the caller keeps the fixture profile.
+   */
+  async fetchProviderProfile(partyId: string, jobId: string): Promise<ProviderProfile | null> {
+    try {
+      const [providers, metrics, reviews]: [ApiProvider[], ApiMetrics, ApiReview[]] = await Promise.all([
+        this.api.jobProviders(jobId),
+        this.api.providerMetrics(partyId),
+        this.api.providerReviews(partyId),
+      ]);
+      const base = providers.find((p) => p.id === partyId);
+      if (!base) {
+        return null;
+      }
+      const headline = base.headline ?? '';
+      const skills = (base.skills ?? []).map((s) => this.skillLabel(s.skill_id ?? '')).filter(Boolean);
+      return {
+        id: partyId,
+        name: headline || (skills[0] ?? ''),
+        initials: headlineInitials(headline || (skills[0] ?? '')),
+        headline: skills[0] ?? headline,
+        accent: accentFor(partyId),
+        verified: verifiedTier(base.verification_tier),
+        mode: this.providerMode(base),
+        city: '', // the public resource never exposes a precise location (PII)
+        ratingAvg: metrics.rating_avg ?? null,
+        ratingCount: metrics.rating_count,
+        jobsCompleted90d: metrics.jobs_completed_90d,
+        onTimeRate: metrics.on_time_rate ?? null,
+        responseTime: '', // not a public signal yet — the stat card hides when empty
+        memberSince: '', // not exposed publicly — the line hides when empty
+        skills,
+        about: base.bio ?? '',
+        reviews: reviews.map((r) => this.mapReview(r)),
+      };
+    } catch {
+      return null;
+    }
+  }
+
+  /** Map one published review. The author is anonymised server-side — the client shows no name. */
+  private mapReview(r: ApiReview): ProviderReview {
+    const date = r.published_at ? new Date(r.published_at).toLocaleDateString() : '';
+    return {
+      id: r.id,
+      authorInitials: '★',
+      authorName: '', // PII-minimised: the public feed carries no author identity
+      rating: r.rating ?? 0,
+      comment: r.body ?? '',
+      date,
+      mode: 'onsite',
+      accent: accentFor(r.id),
+    };
+  }
+
+  /**
+   * Send a direct offer to a provider for one of the customer's jobs (POST /jobs/{job}/offers). Returns
+   * true when the offer lands; false on failure (offline / already engaged / blocked) so the caller can
+   * surface a friendly message without crashing the demo flow.
+   */
+  async sendOffer(jobId: string, providerPartyId: string, message?: string): Promise<boolean> {
+    try {
+      await this.api.createDirectOffer(jobId, providerPartyId, message);
+      return true;
+    } catch {
+      return false;
     }
   }
 }

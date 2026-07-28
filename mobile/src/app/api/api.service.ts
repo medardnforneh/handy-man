@@ -125,4 +125,52 @@ export class ApiService {
     }
     return data.data;
   }
+
+  /**
+   * Providers matched to a job (P2-04) — geo-filtered for on-site/hybrid, the whole skilled pool for
+   * remote. Owner-only. The resource is PII-minimised (headline + reputation, never the person's name).
+   */
+  async jobProviders(jobId: string) {
+    const { data, error } = await api.GET('/jobs/{job}/providers', {
+      params: { path: { job: jobId } },
+    });
+    if (error) {
+      throw error;
+    }
+    return data.data;
+  }
+
+  /** A provider's display-safe rolling metrics (P6-12) — on-time rate is null below the sample floor. */
+  async providerMetrics(partyId: string) {
+    const { data, error } = await api.GET('/providers/{party}/metrics', {
+      params: { path: { party: partyId } },
+    });
+    if (error) {
+      throw error;
+    }
+    return data.data;
+  }
+
+  /** A provider's published reviews (P6-08) — only revealed, double-blind results; never pending. */
+  async providerReviews(partyId: string) {
+    const { data, error } = await api.GET('/providers/{party}/reviews', {
+      params: { path: { party: partyId } },
+    });
+    if (error) {
+      throw error;
+    }
+    return data.data;
+  }
+
+  /** Send a direct offer to a provider for one of the caller's jobs (P2-05). Owner-gated, idempotent. */
+  async createDirectOffer(jobId: string, providerPartyId: string, message?: string) {
+    const { data, error } = await api.POST('/jobs/{job}/offers', {
+      params: { path: { job: jobId }, header: { 'Idempotency-Key': crypto.randomUUID() } },
+      body: { provider_party_id: providerPartyId, message: message ?? null },
+    });
+    if (error) {
+      throw error;
+    }
+    return data.data;
+  }
 }

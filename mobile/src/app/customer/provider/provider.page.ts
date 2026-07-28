@@ -1,9 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { IonicModule } from '@ionic/angular';
-import { TranslatePipe } from '@ngx-translate/core';
-import { ProviderProfile } from '../customer.models';
+import { IonicModule, ToastController } from '@ionic/angular';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { CustomerService } from '../customer.service';
 
 /**
@@ -24,12 +23,37 @@ export class ProviderPage {
   private readonly customers = inject(CustomerService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  private readonly toasts = inject(ToastController);
+  private readonly i18n = inject(TranslateService);
 
-  readonly provider: ProviderProfile =
-    this.customers.provider(this.route.snapshot.paramMap.get('id') ?? '');
+  readonly sending = signal(false);
+
+  private readonly partyId = this.route.snapshot.paramMap.get('id') ?? '';
+  /** The job that led here — present when arriving from a job's provider search; enables the real fetch. */
+  private readonly jobId = this.route.snapshot.queryParamMap.get('job');
+
+  /** Fixture profile first (instant, offline-safe); the real public profile replaces it once loaded. */
+  readonly provider = signal(this.customers.provider(this.partyId));
+
+  constructor() {
+    void this.loadReal();
+  }
+
+  private async loadReal(): Promise<void> {
+    if (this.jobId === null) {
+      return; // no job context → no public source for the headline; keep the fixture
+    }
+    const real = await this.customers.fetchProviderProfile(this.partyId, this.jobId);
+    if (real !== null) {
+      this.provider.set(real);
+    }
+  }
 
   /** Below the P6-12 sample floor we have too little signal to display an on-time rate. */
-  readonly hasEnoughSignal = computed(() => this.provider.onTimeRate !== null);
+  readonly hasEnoughSignal = computed(() => this.provider().onTimeRate !== null);
+
+  /** A real job context turns the CTA into "send a direct offer" rather than the demo workspace open. */
+  readonly hasJob = this.jobId !== null;
 
   /** Full + half + empty star glyphs for a rating out of 5 (display only). */
   stars(rating: number | null): ('full' | 'half' | 'empty')[] {
@@ -42,11 +66,35 @@ export class ProviderPage {
   }
 
   onTimePercent(): number {
-    return Math.round((this.provider.onTimeRate ?? 0) * 100);
+    return Math.round((this.provider().onTimeRate ?? 0) * 100);
   }
 
-  requestQuote(): void {
-    // Requesting a quote opens the engagement workspace for the conversation it creates.
-    void this.router.navigate(['/workspace', this.provider.id]);
+  /**
+   * With a real job context this sends a direct offer to the provider (POST /jobs/{job}/offers) and
+   * returns the customer to the job; without one (the demo entry from Discover) it opens the workspace
+   * so the fixture conversation flow still works.
+   */
+  async requestQuote(): Promise<void> {
+    if (this.jobId === null) {
+      void this.router.navigate(['/workspace', this.provider().id]);
+      return;
+    }
+    if (this.sending()) {
+      return;
+    }
+    this.sending.set(true);
+    const ok = await this.customers.sendOffer(this.jobId, this.partyId);
+    this.sending.set(false);
+    await this.toast(ok ? 'provider.offer_sent' : 'provider.offer_failed', ok ? 'success' : 'danger');
+    if (ok) {
+      void this.router.navigate(['/job', this.jobId]);
+    }
+  }
+
+  private async toast(key: string, color: 'success' | 'danger'): Promise<void> {
+    const t = await this.toasts.create({
+      message: this.i18n.instant(key), duration: 2600, position: 'top', color,
+    });
+    await t.present();
   }
 }

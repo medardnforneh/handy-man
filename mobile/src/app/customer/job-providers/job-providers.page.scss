@@ -1,0 +1,100 @@
+// Shared primitives (.hm-card, .hm-pill, .hm-avatar…) load once globally — see angular.json styles.
+
+ion-toolbar {
+  --background: var(--hm-color-surface-base);
+  --border-width: 0;
+}
+
+.page {
+  padding: 0 var(--hm-space-md) var(--hm-space-xl);
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.lead {
+  margin: var(--hm-space-sm) 0 var(--hm-space-md);
+  font-size: 0.9rem;
+  line-height: 1.4;
+  text-wrap: pretty;
+}
+
+// A full-width tap target: avatar + info, with a trailing chevron into the profile.
+.pro {
+  display: flex;
+  align-items: center;
+  gap: var(--hm-space-sm);
+  width: 100%;
+  padding: var(--hm-space-sm);
+  margin-bottom: var(--hm-space-sm);
+  background: var(--hm-color-surface-raised);
+  border: 1px solid var(--hm-color-border-subtle);
+  text-align: start;
+  cursor: pointer;
+  color: inherit;
+
+  .pro-av {
+    width: 52px;
+    height: 52px;
+    font-size: 1rem;
+    flex: none;
+  }
+
+  .pro-info { flex: 1; min-width: 0; }
+
+  .pro-name {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+
+    b {
+      font-size: 0.95rem;
+      letter-spacing: -0.01em;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+
+  .verified {
+    color: var(--hm-color-brand-primary);
+    font-size: 0.9rem;
+    flex: none;
+  }
+
+  .pro-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+    margin-top: 0.15rem;
+    color: var(--hm-color-text-muted);
+    font-size: 0.78rem;
+  }
+
+  .rating {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.15rem;
+    color: var(--hm-color-status-warning);
+    font-weight: 700;
+  }
+
+  .dot {
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: var(--hm-color-border-strong);
+  }
+
+  .chev {
+    flex: none;
+    color: var(--hm-color-text-muted);
+    font-size: 1.1rem;
+  }
+}
+
+.state {
+  display: grid;
+  place-items: center;
+  padding: var(--hm-space-xl) 0;
+}

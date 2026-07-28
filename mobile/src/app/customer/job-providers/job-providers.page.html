@@ -1,0 +1,50 @@
+<ion-header [translucent]="true" class="ion-no-border">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button [defaultHref]="'/job/' + jobId" [text]="''"></ion-back-button>
+    </ion-buttons>
+    <ion-title>{{ 'jobproviders.title' | translate }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <div class="page">
+    <p class="lead hm-muted">{{ 'jobproviders.lead' | translate }}</p>
+
+    @for (p of providers(); track p.id) {
+      <button class="hm-card pro hm-tap" type="button" (click)="openProfile(p)">
+        <div [class]="'hm-avatar pro-av accent-' + p.accent" aria-hidden="true">{{ p.initials }}</div>
+
+        <div class="pro-info">
+          <div class="pro-name">
+            <b>{{ p.name }}</b>
+            @if (p.verified) {
+              <ion-icon class="verified" name="shield-checkmark" [attr.aria-label]="'discover.verified' | translate"></ion-icon>
+            }
+          </div>
+          <div class="pro-meta">
+            @if (p.rating > 0) {
+              <span class="rating"><ion-icon name="star" aria-hidden="true"></ion-icon>{{ p.rating | number:'1.1-1' }}</span>
+              <span class="dot" aria-hidden="true"></span>
+            }
+            @if (p.skill) {
+              <span>{{ p.skill }}</span>
+              <span class="dot" aria-hidden="true"></span>
+            }
+            <span class="hm-pill" [class]="p.mode === 'remote' ? 'tone-info' : 'tone-brand'">
+              {{ 'discover.mode.' + p.mode | translate }}
+            </span>
+          </div>
+        </div>
+
+        <ion-icon class="chev" name="chevron-forward" aria-hidden="true"></ion-icon>
+      </button>
+    } @empty {
+      @if (loading()) {
+        <p class="hm-muted state"><ion-spinner name="crescent"></ion-spinner></p>
+      } @else {
+        <p class="hm-empty">{{ 'jobproviders.empty' | translate }}</p>
+      }
+    }
+  </div>
+</ion-content>

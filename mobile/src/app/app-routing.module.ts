@@ -37,6 +37,12 @@ const routes: Routes = [
     loadComponent: () => import('./customer/job-detail/job-detail.page').then((m) => m.JobDetailPage),
   },
   {
+    // Providers matched to an open job (GET /jobs/{job}/providers), pushed over the tabs.
+    path: 'job/:id/providers',
+    canActivate: [authGuard],
+    loadComponent: () => import('./customer/job-providers/job-providers.page').then((m) => m.JobProvidersPage),
+  },
+  {
     // Provider section ("Offer services") — its own tab shell (home / opportunities / work / earnings).
     path: 'pro',
     canActivate: [authGuard],

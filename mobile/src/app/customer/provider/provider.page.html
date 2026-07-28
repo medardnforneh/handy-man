@@ -3,38 +3,41 @@
     <ion-buttons slot="start">
       <ion-back-button defaultHref="/tabs/discover" [text]="''"></ion-back-button>
     </ion-buttons>
-    <ion-title>{{ provider.name }}</ion-title>
+    <ion-title>{{ provider().name }}</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
+  @if (provider(); as p) {
   <div class="page">
     <!-- Hero -->
     <section class="hero hm-card">
-      <div [class]="'hm-avatar hero-av accent-' + provider.accent" aria-hidden="true">{{ provider.initials }}</div>
+      <div [class]="'hm-avatar hero-av accent-' + p.accent" aria-hidden="true">{{ p.initials }}</div>
 
       <div class="hero-name">
-        <b>{{ provider.name }}</b>
-        @if (provider.verified) {
+        <b>{{ p.name }}</b>
+        @if (p.verified) {
           <ion-icon class="verified" name="shield-checkmark" [attr.aria-label]="'discover.verified' | translate"></ion-icon>
         }
       </div>
 
       <div class="hero-sub">
-        <span>{{ provider.headline }}</span>
-        <span class="dot" aria-hidden="true"></span>
-        <span class="hm-muted"><ion-icon name="location-outline" aria-hidden="true"></ion-icon>{{ provider.city }}</span>
+        <span>{{ p.headline }}</span>
+        @if (p.city) {
+          <span class="dot" aria-hidden="true"></span>
+          <span class="hm-muted"><ion-icon name="location-outline" aria-hidden="true"></ion-icon>{{ p.city }}</span>
+        }
       </div>
 
       <div class="rate">
-        @if (provider.ratingAvg !== null) {
-          <span class="stars" [attr.aria-label]="provider.ratingAvg">
-            @for (s of stars(provider.ratingAvg); track $index) {
+        @if (p.ratingAvg !== null) {
+          <span class="stars" [attr.aria-label]="p.ratingAvg">
+            @for (s of stars(p.ratingAvg); track $index) {
               <ion-icon [name]="s === 'full' ? 'star' : (s === 'half' ? 'star-half' : 'star-outline')" aria-hidden="true"></ion-icon>
             }
           </span>
-          <b class="score">{{ provider.ratingAvg | number:'1.1-1' }}</b>
-          <span class="hm-muted count">{{ 'provider.rating_count' | translate:{ count: provider.ratingCount } }}</span>
+          <b class="score">{{ p.ratingAvg | number:'1.1-1' }}</b>
+          <span class="hm-muted count">{{ 'provider.rating_count' | translate:{ count: p.ratingCount } }}</span>
         } @else {
           <span class="hm-muted">{{ 'provider.unrated' | translate }}</span>
         }
@@ -44,7 +47,7 @@
     <!-- Reputation metrics (display-safe subset) -->
     <div class="stats">
       <div class="stat hm-card">
-        <b>{{ provider.jobsCompleted90d }}</b>
+        <b>{{ p.jobsCompleted90d }}</b>
         <small class="hm-muted">{{ 'provider.stat.completed' | translate }}</small>
       </div>
       <div class="stat hm-card">
@@ -55,10 +58,12 @@
         }
         <small class="hm-muted">{{ 'provider.stat.on_time' | translate }}</small>
       </div>
-      <div class="stat hm-card">
-        <b>{{ provider.responseTime }}</b>
-        <small class="hm-muted">{{ 'provider.stat.response' | translate }}</small>
-      </div>
+      @if (p.responseTime) {
+        <div class="stat hm-card">
+          <b>{{ p.responseTime }}</b>
+          <small class="hm-muted">{{ 'provider.stat.response' | translate }}</small>
+        </div>
+      }
     </div>
 
     @if (!hasEnoughSignal()) {
@@ -69,26 +74,32 @@
     }
 
     <!-- Skills -->
-    <div class="hm-section-head"><h2>{{ 'provider.skills' | translate }}</h2></div>
-    <div class="chips">
-      @for (skill of provider.skills; track skill) {
-        <span class="chip">{{ skill }}</span>
-      }
-    </div>
+    @if (p.skills.length > 0) {
+      <div class="hm-section-head"><h2>{{ 'provider.skills' | translate }}</h2></div>
+      <div class="chips">
+        @for (skill of p.skills; track skill) {
+          <span class="chip">{{ skill }}</span>
+        }
+      </div>
+    }
 
     <!-- About -->
-    <div class="hm-section-head"><h2>{{ 'provider.about' | translate }}</h2></div>
-    <p class="about">{{ provider.about }}</p>
-    <p class="since hm-muted">{{ 'provider.member_since' | translate:{ year: provider.memberSince } }}</p>
+    @if (p.about) {
+      <div class="hm-section-head"><h2>{{ 'provider.about' | translate }}</h2></div>
+      <p class="about">{{ p.about }}</p>
+    }
+    @if (p.memberSince) {
+      <p class="since hm-muted">{{ 'provider.member_since' | translate:{ year: p.memberSince } }}</p>
+    }
 
     <!-- Reviews -->
     <div class="hm-section-head"><h2>{{ 'provider.reviews' | translate }}</h2></div>
-    @for (r of provider.reviews; track r.id) {
+    @for (r of p.reviews; track r.id) {
       <article class="review hm-card">
         <div [class]="'hm-avatar rev-av accent-' + r.accent" aria-hidden="true">{{ r.authorInitials }}</div>
         <div class="rev-body">
           <div class="rev-top">
-            <b>{{ r.authorName }}</b>
+            <b>{{ r.authorName || ('provider.reviewer' | translate) }}</b>
             <span class="rev-stars" [attr.aria-label]="r.rating">
               @for (s of stars(r.rating); track $index) {
                 <ion-icon [name]="s === 'full' ? 'star' : 'star-outline'" aria-hidden="true"></ion-icon>
@@ -98,10 +109,6 @@
           <p class="rev-text">{{ r.comment }}</p>
           <div class="rev-meta hm-muted">
             <span>{{ r.date }}</span>
-            <span class="dot" aria-hidden="true"></span>
-            <span class="hm-pill" [class]="r.mode === 'remote' ? 'tone-info' : 'tone-brand'">
-              {{ 'discover.mode.' + r.mode | translate }}
-            </span>
           </div>
         </div>
       </article>
@@ -109,13 +116,14 @@
       <p class="hm-empty">{{ 'provider.no_reviews' | translate }}</p>
     }
   </div>
+  }
 </ion-content>
 
 <ion-footer class="ion-no-border">
   <div class="cta">
-    <ion-button expand="block" class="hm-tap" (click)="requestQuote()">
+    <ion-button expand="block" class="hm-tap" [disabled]="sending()" (click)="requestQuote()">
       <ion-icon name="chatbubble-ellipses-outline" slot="start" aria-hidden="true"></ion-icon>
-      {{ 'provider.request_quote' | translate }}
+      {{ (hasJob ? 'provider.send_offer' : 'provider.request_quote') | translate }}
     </ion-button>
   </div>
 </ion-footer>
