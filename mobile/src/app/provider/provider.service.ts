@@ -224,15 +224,12 @@ export class ProviderService {
    * leaves the feed. A fact gate (e.g. missing ID verification for an on-site job) comes back as a
    * problem+json whose `detail` we surface; any other failure returns a generic flag.
    */
-  async acceptOffer(offerId: string): Promise<{ ok: boolean; detail?: string }> {
-    try {
-      await this.api.acceptOffer(offerId);
+  async acceptOffer(offerId: string): Promise<MutationResult> {
+    const result = await this.attempt(() => this.api.acceptOffer(offerId));
+    if (result.ok) {
       this.realLeads.delete(offerId);
-      return { ok: true };
-    } catch (e) {
-      const detail = (e as { detail?: unknown }).detail;
-      return { ok: false, detail: typeof detail === 'string' ? detail : undefined };
     }
+    return result;
   }
 
   /** Map one API offer (+ embedded coarse job) onto the provider's lead card/detail model. */
@@ -273,17 +270,23 @@ export class ProviderService {
     j1: {
       id: 'j1', reference: 'JOB-7K2M9', title: 'Fuite sous l’évier', customerName: 'Jean M.',
       customerInitials: 'JM', mode: 'onsite', addressLine: 'Rue 1.234, Akwa, Douala', accent: 'brand',
-      supportsCheckIn: true, checkedIn: false, status: 'engaged', reportSubmitted: false,
+      supportsCheckIn: true, supportsReport: true, usesDeliverables: false,
+      checkedIn: false, status: 'engaged', reportSubmitted: false, deliverables: [],
     },
     a2: {
       id: 'a2', reference: 'JOB-5RN8K', title: 'Tableau électrique', customerName: 'Sandrine B.',
       customerInitials: 'SB', mode: 'onsite', addressLine: 'Bonapriso, Douala', accent: 'info',
-      supportsCheckIn: true, checkedIn: false, status: 'engaged', reportSubmitted: false,
+      supportsCheckIn: true, supportsReport: true, usesDeliverables: false,
+      checkedIn: false, status: 'engaged', reportSubmitted: false, deliverables: [],
     },
     a3: {
       id: 'a3', reference: 'JOB-2HW6P', title: 'Étagères sur mesure', customerName: 'Paul T.',
       customerInitials: 'PT', mode: 'remote', addressLine: null, accent: 'warning',
-      supportsCheckIn: false, checkedIn: false, status: 'started', reportSubmitted: false,
+      supportsCheckIn: false, supportsReport: false, usesDeliverables: true,
+      checkedIn: false, status: 'started', reportSubmitted: false,
+      deliverables: [
+        { id: 'd1', title: 'Plans d’atelier v2', status: 'accepted', submittedAt: null, rejectReason: null },
+      ],
     },
   };
 
@@ -325,7 +328,9 @@ export class ProviderService {
       customerName: work?.customerName ?? '', customerInitials: (work?.customerName ?? '?').charAt(0),
       mode: work?.mode ?? 'onsite', addressLine: null, accent: work?.accent ?? 'muted',
       supportsCheckIn: (work?.mode ?? 'onsite') !== 'remote',
-      checkedIn: false, status: 'engaged', reportSubmitted: false,
+      supportsReport: (work?.mode ?? 'onsite') !== 'remote',
+      usesDeliverables: (work?.mode ?? 'onsite') !== 'onsite',
+      checkedIn: false, status: 'engaged', reportSubmitted: false, deliverables: [],
     };
   }
 
@@ -348,10 +353,19 @@ export class ProviderService {
         addressLine: addr ? [addr.line1, addr.quarter, addr.city].filter(Boolean).join(', ') : null,
         accent: accentFor(d.id),
         supportsCheckIn: d.supports_check_in,
+        supportsReport: d.supports_report,
+        usesDeliverables: d.uses_deliverables,
         checkedIn: d.checked_in,
         // Before any signal the worker is simply engaged — the server has nothing to report yet.
         status: (d.current_status ?? 'engaged') as WorkStatus,
         reportSubmitted: d.report_submitted,
+        deliverables: (d.deliverables ?? []).map((x) => ({
+          id: x.id,
+          title: x.title,
+          status: x.status,
+          submittedAt: x.submitted_at ?? null,
+          rejectReason: x.reject_reason ?? null,
+        })),
       };
       this.realWork.add(d.id);
       return detail;
@@ -427,6 +441,24 @@ export class ProviderService {
   }
 
   /**
+   * Submit a deliverable (POST /engagements/{id}/deliverables) — the REMOTE path's proof of work,
+   * the counterpart of the on-site job report.
+   */
+  async submitDeliverable(id: string, title: string, mediaUrl?: string): Promise<MutationResult> {
+    if (!this.realWork.has(id)) {
+      const w = this.workDetails[id];
+      if (w) {
+        w.deliverables = [
+          { id: `d${w.deliverables.length + 1}`, title, status: 'submitted', submittedAt: null, rejectReason: null },
+          ...w.deliverables,
+        ];
+      }
+      return { ok: true };
+    }
+    return this.attempt(() => this.api.submitDeliverable(id, title, mediaUrl));
+  }
+
+  /**
    * Run one mutation, surfacing the server's problem+json `detail` on failure — a refusal here is
    * usually a real rule (remote check-in, a session already open), and the worker deserves to read
    * it rather than a generic error.
@@ -436,8 +468,13 @@ export class ProviderService {
       await call();
       return { ok: true };
     } catch (e) {
-      const detail = (e as { detail?: unknown }).detail;
-      return { ok: false, detail: typeof detail === 'string' ? detail : undefined };
+      const problem = e as { detail?: unknown; title?: unknown };
+      // Some problems carry an empty `detail` and say everything in `title` — prefer whichever is
+      // actually populated, and fall through to the caller's generic copy when neither is.
+      const text = [problem.detail, problem.title]
+        .find((v): v is string => typeof v === 'string' && v.trim() !== '');
+
+      return { ok: false, detail: text };
     }
   }
 

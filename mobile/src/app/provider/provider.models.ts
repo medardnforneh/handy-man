@@ -64,9 +64,23 @@ export interface WorkDetail {
   addressLine: string | null;
   accent: Accent;
   supportsCheckIn: boolean;
+  /** Whether this mode proves work with an on-site report (false for remote). */
+  supportsReport: boolean;
+  /** Whether this mode proves work with deliverables (true for remote and hybrid). */
+  usesDeliverables: boolean;
   checkedIn: boolean;
   status: WorkStatus;
   reportSubmitted: boolean;
+  deliverables: Deliverable[];
+}
+
+/** The remote path's proof of work (P4-08) — the customer accepts or rejects each one. */
+export interface Deliverable {
+  id: string;
+  title: string;
+  status: 'pending' | 'submitted' | 'accepted' | 'rejected';
+  submittedAt: string | null;
+  rejectReason: string | null;
 }
 
 /** One materials line on a job report — a label, a quantity, and a per-unit price. */

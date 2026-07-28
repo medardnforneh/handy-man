@@ -20,15 +20,20 @@ use App\Models\Job;
  * | panic        |   ✅   |   ❌   |   ✅   |
  * | share-my-job |   ✅   |   ❌   |   ✅   |
  * | site visit   |   ✅   |   ❌   |   ✅   |
+ * | job report   |   ✅   |   ❌   |   ✅   |
  * | deliverables |   ❌   |   ✅   |   ✅   |
+ *
+ * The job report (P5-04) sits with the physical features, not with deliverables: it records
+ * materials consumed and before/after photos OF A PLACE. A remote engagement proves its work
+ * through deliverables, so it exposes no report affordance and the server refuses one.
  */
 final class EngagementModePolicy
 {
     /** @var array<string, array<string, bool>> */
     private const MATRIX = [
-        'onsite' => ['address' => true, 'dispatch' => true, 'check_in' => true, 'panic' => true, 'share_job' => true, 'site_visit' => true, 'deliverables' => false],
-        'remote' => ['address' => false, 'dispatch' => false, 'check_in' => false, 'panic' => false, 'share_job' => false, 'site_visit' => false, 'deliverables' => true],
-        'hybrid' => ['address' => true, 'dispatch' => true, 'check_in' => true, 'panic' => true, 'share_job' => true, 'site_visit' => true, 'deliverables' => true],
+        'onsite' => ['address' => true, 'dispatch' => true, 'check_in' => true, 'panic' => true, 'share_job' => true, 'site_visit' => true, 'job_report' => true, 'deliverables' => false],
+        'remote' => ['address' => false, 'dispatch' => false, 'check_in' => false, 'panic' => false, 'share_job' => false, 'site_visit' => false, 'job_report' => false, 'deliverables' => true],
+        'hybrid' => ['address' => true, 'dispatch' => true, 'check_in' => true, 'panic' => true, 'share_job' => true, 'site_visit' => true, 'job_report' => true, 'deliverables' => true],
     ];
 
     public function requiresAddress(EngagementMode $mode): bool
@@ -59,6 +64,11 @@ final class EngagementModePolicy
     public function supportsSiteVisit(EngagementMode $mode): bool
     {
         return self::MATRIX[$mode->value]['site_visit'];
+    }
+
+    public function supportsJobReport(EngagementMode $mode): bool
+    {
+        return self::MATRIX[$mode->value]['job_report'];
     }
 
     public function usesDeliverables(EngagementMode $mode): bool

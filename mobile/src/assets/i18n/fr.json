@@ -430,6 +430,23 @@
     "photo_before": "Avant",
     "photo_after": "Après",
     "cancel": "Annuler",
-    "send_report": "Envoyer le rapport"
+    "send_report": "Envoyer le rapport",
+    "deliverables": "Livrables",
+    "submit_deliverable": "Envoyer un livrable",
+    "deliverable_hint": "Le travail à distance se prouve par des livrables que le client examine.",
+    "deliverable_title": "Que livrez-vous ?",
+    "deliverable_title_placeholder": "Pack logo, version finale, fichiers sources…",
+    "deliverable_title_required": "Donnez un nom au livrable.",
+    "deliverable_url": "Lien (facultatif)",
+    "deliverable_url_placeholder": "https://…",
+    "deliverable_url_hint": "Un lien vers le fichier ou le dossier, si vous en avez un.",
+    "send_deliverable": "Envoyer le livrable",
+    "deliverable_toast": "Livrable envoyé",
+    "deliverable": {
+      "pending": "Brouillon",
+      "submitted": "En attente de validation",
+      "accepted": "Accepté",
+      "rejected": "Modifications demandées"
+    }
   }
 }

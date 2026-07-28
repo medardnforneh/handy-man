@@ -60,7 +60,7 @@ final class ProviderWorkController extends Controller
 
         abort_if($assignment === null, 403, 'You are not assigned to this engagement.');
 
-        $engagement->load(['job.customer', 'job.address']);
+        $engagement->load(['job.customer', 'job.address', 'deliverables']);
 
         return ProviderWorkDetailResource::make($engagement)->forAssignment($assignment);
     }

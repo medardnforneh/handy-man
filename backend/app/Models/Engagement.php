@@ -84,4 +84,14 @@ final class Engagement extends Model
     {
         return $this->hasMany(Milestone::class)->orderBy('position');
     }
+
+    /**
+     * The remote path's proof of work (P4-08) — the on-site counterpart is the job report.
+     *
+     * @return HasMany<Deliverable, $this>
+     */
+    public function deliverables(): HasMany
+    {
+        return $this->hasMany(Deliverable::class)->orderByDesc('submitted_at');
+    }
 }

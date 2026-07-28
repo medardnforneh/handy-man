@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Execution\Actions;
 
+use App\Domain\Execution\JobReportNotSupported;
+use App\Domain\Jobs\EngagementModePolicy;
 use App\Domain\Media\StoreMedia;
 use App\Models\Assignment;
 use App\Models\JobReport;
@@ -14,10 +16,17 @@ use Illuminate\Support\Facades\DB;
  * A worker submits an on-site job report (build plan P5-04, doc 02/06): what was done, materials,
  * extra charges, and before/after photos. Each photo is stored through {@see StoreMedia}, so it is
  * EXIF-stripped and its geo recorded in the DB — never embedded in the served file.
+ *
+ * Like check-in, this exists only for physical work — the {@see EngagementModePolicy} gate rejects a
+ * remote engagement outright, because "before/after photos of the site" is meaningless without one.
+ * Remote work proves itself through deliverables instead.
  */
 final class SubmitJobReport
 {
-    public function __construct(private readonly StoreMedia $storeMedia) {}
+    public function __construct(
+        private readonly StoreMedia $storeMedia,
+        private readonly EngagementModePolicy $modePolicy,
+    ) {}
 
     /**
      * @param  array<int, array{label: string, qty: int|float, unit_cost_minor: int}>  $materials
@@ -30,6 +39,12 @@ final class SubmitJobReport
         int $extraChargesMinor = 0,
         array $photos = [],
     ): JobReport {
+        $engagement = $assignment->engagement()->with('job')->firstOrFail();
+
+        if (! $this->modePolicy->supportsJobReport($engagement->job->engagement_mode)) {
+            throw new JobReportNotSupported;
+        }
+
         $ownerPartyId = $assignment->worker()->firstOrFail()->party_id;
         $disk = (string) config('filesystems.default');
 

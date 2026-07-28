@@ -1521,6 +1521,10 @@ export interface components {
             } | null;
             /** @description False for remote — the client must not render a check-in affordance. */
             supports_check_in: boolean;
+            /** @description Whether this mode proves work with an on-site job report. False for remote. */
+            supports_report: boolean;
+            /** @description Whether this mode proves work with deliverables. True for remote and hybrid. */
+            uses_deliverables: boolean;
             /** @description Derived from an OPEN work session */
             checked_in: boolean;
             /** Format: date-time */
@@ -1528,6 +1532,17 @@ export interface components {
             /** @description The latest execution status narrated for this worker, or null before any signal. */
             current_status?: ("on_the_way" | "arrived" | "started" | "paused" | "resumed" | "completed") | null;
             report_submitted: boolean;
+            /** @description The remote path's proof-of-work history — the counterpart of report_submitted. */
+            deliverables: {
+                /** Format: uuid */
+                id: string;
+                title: string;
+                /** @enum {string} */
+                status: "pending" | "submitted" | "accepted" | "rejected";
+                /** Format: date-time */
+                submitted_at?: string | null;
+                reject_reason?: string | null;
+            }[];
             /** Format: date-time */
             accepted_at: string;
         };

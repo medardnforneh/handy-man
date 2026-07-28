@@ -286,6 +286,21 @@ export class ApiService {
     return data.data;
   }
 
+  /**
+   * Submit a deliverable (P4-08) — the REMOTE path's proof of work, the counterpart of the on-site
+   * job report. The customer reviews it; an un-reviewed one auto-accepts after the window (P3-11).
+   */
+  async submitDeliverable(engagementId: string, title: string, mediaUrl?: string) {
+    const { data, error } = await api.POST('/engagements/{engagement}/deliverables', {
+      params: { path: { engagement: engagementId }, header: { 'Idempotency-Key': crypto.randomUUID() } },
+      body: { title, media_url: mediaUrl ?? null },
+    });
+    if (error) {
+      throw error;
+    }
+    return data.data;
+  }
+
   /** Accept a direct offer → forms the engagement (P2-06). Provider-gated; may 409 on a fact gate. */
   async acceptOffer(offerId: string) {
     const { data, error } = await api.POST('/offers/{offer}/accept', {

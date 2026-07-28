@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { IonicModule, ToastController } from '@ionic/angular';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
-import { ReportDraft, ReportMaterial, WorkDetail, WorkStatus } from '../provider.models';
+import { Deliverable, ReportDraft, ReportMaterial, WorkDetail, WorkStatus } from '../provider.models';
 import { MutationResult, ProviderService } from '../provider.service';
 
 /**
@@ -162,6 +162,55 @@ export class ProviderWorkDetailPage {
       // Clear the touched flag too, or the now-empty summary re-triggers the error and it flashes
       // over the sheet during the dismiss animation.
       this.summaryTouched.set(false);
+    }
+  }
+
+  // --- Deliverables (the remote path's proof of work, P4-08) --------------------------------------
+
+  readonly deliverableOpen = signal(false);
+  readonly deliverableTitle = signal('');
+  readonly deliverableUrl = signal('');
+  readonly deliverableTouched = signal(false);
+
+  readonly deliverableTitleMissing = computed(
+    () => this.deliverableTouched() && this.deliverableTitle().trim() === '',
+  );
+
+  /** The pill tone for a deliverable's review state — accepted reads as done, rejected as a problem. */
+  deliverableTone(status: Deliverable['status']): string {
+    switch (status) {
+      case 'accepted': return 'tone-success';
+      case 'rejected': return 'tone-danger';
+      default: return 'tone-info';
+    }
+  }
+
+  openDeliverable(): void {
+    this.deliverableTouched.set(false);
+    this.deliverableOpen.set(true);
+  }
+
+  closeDeliverable(): void {
+    this.deliverableOpen.set(false);
+  }
+
+  async submitDeliverable(): Promise<void> {
+    this.deliverableTouched.set(true);
+    const title = this.deliverableTitle().trim();
+    if (title === '') {
+      return;
+    }
+    const url = this.deliverableUrl().trim();
+
+    const ok = await this.run(
+      () => this.provider.submitDeliverable(this.id, title, url === '' ? undefined : url),
+      'work.deliverable_toast',
+    );
+    if (ok) {
+      this.deliverableOpen.set(false);
+      this.deliverableTitle.set('');
+      this.deliverableUrl.set('');
+      this.deliverableTouched.set(false);
     }
   }
 

@@ -65,19 +65,43 @@
       }
     </div>
 
-    <!-- Report -->
-    <div class="hm-section-head"><h2>{{ 'work.report' | translate }}</h2></div>
-    @if (!work().reportSubmitted) {
-      <button type="button" class="report hm-tap" [disabled]="busy()" (click)="openReport()">
-        <ion-icon name="camera-outline" aria-hidden="true"></ion-icon>
-        <span>{{ 'work.submit_report' | translate }}</span>
+    <!-- Report — on-site modes only; remote proves its work with deliverables instead (doc 06). -->
+    @if (work().supportsReport) {
+      <div class="hm-section-head"><h2>{{ 'work.report' | translate }}</h2></div>
+      @if (!work().reportSubmitted) {
+        <button type="button" class="report hm-tap" [disabled]="busy()" (click)="openReport()">
+          <ion-icon name="camera-outline" aria-hidden="true"></ion-icon>
+          <span>{{ 'work.submit_report' | translate }}</span>
+        </button>
+        <p class="hint hm-muted">{{ 'work.report_hint' | translate }}</p>
+      } @else {
+        <div class="checked hm-card">
+          <ion-icon name="checkmark-circle" aria-hidden="true"></ion-icon>
+          <span class="c-text">{{ 'work.report_submitted' | translate }}</span>
+        </div>
+      }
+    }
+
+    <!-- Deliverables — the remote (and hybrid) path's proof of work; the customer reviews each. -->
+    @if (work().usesDeliverables) {
+      <div class="hm-section-head"><h2>{{ 'work.deliverables' | translate }}</h2></div>
+      @if (work().deliverables.length) {
+        <ul class="dlist">
+          @for (d of work().deliverables; track d.id) {
+            <li class="ditem hm-card">
+              <span class="dtitle">{{ d.title }}</span>
+              <span class="hm-pill" [class]="'hm-pill ' + deliverableTone(d.status)">
+                {{ 'work.deliverable.' + d.status | translate }}
+              </span>
+            </li>
+          }
+        </ul>
+      }
+      <button type="button" class="report hm-tap" [disabled]="busy()" (click)="openDeliverable()">
+        <ion-icon name="cloud-upload-outline" aria-hidden="true"></ion-icon>
+        <span>{{ 'work.submit_deliverable' | translate }}</span>
       </button>
-      <p class="hint hm-muted">{{ 'work.report_hint' | translate }}</p>
-    } @else {
-      <div class="checked hm-card">
-        <ion-icon name="checkmark-circle" aria-hidden="true"></ion-icon>
-        <span class="c-text">{{ 'work.report_submitted' | translate }}</span>
-      </div>
+      <p class="hint hm-muted">{{ 'work.deliverable_hint' | translate }}</p>
     }
   </div>
 </ion-content>
@@ -211,6 +235,58 @@
       <div class="cta">
         <ion-button expand="block" class="hm-tap" [disabled]="busy()" (click)="submitReport()">
           {{ 'work.send_report' | translate }}
+        </ion-button>
+      </div>
+    </ion-footer>
+  </ng-template>
+</ion-modal>
+
+<!-- Deliverable composer: a title and an optional link to the work (P4-08). -->
+<ion-modal [isOpen]="deliverableOpen()" (didDismiss)="closeDeliverable()">
+  <ng-template>
+    <ion-header class="ion-no-border">
+      <ion-toolbar>
+        <ion-buttons slot="start">
+          <ion-button (click)="closeDeliverable()">{{ 'work.cancel' | translate }}</ion-button>
+        </ion-buttons>
+        <ion-title>{{ 'work.submit_deliverable' | translate }}</ion-title>
+      </ion-toolbar>
+    </ion-header>
+
+    <ion-content>
+      <div class="sheet">
+        <label class="field">
+          <span class="flabel">{{ 'work.deliverable_title' | translate }}</span>
+          <input
+            class="finput"
+            [ngModel]="deliverableTitle()"
+            (ngModelChange)="deliverableTitle.set($event)"
+            [placeholder]="'work.deliverable_title_placeholder' | translate"
+          />
+        </label>
+        @if (deliverableTitleMissing()) {
+          <p class="err">{{ 'work.deliverable_title_required' | translate }}</p>
+        }
+
+        <label class="field">
+          <span class="flabel">{{ 'work.deliverable_url' | translate }}</span>
+          <input
+            class="finput"
+            type="url"
+            inputmode="url"
+            [ngModel]="deliverableUrl()"
+            (ngModelChange)="deliverableUrl.set($event)"
+            [placeholder]="'work.deliverable_url_placeholder' | translate"
+          />
+          <small class="hm-muted fhelp">{{ 'work.deliverable_url_hint' | translate }}</small>
+        </label>
+      </div>
+    </ion-content>
+
+    <ion-footer class="ion-no-border">
+      <div class="cta">
+        <ion-button expand="block" class="hm-tap" [disabled]="busy()" (click)="submitDeliverable()">
+          {{ 'work.send_deliverable' | translate }}
         </ion-button>
       </div>
     </ion-footer>

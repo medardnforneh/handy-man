@@ -72,12 +72,24 @@ final class ProviderWorkDetailResource extends JsonResource
             'scheduled_to' => $this->assignment->scheduled_to?->toIso8601String(),
             'address' => $this->address($job, $modes),
             'supports_check_in' => $modes->supportsCheckIn($job->engagement_mode),
+            // Which proof-of-work the mode uses: an on-site report, deliverables, or (hybrid) both.
+            'supports_report' => $modes->supportsJobReport($job->engagement_mode),
+            'uses_deliverables' => $modes->usesDeliverables($job->engagement_mode),
             'checked_in' => $session !== null,
             'checked_in_at' => $session?->started_at->toIso8601String(),
             'current_status' => $conversation === null
                 ? null
                 : $progress->currentStatus($this->assignment, $conversation->id)?->value,
             'report_submitted' => $progress->reportSubmitted($this->assignment),
+            // The remote path's proof-of-work history, so that screen has the counterpart of
+            // `report_submitted` rather than nothing to show.
+            'deliverables' => $this->deliverables->map(fn ($d) => [
+                'id' => $d->id,
+                'title' => $d->title,
+                'status' => $d->status->value,
+                'submitted_at' => $d->submitted_at?->toIso8601String(),
+                'reject_reason' => $d->reject_reason,
+            ])->all(),
             'accepted_at' => $this->accepted_at->toIso8601String(),
         ];
     }

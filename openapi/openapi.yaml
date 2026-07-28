@@ -1947,7 +1947,7 @@ components:
 
     ProviderWorkDetail:
       type: object
-      required: [id, job_id, assignment_id, reference, title, engagement_mode, job_status, agreed_amount, supports_check_in, checked_in, report_submitted, accepted_at]
+      required: [id, job_id, assignment_id, reference, title, engagement_mode, job_status, agreed_amount, supports_check_in, supports_report, uses_deliverables, checked_in, report_submitted, deliverables, accepted_at]
       properties:
         id: { type: string, format: uuid, description: The engagement id — the check-in/status/report actions target it. }
         job_id: { type: string, format: uuid }
@@ -1976,6 +1976,8 @@ components:
                 longitude: { type: number }
             - type: "null"
         supports_check_in: { type: boolean, description: False for remote — the client must not render a check-in affordance. }
+        supports_report: { type: boolean, description: Whether this mode proves work with an on-site job report. False for remote. }
+        uses_deliverables: { type: boolean, description: Whether this mode proves work with deliverables. True for remote and hybrid. }
         checked_in: { type: boolean, description: Derived from an OPEN work session, not a stored flag. }
         checked_in_at: { type: [string, "null"], format: date-time }
         current_status:
@@ -1984,6 +1986,18 @@ components:
             - { type: string, enum: [on_the_way, arrived, started, paused, resumed, completed] }
             - type: "null"
         report_submitted: { type: boolean }
+        deliverables:
+          description: The remote path's proof-of-work history — the counterpart of report_submitted.
+          type: array
+          items:
+            type: object
+            required: [id, title, status]
+            properties:
+              id: { type: string, format: uuid }
+              title: { type: string }
+              status: { type: string, enum: [pending, submitted, accepted, rejected] }
+              submitted_at: { type: [string, "null"], format: date-time }
+              reject_reason: { type: [string, "null"] }
         accepted_at: { type: string, format: date-time }
 
     Engagement:

@@ -175,3 +175,24 @@ it('refuses the detail to someone with no active assignment', function () {
     Sanctum::actingAs($worker);
     $this->getJson("/api/v1/provider/work/{$engagement->id}")->assertForbidden();
 });
+
+it('tells a remote engagement to use deliverables, not an on-site report', function () {
+    ['provider' => $provider, 'engagement' => $engagement] = assignedWork('remote');
+
+    Sanctum::actingAs($provider);
+    $this->getJson("/api/v1/provider/work/{$engagement->id}")
+        ->assertOk()
+        ->assertJsonPath('data.supports_report', false)
+        ->assertJsonPath('data.uses_deliverables', true)
+        ->assertJsonPath('data.deliverables', []);
+});
+
+it('offers the on-site report and no deliverables on an onsite engagement', function () {
+    ['provider' => $provider, 'engagement' => $engagement] = assignedWork();
+
+    Sanctum::actingAs($provider);
+    $this->getJson("/api/v1/provider/work/{$engagement->id}")
+        ->assertOk()
+        ->assertJsonPath('data.supports_report', true)
+        ->assertJsonPath('data.uses_deliverables', false);
+});

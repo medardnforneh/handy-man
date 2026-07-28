@@ -109,23 +109,30 @@ ion-title { font-size: 0.95rem; font-weight: 700; }
   }
 }
 
-// ---- Report ------------------------------------------------------------
-.report {
+// ---- Dashed "add / submit" affordance ----------------------------------
+// Shared by the report + deliverable buttons on the page and the add-row buttons in the sheets.
+.report,
+.ghost {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 0.45rem;
   width: 100%;
-  padding: var(--hm-space-md);
   background: none;
   border: 1px dashed var(--hm-color-border-strong);
   border-radius: var(--hm-radius-md);
   color: var(--hm-color-text-muted);
-  font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
 
-  ion-icon { font-size: 1.25rem; color: var(--hm-color-brand-primary); }
+  ion-icon { color: var(--hm-color-brand-primary); }
+}
+
+.report {
+  padding: var(--hm-space-md);
+  font-size: 0.9rem;
+
+  ion-icon { font-size: 1.25rem; }
 }
 
 // ---- Footer CTA --------------------------------------------------------
@@ -221,24 +228,12 @@ ion-footer {
   &:hover { background: var(--hm-color-surface-sunken); color: var(--hm-color-status-danger); }
 }
 
-// The dashed "add" affordance, shared by materials and photos.
 .ghost {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.4rem;
-  width: 100%;
   padding: 0.7rem var(--hm-space-md);
   margin-bottom: var(--hm-space-md);
-  background: none;
-  border: 1px dashed var(--hm-color-border-strong);
-  border-radius: var(--hm-radius-md);
-  color: var(--hm-color-text-muted);
   font-size: 0.86rem;
-  font-weight: 600;
-  cursor: pointer;
 
-  ion-icon { font-size: 1.1rem; color: var(--hm-color-brand-primary); }
+  ion-icon { font-size: 1.1rem; }
   &:hover { border-color: var(--hm-color-brand-primary); color: var(--hm-color-text-primary); }
 }
 
@@ -251,25 +246,38 @@ ion-footer {
   @media (max-width: 420px) { flex-direction: column; }
 }
 
-.plist {
+// Chosen-photo rows in the sheet, and deliverable rows on the page.
+.plist,
+.dlist {
   list-style: none;
   margin: 0 0 var(--hm-space-sm);
   padding: 0;
 }
 
-.pitem {
+.pitem,
+.ditem {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem var(--hm-space-sm);
   margin-bottom: 0.4rem;
 
-  .pname {
-    flex: 1;
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    font-size: 0.84rem;
-  }
+  .hm-pill { flex: none; }
+}
+
+.pname,
+.dtitle {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.85rem;
+}
+
+// A filename can't wrap usefully; a deliverable title should.
+.pname { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dtitle { font-weight: 600; overflow-wrap: anywhere; }
+
+.fhelp {
+  display: block;
+  margin-top: 0.3rem;
+  font-size: 0.76rem;
 }

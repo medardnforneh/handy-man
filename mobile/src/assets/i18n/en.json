@@ -430,6 +430,23 @@
     "photo_before": "Before",
     "photo_after": "After",
     "cancel": "Cancel",
-    "send_report": "Send report"
+    "send_report": "Send report",
+    "deliverables": "Deliverables",
+    "submit_deliverable": "Submit a deliverable",
+    "deliverable_hint": "Remote work is proven with deliverables the customer reviews.",
+    "deliverable_title": "What are you delivering?",
+    "deliverable_title_placeholder": "Logo pack, final draft, source files…",
+    "deliverable_title_required": "Give the deliverable a name.",
+    "deliverable_url": "Link (optional)",
+    "deliverable_url_placeholder": "https://…",
+    "deliverable_url_hint": "A link to the file or folder, if you have one.",
+    "send_deliverable": "Send deliverable",
+    "deliverable_toast": "Deliverable sent",
+    "deliverable": {
+      "pending": "Draft",
+      "submitted": "Awaiting review",
+      "accepted": "Accepted",
+      "rejected": "Changes requested"
+    }
   }
 }

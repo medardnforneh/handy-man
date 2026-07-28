@@ -270,11 +270,24 @@ build, which lands with the app UI work.**
     denied — the deliberate no-GPS path), a status chip wrote `started`, the report sheet submitted a
     real `job_report` with its material and extra charges, and check-out flipped the affordance back
     while the status and report persisted across a full reload. Two defects were found and fixed this
-    way — see below. (The remote no-check-in path is covered by test, not by the browser pass.)
+    way — see below.
+  - **The remote path was then verified too, and it exposed a real hole.** The remote screen correctly
+    showed no Arrival section (`supports_check_in` false, and the server 422s a check-in attempt) —
+    but it still offered the **on-site job report**, and `SubmitJobReport` had **no mode gate**, so a
+    remote engagement would happily store "before/after photos of the site" for a job with no site.
+    Fixed: the doc-06 matrix in `EngagementModePolicy` gains a `job_report` row (onsite/hybrid only),
+    `SubmitJobReport` throws `JobReportNotSupported` (422) like `CheckInNotSupported`, and the
+    work-detail read now carries `supports_report` + `uses_deliverables` + the engagement's
+    `deliverables`. The remote screen renders **Deliverables** instead (P4-08) — a small composer
+    (title + optional link) wired to `POST /engagements/{id}/deliverables`, verified end-to-end: the
+    row landed with its URL and was narrated into the thread. On-site is unchanged.
   - **Fixed while verifying:** (1) submitting the report reset the summary but not its touched flag,
     so the validation error flashed over the sheet during the dismiss animation; (2) multipart carries
     every field as a string, so materials landed in the jsonb as `"qty": "1"` — `SubmitJobReportRequest`
-    now casts them, and a test pins it.
+    now casts them, and a test pins it; (3) a problem+json with an EMPTY `detail` (which
+    `check-in-not-supported` sends) produced a **blank** error toast — the client now prefers whichever
+    of `detail`/`title` is actually populated and falls back to its own copy, and `acceptOffer` shares
+    that helper instead of repeating the bug.
   - **Toolchain:** this machine's PHP had **OPcache commented out entirely** — every request
     recompiled all of Laravel (`artisan serve` ~4s/request, suite 478s). Enabling it (including
     `opcache.enable_cli=1`, which is what `artisan serve`'s cli-server SAPI reads) took requests to

@@ -141,6 +141,36 @@ it('stores materials with their numbers typed, not as the wire strings', functio
         ->and($materials[0]['label'])->toBe('Capacitor 45uF');
 });
 
+it('refuses an on-site report on a remote engagement (deliverables prove that work)', function () {
+    $customer = User::factory()->create();
+    $job = Job::factory()->remote()->status(JobStatus::Engaged)->create([
+        'customer_party_id' => $customer->party_id,
+        'created_by_user_id' => $customer->id,
+    ]);
+    $provider = User::factory()->create();
+    $engagement = Engagement::factory()->create([
+        'job_id' => $job->id,
+        'provider_party_id' => $provider->party_id,
+    ]);
+    Assignment::factory()->create([
+        'engagement_id' => $engagement->id,
+        'worker_user_id' => $provider->id,
+        'assigned_by_user_id' => $provider->id,
+        'role' => 'lead',
+    ]);
+
+    // "Before/after photos of the site" is meaningless without a site — the report belongs to the
+    // same modes as check-in, and the server refuses it rather than storing a nonsense record.
+    Sanctum::actingAs($provider);
+    $this->post("/api/v1/engagements/{$engagement->id}/report", [
+        'summary' => 'There is no site here.',
+    ], ['Idempotency-Key' => (string) Str::uuid()])
+        ->assertStatus(422)
+        ->assertJsonPath('type', 'https://errors.handyman.cm/job-report-not-supported');
+
+    expect(JobReport::query()->count())->toBe(0);
+});
+
 it('forbids a non-assigned user from submitting a report', function () {
     ['engagement' => $engagement] = reportEngagement();
 
