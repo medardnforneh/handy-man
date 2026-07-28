@@ -108,7 +108,13 @@
 
 <ion-footer class="ion-no-border">
   <div class="cta">
-    <ion-button expand="block" fill="outline" class="hm-tap" (click)="openChat()">
+    <ion-button
+      expand="block"
+      fill="outline"
+      class="hm-tap"
+      [disabled]="!work().jobId"
+      (click)="openChat()"
+    >
       <ion-icon name="chatbubble-ellipses-outline" slot="start" aria-hidden="true"></ion-icon>
       {{ 'jobdetail.open_chat' | translate }}
     </ion-button>

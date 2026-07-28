@@ -231,6 +231,29 @@ build, which lands with the app UI work.**
 
 ## What was done, most recent first
 
+- **Verified the customer discovery loop end-to-end, and fixed the provider's broken "Open chat".**
+  - **The party-id fix is confirmed working in the app**: an open job → "Find providers" → the match
+    card → the profile (URL now carries the **party** id) → "Send an offer" landed a real `job_offers`
+    row with the correct `provider_party_id`. Before that fix this flow sent a *profile* id and could
+    not have worked. Also re-checked the PII rule after changing the eager-load: the match resource
+    returns `headline` and `party_id` but **no `display_name`**, and `id` ≠ `party_id` is visible in
+    the payload. An empty shortlist for a skill no provider lists is the correct empty state, not a bug.
+  - **Bug found and fixed — the provider's "Open chat" opened the wrong thread.** The workspace is
+    keyed by the **job** (`GET /jobs/{job}/messages`) but the work detail navigated with the
+    **engagement** id. The read 404s, the screen silently falls back to its demo fixture, and the
+    provider sees a plausible-looking conversation that is not their job's. `WorkDetail` now carries
+    `jobId` (the read already returned `job_id`), `openChat()` navigates with it, and the button is
+    disabled until it is known — so it can never again open the wrong thread. Verified: the URL is now
+    the job id and the provider sees the real thread, including the `Provider arrived` / `Work started`
+    chips narrated by the earlier check-in and status actions.
+  - **Realtime is genuinely not started**: `routes/channels.php` authorizes `engagement.{id}` and
+    `user.{id}` (P4-03, tested), but **nothing in `app/` implements `ShouldBroadcast`** — no event is
+    ever emitted, so there is nothing for a client to subscribe to. Making the thread live needs a
+    broadcast event (`ShouldBroadcastAfterCommit`, to respect rule #11) plus Echo wiring in the app.
+  - **Known cosmetic wart** (not fixed): the workspace header is customer-shaped, so a provider viewing
+    it sees initials derived from the job title rather than the customer's name. The screen needs to
+    be viewer-aware.
+
 - **Provider quote composer on real endpoints (P2.5-01) — the provider section is now fully wired.**
   The lead screen's fixture "price + deposit + message" stub is replaced by a real **itemised**
   composer, because itemised is what the server actually stores and freezes.

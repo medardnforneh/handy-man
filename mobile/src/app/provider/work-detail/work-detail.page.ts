@@ -214,7 +214,16 @@ export class ProviderWorkDetailPage {
     }
   }
 
+  /**
+   * The workspace thread is keyed by the JOB (`GET /jobs/{job}/messages`), not the engagement — so
+   * this must navigate with `jobId`. Passing the engagement id 404s the read and drops the screen
+   * onto the demo thread, which looks like a working chat but is not this job's.
+   */
   openChat(): void {
-    void this.router.navigate(['/workspace', this.id]);
+    const jobId = this.work().jobId;
+    if (jobId === null) {
+      return;
+    }
+    void this.router.navigate(['/workspace', jobId]);
   }
 }

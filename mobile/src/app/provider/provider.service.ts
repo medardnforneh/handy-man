@@ -346,19 +346,19 @@ export class ProviderService {
 
   private readonly workDetails: Record<string, WorkDetail> = {
     j1: {
-      id: 'j1', reference: 'JOB-7K2M9', title: 'Fuite sous l’évier', customerName: 'Jean M.',
+      id: 'j1', jobId: 'j1', reference: 'JOB-7K2M9', title: 'Fuite sous l’évier', customerName: 'Jean M.',
       customerInitials: 'JM', mode: 'onsite', addressLine: 'Rue 1.234, Akwa, Douala', accent: 'brand',
       supportsCheckIn: true, supportsReport: true, usesDeliverables: false,
       checkedIn: false, status: 'engaged', reportSubmitted: false, deliverables: [],
     },
     a2: {
-      id: 'a2', reference: 'JOB-5RN8K', title: 'Tableau électrique', customerName: 'Sandrine B.',
+      id: 'a2', jobId: 'a2', reference: 'JOB-5RN8K', title: 'Tableau électrique', customerName: 'Sandrine B.',
       customerInitials: 'SB', mode: 'onsite', addressLine: 'Bonapriso, Douala', accent: 'info',
       supportsCheckIn: true, supportsReport: true, usesDeliverables: false,
       checkedIn: false, status: 'engaged', reportSubmitted: false, deliverables: [],
     },
     a3: {
-      id: 'a3', reference: 'JOB-2HW6P', title: 'Étagères sur mesure', customerName: 'Paul T.',
+      id: 'a3', jobId: 'a3', reference: 'JOB-2HW6P', title: 'Étagères sur mesure', customerName: 'Paul T.',
       customerInitials: 'PT', mode: 'remote', addressLine: null, accent: 'warning',
       supportsCheckIn: false, supportsReport: false, usesDeliverables: true,
       checkedIn: false, status: 'started', reportSubmitted: false,
@@ -402,7 +402,9 @@ export class ProviderService {
     }
     const work = this.active.find((w) => w.id === id);
     return {
-      id, reference: work?.reference ?? 'JOB-—', title: work?.title ?? '',
+      // No job id until the real detail loads — the chat link stays disabled rather than opening
+      // the wrong thread (the workspace is keyed by JOB, this id is an ENGAGEMENT).
+      id, jobId: null, reference: work?.reference ?? 'JOB-—', title: work?.title ?? '',
       customerName: work?.customerName ?? '', customerInitials: (work?.customerName ?? '?').charAt(0),
       mode: work?.mode ?? 'onsite', addressLine: null, accent: work?.accent ?? 'muted',
       supportsCheckIn: (work?.mode ?? 'onsite') !== 'remote',
@@ -423,6 +425,7 @@ export class ProviderService {
       const addr = d.address ?? null;
       const detail: WorkDetail = {
         id: d.id,
+        jobId: d.job_id,
         reference: d.reference,
         title: d.title,
         customerName: d.customer_name ?? '',

@@ -76,7 +76,10 @@ export type WorkStatus =
  * the same rows the actions write — the client renders only affordances the server would accept.
  */
 export interface WorkDetail {
+  /** The ENGAGEMENT id — what the check-in / status / report actions target. */
   id: string;
+  /** The JOB id — what the workspace thread is keyed by (`GET /jobs/{job}/messages`). */
+  jobId: string | null;
   reference: string;
   title: string;
   customerName: string;
