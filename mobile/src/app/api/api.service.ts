@@ -1,6 +1,23 @@
 import { Injectable } from '@angular/core';
 import { api } from './client';
 
+/** One line of a submitted quotation (P2.5-01). The server totals these; it never trusts a total. */
+export interface QuotationLineInput {
+  kind: 'labour' | 'material' | 'travel' | 'other';
+  label: string;
+  quantity: number;
+  unitPriceMinor: number;
+}
+
+/** A quotation to submit against a job (P2.5-01). `validUntil` must be in the future. */
+export interface QuotationInput {
+  lines: QuotationLineInput[];
+  depositMinor?: number;
+  notes?: string;
+  /** ISO date or datetime; the API requires it and rejects anything not after now. */
+  validUntil: string;
+}
+
 /** The structured status signals a worker may emit (P5-06). `arrived` is the server's, via check-in. */
 export type ProviderStatusSignal = 'on_the_way' | 'started' | 'paused' | 'resumed' | 'completed';
 
@@ -323,6 +340,32 @@ export class ApiService {
     const { data, error } = await api.POST('/engagements/{engagement}/deliverables', {
       params: { path: { engagement: engagementId }, header: { 'Idempotency-Key': crypto.randomUUID() } },
       body: { title, media_url: mediaUrl ?? null },
+    });
+    if (error) {
+      throw error;
+    }
+    return data.data;
+  }
+
+  /**
+   * Submit a priced quotation for a job (P2.5-01). Only `open`/`offered` jobs accept one (409
+   * otherwise). The subtotal is computed server-side from the lines and the terms freeze on submit —
+   * a revision is a NEW version, never an in-place edit.
+   */
+  async submitQuotation(jobId: string, quote: QuotationInput) {
+    const { data, error } = await api.POST('/jobs/{job}/quotations', {
+      params: { path: { job: jobId }, header: { 'Idempotency-Key': crypto.randomUUID() } },
+      body: {
+        lines: quote.lines.map((l) => ({
+          kind: l.kind,
+          label: l.label,
+          quantity: l.quantity,
+          unit_price_minor: l.unitPriceMinor,
+        })),
+        deposit_minor: quote.depositMinor ?? 0,
+        notes: quote.notes ?? null,
+        valid_until: quote.validUntil,
+      },
     });
     if (error) {
       throw error;

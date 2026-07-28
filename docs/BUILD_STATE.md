@@ -231,8 +231,33 @@ build, which lands with the app UI work.**
 
 ## What was done, most recent first
 
+- **Provider quote composer on real endpoints (P2.5-01) — the provider section is now fully wired.**
+  The lead screen's fixture "price + deposit + message" stub is replaced by a real **itemised**
+  composer, because itemised is what the server actually stores and freezes.
+  - **A direct offer now has two honest answers**: **Accept** it as it stands (P2-06, engagement at
+    the offered price) or **Send a quote** (P2.5-01) when the work needs costing. The controller
+    already accepted a quotation on an `offered` job, so this needed no new endpoint — the offer's
+    embedded job id (added to the `Lead` model as `jobId`) is what `POST /jobs/{job}/quotations` takes.
+  - **The total is a PREVIEW, never an input.** The server computes the subtotal from the lines and
+    does not trust a client total (P2.5-01), so the sheet shows the same arithmetic — per-line totals
+    and a running quote total — rather than a field. Verified live: the sheet read 122 500 and the
+    stored `subtotal_minor` came back **122 500** from the server's own sum.
+  - Composer fields: repeatable lines (kind — labour/material/travel/other — description, quantity,
+    unit price), a deposit, a validity date (the API requires `valid_until` and rejects anything not
+    in the future; defaults to +30 days), and notes. The **deposit is guarded against exceeding the
+    quote** — it is what gets captured into escrow on acceptance (P3-13), so a deposit larger than the
+    job is nonsense; the guard fires client-side and nothing is sent.
+  - Verified end-to-end in the browser against the live API: two lines (1 × 85 000 labour, 3 × 12 500
+    materials) submitted as a `submitted` v1 quotation with both lines, kinds, quantities, deposit
+    40 000, validity and notes intact; the job stayed `offered` (it only engages on acceptance); and
+    relaying the outbox showed the P2.5-06 orchestrator had scheduled **`quote_pending_customer`** and
+    **`quote_expiring`** off the `quote.submitted` event.
+  - Backend and OpenAPI untouched — the endpoint and contract already existed. 394 backend tests still
+    green, mobile build green with no budget warning, API-client drift clean, i18n parity 386 × 2,
+    colour + bare-string linters clean.
+
 - **Provider Home dashboard + Profile on real data — and three bugs the wiring exposed.** Both screens
-  now read the API; the provider section is fully wired apart from the quote composer.
+  now read the API.
   - **Home is COMPOSED, not a new endpoint**: wallet from `GET /provider/earnings`, in-flight count
     from `GET /provider/work`, reputation from the provider's own public `GET /providers/{party}/metrics`
     (P6-12). Each panel loads independently and keeps its fixture on failure, so one unavailable read

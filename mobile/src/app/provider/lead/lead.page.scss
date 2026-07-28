@@ -64,42 +64,6 @@ h1 {
   ion-icon { flex: none; font-size: 1.05rem; margin-top: 0.1rem; }
 }
 
-// ---- Quote composer ----------------------------------------------------
-.lbl {
-  display: block;
-  margin: var(--hm-space-md) 0 var(--hm-space-sm);
-  font-size: 0.82rem;
-  font-weight: 600;
-  color: var(--hm-color-text-muted);
-}
-
-.field {
-  --background: var(--hm-color-surface-raised);
-  --color: var(--hm-color-text-primary);
-  --placeholder-color: var(--hm-color-text-muted);
-  --padding-start: 0.85rem;
-  --padding-end: 0.85rem;
-  --border-radius: var(--hm-radius-md);
-  background: var(--hm-color-surface-raised);
-  border: 1px solid var(--hm-color-border-subtle);
-  border-radius: var(--hm-radius-md);
-}
-
-ion-textarea.field {
-  --padding-top: 0.6rem;
-  --padding-bottom: 0.6rem;
-}
-
-.amount {
-  display: flex;
-  align-items: center;
-  padding-inline-end: 0.85rem;
-
-  ion-input { flex: 1; }
-
-  .cur { font-size: 0.8rem; font-weight: 700; color: var(--hm-color-text-muted); flex: none; }
-}
-
 // ---- Footer CTA --------------------------------------------------------
 ion-footer {
   background: var(--hm-color-surface-base);
@@ -111,5 +75,148 @@ ion-footer {
     border-top: 1px solid var(--hm-color-border-subtle);
   }
 
+  // Two equal answers to an offer: quote it, or accept it.
+  .cta.two {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+
+    @media (max-width: 420px) { grid-template-columns: 1fr; }
+  }
+
   ion-button { --border-radius: var(--hm-radius-md); font-weight: 700; margin: 0; }
+}
+
+// ---- Quote composer sheet ----------------------------------------------
+.sheet {
+  padding: var(--hm-space-md) var(--hm-space-md) var(--hm-space-xl);
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.field { display: block; margin-bottom: var(--hm-space-md); }
+
+.flabel {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--hm-color-text-muted);
+}
+
+.finput,
+.ftext {
+  width: 100%;
+  padding: 0.65rem 0.75rem;
+  background: var(--hm-color-surface-raised);
+  border: 1.5px solid var(--hm-color-border-subtle);
+  border-radius: var(--hm-radius-md);
+  color: var(--hm-color-text-primary);
+  font: inherit;
+  font-size: 0.88rem;
+
+  &::placeholder { color: var(--hm-color-text-muted); }
+  &:focus { outline: none; border-color: var(--hm-color-brand-primary); }
+}
+
+.ftext { resize: vertical; line-height: 1.45; }
+
+.fhelp { display: block; margin-top: 0.3rem; font-size: 0.76rem; }
+
+.err {
+  margin: 0 0 var(--hm-space-md);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--hm-color-status-danger);
+}
+
+// One quote line: kind + description on top, quantity/price/total beneath.
+.qline {
+  padding: var(--hm-space-sm);
+  margin-bottom: 0.5rem;
+}
+
+.q-top {
+  display: grid;
+  grid-template-columns: 8.5rem 1fr auto;
+  gap: 0.5rem;
+  align-items: center;
+  margin-bottom: 0.5rem;
+
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr auto;
+    .qkind { grid-column: 1 / -1; }
+  }
+}
+
+.q-bot {
+  display: grid;
+  grid-template-columns: 5rem 1fr auto;
+  gap: 0.5rem;
+  align-items: end;
+}
+
+.qf {
+  display: block;
+  min-width: 0;
+
+  span { display: block; margin-bottom: 0.2rem; font-size: 0.72rem; }
+}
+
+.qtotal {
+  padding-bottom: 0.65rem;
+  font-size: 0.88rem;
+  font-weight: 700;
+  white-space: nowrap;
+
+  small { font-size: 0.68rem; font-weight: 600; color: var(--hm-color-text-muted); }
+}
+
+.qdel {
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  background: none;
+  border: 0;
+  border-radius: 50%;
+  color: var(--hm-color-text-muted);
+  cursor: pointer;
+
+  ion-icon { font-size: 1.1rem; }
+  &:hover { background: var(--hm-color-surface-sunken); color: var(--hm-color-status-danger); }
+}
+
+.ghost {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  width: 100%;
+  padding: 0.7rem var(--hm-space-md);
+  margin-bottom: var(--hm-space-md);
+  background: none;
+  border: 1px dashed var(--hm-color-border-strong);
+  border-radius: var(--hm-radius-md);
+  color: var(--hm-color-text-muted);
+  font-size: 0.86rem;
+  font-weight: 600;
+  cursor: pointer;
+
+  ion-icon { font-size: 1.1rem; color: var(--hm-color-brand-primary); }
+  &:hover { border-color: var(--hm-color-brand-primary); color: var(--hm-color-text-primary); }
+}
+
+// The server's arithmetic, previewed — never an input.
+.subtotal {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--hm-space-sm);
+  padding: var(--hm-space-md);
+  margin-bottom: var(--hm-space-md);
+  font-size: 0.88rem;
+
+  b { font-size: 1.15rem; font-weight: 800; letter-spacing: -0.01em; }
+  small { font-size: 0.72rem; font-weight: 600; color: var(--hm-color-text-muted); }
 }

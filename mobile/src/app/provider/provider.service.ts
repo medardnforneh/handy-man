@@ -3,8 +3,8 @@ import { ApiService } from '../api/api.service';
 import { Accent } from '../customer/customer.models';
 import { LocaleService } from '../core/locale.service';
 import {
-  ActiveWork, Lead, Payout, PayoutStatus, ProviderIdentity, ProviderStats, ReportDraft, WorkDetail,
-  WorkStatus, ProviderWallet,
+  ActiveWork, Lead, Payout, PayoutStatus, ProviderIdentity, ProviderStats, QuoteDraft, ReportDraft,
+  WorkDetail, WorkStatus, ProviderWallet,
 } from './provider.models';
 
 /** The outcome of one execution mutation: accepted, or refused with the server's own explanation. */
@@ -157,17 +157,17 @@ export class ProviderService {
 
   private readonly leads: Lead[] = [
     {
-      id: 'l1', reference: 'JOB-8P4K2', title: 'Chauffe-eau ne chauffe plus', skill: 'Plomberie',
+      id: 'l1', jobId: null, reference: 'JOB-8P4K2', title: 'Chauffe-eau ne chauffe plus', skill: 'Plomberie',
       mode: 'onsite', area: 'Bonapriso, Douala', budgetMinor: 450000, postedAgo: 'Il y a 12 min',
       accent: 'brand', details: 'Le chauffe-eau électrique de 100 L ne chauffe plus depuis hier. Accès facile, immeuble avec ascenseur.',
     },
     {
-      id: 'l2', reference: 'JOB-3M9Q7', title: 'Fuite robinet cuisine', skill: 'Plomberie',
+      id: 'l2', jobId: null, reference: 'JOB-3M9Q7', title: 'Fuite robinet cuisine', skill: 'Plomberie',
       mode: 'onsite', area: 'Akwa, Douala', budgetMinor: 120000, postedAgo: 'Il y a 1 h',
       accent: 'info', details: 'Robinet mitigeur qui goutte en continu. Pièce probablement à remplacer.',
     },
     {
-      id: 'l3', reference: 'JOB-6T1B5', title: 'Débouchage canalisation', skill: 'Plomberie',
+      id: 'l3', jobId: null, reference: 'JOB-6T1B5', title: 'Débouchage canalisation', skill: 'Plomberie',
       mode: 'onsite', area: 'Bonanjo, Douala', budgetMinor: null, postedAgo: 'Il y a 3 h',
       accent: 'warning', details: 'Évier de cuisine bouché. Devis souhaité avant intervention.',
     },
@@ -315,6 +315,8 @@ export class ProviderService {
     const area = loc ? [loc.quarter, loc.city].filter(Boolean).join(', ') : '';
     return {
       id: o.id,
+      // The offered job — a provider may answer with a quotation instead of accepting outright.
+      jobId: job?.id ?? null,
       reference: job?.reference ?? '',
       title: job?.title ?? '',
       skill: '', // the coarse job carries no skill label; the card leads with the title
@@ -562,8 +564,34 @@ export class ProviderService {
     }
   }
 
-  /** Submit a quote for a lead — removes it from the open feed (it becomes a pending quote). */
-  submitQuote(id: string): void {
-    this.declineLead(id);
+  /**
+   * Submit a priced quotation against the lead's job (POST /jobs/{job}/quotations, P2.5-01) — the
+   * alternative to accepting an offer outright. The subtotal is the SERVER's arithmetic over the
+   * lines; we never send a total. On success the lead leaves the feed (it is now a live quote
+   * awaiting the customer). A fixture lead has no job to quote, so it just drops locally.
+   */
+  async submitQuote(offerId: string, draft: QuoteDraft): Promise<MutationResult> {
+    const lead = this.realLeads.get(offerId);
+    if (lead?.jobId == null) {
+      this.declineLead(offerId);
+      return { ok: true };
+    }
+
+    const result = await this.attempt(() => this.api.submitQuotation(lead.jobId as string, {
+      lines: draft.lines.map((l) => ({
+        kind: l.kind,
+        label: l.label.trim(),
+        quantity: l.quantity,
+        unitPriceMinor: l.unitPriceMinor,
+      })),
+      depositMinor: draft.depositMinor,
+      notes: draft.notes.trim() === '' ? undefined : draft.notes.trim(),
+      validUntil: draft.validUntil,
+    }));
+
+    if (result.ok) {
+      this.realLeads.delete(offerId);
+    }
+    return result;
   }
 }

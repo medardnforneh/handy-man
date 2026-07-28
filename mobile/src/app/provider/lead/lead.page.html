@@ -35,35 +35,11 @@
 
       <p class="details hm-card">{{ l.details }}</p>
 
-      @if (isReal()) {
-        <!-- A real incoming offer: the response is to accept it, forming the engagement. -->
-        <p class="accept-note hm-muted">
-          <ion-icon name="information-circle-outline" aria-hidden="true"></ion-icon>
-          {{ 'pro.accept_note' | translate }}
-        </p>
-      } @else {
-        <!-- Quote composer (demo path) -->
-        <div class="hm-section-head"><h2>{{ 'pro.your_quote' | translate }}</h2></div>
-
-        <label class="lbl">{{ 'pro.price' | translate }}</label>
-        <div class="amount field">
-          <ion-input class="hm-tap" inputmode="numeric" [value]="price()" (ionInput)="onPrice($any($event.target).value)"
-            [placeholder]="'pro.price_ph' | translate" [attr.aria-label]="'pro.price' | translate"></ion-input>
-          <span class="cur">{{ 'money.currency' | translate }}</span>
-        </div>
-
-        <label class="lbl">{{ 'pro.deposit' | translate }}</label>
-        <div class="amount field">
-          <ion-input class="hm-tap" inputmode="numeric" [value]="deposit()" (ionInput)="onDeposit($any($event.target).value)"
-            [placeholder]="'pro.deposit_ph' | translate" [attr.aria-label]="'pro.deposit' | translate"></ion-input>
-          <span class="cur">{{ 'money.currency' | translate }}</span>
-        </div>
-
-        <label class="lbl">{{ 'pro.message' | translate }}</label>
-        <ion-textarea class="field" [autoGrow]="true" [rows]="3" [value]="message()"
-          (ionInput)="onMessage($any($event.target).value)" [placeholder]="'pro.message_ph' | translate"
-          [attr.aria-label]="'pro.message' | translate"></ion-textarea>
-      }
+      <!-- Two honest answers to an offer: take it at the offered price, or price it up (doc 06). -->
+      <p class="accept-note hm-muted">
+        <ion-icon name="information-circle-outline" aria-hidden="true"></ion-icon>
+        {{ 'pro.answer_note' | translate }}
+      </p>
     </div>
   } @else {
     <div class="page">
@@ -74,17 +50,153 @@
 
 @if (lead()) {
   <ion-footer class="ion-no-border">
-    <div class="cta">
-      @if (isReal()) {
-        <ion-button expand="block" class="hm-tap" [disabled]="accepting()" (click)="accept()">
-          <ion-icon name="checkmark-circle-outline" slot="start" aria-hidden="true"></ion-icon>
-          {{ 'pro.accept_offer' | translate }}
-        </ion-button>
-      } @else {
-        <ion-button expand="block" class="hm-tap" [disabled]="!canSend()" (click)="send()">
-          {{ 'pro.send_quote' | translate }}
-        </ion-button>
-      }
+    <div class="cta two">
+      <ion-button expand="block" fill="outline" class="hm-tap" [disabled]="busy()" (click)="openQuote()">
+        <ion-icon name="document-text-outline" slot="start" aria-hidden="true"></ion-icon>
+        {{ 'pro.send_quote' | translate }}
+      </ion-button>
+      <ion-button expand="block" class="hm-tap" [disabled]="busy()" (click)="accept()">
+        <ion-icon name="checkmark-circle-outline" slot="start" aria-hidden="true"></ion-icon>
+        {{ 'pro.accept_offer' | translate }}
+      </ion-button>
     </div>
   </ion-footer>
 }
+
+<!-- Quote composer: itemised lines (the server totals them), deposit, validity, notes (P2.5-01). -->
+<ion-modal [isOpen]="quoteOpen()" (didDismiss)="closeQuote()">
+  <ng-template>
+    <ion-header class="ion-no-border">
+      <ion-toolbar>
+        <ion-buttons slot="start">
+          <ion-button (click)="closeQuote()">{{ 'work.cancel' | translate }}</ion-button>
+        </ion-buttons>
+        <ion-title>{{ 'pro.your_quote' | translate }}</ion-title>
+      </ion-toolbar>
+    </ion-header>
+
+    <ion-content>
+      <div class="sheet">
+        <!-- Lines -->
+        <div class="hm-section-head"><h2>{{ 'pro.quote_lines' | translate }}</h2></div>
+        @for (line of lines(); track line.id) {
+          <div class="qline hm-card">
+            <div class="q-top">
+              <select
+                class="finput qkind"
+                [ngModel]="line.kind"
+                (ngModelChange)="updateLine(line.id, { kind: $event })"
+                [attr.aria-label]="'pro.line_kind' | translate"
+              >
+                @for (k of kinds; track k) {
+                  <option [value]="k">{{ 'pro.kind.' + k | translate }}</option>
+                }
+              </select>
+              <input
+                class="finput qlabel"
+                [ngModel]="line.label"
+                (ngModelChange)="updateLine(line.id, { label: $event })"
+                [placeholder]="'pro.line_label_ph' | translate"
+                [attr.aria-label]="'pro.line_label' | translate"
+              />
+              <button
+                type="button"
+                class="qdel hm-tap"
+                [attr.aria-label]="'work.remove' | translate"
+                (click)="removeLine(line.id)"
+              ><ion-icon name="close" aria-hidden="true"></ion-icon></button>
+            </div>
+            <div class="q-bot">
+              <label class="qf">
+                <span class="hm-muted">{{ 'pro.line_qty' | translate }}</span>
+                <input
+                  class="finput"
+                  type="number"
+                  min="0"
+                  step="0.5"
+                  [ngModel]="line.quantity"
+                  (ngModelChange)="updateLine(line.id, { quantity: +$event })"
+                />
+              </label>
+              <label class="qf">
+                <span class="hm-muted">{{ 'pro.line_unit_price' | translate }}</span>
+                <input
+                  class="finput"
+                  type="number"
+                  min="0"
+                  [ngModel]="line.unitPriceMinor"
+                  (ngModelChange)="updateLine(line.id, { unitPriceMinor: +$event })"
+                />
+              </label>
+              <span class="qtotal">{{ lineTotal(line) | money }} <small>{{ 'money.currency' | translate }}</small></span>
+            </div>
+          </div>
+        }
+        <button type="button" class="ghost hm-tap" (click)="addLine()">
+          <ion-icon name="add" aria-hidden="true"></ion-icon>
+          <span>{{ 'pro.add_line' | translate }}</span>
+        </button>
+
+        <!-- The server computes this from the lines; showing it here keeps the price honest. -->
+        <div class="subtotal hm-card">
+          <span>{{ 'pro.subtotal' | translate }}</span>
+          <b>{{ subtotalMinor() | money }} <small>{{ 'money.currency' | translate }}</small></b>
+        </div>
+
+        <!-- Deposit -->
+        <label class="field">
+          <span class="flabel">{{ 'pro.deposit' | translate }}</span>
+          <input
+            class="finput"
+            type="number"
+            min="0"
+            [ngModel]="deposit()"
+            (ngModelChange)="deposit.set(+$event)"
+          />
+          <small class="hm-muted fhelp">{{ 'pro.deposit_hint' | translate }}</small>
+        </label>
+
+        <!-- Validity -->
+        <label class="field">
+          <span class="flabel">{{ 'pro.valid_until' | translate }}</span>
+          <input
+            class="finput"
+            type="date"
+            [ngModel]="validUntil()"
+            (ngModelChange)="validUntil.set($event)"
+          />
+        </label>
+
+        <!-- Notes -->
+        <label class="field">
+          <span class="flabel">{{ 'pro.message' | translate }}</span>
+          <textarea
+            class="ftext"
+            rows="3"
+            [ngModel]="notes()"
+            (ngModelChange)="notes.set($event)"
+            [placeholder]="'pro.message_ph' | translate"
+          ></textarea>
+        </label>
+
+        @if (showErrors()) {
+          <p class="err">
+            @if (depositTooBig()) {
+              {{ 'pro.deposit_too_big' | translate }}
+            } @else {
+              {{ 'pro.quote_incomplete' | translate }}
+            }
+          </p>
+        }
+      </div>
+    </ion-content>
+
+    <ion-footer class="ion-no-border">
+      <div class="cta">
+        <ion-button expand="block" class="hm-tap" [disabled]="busy()" (click)="send()">
+          {{ 'pro.send_quote' | translate }}
+        </ion-button>
+      </div>
+    </ion-footer>
+  </ng-template>
+</ion-modal>

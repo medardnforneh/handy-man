@@ -40,7 +40,10 @@ export interface ProviderStats {
 
 /** An open opportunity a provider can respond to (a dispatched job or direct request). */
 export interface Lead {
+  /** The OFFER id — what `POST /offers/{offer}/accept` takes. */
   id: string;
+  /** The offered JOB's id — what `POST /jobs/{job}/quotations` takes. Null on a fixture lead. */
+  jobId: string | null;
   reference: string;
   title: string;
   skill: string;
@@ -117,10 +120,32 @@ export interface ReportDraft {
 }
 
 /** A line in the quote the provider composes for a lead. */
+/** The kinds a quotation line can take (mirrors the server's QuoteLineKind, doc 06). */
+export type QuoteLineKind = 'labour' | 'material' | 'travel' | 'other';
+
+/**
+ * One line of the quote the provider composes. The server computes the subtotal from these — a
+ * client-supplied total is never trusted (P2.5-01), so the screen's total is a PREVIEW of the same
+ * arithmetic, not an input.
+ */
 export interface QuoteLine {
   id: string;
+  kind: QuoteLineKind;
   label: string;
-  amountMinor: number;
+  quantity: number;
+  unitPriceMinor: number;
+}
+
+/**
+ * A quotation ready to submit (P2.5-01). `validUntil` is required by the API and must be in the
+ * future; the deposit is what gets captured into escrow the moment the customer accepts (P3-13).
+ */
+export interface QuoteDraft {
+  lines: QuoteLine[];
+  depositMinor: number;
+  notes: string;
+  /** ISO date (yyyy-mm-dd) the quote stops being valid. */
+  validUntil: string;
 }
 
 export type PayoutStatus = 'paid' | 'pending' | 'failed';
