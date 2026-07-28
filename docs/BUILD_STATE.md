@@ -265,9 +265,18 @@ build, which lands with the app UI work.**
     caught it. A green prod build is not proof the dev configuration compiles.
   - 399 backend tests green (5 new), PHPStan L6 + Pint clean, mobile build green, client drift clean,
     i18n parity 386 × 2, colour + bare-string linters clean.
-  - **Still open on realtime**: typing indicators and presence (P4-04's remainder), voice notes
-    (P4-05), and explicit reconnect reconciliation (P4-07 — today a reconnect is covered only by
-    re-entering the screen).
+  - **Reconnect reconciliation (P4-07) — written but NOT VERIFIED.** The workspace now refetches the
+    thread when the socket comes back and when the tab/app returns to the foreground, because
+    anything sent while disconnected was never delivered and REST is the authoritative record.
+    **Treat this as unproven**: the first implementation reached into `echo.connector.pusher` and
+    silently did nothing (verified failing — a message posted while Reverb was down did NOT appear
+    after it came back). It was rewritten to construct the Pusher client explicitly and pass it to
+    Echo via `client`, so connection state hangs off a reference we own rather than Echo internals —
+    but the browser tooling became unresponsive before that rewrite could be re-tested. **Re-run the
+    drop/restore check before trusting it**: load a thread, kill Reverb, post a message over the API,
+    restart Reverb, and confirm the message appears without a reload.
+  - **Still open on realtime**: typing indicators and presence (P4-04's remainder) and voice notes
+    (P4-05).
 
 - **Verified the customer discovery loop end-to-end, and fixed the provider's broken "Open chat".**
   - **The party-id fix is confirmed working in the app**: an open job → "Find providers" → the match

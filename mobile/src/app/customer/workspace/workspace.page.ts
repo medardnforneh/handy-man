@@ -34,13 +34,24 @@ export class WorkspacePage implements OnDestroy {
   readonly sending = signal(false);
 
   private unsubscribe: Unsubscribe = () => undefined;
+  private unwatchReconnect: Unsubscribe = () => undefined;
+
+  /** Refetch when the tab/app comes back to the foreground — see `reconcile()`. */
+  private readonly onVisible = (): void => {
+    if (document.visibilityState === 'visible') {
+      void this.reconcile();
+    }
+  };
 
   constructor() {
     void this.loadReal();
+    document.addEventListener('visibilitychange', this.onVisible);
   }
 
   ngOnDestroy(): void {
     this.unsubscribe();
+    this.unwatchReconnect();
+    document.removeEventListener('visibilitychange', this.onVisible);
   }
 
   /**
@@ -55,6 +66,25 @@ export class WorkspacePage implements OnDestroy {
     }
     this.thread.set(real);
     this.listen(real.engagementId);
+
+    // Anything sent while the socket was away was never delivered, so a reconnect means the thread
+    // is stale — REST is the record, the socket is only a notification (P4-07).
+    this.unwatchReconnect();
+    this.unwatchReconnect = this.realtime.onReconnect(() => void this.reconcile());
+  }
+
+  /**
+   * Re-read the thread from REST and replace what's on screen. Used on reconnect and on returning
+   * to the foreground — both are moments where live frames may have been missed. A failed refetch
+   * leaves the current thread alone rather than blanking a conversation the user is reading.
+   */
+  private async reconcile(): Promise<void> {
+    const fresh = await this.customers.fetchThread(this.jobId);
+    if (fresh === null) {
+      return;
+    }
+    this.thread.set(fresh);
+    this.listen(fresh.engagementId);
   }
 
   private listen(engagementId: string | null): void {

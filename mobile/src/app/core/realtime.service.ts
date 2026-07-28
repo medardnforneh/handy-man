@@ -32,6 +32,12 @@ export type Unsubscribe = () => void;
 @Injectable({ providedIn: 'root' })
 export class RealtimeService {
   private echo: Echo<'reverb'> | null = null;
+  /**
+   * The Pusher client we hand to Echo. We build it ourselves rather than letting Echo construct one
+   * internally, so connection state is reachable through a reference we own instead of by reaching
+   * into Echo's connector — which is private, version-dependent, and silently returned nothing.
+   */
+  private client: Pusher | null = null;
   /** True once a connection attempt failed, so we stop retrying on every subscribe. */
   private unavailable = false;
 
@@ -51,14 +57,13 @@ export class RealtimeService {
       // Echo looks for a global Pusher; provide it rather than relying on a bundler shim.
       (window as unknown as { Pusher: typeof Pusher }).Pusher = Pusher;
 
-      this.echo = new Echo({
-        broadcaster: 'reverb',
-        key: environment.reverb.key,
+      const options = {
         wsHost: environment.reverb.host,
         wsPort: environment.reverb.port,
         wssPort: environment.reverb.port,
         forceTLS: environment.reverb.scheme === 'https',
-        enabledTransports: ['ws', 'wss'],
+        enabledTransports: ['ws', 'wss'] as ('ws' | 'wss')[],
+        cluster: '',
         // Bearer clients can't use Laravel's session-based /broadcasting/auth (P4-03), so Echo
         // posts to the sanctum-guarded endpoint and attaches the access token itself.
         authEndpoint: `${environment.apiBaseUrl}/broadcasting/auth`,
@@ -68,6 +73,14 @@ export class RealtimeService {
             Accept: 'application/json',
           },
         },
+      };
+
+      this.client = new Pusher(environment.reverb.key, options);
+      this.echo = new Echo({
+        broadcaster: 'reverb',
+        key: environment.reverb.key,
+        client: this.client,
+        ...options,
       });
 
       return this.echo;
@@ -75,6 +88,48 @@ export class RealtimeService {
       this.unavailable = true;
       return null;
     }
+  }
+
+  /**
+   * Run `handler` whenever the socket comes back after being away (P4-07).
+   *
+   * Anything that happened while disconnected was never delivered, so a live thread is STALE at
+   * this moment — the handler's job is to refetch and reconcile against REST, which is the
+   * authoritative record. We fire only on a re-connection, not the first one, because the caller
+   * has just loaded over REST anyway.
+   */
+  onReconnect(handler: () => void): Unsubscribe {
+    if (this.connect() === null || this.client === null) {
+      return () => undefined;
+    }
+
+    const connection = this.client.connection;
+    let wasDropped = false;
+    const onDown = (): void => {
+      wasDropped = true;
+    };
+    const onUp = (): void => {
+      if (wasDropped) {
+        wasDropped = false;
+        handler();
+      }
+    };
+
+    connection.bind('unavailable', onDown);
+    connection.bind('disconnected', onDown);
+    connection.bind('connecting', onDown);
+    connection.bind('connected', onUp);
+
+    return () => {
+      try {
+        connection.unbind('unavailable', onDown);
+        connection.unbind('disconnected', onDown);
+        connection.unbind('connecting', onDown);
+        connection.unbind('connected', onUp);
+      } catch {
+        // Connection already torn down.
+      }
+    };
   }
 
   /**
@@ -111,6 +166,7 @@ export class RealtimeService {
       // Nothing useful to do if the socket is already dead.
     }
     this.echo = null;
+    this.client = null;
     this.unavailable = false;
   }
 }
