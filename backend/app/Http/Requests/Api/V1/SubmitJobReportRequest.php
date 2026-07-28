@@ -42,14 +42,22 @@ final class SubmitJobReportRequest extends FormRequest
     }
 
     /**
-     * @return array<int, array{label: string, qty: int|float, unit_cost_minor: int}>
+     * The materials lines, with their numbers CAST. A multipart request carries every field as a
+     * string, so without this the jsonb column would store `"qty": "1"` — the stored report is
+     * meant to be arithmetic-ready, not a transcript of the wire format.
+     *
+     * @return array<int, array{label: string, qty: float, unit_cost_minor: int}>
      */
     public function materials(): array
     {
-        /** @var array<int, array{label: string, qty: int|float, unit_cost_minor: int}> $materials */
+        /** @var array<int, array<string, mixed>> $materials */
         $materials = $this->input('materials', []);
 
-        return array_values($materials);
+        return array_values(array_map(static fn (array $m): array => [
+            'label' => (string) $m['label'],
+            'qty' => (float) $m['qty'],
+            'unit_cost_minor' => (int) $m['unit_cost_minor'],
+        ], $materials));
     }
 
     /**

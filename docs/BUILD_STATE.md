@@ -260,11 +260,26 @@ build, which lands with the app UI work.**
     and surfaces the server's problem+json `detail` on refusal (remote check-in, a session already
     open) rather than a generic error. `resumed` was missing from the status chips and the
     `WorkStatus` type — added.
-  - Spec-first as always (OpenAPI → regenerated TS client, drift gate holds). **387 backend tests
+  - Spec-first as always (OpenAPI → regenerated TS client, drift gate holds). **388 backend tests
     green**, PHPStan L6 + Pint clean, mobile build green, i18n parity 353 keys × 2, no-literal-colour
-    + no-bare-string clean. **Not visually verified** — the Chrome extension wasn't connected this
-    session, so the report sheet has had no browser render check (see the i18n lesson below: a green
-    `ng build` is not proof a screen renders).
+    + no-bare-string clean.
+  - **Verified in a browser against the live API** (`php artisan serve --port=8100` + `ng serve` on
+    4200, signed in as the seeded provider Atelier Nkeng): the work list showed the real engagement,
+    the detail showed the **exact** site address (proving the post-engagement PII rule), check-in
+    flipped the pill to `Arrived` and wrote a real open `work_session` **with a null point** (location
+    denied — the deliberate no-GPS path), a status chip wrote `started`, the report sheet submitted a
+    real `job_report` with its material and extra charges, and check-out flipped the affordance back
+    while the status and report persisted across a full reload. Two defects were found and fixed this
+    way — see below. (The remote no-check-in path is covered by test, not by the browser pass.)
+  - **Fixed while verifying:** (1) submitting the report reset the summary but not its touched flag,
+    so the validation error flashed over the sheet during the dismiss animation; (2) multipart carries
+    every field as a string, so materials landed in the jsonb as `"qty": "1"` — `SubmitJobReportRequest`
+    now casts them, and a test pins it.
+  - **Toolchain:** this machine's PHP had **OPcache commented out entirely** — every request
+    recompiled all of Laravel (`artisan serve` ~4s/request, suite 478s). Enabling it (including
+    `opcache.enable_cli=1`, which is what `artisan serve`'s cli-server SAPI reads) took requests to
+    ~0.25s and the suite to 200s. Dev API port moved to **8100** (8000 taken); `environment.ts`
+    follows.
   - **Still fixture-only on the provider side**: the Home dashboard (wallet + stats — composable from
     earnings + work + own `GET /providers/{party}/metrics`, no new endpoint) and the provider's own
     Profile (`GET /provider/profile` exists). Not yet started: Blade public/SEO pages, realtime/media

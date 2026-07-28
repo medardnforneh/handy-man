@@ -123,6 +123,24 @@ it('lets an assigned worker submit a report with a before photo', function () {
     expect(Media::query()->where('attachable_id', $report->id)->where('attachable_type', 'job_report')->count())->toBe(1);
 });
 
+it('stores materials with their numbers typed, not as the wire strings', function () {
+    ['provider' => $provider, 'engagement' => $engagement] = reportEngagement();
+
+    // A multipart request carries every field as a string — the real client's shape. The stored
+    // jsonb must still be arithmetic-ready, not a transcript of the wire format.
+    Sanctum::actingAs($provider);
+    $this->post("/api/v1/engagements/{$engagement->id}/report", [
+        'summary' => 'Swapped the capacitor and recharged the gas.',
+        'extra_charges_minor' => '5000',
+        'materials' => [['label' => 'Capacitor 45uF', 'qty' => '1.5', 'unit_cost_minor' => '12500']],
+    ], ['Idempotency-Key' => (string) Str::uuid()])->assertCreated();
+
+    $materials = JobReport::query()->firstOrFail()->materials;
+    expect($materials[0]['qty'])->toBe(1.5)
+        ->and($materials[0]['unit_cost_minor'])->toBe(12500)
+        ->and($materials[0]['label'])->toBe('Capacitor 45uF');
+});
+
 it('forbids a non-assigned user from submitting a report', function () {
     ['engagement' => $engagement] = reportEngagement();
 

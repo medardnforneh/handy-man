@@ -4,8 +4,9 @@
 
 export const environment = {
   production: false,
-  // Dev: the app (served on another port) talks to the Laravel API on :8000.
-  apiBaseUrl: 'http://127.0.0.1:8000/api/v1',
+  // Dev: the app (served on another port) talks to the Laravel API on :8100 — 8000 is taken on this
+  // machine. Start it with `php artisan serve --port=8100` from backend/.
+  apiBaseUrl: 'http://127.0.0.1:8100/api/v1',
   appVersion: '1.0.0',
 };
 

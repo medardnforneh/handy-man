@@ -159,6 +159,9 @@ export class ProviderWorkDetailPage {
       this.materials.set([]);
       this.extraCharges.set(0);
       this.photos.set([]);
+      // Clear the touched flag too, or the now-empty summary re-triggers the error and it flashes
+      // over the sheet during the dismiss animation.
+      this.summaryTouched.set(false);
     }
   }
 
