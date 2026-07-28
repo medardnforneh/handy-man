@@ -125,7 +125,25 @@
     "on_the_way": "Le prestataire est en route",
     "arrived": "Le prestataire est arrivé",
     "milestone_released": "Jalon libéré",
-    "released_note": "Libéré du séquestre vers le prestataire."
+    "released_note": "Libéré du séquestre vers le prestataire.",
+    "send": "Envoyer",
+    "attachment": "Pièce jointe partagée",
+    "system": "Mise à jour",
+    "quote_submitted": "Le prestataire a envoyé un devis",
+    "quote_revised": "Le prestataire a révisé le devis",
+    "quote_rejected": "Devis refusé",
+    "milestone_submitted": "Le prestataire a marqué un jalon comme terminé",
+    "milestone_approved": "Vous avez approuvé un jalon",
+    "milestone_rejected": "Jalon renvoyé",
+    "site_visit_proposed": "Le prestataire a proposé une visite technique",
+    "site_visit_confirmed": "Visite technique confirmée",
+    "started": "Travaux commencés",
+    "paused": "Travaux en pause",
+    "resumed": "Travaux repris",
+    "completed": "Travaux terminés",
+    "payment_requested": "Paiement demandé",
+    "payment_received": "Paiement reçu",
+    "deliverable_submitted": "Le prestataire a soumis un livrable"
   },
   "admin": {
     "kpi": {

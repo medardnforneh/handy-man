@@ -102,4 +102,27 @@ export class ApiService {
       throw error;
     }
   }
+
+  /** The workspace conversation thread — participants only (P4-01). Structured kinds are server-narrated. */
+  async messages(jobId: string) {
+    const { data, error } = await api.GET('/jobs/{job}/messages', {
+      params: { path: { job: jobId } },
+    });
+    if (error) {
+      throw error;
+    }
+    return data.data;
+  }
+
+  /** Post a free-form text message to the thread (P4-02). Structured kinds are rejected server-side. */
+  async postMessage(jobId: string, body: string) {
+    const { data, error } = await api.POST('/jobs/{job}/messages', {
+      params: { path: { job: jobId }, header: { 'Idempotency-Key': crypto.randomUUID() } },
+      body: { body },
+    });
+    if (error) {
+      throw error;
+    }
+    return data.data;
+  }
 }

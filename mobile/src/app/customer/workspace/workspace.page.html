@@ -4,7 +4,7 @@
       <ion-back-button defaultHref="/tabs/chats" [text]="''"></ion-back-button>
     </ion-buttons>
 
-    @if (thread) {
+    @if (thread(); as thread) {
       <div class="ws-head">
         <div [class]="'hm-avatar ws-av accent-' + thread.accent" aria-hidden="true">{{ thread.initials }}</div>
         <div class="ws-title">
@@ -18,7 +18,7 @@
 </ion-header>
 
 <ion-content [fullscreen]="true" class="thread-bg">
-  @if (thread) {
+  @if (thread(); as thread) {
     <div class="thread">
       <div class="day">{{ 'workspace.today' | translate }}</div>
 
@@ -113,13 +113,24 @@
 
     <ion-input
       class="field"
+      [value]="draft()"
+      (ionInput)="onDraft($any($event.target).value)"
+      (keyup.enter)="send()"
       [placeholder]="'workspace.composer_placeholder' | translate"
       [attr.aria-label]="'workspace.composer_placeholder' | translate"
     ></ion-input>
 
     <ion-buttons slot="end">
       <ion-button class="hm-tap" fill="clear"><ion-icon slot="icon-only" name="mic-outline"></ion-icon></ion-button>
-      <ion-button class="hm-tap send" fill="solid"><ion-icon slot="icon-only" name="send"></ion-icon></ion-button>
+      <ion-button
+        class="hm-tap send"
+        fill="solid"
+        [disabled]="sending() || draft().trim().length === 0"
+        (click)="send()"
+      >
+        <ion-icon slot="icon-only" name="send"></ion-icon>
+        <span class="sr-only">{{ 'workspace.send' | translate }}</span>
+      </ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-footer>

@@ -3,8 +3,34 @@ import { ApiService } from '../api/api.service';
 import { LocaleService } from '../core/locale.service';
 import {
   Category, ChatSummary, EngagementMode, JobDetail, JobStatus, JobSummary, MilestoneStatus,
-  NewJobInput, Provider, ProviderProfile, SavedAddress, WorkspaceThread,
+  NewJobInput, Provider, ProviderProfile, SavedAddress, WorkspaceMessage, WorkspaceThread,
 } from './customer.models';
+
+/**
+ * The server-narrated (rule #11) lifecycle kinds render as a system chip in the thread. Free-form
+ * `text`/`voice` become bubbles; anything else (a lifecycle transition) maps to an i18n chip label.
+ * Attachments (media/document) share one generic chip until the native capture flow lands.
+ */
+const EVENT_CHIP_KEY: Record<string, string> = {
+  media: 'workspace.attachment',
+  document: 'workspace.attachment',
+};
+
+/** Map one API message onto the thread's display model. Structured kinds collapse to a system chip. */
+function mapMessage(m: {
+  id: string; kind: string; body?: string | null; sender_user_id?: string | null; created_at: string;
+}, meUserId: string): WorkspaceMessage {
+  const time = new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const mine = meUserId !== '' && m.sender_user_id === meUserId;
+  if (m.kind === 'text') {
+    return { id: m.id, kind: 'text', mine, body: m.body ?? '', time };
+  }
+  if (m.kind === 'voice') {
+    return { id: m.id, kind: 'voice', mine, duration: '', time };
+  }
+  // Everything else is a server-narrated lifecycle event → a neutral, centred system chip.
+  return { id: m.id, kind: 'system', mine: false, systemKey: EVENT_CHIP_KEY[m.kind] ?? `workspace.${m.kind}`, time };
+}
 
 /** Map the API milestone status onto the app's display set. */
 function mapMilestoneStatus(status: string): MilestoneStatus {
@@ -64,7 +90,7 @@ export class CustomerService {
    * The signed-in customer. Loaded from `GET /auth/me` when a session token is present, else the
    * offline fixture stands in — so the account identity is real when connected and demoable when not.
    */
-  readonly me = signal({ name: 'Jean Mballa', initials: 'JM', phone: '+237 6 99 88 77 66' });
+  readonly me = signal({ id: '', name: 'Jean Mballa', initials: 'JM', phone: '+237 6 99 88 77 66' });
 
   /** Discover's category rail — real skill categories (GET /skills) once loaded, curated fixtures until then. */
   readonly categories = signal<Category[]>([
@@ -121,7 +147,7 @@ export class CustomerService {
     try {
       const u = await this.api.me();
       const name = u.display_name ?? u.phone_e164;
-      this.me.set({ name, initials: initialsOf(name), phone: u.phone_e164 });
+      this.me.set({ id: u.id, name, initials: initialsOf(name), phone: u.phone_e164 });
     } catch {
       // No session / offline — keep the fixture identity.
     }
@@ -399,5 +425,46 @@ export class CustomerService {
 
   thread(id: string): WorkspaceThread | null {
     return this.threads[id] ?? this.threads['j1'] ?? null;
+  }
+
+  /**
+   * The real workspace thread (GET /jobs/{id}/messages) with its header drawn from the job. The chat
+   * IS the state machine (doc 06): text/voice are bubbles, every server-narrated lifecycle kind is a
+   * system chip. Returns null — so the caller keeps the fixture thread — when there's no session, the
+   * job has no conversation yet, or the backend is unreachable.
+   */
+  async fetchThread(jobId: string): Promise<WorkspaceThread | null> {
+    try {
+      const [detail, apiMessages] = await Promise.all([
+        this.fetchJobDetail(jobId),
+        this.api.messages(jobId),
+      ]);
+      if (detail === null) {
+        return null;
+      }
+      const name = detail.providerName ?? detail.title;
+      return {
+        id: detail.id,
+        providerName: name,
+        initials: detail.providerInitials ?? initialsOf(name),
+        reference: detail.reference,
+        skill: detail.title,
+        status: detail.status,
+        accent: detail.accent,
+        messages: apiMessages.map((m) => mapMessage(m, this.me().id)),
+      };
+    } catch {
+      return null;
+    }
+  }
+
+  /** Post a free-form message to the thread, then re-fetch it. Returns null on failure (offline / demo). */
+  async sendMessage(jobId: string, body: string): Promise<WorkspaceThread | null> {
+    try {
+      await this.api.postMessage(jobId, body);
+      return await this.fetchThread(jobId);
+    } catch {
+      return null;
+    }
   }
 }

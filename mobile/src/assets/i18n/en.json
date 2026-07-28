@@ -125,7 +125,25 @@
     "on_the_way": "Provider is on the way",
     "arrived": "Provider arrived",
     "milestone_released": "Milestone released",
-    "released_note": "Released from escrow to the provider."
+    "released_note": "Released from escrow to the provider.",
+    "send": "Send",
+    "attachment": "Attachment shared",
+    "system": "Update",
+    "quote_submitted": "Provider sent a quotation",
+    "quote_revised": "Provider revised the quotation",
+    "quote_rejected": "Quotation declined",
+    "milestone_submitted": "Provider marked a milestone done",
+    "milestone_approved": "You approved a milestone",
+    "milestone_rejected": "Milestone sent back",
+    "site_visit_proposed": "Provider proposed a site visit",
+    "site_visit_confirmed": "Site visit confirmed",
+    "started": "Work started",
+    "paused": "Work paused",
+    "resumed": "Work resumed",
+    "completed": "Work completed",
+    "payment_requested": "Payment requested",
+    "payment_received": "Payment received",
+    "deliverable_submitted": "Provider submitted a deliverable"
   },
   "admin": {
     "kpi": {
