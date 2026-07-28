@@ -3,7 +3,7 @@
 > Living tracker for the build. Updated as work progresses. Source of truth for **where we
 > are** and **how this machine is set up**. Read this first when resuming.
 
-_Last updated: 2026-07-27 (mobile customer + provider app sections built)_
+_Last updated: 2026-07-28 (mobile↔API wiring: customer discovery loop + provider read endpoints)_
 
 ## Environment (this dev machine — Windows 10 Pro, non-admin)
 
@@ -230,6 +230,40 @@ build, which lands with the app UI work.**
     real-time/media surfaces (voice notes, presence, reconnect — P4-04..07).
 
 ## What was done, most recent first
+
+- **Mobile ↔ API wiring — customer discovery loop + provider read surfaces made real**. Continuing the
+  method-by-method migration from fixtures to the generated `openapi-fetch` client (every screen keeps
+  its fixture as the offline/no-session fallback, so all stay demoable un-connected). This pass:
+  - **Workspace chat → real messages** (P4-01/02): the engagement thread loads from
+    `GET /jobs/{id}/messages` — free-form text as bubbles, every server-narrated lifecycle kind as a
+    neutral system chip; the composer posts free-form text only (rule #11) with a per-send
+    Idempotency-Key, then re-fetches. `me().id` from `GET /auth/me` makes authorship real.
+  - **Customer discovery loop → real, end-to-end**: an open job's detail offers "Find providers" →
+    a new job-scoped shortlist screen from `GET /jobs/{job}/providers` (PII-minimised: headline +
+    reputation, no name/precise distance) → the provider profile carrying job context fetches the
+    public metrics (P6-12) + published reviews (P6-08) and augments the header from the match resource
+    (fields the API withholds — city, member-since, response time, review author — degrade gracefully,
+    never faked) → the CTA becomes "Send an offer" → `POST /jobs/{job}/offers` (P2-05).
+  - **Three previously-blocked provider READ endpoints built (backend-first), tested, and wired**:
+    - `GET /provider/earnings` (P3-07/08) — payable_available (net of reserved pending payouts),
+      payable_pending, lead_credits, payout history. Wired the Earnings screen. 4 tests.
+    - `GET /provider/opportunities` (P2-05/06) — the provider's live incoming direct offers, each
+      embedding its job through `JobResource` (coarse area only, exact address never leaks to a
+      pre-engagement provider). `OfferResource` now carries `message` + the whenLoaded `job`. The feed
+      + lead detail are real; the lead detail's CTA is **Accept** (`POST /offers/{offer}/accept`,
+      P2-06) since a direct offer's correct response is to accept it — a fact gate surfaces the
+      server's problem+json `detail`. 4 tests incl. the PII assertion.
+    - `GET /provider/work` (P5-03) — the caller's in-flight engagements (job not completed/cancelled),
+      newest first; the row id is the ENGAGEMENT id so the work-detail check-in/status/report actions
+      target it. Wired the Work list. 4 tests.
+  - All spec-first (OpenAPI → regenerated TS client, CI drift gate holds); PHPStan L6 + Pint clean;
+    mobile builds green; no-literal-colour + no-bare-string + i18n parity (332 keys × 2) all clean.
+  - **Still fixture-only on the provider side** (candidates for the next pass): the Home dashboard
+    (wallet + stats — composable from earnings + work + own `GET /providers/{party}/metrics`, no new
+    endpoint), the work-detail check-in/status/report **mutations** (endpoints exist; wiring needs the
+    real engagement id — now available from the work list — plus a thin current-state read), and the
+    provider's own Profile (`GET /provider/profile` exists). Not yet started: Blade public/SEO pages,
+    realtime/media surfaces (P4-04..07), native/offline (P5-01/02).
 
 - **Ionic app — customer + provider sections built out (fixture-driven, API-shaped)**. All screens are
   standalone Angular 20 components on the generated design tokens; every user string runs through the
