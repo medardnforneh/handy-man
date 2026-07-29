@@ -5,6 +5,11 @@ import { IonicModule } from '@ionic/angular';
 import { TranslatePipe } from '@ngx-translate/core';
 import { RealtimeService, Unsubscribe } from '../../core/realtime.service';
 import { CustomerService } from '../customer.service';
+
+/** How long "typing…" stays up after the last whisper — no "stopped" event is ever sent. */
+const TYPING_LINGER_MS = 4000;
+/** At most one whisper this often, however fast the user types. */
+const TYPING_WHISPER_EVERY_MS = 2000;
 import { JobStatus, WorkspaceThread } from '../customer.models';
 import { MoneyPipe } from '../money.pipe';
 
@@ -35,6 +40,12 @@ export class WorkspacePage implements OnDestroy {
 
   private unsubscribe: Unsubscribe = () => undefined;
   private unwatchReconnect: Unsubscribe = () => undefined;
+  private unwatchTyping: Unsubscribe = () => undefined;
+
+  /** True while another participant is typing — cleared by a timer, since "stopped" is never sent. */
+  readonly peerTyping = signal(false);
+  private typingTimer: ReturnType<typeof setTimeout> | null = null;
+  private lastWhisperAt = 0;
 
   /** Refetch when the tab/app comes back to the foreground — see `reconcile()`. */
   private readonly onVisible = (): void => {
@@ -51,6 +62,10 @@ export class WorkspacePage implements OnDestroy {
   ngOnDestroy(): void {
     this.unsubscribe();
     this.unwatchReconnect();
+    this.unwatchTyping();
+    if (this.typingTimer !== null) {
+      clearTimeout(this.typingTimer);
+    }
     document.removeEventListener('visibilitychange', this.onVisible);
   }
 
@@ -117,10 +132,48 @@ export class WorkspacePage implements OnDestroy {
       // Live again on this channel — whatever we missed while away is only in REST.
       () => void this.reconcile(),
     );
+
+    // Bound after the subscription above, because typing rides that same channel.
+    this.unwatchTyping();
+    this.unwatchTyping = this.realtime.onTyping(engagementId, (from) => {
+      // A whisper never returns to its sender, but a second worker on the engagement could send
+      // one — ignore our own id rather than showing "you are typing".
+      if (from !== this.customers.me().id) {
+        this.showPeerTyping();
+      }
+    });
+  }
+
+  /**
+   * Show "typing…" and arm a timer to clear it. There is deliberately no "stopped typing" whisper:
+   * the sender may close the app mid-word, and an indicator that can stick forever is worse than
+   * one that expires on its own.
+   */
+  private showPeerTyping(): void {
+    this.peerTyping.set(true);
+    if (this.typingTimer !== null) {
+      clearTimeout(this.typingTimer);
+    }
+    this.typingTimer = setTimeout(() => this.peerTyping.set(false), TYPING_LINGER_MS);
+  }
+
+  /** Throttled — Reverb rate-limits client events, and one whisper per keystroke would be abusive. */
+  private notifyTyping(): void {
+    const engagementId = this.thread()?.engagementId;
+    if (!engagementId) {
+      return;
+    }
+    const now = Date.now();
+    if (now - this.lastWhisperAt < TYPING_WHISPER_EVERY_MS) {
+      return;
+    }
+    this.lastWhisperAt = now;
+    this.realtime.whisperTyping(engagementId, this.customers.me().id);
   }
 
   onDraft(value: string | null | undefined): void {
     this.draft.set(value ?? '');
+    this.notifyTyping();
   }
 
   /** Post the composed text to the thread, then reflect the re-fetched thread. */

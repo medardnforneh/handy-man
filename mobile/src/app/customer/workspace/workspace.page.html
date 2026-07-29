@@ -101,6 +101,16 @@
           }
         }
       }
+
+      <!-- Ephemeral: a client whisper (P4-04), never persisted. Clears on its own timer. -->
+      @if (peerTyping()) {
+        <div class="typing" role="status" aria-live="polite">
+          <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
+          {{-- Nameless on purpose: the thread has exactly two sides, so "who" adds nothing, and
+               naming them would inherit the header's customer-shaped fallback. --}}
+          <span>{{ 'workspace.typing' | translate }}</span>
+        </div>
+      }
     </div>
   }
 </ion-content>

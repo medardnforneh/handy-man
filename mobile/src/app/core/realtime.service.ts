@@ -20,6 +20,16 @@ export interface LiveMessage {
 /** Drop a subscription. Safe to call twice. */
 export type Unsubscribe = () => void;
 
+/** The pusher-js wire name for a client event ("whisper") — `client-` prefixed by protocol. */
+const TYPING_EVENT = 'client-typing';
+
+/** The slice of pusher-js's channel we use for client events. */
+interface RawChannel {
+  trigger(event: string, data: unknown): void;
+  bind(event: string, handler: (data: { from?: string }) => void): void;
+  unbind(event: string, handler: (data: { from?: string }) => void): void;
+}
+
 /**
  * The realtime rail (build plan P4-03/04). Wraps Laravel Echo over Reverb so screens subscribe to a
  * channel and get a callback, without knowing about sockets.
@@ -38,6 +48,15 @@ export class RealtimeService {
    * into Echo's connector — which is private, version-dependent, and silently returned nothing.
    */
   private client: Pusher | null = null;
+  /**
+   * The RAW pusher channel per engagement, captured at subscribe time.
+   *
+   * Client events (typing) go through pusher-js directly rather than Echo's `whisper` /
+   * `listenForWhisper`: those silently did nothing here — the frame reached the socket but the
+   * wrapper never delivered it. Capturing the channel at subscribe time also avoids looking it up
+   * later, which is where the previous attempt failed.
+   */
+  private readonly rawChannels = new Map<string, RawChannel>();
   /** True once a connection attempt failed, so we stop retrying on every subscribe. */
   private unavailable = false;
 
@@ -151,6 +170,13 @@ export class RealtimeService {
       const channel = echo.private(name);
       channel.listen('.message.posted', (payload: LiveMessage) => handler(payload));
 
+      // Grab the underlying channel now, while we know it exists — typing rides this same
+      // subscription and must never join a second time.
+      const raw = this.client?.channel(`private-${name}`) as RawChannel | undefined;
+      if (raw !== undefined) {
+        this.rawChannels.set(engagementId, raw);
+      }
+
       // Re-subscription is the signal that actually matters: it means we are live on this channel
       // again, whatever route the socket took to get there. Raw connection states are not enough —
       // a server that dies and returns drives `unavailable -> connected`, which in practice did not
@@ -172,9 +198,40 @@ export class RealtimeService {
 
     return () => {
       try {
+        this.rawChannels.delete(engagementId);
         echo.leave(name);
       } catch {
         // Already gone (navigated away mid-teardown) — nothing to do.
+      }
+    };
+  }
+
+  /**
+   * Tell the other participants we're typing (P4-04).
+   *
+   * A whisper is a CLIENT event: participant-to-participant through Reverb, never touching the API
+   * or the database — right for something this ephemeral and this frequent. Nothing is persisted,
+   * so a missed whisper costs nothing. Callers throttle; Reverb rate-limits client events.
+   */
+  whisperTyping(engagementId: string, from: string): void {
+    this.rawChannels.get(engagementId)?.trigger(TYPING_EVENT, { from });
+  }
+
+  /** Hear another participant typing. The payload carries who, so we never echo our own whisper. */
+  onTyping(engagementId: string, handler: (from: string) => void): Unsubscribe {
+    const channel = this.rawChannels.get(engagementId);
+    if (channel === undefined) {
+      return () => undefined;
+    }
+
+    const bound = (payload: { from?: string }): void => handler(payload.from ?? '');
+    channel.bind(TYPING_EVENT, bound);
+
+    return () => {
+      try {
+        channel.unbind(TYPING_EVENT, bound);
+      } catch {
+        // Channel already left.
       }
     };
   }
@@ -188,6 +245,7 @@ export class RealtimeService {
     }
     this.echo = null;
     this.client = null;
+    this.rawChannels.clear();
     this.unavailable = false;
   }
 }

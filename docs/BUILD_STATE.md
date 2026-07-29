@@ -233,6 +233,29 @@ build, which lands with the app UI work.**
 
 ## What was done, most recent first
 
+- **Typing indicators (P4-04 remainder) — landed on the second attempt, verified both directions.**
+  A typing hint is a **client event** (whisper): participant-to-participant through Reverb, never
+  touching the API or the database. Nothing is persisted, so a missed whisper costs nothing.
+  - **Why the first attempt failed, and what fixed it**: Echo's `whisper` / `listenForWhisper`
+    wrappers silently did nothing — the frame reached the socket (proven with a raw bind) but never
+    reached the handler. The rewrite used the raw pusher-js channel, but looked it up lazily and the
+    lookup guard returned early (`Pusher.prototype.channel` was never called — proven by patching the
+    prototype). The fix is to **capture the raw channel at subscribe time**, inside
+    `onEngagementMessage` where it is known to exist, and keep it in a map keyed by engagement. No
+    lookup, no guard, no silent path.
+  - **Behaviour**: throttled to one whisper per 2s however fast you type (Reverb rate-limits client
+    events); the indicator lingers 4s after the last whisper and clears itself — there is deliberately
+    **no "stopped typing" event**, because a sender who closes the app mid-word would strand the
+    indicator forever. A whisper carrying our own id is ignored.
+  - The label is **nameless** ("typing…"): the thread has exactly two sides so "who" adds nothing, and
+    naming them would inherit the header's customer-shaped fallback (the known wart below).
+  - **Verified end-to-end** with a second Pusher client authorized as the other party: the binding
+    attaches (`typingBound: 1`), a peer whisper shows the indicator, it clears after the linger, our
+    own id is ignored, and typing in the composer emits a whisper the peer receives. Throttling
+    demonstrably collapses a keystroke burst rather than sending one per key.
+  - Mobile build green, i18n parity 395 × 2, colour + bare-string linters clean. No backend change —
+    client events never reach the server.
+
 - **Public/SEO surface: a crawlable services directory (doc 08).** The public site was a stub — a hero
   and two empty cards. The bilingual taxonomy (P1-07) is the natural SEO asset, so it now backs real
   pages: 13 categories and 41 leaves, each a genuine search term, in both languages.
@@ -317,8 +340,8 @@ build, which lands with the app UI work.**
     Verified end-to-end on the real failing cycle: load a thread → kill Reverb → post over the API →
     restart Reverb → the missed message appears **without a reload**, the channel reports
     `subscribed: true` again, and a message posted *after* the reconnect arrives live. No duplicates.
-  - **Still open on realtime**: typing indicators and presence (P4-04's remainder) and voice notes
-    (P4-05).
+  - **Typing indicators — DONE** (second attempt; the first was reverted). See the entry above.
+  - **Still open on realtime**: presence (who's online) and voice notes (P4-05).
 
 - **Verified the customer discovery loop end-to-end, and fixed the provider's broken "Open chat".**
   - **The party-id fix is confirmed working in the app**: an open job → "Find providers" → the match
