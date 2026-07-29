@@ -95,6 +95,7 @@
   "workspace.send": "Send",
   "workspace.attachment": "Attachment shared",
   "workspace.typing": "typing…",
+  "workspace.online": "Online",
   "workspace.system": "Update",
   "workspace.quote_submitted": "Provider sent a quotation",
   "workspace.quote_revised": "Provider revised the quotation",

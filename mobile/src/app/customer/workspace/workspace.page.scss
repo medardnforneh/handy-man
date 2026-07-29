@@ -198,3 +198,19 @@ ion-toolbar {
 @media (prefers-reduced-motion: reduce) {
   .dots i { animation: none; opacity: 0.6; }
 }
+
+// ---- Presence (live only, P4-04) ---------------------------------------
+.online {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  color: var(--hm-color-status-success);
+  font-weight: 600;
+}
+
+.odot {
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 50%;
+  background: currentColor;
+}

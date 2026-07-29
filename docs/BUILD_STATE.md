@@ -233,6 +233,30 @@ build, which lands with the app UI work.**
 
 ## What was done, most recent first
 
+- **Presence: "Online" in the workspace header (P4-04 complete).** The other party's live presence,
+  on a **presence channel** alongside the private one that carries messages.
+  - **One channel registration serves both.** Laravel strips the `private-`/`presence-` prefix before
+    matching, and an array return is both a truthy authorization for the private channel and the
+    member payload for the presence one — so `engagement.{id}` now returns `['id' => …]` or `false`.
+    The same participant rule guards both; a stranger is refused either way (tested).
+  - **The member payload is the user id and nothing else.** Presence data is visible to every other
+    member, so it carries the minimum that answers "is the other party here". A name would be
+    redundant — participants already know each other post-engagement — and isn't worth putting on the
+    wire. A test pins `user_info` to exactly `['id' => …]`.
+  - **Two subscriptions, deliberately.** Presence is a separate channel from messages so it can never
+    disturb the path that must not break. That made teardown a real hazard: Echo's `leave(name)` drops
+    the public, private AND presence variants, so leaving presence would have killed live messages.
+    Both teardowns use **`leaveChannel`** with the explicit prefix instead.
+  - Presence is **live-only**: when the socket is down we stop claiming anyone is there rather than
+    asserting they left, and nothing is persisted.
+  - **Verified with a second authorized connection**: both channels subscribe, "Online" is correctly
+    absent while alone (self is filtered out of the member list), appears when the peer joins, clears
+    when the peer disconnects — and a live message still arrives exactly once afterwards, confirming
+    the split teardown didn't regress the message path.
+  - Also fixed: two Blade-style `{{-- --}}` comments had crept into the Angular workspace template.
+    One was a compile error; the other slipped past the build and would have rendered as a broken
+    interpolation.
+
 - **Typing indicators (P4-04 remainder) — landed on the second attempt, verified both directions.**
   A typing hint is a **client event** (whisper): participant-to-participant through Reverb, never
   touching the API or the database. Nothing is persisted, so a missed whisper costs nothing.
@@ -341,7 +365,7 @@ build, which lands with the app UI work.**
     restart Reverb → the missed message appears **without a reload**, the channel reports
     `subscribed: true` again, and a message posted *after* the reconnect arrives live. No duplicates.
   - **Typing indicators — DONE** (second attempt; the first was reverted). See the entry above.
-  - **Still open on realtime**: presence (who's online) and voice notes (P4-05).
+  - **Presence — DONE.** See the entry above. **Still open on realtime**: voice notes (P4-05).
 
 - **Verified the customer discovery loop end-to-end, and fixed the provider's broken "Open chat".**
   - **The party-id fix is confirmed working in the app**: an open job → "Find providers" → the match

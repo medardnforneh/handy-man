@@ -108,3 +108,44 @@ it('authorizes a token client on the api broadcasting endpoint, and refuses a no
 
     expect($provider->id)->not->toBeEmpty();
 });
+
+it('authorizes the presence channel and returns only the user id as member data', function () {
+    $customer = User::factory()->create();
+    $job = Job::factory()->remote()->status(JobStatus::Open)->create([
+        'customer_party_id' => $customer->party_id,
+        'created_by_user_id' => $customer->id,
+    ]);
+    $provider = User::factory()->create();
+    $quote = Quotation::factory()->submitted()->create([
+        'job_id' => $job->id, 'provider_party_id' => $provider->party_id,
+        'subtotal_minor' => 500_000, 'deposit_minor' => 0, 'valid_until' => now()->addDays(3),
+    ]);
+    $engagement = app(AcceptQuotation::class)->handle($customer, $quote);
+
+    config()->set('broadcasting.default', 'reverb');
+    config()->set('broadcasting.connections.reverb', [
+        'driver' => 'reverb',
+        'key' => 'testkey', 'secret' => 'testsecret', 'app_id' => 'testapp',
+        'options' => ['host' => '127.0.0.1', 'port' => 8080, 'scheme' => 'http', 'useTLS' => false],
+    ]);
+    require base_path('routes/channels.php');
+
+    Sanctum::actingAs($customer);
+    $response = $this->postJson('/api/v1/broadcasting/auth', [
+        'channel_name' => 'presence-engagement.'.$engagement->id,
+        'socket_id' => '1234.5678',
+    ])->assertOk();
+
+    // Presence member data is visible to every other member, so it must carry the minimum that
+    // answers "is the other party here" — the id, and nothing else.
+    $data = json_decode((string) $response->json('channel_data'), true);
+    expect($data['user_id'])->toBe($customer->id)
+        ->and($data['user_info'])->toBe(['id' => $customer->id]);
+
+    // The same rule still guards it — a stranger gets nothing.
+    Sanctum::actingAs(User::factory()->create());
+    $this->postJson('/api/v1/broadcasting/auth', [
+        'channel_name' => 'presence-engagement.'.$engagement->id,
+        'socket_id' => '1234.5678',
+    ])->assertForbidden();
+});

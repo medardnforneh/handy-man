@@ -9,7 +9,13 @@
         <div [class]="'hm-avatar ws-av accent-' + thread.accent" aria-hidden="true">{{ thread.initials }}</div>
         <div class="ws-title">
           <b>{{ thread.providerName }}</b>
-          <small>{{ thread.reference }} · {{ thread.skill }}</small>
+          <!-- Presence is live-only: when the socket is down we stop claiming anyone is there,
+               rather than asserting they left. -->
+          @if (peerOnline()) {
+            <small class="online"><i class="odot" aria-hidden="true"></i>{{ 'workspace.online' | translate }}</small>
+          } @else {
+            <small>{{ thread.reference }} · {{ thread.skill }}</small>
+          }
         </div>
         <span [class]="'hm-pill ' + tone(thread.status)">{{ 'status.' + thread.status | translate }}</span>
       </div>
@@ -106,8 +112,8 @@
       @if (peerTyping()) {
         <div class="typing" role="status" aria-live="polite">
           <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
-          {{-- Nameless on purpose: the thread has exactly two sides, so "who" adds nothing, and
-               naming them would inherit the header's customer-shaped fallback. --}}
+          <!-- Nameless on purpose: the thread has exactly two sides, so "who" adds nothing, and
+               naming them would inherit the header's customer-shaped fallback. -->
           <span>{{ 'workspace.typing' | translate }}</span>
         </div>
       }

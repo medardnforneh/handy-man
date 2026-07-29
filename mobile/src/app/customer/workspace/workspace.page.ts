@@ -41,6 +41,10 @@ export class WorkspacePage implements OnDestroy {
   private unsubscribe: Unsubscribe = () => undefined;
   private unwatchReconnect: Unsubscribe = () => undefined;
   private unwatchTyping: Unsubscribe = () => undefined;
+  private unwatchPresence: Unsubscribe = () => undefined;
+
+  /** True while the other party has this thread open. Live only — never persisted. */
+  readonly peerOnline = signal(false);
 
   /** True while another participant is typing — cleared by a timer, since "stopped" is never sent. */
   readonly peerTyping = signal(false);
@@ -63,6 +67,7 @@ export class WorkspacePage implements OnDestroy {
     this.unsubscribe();
     this.unwatchReconnect();
     this.unwatchTyping();
+    this.unwatchPresence();
     if (this.typingTimer !== null) {
       clearTimeout(this.typingTimer);
     }
@@ -131,6 +136,15 @@ export class WorkspacePage implements OnDestroy {
       },
       // Live again on this channel — whatever we missed while away is only in REST.
       () => void this.reconcile(),
+    );
+
+    // Presence is its own channel (same rule, separate subscription) so it can never disturb the
+    // message path. Tell the service who we are first, or we'd count ourselves as present.
+    this.realtime.setSelfId(this.customers.me().id);
+    this.unwatchPresence();
+    this.unwatchPresence = this.realtime.onPresence(
+      engagementId,
+      (others) => this.peerOnline.set(others > 0),
     );
 
     // Bound after the subscription above, because typing rides that same channel.

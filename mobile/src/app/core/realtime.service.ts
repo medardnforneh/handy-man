@@ -199,7 +199,8 @@ export class RealtimeService {
     return () => {
       try {
         this.rawChannels.delete(engagementId);
-        echo.leave(name);
+        // Leave only the private channel — `leave()` would also drop the presence one.
+        echo.leaveChannel(`private-${name}`);
       } catch {
         // Already gone (navigated away mid-teardown) — nothing to do.
       }
@@ -234,6 +235,72 @@ export class RealtimeService {
         // Channel already left.
       }
     };
+  }
+
+  /**
+   * Who else is on this engagement right now (P4-04).
+   *
+   * A presence channel is separate from the private one that carries messages — same authorization
+   * rule, two subscriptions. Keeping them apart means presence can't disturb the message path,
+   * which is the one that must never break.
+   *
+   * `handler` receives the count of OTHER members, so the caller never has to filter itself out.
+   * Presence is a live signal only: nothing is persisted, and losing the socket simply means we
+   * stop claiming anyone is there rather than claiming they left.
+   */
+  onPresence(engagementId: string, handler: (othersPresent: number) => void): Unsubscribe {
+    const echo = this.connect();
+    if (echo === null) {
+      return () => undefined;
+    }
+
+    const name = `engagement.${engagementId}`;
+    const others = new Set<string>();
+    const report = (): void => handler(others.size);
+
+    try {
+      echo.join(name)
+        .here((members: { id?: string }[]) => {
+          others.clear();
+          for (const m of members) {
+            if (m.id !== undefined && m.id !== this.selfId) {
+              others.add(m.id);
+            }
+          }
+          report();
+        })
+        .joining((member: { id?: string }) => {
+          if (member.id !== undefined && member.id !== this.selfId) {
+            others.add(member.id);
+            report();
+          }
+        })
+        .leaving((member: { id?: string }) => {
+          if (member.id !== undefined) {
+            others.delete(member.id);
+            report();
+          }
+        });
+    } catch {
+      return () => undefined;
+    }
+
+    return () => {
+      try {
+        // `leaveChannel`, NOT `leave`: Echo's `leave(name)` drops the public, private AND presence
+        // variants, which would tear down the message subscription that shares this engagement.
+        echo.leaveChannel(`presence-${name}`);
+      } catch {
+        // Already gone.
+      }
+    };
+  }
+
+  /** Our own user id, so presence can filter us out of the member list. Set by the caller on load. */
+  private selfId = '';
+
+  setSelfId(userId: string): void {
+    this.selfId = userId;
   }
 
   /** Drop the whole connection — used on logout, so the next session authorizes with its own token. */
