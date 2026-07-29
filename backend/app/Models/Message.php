@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 
 /**
@@ -51,6 +52,17 @@ final class Message extends Model
             'edited_at' => 'datetime',
             'deleted_at' => 'datetime',
         ];
+    }
+
+    /**
+     * Attached media — today a voice note's audio (P4-05). `attachable_type` is the plain string
+     * 'message' (doc 02), so this is a keyed hasMany with a type filter rather than a morphMany.
+     *
+     * @return HasMany<Media, $this>
+     */
+    public function media(): HasMany
+    {
+        return $this->hasMany(Media::class, 'attachable_id', 'id')->where('attachable_type', 'message');
     }
 
     /**

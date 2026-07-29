@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\V1;
 
 use App\Domain\Workspace\Actions\PostMessage;
+use App\Domain\Workspace\Actions\PostVoiceMessage;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\PostMessageRequest;
+use App\Http\Requests\Api\V1\PostVoiceMessageRequest;
 use App\Http\Resources\Api\V1\MessageResource;
 use App\Models\Conversation;
 use App\Models\Engagement;
@@ -33,7 +35,7 @@ final class MessageController extends Controller
         // than making it hunt for one it may not be entitled to read elsewhere.
         $engagementId = Engagement::query()->where('job_id', $job->id)->value('id');
 
-        return MessageResource::collection($conversation->messages()->get())
+        return MessageResource::collection($conversation->messages()->with('media')->get())
             ->additional(['meta' => [
                 'conversation_id' => $conversation->id,
                 'engagement_id' => $engagementId,
@@ -54,6 +56,22 @@ final class MessageController extends Controller
         );
 
         return MessageResource::make($message)->response()->setStatusCode(201);
+    }
+
+    /**
+     * A voice note (P4-05) — the audio rides as attached media, the message is kind `voice`. Speaking
+     * a problem is far easier than typing it in a second language, so this is a first-class entry in
+     * the thread rather than an attachment bolted onto a text message.
+     */
+    public function storeVoice(PostVoiceMessageRequest $request, Job $job, PostVoiceMessage $action): JsonResponse
+    {
+        /** @var User $user */
+        $user = $request->user();
+        $conversation = $this->participantConversation($job, $user);
+
+        $message = $action->handle($user, $conversation, $request->audio(), $request->durationMs());
+
+        return MessageResource::make($message->load('media'))->response()->setStatusCode(201);
     }
 
     /**

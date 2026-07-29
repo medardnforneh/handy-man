@@ -1499,6 +1499,54 @@ paths:
         "404": { $ref: "#/components/responses/Problem" }
         "422": { $ref: "#/components/responses/ValidationProblem" }
 
+  /jobs/{job}/voice-messages:
+    post:
+      tags: [Platform]
+      operationId: postVoiceMessage
+      summary: Post a voice note (participants only)
+      description: >
+        Uploads a recording as a first-class `voice` message with the audio attached as media —
+        speaking a problem is far easier than typing it in a second language, so this is a thread
+        entry, not an attachment bolted onto text. Multipart. An empty recording returns 422
+        `empty-upload` rather than failing at the database.
+      parameters:
+        - { name: job, in: path, required: true, schema: { type: string, format: uuid } }
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [audio]
+              properties:
+                audio: { type: string, format: binary, description: "webm/ogg/mp4/mpeg/aac/wav, max 10 MB." }
+                duration_ms: { type: integer, minimum: 1, maximum: 600000 }
+      responses:
+        "201": { description: The posted voice message, content: { application/json: { schema: { type: object, required: [data], properties: { data: { $ref: "#/components/schemas/Message" } } } } } }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+        "422": { $ref: "#/components/responses/ValidationProblem" }
+
+  /media/{media}:
+    get:
+      tags: [Platform]
+      operationId: showMedia
+      summary: Fetch a stored media file
+      description: >
+        Streams a stored file — a voice note's audio or a job report photo. Entitlement is decided
+        by what the file hangs off (conversation participants; a report's worker or customer), never
+        by holding the id, so a stranger with a valid id gets 403. Verification documents are NOT
+        served here: they keep their signed, audited route.
+      parameters:
+        - { name: media, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        "200": { description: The file bytes, content: { application/octet-stream: { schema: { type: string, format: binary } } } }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+
   /jobs/{job}/quotations:
     post:
       tags: [Platform]
@@ -2145,6 +2193,18 @@ components:
         payload: { type: [object, "null"], additionalProperties: true }
         contact_flag: { type: [string, "null"], enum: [phone, email, null] }
         reply_to_id: { type: [string, "null"], format: uuid }
+        media:
+          description: >
+            Attached files — today a voice note's audio (P4-05). `url` is the authorized media
+            route; the raw storage path is never returned.
+          type: array
+          items:
+            type: object
+            required: [id, url]
+            properties:
+              id: { type: string, format: uuid }
+              url: { type: string, format: uri }
+              bytes: { type: integer }
         created_at: { type: string, format: date-time }
 
     WorkSessionEndpoint:

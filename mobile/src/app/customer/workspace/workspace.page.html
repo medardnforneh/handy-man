@@ -38,15 +38,23 @@
           }
 
           @case ('voice') {
-            <div class="bub voice" [class.mine]="m.mine">
-              <span class="play" aria-hidden="true"><ion-icon name="play"></ion-icon></span>
+            <button
+              type="button"
+              class="bub voice hm-tap"
+              [class.mine]="m.mine"
+              [attr.aria-label]="'workspace.play_voice' | translate"
+              (click)="playVoice(m)"
+            >
+              <span class="play" aria-hidden="true">
+                <ion-icon [name]="playingId() === m.id ? 'pause' : 'play'"></ion-icon>
+              </span>
               <span class="wave" aria-hidden="true">
                 @for (bar of [8,14,20,11,17,22,9,15,19,7]; track $index) {
                   <i [style.height.px]="bar"></i>
                 }
               </span>
               <small class="tm">{{ m.duration }}</small>
-            </div>
+            </button>
           }
 
           @case ('system') {
@@ -137,7 +145,19 @@
     ></ion-input>
 
     <ion-buttons slot="end">
-      <ion-button class="hm-tap" fill="clear"><ion-icon slot="icon-only" name="mic-outline"></ion-icon></ion-button>
+      <!-- Hidden entirely where the browser can't record, rather than offering a button that fails. -->
+      @if (canRecord) {
+        <ion-button
+          class="hm-tap"
+          fill="clear"
+          [class.rec]="isRecording()"
+          [disabled]="sending()"
+          [attr.aria-label]="(isRecording() ? 'workspace.stop_recording' : 'workspace.record_voice') | translate"
+          (click)="toggleRecording()"
+        >
+          <ion-icon slot="icon-only" [name]="isRecording() ? 'stop-circle' : 'mic-outline'"></ion-icon>
+        </ion-button>
+      }
       <ion-button
         class="hm-tap send"
         fill="solid"

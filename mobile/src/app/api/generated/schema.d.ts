@@ -1126,6 +1126,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/jobs/{job}/voice-messages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post a voice note (participants only)
+         * @description Uploads a recording as a first-class `voice` message with the audio attached as media — speaking a problem is far easier than typing it in a second language, so this is a thread entry, not an attachment bolted onto text. Multipart. An empty recording returns 422 `empty-upload` rather than failing at the database.
+         */
+        post: operations["postVoiceMessage"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/media/{media}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Fetch a stored media file
+         * @description Streams a stored file — a voice note's audio or a job report photo. Entitlement is decided by what the file hangs off (conversation participants; a report's worker or customer), never by holding the id, so a stranger with a valid id gets 403. Verification documents are NOT served here: they keep their signed, audited route.
+         */
+        get: operations["showMedia"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/jobs/{job}/quotations": {
         parameters: {
             query?: never;
@@ -1702,6 +1742,14 @@ export interface components {
             contact_flag?: "phone" | "email" | null;
             /** Format: uuid */
             reply_to_id?: string | null;
+            /** @description Attached files — today a voice note's audio (P4-05). `url` is the authorized media route; the raw storage path is never returned. */
+            media?: {
+                /** Format: uuid */
+                id: string;
+                /** Format: uri */
+                url: string;
+                bytes?: number;
+            }[];
             /** Format: date-time */
             created_at: string;
         };
@@ -4323,6 +4371,73 @@ export interface operations {
             403: components["responses"]["Problem"];
             404: components["responses"]["Problem"];
             422: components["responses"]["ValidationProblem"];
+        };
+    };
+    postVoiceMessage: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description A client-generated UUID. Replaying it returns the stored response (CLAUDE.md rule */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                job: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": {
+                    /**
+                     * Format: binary
+                     * @description webm/ogg/mp4/mpeg/aac/wav, max 10 MB.
+                     */
+                    audio: string;
+                    duration_ms?: number;
+                };
+            };
+        };
+        responses: {
+            /** @description The posted voice message */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["Message"];
+                    };
+                };
+            };
+            401: components["responses"]["Problem"];
+            403: components["responses"]["Problem"];
+            404: components["responses"]["Problem"];
+            422: components["responses"]["ValidationProblem"];
+        };
+    };
+    showMedia: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                media: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The file bytes */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/octet-stream": string;
+                };
+            };
+            401: components["responses"]["Problem"];
+            403: components["responses"]["Problem"];
+            404: components["responses"]["Problem"];
         };
     };
     submitQuotation: {

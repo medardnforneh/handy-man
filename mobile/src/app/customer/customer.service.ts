@@ -76,9 +76,17 @@ const EVENT_CHIP_KEY: Record<string, string> = {
   document: 'workspace.attachment',
 };
 
+/** "0:14" from milliseconds — the shape a voice bubble reads best. */
+function formatDuration(ms: number): string {
+  const total = Math.round(ms / 1000);
+  return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, '0')}`;
+}
+
 /** Map one API message onto the thread's display model. Structured kinds collapse to a system chip. */
 function mapMessage(m: {
   id: string; kind: string; body?: string | null; sender_user_id?: string | null; created_at: string;
+  payload?: Record<string, unknown> | null;
+  media?: { id: string; url: string; bytes?: number }[];
 }, meUserId: string): WorkspaceMessage {
   const time = new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   const mine = meUserId !== '' && m.sender_user_id === meUserId;
@@ -86,7 +94,16 @@ function mapMessage(m: {
     return { id: m.id, kind: 'text', mine, body: m.body ?? '', time };
   }
   if (m.kind === 'voice') {
-    return { id: m.id, kind: 'voice', mine, duration: '', time };
+    // The server stores the measured length, so the bubble can show it without loading the audio.
+    const ms = Number(m.payload?.['duration_ms'] ?? 0);
+    return {
+      id: m.id,
+      kind: 'voice',
+      mine,
+      duration: ms > 0 ? formatDuration(ms) : '',
+      mediaUrl: m.media?.[0]?.url,
+      time,
+    };
   }
   // Everything else is a server-narrated lifecycle event → a neutral, centred system chip.
   return { id: m.id, kind: 'system', mine: false, systemKey: EVENT_CHIP_KEY[m.kind] ?? `workspace.${m.kind}`, time };
@@ -530,6 +547,24 @@ export class CustomerService {
     id: string; kind: string; body?: string | null; sender_user_id?: string | null; created_at: string;
   }): WorkspaceMessage {
     return mapMessage(m, this.me().id);
+  }
+
+  /**
+   * Send a recorded voice note (P4-05). Returns false when the server refuses it — an empty or
+   * over-long recording comes back 422 and there is nothing useful to retry automatically.
+   */
+  async sendVoiceNote(jobId: string, take: { blob: Blob; durationMs: number; filename: string }): Promise<boolean> {
+    try {
+      await this.api.postVoiceMessage(jobId, take.blob, take.filename, take.durationMs);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  /** Fetch a voice note's audio as a playable object URL (the media route needs the Bearer). */
+  async voiceObjectUrl(url: string): Promise<string> {
+    return this.api.mediaObjectUrl(url);
   }
 
   /** Post a free-form message to the thread, then re-fetch it. Returns null on failure (offline / demo). */

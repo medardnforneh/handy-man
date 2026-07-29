@@ -17,6 +17,7 @@ use App\Http\Controllers\Api\V1\EscrowController;
 use App\Http\Controllers\Api\V1\FollowUpController;
 use App\Http\Controllers\Api\V1\JobController;
 use App\Http\Controllers\Api\V1\LeadCreditController;
+use App\Http\Controllers\Api\V1\MediaController;
 use App\Http\Controllers\Api\V1\MessageController;
 use App\Http\Controllers\Api\V1\OfferController;
 use App\Http\Controllers\Api\V1\PaymentIntentController;
@@ -126,6 +127,11 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
         Route::get('/provider/work', [ProviderWorkController::class, 'index'])->name('provider.work');
         // One engagement's execution view (P5-03/04/06) — site address + this worker's derived state.
         Route::get('/provider/work/{engagement}', [ProviderWorkController::class, 'show'])->name('provider.work.show');
+        // Stored media (P4-05/P5-04) — voice notes and report photos. Entitlement is decided by
+        // what the file hangs off, never by holding the id. Verification documents are NOT served
+        // here: they keep their signed, audited route (P6-01/02).
+        Route::get('/media/{media}', [MediaController::class, 'show'])->name('media.show');
+
         // Provider payout request (P3-08).
         Route::post('/provider/payouts', [PayoutController::class, 'store'])->name('provider.payouts.store');
 
@@ -140,6 +146,8 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
         // are narrated by the server (a client posting a structured kind is rejected).
         Route::get('/jobs/{job}/messages', [MessageController::class, 'index'])->name('jobs.messages.index');
         Route::post('/jobs/{job}/messages', [MessageController::class, 'store'])->name('jobs.messages.store');
+        // Voice notes (P4-05) — multipart audio, posted as a first-class `voice` message.
+        Route::post('/jobs/{job}/voice-messages', [MessageController::class, 'storeVoice'])->name('jobs.messages.voice');
 
         // Deliverables (P4-08). Provider submits; customer accepts/rejects.
         Route::post('/engagements/{engagement}/deliverables', [DeliverableController::class, 'store'])->name('engagements.deliverables.store');

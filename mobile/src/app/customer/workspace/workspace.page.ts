@@ -4,14 +4,15 @@ import { ActivatedRoute } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { TranslatePipe } from '@ngx-translate/core';
 import { RealtimeService, Unsubscribe } from '../../core/realtime.service';
+import { Recording, VoiceRecorderService } from '../../core/voice-recorder.service';
 import { CustomerService } from '../customer.service';
+import { JobStatus, WorkspaceMessage, WorkspaceThread } from '../customer.models';
+import { MoneyPipe } from '../money.pipe';
 
 /** How long "typing…" stays up after the last whisper — no "stopped" event is ever sent. */
 const TYPING_LINGER_MS = 4000;
 /** At most one whisper this often, however fast the user types. */
 const TYPING_WHISPER_EVERY_MS = 2000;
-import { JobStatus, WorkspaceThread } from '../customer.models';
-import { MoneyPipe } from '../money.pipe';
 
 /**
  * The engagement workspace — the chat IS the state machine (doc 06). Structured messages (quote,
@@ -29,6 +30,7 @@ import { MoneyPipe } from '../money.pipe';
 export class WorkspacePage implements OnDestroy {
   private readonly customers = inject(CustomerService);
   private readonly realtime = inject(RealtimeService);
+  private readonly recorder = inject(VoiceRecorderService);
   private readonly route = inject(ActivatedRoute);
 
   private readonly jobId = this.route.snapshot.paramMap.get('id') ?? '';
@@ -72,6 +74,15 @@ export class WorkspacePage implements OnDestroy {
       clearTimeout(this.typingTimer);
     }
     document.removeEventListener('visibilitychange', this.onVisible);
+
+    // Stop any playback and release the blob URLs — an object URL lives until revoked, so leaving
+    // them behind keeps every played voice note in memory for the life of the page.
+    this.audio?.pause();
+    this.recorder.cancel();
+    for (const url of this.objectUrls.values()) {
+      URL.revokeObjectURL(url);
+    }
+    this.objectUrls.clear();
   }
 
   /**
@@ -203,6 +214,85 @@ export class WorkspacePage implements OnDestroy {
       this.draft.set('');
     }
     this.sending.set(false);
+  }
+
+  // --- Voice notes (P4-05) -----------------------------------------------------------------------
+
+  /** Hidden rather than broken where the browser can't record at all. */
+  readonly canRecord = VoiceRecorderService.supported;
+  readonly isRecording = signal(false);
+  readonly playingId = signal<string | null>(null);
+
+  private audio: HTMLAudioElement | null = null;
+  /** Blob URLs we created for playback — revoked on destroy, or they leak for the page's life. */
+  private readonly objectUrls = new Map<string, string>();
+
+  /**
+   * Start recording, or stop and send. Kept as one control because that is how the affordance
+   * reads: tap to speak, tap to send.
+   */
+  async toggleRecording(): Promise<void> {
+    if (this.isRecording()) {
+      this.isRecording.set(false);
+      const take = await this.recorder.stop();
+      if (take === null) {
+        return; // nothing captured — silently drop rather than send an empty note
+      }
+      await this.sendVoice(take);
+      return;
+    }
+
+    try {
+      await this.recorder.start();
+      this.isRecording.set(true);
+    } catch {
+      // Permission refused or no microphone. Not an error worth shouting about — the user simply
+      // types instead.
+      this.isRecording.set(false);
+    }
+  }
+
+  private async sendVoice(take: Recording): Promise<void> {
+    this.sending.set(true);
+    try {
+      await this.customers.sendVoiceNote(this.jobId, take);
+      await this.reconcile();
+    } finally {
+      this.sending.set(false);
+    }
+  }
+
+  /**
+   * Play (or pause) a voice note. The media route is authorized, and an `<audio src>` cannot carry
+   * the Bearer — so the bytes are fetched with the token and played from a blob URL, cached per
+   * message so replaying doesn't refetch.
+   */
+  async playVoice(message: WorkspaceMessage): Promise<void> {
+    if (this.playingId() === message.id) {
+      this.audio?.pause();
+      this.playingId.set(null);
+      return;
+    }
+
+    const url = message.mediaUrl;
+    if (!url) {
+      return;
+    }
+
+    this.audio?.pause();
+    try {
+      let objectUrl = this.objectUrls.get(message.id);
+      if (objectUrl === undefined) {
+        objectUrl = await this.customers.voiceObjectUrl(url);
+        this.objectUrls.set(message.id, objectUrl);
+      }
+      this.audio = new Audio(objectUrl);
+      this.audio.onended = () => this.playingId.set(null);
+      await this.audio.play();
+      this.playingId.set(message.id);
+    } catch {
+      this.playingId.set(null);
+    }
   }
 
   /** Map a job status onto a semantic pill tone — never a literal colour. */

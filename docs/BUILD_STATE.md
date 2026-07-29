@@ -134,7 +134,7 @@ Task IDs come from `docs/05-build-plan.md`.
 | P4-06 | Ionic workspace UI | **DONE** — the thread renders free-form bubbles + every server-narrated lifecycle kind as a system chip; composer posts free-form text only (rule #11) |
 | P4-04 (live messages) + P4-07 | live message delivery + reconnect reconciliation | **DONE** — `MessagePosted` broadcast off the committed outbox on `private-engagement.{id}`; client subscribes after fetching, dedupes on id, and refetches on channel re-subscribe / foreground. Verified against a real Reverb kill-and-restart |
 | P4-04 (remainder) | typing indicators + presence | **not started** — a whisper-based attempt was built and REVERTED: the client event reaches the socket but the listener never binds (`Pusher.prototype.channel` never called, so the lookup guard returns early). Transport is proven; the binding is not |
-| P4-05 | voice notes (S3) | not started (media) |
+| P4-05 | voice notes | **DONE (backend + client)** — first-class `voice` messages with attached audio, plus the media access rail (`GET /media/{media}`) that report photos also needed. Mic capture and in-app playback decode are unverified — see the entry below |
 
 ### Phase 5 — Execution (provider section + native capabilities)
 
@@ -232,6 +232,37 @@ build, which lands with the app UI work.**
     real-time/media surfaces (voice notes, presence, reconnect — P4-04..07).
 
 ## What was done, most recent first
+
+- **Voice notes (P4-05) + the media access rail.** Speaking a problem is far easier than typing it in
+  a second language, so a voice note is a **first-class thread entry** (kind `voice`) with its audio
+  attached as media — riding push, live broadcast and the REST thread with no special cases.
+  - **Media was previously unreachable.** `storage_path` was returned and nothing could fetch the
+    bytes, so job-report photos had no way to be shown either. New `GET /api/v1/media/{media}`
+    streams a file, authorized by **what it hangs off** (`MediaAccess`: conversation participants for
+    a message; the worker or customer for a report) — never by holding the id, so a stranger with a
+    valid id gets 403. Verification documents are deliberately excluded: they keep their signed,
+    audited route (P6-01/02), and routing them here would bypass the view log.
+  - `POST /jobs/{job}/voice-messages` (multipart) writes message + media in ONE transaction — a row
+    pointing at a missing file is worse than a failed send. The measured duration rides the payload
+    so a bubble can size itself without downloading the audio.
+  - **Client**: a `VoiceRecorderService` around MediaRecorder that picks the first container the
+    browser supports (webm/opus on Chrome, mp4 on Safari) and **always releases the microphone** —
+    leaving the recording indicator lit reads as being spied on. Playback fetches the bytes **with
+    the Bearer** and plays a blob URL, because an `<audio src>` cannot carry a token; object URLs are
+    revoked on destroy. The mic affordance is hidden where the browser can't record.
+  - **Two real bugs found by uploading actual files rather than trusting fixtures:**
+    1. **The mime allow-list used spec names, not sniffed names.** A genuine WAV detects as
+       `audio/x-wav`, an m4a as `audio/x-m4a` — so real recordings were rejected with a 422. Widened
+       to the sniffed variants, with a regression test.
+    2. **An empty recording 500'd** on the `media_bytes_check` constraint. `StoreMedia` now throws
+       `EmptyUpload` → a clean 422, which guards **every** media path, not just voice.
+  - **Verified**: 7 backend tests, plus a live round trip through the running API — upload returned
+    201 with `kind: voice`, the duration payload and a media URL; the authorized fetch returned 200
+    with the right content type and **byte-exact** contents; the thread read lists both notes with
+    their URLs.
+  - **NOT verified**: microphone capture (needs a real mic and permission) and in-app playback of a
+    real note — the browser renderer became unresponsive, and a synthetic WAV wouldn't decode. The
+    transport either side of playback is proven; the `<audio>` decode step is not.
 
 - **Presence: "Online" in the workspace header (P4-04 complete).** The other party's live presence,
   on a **presence channel** alongside the private one that carries messages.

@@ -174,6 +174,8 @@ export interface WorkspaceMessage {
   time?: string;
   /** Voice note length, e.g. "0:14". */
   duration?: string;
+  /** The authorized media route for a voice note's audio — fetched with the Bearer, not set as src. */
+  mediaUrl?: string;
   /** i18n key for a system chip, e.g. `workspace.on_the_way`. */
   systemKey?: string;
   quote?: QuotePayload;

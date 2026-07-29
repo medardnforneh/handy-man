@@ -1,5 +1,7 @@
 import { Injectable } from '@angular/core';
+import { environment } from '../../environments/environment';
 import { api } from './client';
+import { tokenStore } from './token-store';
 
 /** One line of a submitted quotation (P2.5-01). The server totals these; it never trusts a total. */
 export interface QuotationLineInput {
@@ -92,6 +94,49 @@ export class ApiService {
       throw error;
     }
     return data.data;
+  }
+
+  /**
+   * Post a voice note (P4-05) — multipart audio, stored as a first-class `voice` message. An empty
+   * recording comes back 422 `empty-upload` rather than failing at the database.
+   */
+  async postVoiceMessage(jobId: string, audio: Blob, filename: string, durationMs?: number) {
+    const form = new FormData();
+    form.set('audio', audio, filename);
+    if (durationMs !== undefined) {
+      form.set('duration_ms', String(Math.round(durationMs)));
+    }
+
+    const { data, error } = await api.POST('/jobs/{job}/voice-messages', {
+      params: { path: { job: jobId }, header: { 'Idempotency-Key': crypto.randomUUID() } },
+      body: form as never,
+      bodySerializer: (body: unknown) => body as FormData,
+    });
+    if (error) {
+      throw error;
+    }
+    return data.data;
+  }
+
+  /**
+   * Fetch a media file as an object URL for playback.
+   *
+   * An `<audio src>` cannot carry the Bearer, and the media route is authorized — so the bytes are
+   * fetched here with the token and wrapped in a blob URL the element can play. Callers must
+   * revoke the URL when done or the blob leaks for the life of the page.
+   */
+  async mediaObjectUrl(url: string): Promise<string> {
+    const response = await fetch(url, {
+      headers: {
+        Authorization: `Bearer ${tokenStore.get() ?? ''}`,
+        'X-App-Version': environment.appVersion,
+      },
+    });
+    if (!response.ok) {
+      throw new Error(`media fetch failed: ${response.status}`);
+    }
+
+    return URL.createObjectURL(await response.blob());
   }
 
   /** The customer's own jobs (P2-03), newest first, with the compact engagement summary. */

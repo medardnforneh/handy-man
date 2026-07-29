@@ -49,6 +49,12 @@ final class StoreMedia
 
         [$clean, $extension] = $this->strip($raw, $mime, $file->getClientOriginalExtension());
 
+        // A failed recording or truncated transfer arrives with no bytes. The `media_bytes_check`
+        // constraint refuses it anyway — but as a 500. Fail honestly instead, for every media path.
+        if ($clean === '') {
+            throw new EmptyUpload;
+        }
+
         $path = "media/{$attachableType}/".Str::uuid()->toString().($extension !== '' ? ".{$extension}" : '');
         Storage::disk($disk)->put($path, $clean);
 
