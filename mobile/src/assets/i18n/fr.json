@@ -119,6 +119,7 @@
     "title": "Discussions",
     "empty": "Aucune conversation pour le moment.",
     "search": "Rechercher une conversation",
+    "voice_note": "Note vocale",
     "no_match": "Aucune conversation ne correspond à votre recherche."
   },
   "account": {

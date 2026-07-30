@@ -119,6 +119,7 @@
     "title": "Chats",
     "empty": "No conversations yet.",
     "search": "Search conversations",
+    "voice_note": "Voice note",
     "no_match": "No conversations match your search."
   },
   "account": {
