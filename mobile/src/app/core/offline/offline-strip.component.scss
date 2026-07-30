@@ -1,0 +1,126 @@
+// The connectivity strip. Lives INSIDE an ion-header, below the toolbar, so it is in normal flow:
+// it can never overlap a title, a tab bar or a composer the way a floating overlay would, and it
+// inherits the header's translucency and safe-area handling for free.
+// SEMANTIC TOKENS ONLY (no literal colours — `npm run lint:colors`).
+
+:host {
+  display: block;
+}
+
+.strip {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.45rem var(--hm-space-md);
+  font-size: 0.78rem;
+  line-height: 1.25;
+  border-block-end: 1px solid var(--hm-color-border-subtle);
+
+  // An OPAQUE base under the tint. The pages that host this use a translucent header over
+  // fullscreen content, so a purely tinted background let scrolled message bubbles show through
+  // the warning and made it unreadable (observed). Each state paints its tint as a gradient layer
+  // over this solid, which keeps the semantic colour and still blocks what is behind.
+  background: var(--hm-color-surface-raised);
+
+  // Slides in rather than appearing — a bar that pops into existence reads as a layout bug.
+  animation: strip-in 180ms ease-out;
+
+  .msg {
+    min-width: 0; // lets long copy wrap instead of pushing the actions off a 360px screen
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.15rem 0.4rem;
+
+    b { font-weight: 700; }
+    small { opacity: 0.85; }
+  }
+
+  &.warning {
+    color: var(--hm-color-status-warning);
+    background-image: linear-gradient(
+      color-mix(in srgb, var(--hm-color-status-warning) 16%, transparent) 0 100%
+    );
+  }
+
+  &.info {
+    color: var(--hm-color-status-info);
+    background-image: linear-gradient(
+      color-mix(in srgb, var(--hm-color-status-info) 16%, transparent) 0 100%
+    );
+  }
+
+  &.danger {
+    color: var(--hm-color-status-danger);
+    background-image: linear-gradient(
+      color-mix(in srgb, var(--hm-color-status-danger) 16%, transparent) 0 100%
+    );
+  }
+}
+
+// The state mark: one 9px dot, drawn entirely in CSS so it renders with no network. Severity is
+// carried by the strip's colour; the fill only distinguishes waiting / in-flight / refused.
+.mark {
+  flex: none;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: currentColor;
+
+  // Offline: hollow — nothing is moving.
+  &.hollow {
+    background: transparent;
+    box-shadow: inset 0 0 0 2px currentColor;
+  }
+
+  // Catching up: a slow breath, so "sending" is legible without a spinner asset.
+  &.pulse { animation: mark-pulse 1.4s ease-in-out infinite; }
+
+  &.solid { background: currentColor; }
+}
+
+@keyframes mark-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.35; transform: scale(0.72); }
+}
+
+// Inline actions. `hm-tap`'s 44px floor would make the strip tall, so the touch area is widened
+// with padding instead and the visual height stays slim.
+.act {
+  flex: none;
+  margin-inline-start: auto;
+  padding: 0.3rem 0.6rem;
+  border: 1px solid currentColor;
+  border-radius: var(--hm-radius-pill);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  min-height: 0;
+  min-width: 0;
+
+  &.ghost {
+    margin-inline-start: 0;
+    border-color: transparent;
+    opacity: 0.75;
+    text-decoration: underline;
+  }
+}
+
+@keyframes strip-in {
+  from { opacity: 0; transform: translateY(-100%); }
+  to { opacity: 1; transform: none; }
+}
+
+// Respect a user who has asked for less motion — the strip still appears, it just doesn't slide.
+@media (prefers-reduced-motion: reduce) {
+  .strip { animation: none; }
+  .mark.pulse { animation: none; }
+}
+
+// Very narrow phones: let the actions drop under the message rather than squeezing the text.
+@media (max-width: 360px) {
+  .strip { flex-wrap: wrap; }
+  .act { margin-inline-start: 0; }
+}

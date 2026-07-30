@@ -180,6 +180,12 @@ export interface WorkspaceMessage {
   systemKey?: string;
   quote?: QuotePayload;
   milestone?: MilestonePayload;
+  /**
+   * Set only on a message this device composed and the server has not confirmed yet (P5-02).
+   * Absent means the server has it — which is the state every message reaches once the write queue
+   * drains, at which point the optimistic copy is replaced by the real one.
+   */
+  delivery?: 'queued' | 'failed';
 }
 
 export interface WorkspaceThread {

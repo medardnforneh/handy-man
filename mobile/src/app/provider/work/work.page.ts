@@ -3,6 +3,7 @@ import { Component, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { TranslatePipe } from '@ngx-translate/core';
+import { OfflineStripComponent } from '../../core/offline/offline-strip.component';
 import { JobStatus } from '../../customer/customer.models';
 import { ActiveWork } from '../provider.models';
 import { ProviderService } from '../provider.service';
@@ -12,7 +13,7 @@ import { ProviderService } from '../provider.service';
   selector: 'app-provider-work',
   templateUrl: './work.page.html',
   styleUrls: ['./work.page.scss'],
-  imports: [CommonModule, IonicModule, TranslatePipe],
+  imports: [CommonModule, IonicModule, TranslatePipe, OfflineStripComponent],
 })
 export class ProviderWorkPage {
   private readonly provider = inject(ProviderService);

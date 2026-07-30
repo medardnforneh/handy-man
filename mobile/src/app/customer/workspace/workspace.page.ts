@@ -1,8 +1,10 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnDestroy, inject, signal } from '@angular/core';
+import { Component, OnDestroy, effect, inject, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { TranslatePipe } from '@ngx-translate/core';
+import { OfflineStripComponent } from '../../core/offline/offline-strip.component';
+import { WriteQueue } from '../../core/offline/write-queue.service';
 import { RealtimeService, Unsubscribe } from '../../core/realtime.service';
 import { Recording, VoiceRecorderService } from '../../core/voice-recorder.service';
 import { CustomerService } from '../customer.service';
@@ -25,12 +27,13 @@ const TYPING_WHISPER_EVERY_MS = 2000;
   selector: 'app-workspace',
   templateUrl: './workspace.page.html',
   styleUrls: ['./workspace.page.scss'],
-  imports: [CommonModule, IonicModule, TranslatePipe, MoneyPipe],
+  imports: [CommonModule, IonicModule, TranslatePipe, MoneyPipe, OfflineStripComponent],
 })
 export class WorkspacePage implements OnDestroy {
   private readonly customers = inject(CustomerService);
   private readonly realtime = inject(RealtimeService);
   private readonly recorder = inject(VoiceRecorderService);
+  private readonly queue = inject(WriteQueue);
   private readonly route = inject(ActivatedRoute);
 
   private readonly jobId = this.route.snapshot.paramMap.get('id') ?? '';
@@ -60,9 +63,23 @@ export class WorkspacePage implements OnDestroy {
     }
   };
 
+  /** Whether the write queue had anything owed on the previous change — see the effect below. */
+  private hadPending = false;
+
   constructor() {
     void this.loadReal();
     document.addEventListener('visibilitychange', this.onVisible);
+
+    // The moment the queue empties, everything it was holding is on the server — so re-read the
+    // thread and let the real messages replace the optimistic ones. Watching the queue rather than
+    // connectivity is deliberate: being back online is not the same as having caught up.
+    effect(() => {
+      const pending = this.queue.pending().length;
+      if (pending === 0 && this.hadPending) {
+        void this.reconcile();
+      }
+      this.hadPending = pending > 0;
+    });
   }
 
   ngOnDestroy(): void {
@@ -201,19 +218,54 @@ export class WorkspacePage implements OnDestroy {
     this.notifyTyping();
   }
 
-  /** Post the composed text to the thread, then reflect the re-fetched thread. */
+  /**
+   * Post the composed text (P5-02).
+   *
+   * The bubble appears immediately and the composer clears, because that is what sending a message
+   * feels like — and on these networks waiting for a round trip before showing anything would mean
+   * a chat that freezes for seconds at a time. If the write only got as far as the queue, the
+   * bubble stays with a "waiting to send" mark rather than quietly pretending it arrived; when the
+   * queue drains, `reconcile()` replaces it with the server's copy.
+   */
   async send(): Promise<void> {
     const body = this.draft().trim();
     if (body === '' || this.sending()) {
       return;
     }
     this.sending.set(true);
-    const updated = await this.customers.sendMessage(this.jobId, body);
-    if (updated !== null) {
-      this.thread.set(updated);
-      this.draft.set('');
+
+    const localId = `local-${crypto.randomUUID()}`;
+    this.append({
+      id: localId,
+      kind: 'text',
+      mine: true,
+      body,
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      delivery: 'queued',
+    });
+    this.draft.set('');
+
+    const { outcome, thread } = await this.customers.sendMessage(this.jobId, body);
+    if (outcome === 'sent' && thread !== null) {
+      this.thread.set(thread); // the server's thread — the optimistic bubble goes with it
+    } else if (outcome === 'failed') {
+      this.mark(localId, 'failed');
     }
     this.sending.set(false);
+  }
+
+  /** Append one message to the open thread, if there is one. */
+  private append(message: WorkspaceMessage): void {
+    this.thread.update((current) =>
+      current === null ? current : { ...current, messages: [...current.messages, message] });
+  }
+
+  /** Re-mark an optimistic bubble (queued → failed). */
+  private mark(id: string, delivery: 'queued' | 'failed'): void {
+    this.thread.update((current) => current === null ? current : {
+      ...current,
+      messages: current.messages.map((m) => (m.id === id ? { ...m, delivery } : m)),
+    });
   }
 
   // --- Voice notes (P4-05) -----------------------------------------------------------------------

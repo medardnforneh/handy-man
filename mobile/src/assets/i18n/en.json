@@ -53,6 +53,17 @@
     "upgrade_required": "Please update the app to continue.",
     "generic": "Something went wrong. Please try again."
   },
+  "offline": {
+    "title": "You're offline",
+    "showing_saved": "Showing your saved copy",
+    "waiting": "{{count}} waiting to send",
+    "sending": "Sending {{count}}…",
+    "failed": "{{count}} couldn't be sent",
+    "retry": "Try again",
+    "discard": "Discard",
+    "queued_message": "Waiting to send",
+    "queued_action": "Saved. It will send when you're back online."
+  },
   "verify": {
     "required_title": "Verification needed",
     "required_body": "You need to verify your identity before accepting this job.",

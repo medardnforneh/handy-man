@@ -1,0 +1,39 @@
+<!--
+  Shown only when there is something true to say. Silence is the correct rendering for a connected
+  app with nothing owed — a permanent "you are online" badge is noise, and noise gets ignored
+  exactly when the real warning appears.
+
+  The state marks are drawn in CSS on purpose. `ion-icon` and `ion-spinner` fetch their assets in a
+  lazily-loaded chunk, which is precisely what a dead network cannot deliver — an offline banner
+  whose icon fails to load is a self-defeating design (observed: ChunkLoadError for ion-spinner the
+  moment the connection dropped).
+-->
+@if (failedCount() > 0) {
+  <div class="strip danger" role="status" aria-live="polite">
+    <i class="mark solid" aria-hidden="true"></i>
+    <span class="msg">{{ 'offline.failed' | translate:{ count: failedCount() } }}</span>
+    <button type="button" class="act hm-tap" (click)="retryFailed()">{{ 'offline.retry' | translate }}</button>
+    <button type="button" class="act ghost hm-tap" (click)="discardFailed()">{{ 'offline.discard' | translate }}</button>
+  </div>
+}
+
+@if (!online()) {
+  <div class="strip warning" role="status" aria-live="polite">
+    <i class="mark hollow" aria-hidden="true"></i>
+    <span class="msg">
+      <b>{{ 'offline.title' | translate }}</b>
+      @if (pendingCount() > 0) {
+        <small>{{ 'offline.waiting' | translate:{ count: pendingCount() } }}</small>
+      } @else {
+        <small>{{ 'offline.showing_saved' | translate }}</small>
+      }
+    </span>
+  </div>
+}
+
+@if (catchingUp()) {
+  <div class="strip info" role="status" aria-live="polite">
+    <i class="mark pulse" aria-hidden="true"></i>
+    <span class="msg">{{ 'offline.sending' | translate:{ count: pendingCount() } }}</span>
+  </div>
+}

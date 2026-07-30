@@ -3,6 +3,7 @@ import { Component, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { IonicModule, ToastController } from '@ionic/angular';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
+import { OfflineStripComponent } from '../../core/offline/offline-strip.component';
 import { JobDetail, JobStatus, MilestoneStatus } from '../customer.models';
 import { CustomerService } from '../customer.service';
 import { MoneyPipe } from '../money.pipe';
@@ -17,7 +18,7 @@ import { MoneyPipe } from '../money.pipe';
   selector: 'app-job-detail',
   templateUrl: './job-detail.page.html',
   styleUrls: ['./job-detail.page.scss'],
-  imports: [CommonModule, IonicModule, TranslatePipe, MoneyPipe],
+  imports: [CommonModule, IonicModule, TranslatePipe, MoneyPipe, OfflineStripComponent],
 })
 export class JobDetailPage {
   private readonly customers = inject(CustomerService);
@@ -57,11 +58,27 @@ export class JobDetailPage {
     }
   }
 
+  /**
+   * Approve a milestone — releases its escrow slice. Offline this is queued like any other write,
+   * but the toast tells the truth about which happened: "released" only once the server has said so,
+   * because escrow is the customer's money and a premature confirmation is not a cosmetic error.
+   */
   async approve(milestoneId: string): Promise<void> {
-    this.job.set(await this.customers.approveAndRefresh(this.id, milestoneId));
+    const { outcome, job } = await this.customers.approveAndRefresh(this.id, milestoneId);
+    if (job !== null) {
+      this.job.set(job);
+    }
+    const { key, color } = {
+      sent: { key: 'jobdetail.released_toast', color: 'success' },
+      queued: { key: 'offline.queued_action', color: 'warning' },
+      failed: { key: 'errors.generic', color: 'danger' },
+    }[outcome];
+
     const toast = await this.toasts.create({
-      message: this.translate.instant('jobdetail.released_toast'),
-      duration: 2000, position: 'top', color: 'success',
+      message: this.translate.instant(key),
+      duration: outcome === 'sent' ? 2000 : 3000,
+      position: 'top',
+      color,
     });
     await toast.present();
   }

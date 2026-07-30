@@ -2,6 +2,8 @@ import { Injectable, inject, signal } from '@angular/core';
 import { ApiService } from '../api/api.service';
 import { Accent } from '../customer/customer.models';
 import { LocaleService } from '../core/locale.service';
+import { OfflineCache } from '../core/offline/offline-cache.service';
+import { WriteQueue, WriteSpec } from '../core/offline/write-queue.service';
 import {
   ActiveWork, Lead, Payout, PayoutStatus, ProviderIdentity, ProviderStats, QuoteDraft, ReportDraft,
   WorkDetail, WorkStatus, ProviderWallet,
@@ -11,6 +13,12 @@ import {
 export interface MutationResult {
   ok: boolean;
   detail?: string;
+  /**
+   * True when the write was accepted LOCALLY and still owes the server — the worker is offline. The
+   * action counts as done from their point of view; the UI says "will send" rather than pretending
+   * it already did.
+   */
+  queued?: boolean;
 }
 
 /** Up to two initials from a display name, for the customer avatar. */
@@ -42,6 +50,14 @@ function currentPosition(): Promise<{ latitude: number; longitude: number; accur
       { enableHighAccuracy: true, timeout: 8000, maximumAge: 30000 },
     );
   });
+}
+
+/**
+ * The check-in/out body. A worker whose GPS is dead or refused still checks in, so every field is
+ * optional — the server records a session with null coordinates rather than blocking the work.
+ */
+function geoBody(fix: { latitude: number; longitude: number; accuracyM?: number } | null): Record<string, number | undefined> {
+  return { latitude: fix?.latitude, longitude: fix?.longitude, accuracy_m: fix?.accuracyM };
 }
 
 /** One entry of the provider opportunity feed (an offer with its PII-minimised job), as the API sends it. */
@@ -81,6 +97,8 @@ function accentFor(id: string): Accent {
 export class ProviderService {
   private readonly api = inject(ApiService);
   private readonly locales = inject(LocaleService);
+  private readonly queue = inject(WriteQueue);
+  private readonly cache = inject(OfflineCache);
 
   /** Real opportunities cached by offer id, so the lead detail can resolve one after the feed loads. */
   private readonly realLeads = new Map<string, Lead>();
@@ -420,8 +438,16 @@ export class ProviderService {
    * mutations to the API rather than the fixture. Returns null when there's no session / offline.
    */
   async fetchWorkDetail(id: string): Promise<WorkDetail | null> {
+    // Read-through the offline cache (P5-02). This is the screen a worker opens standing outside a
+    // gate with one bar of signal, and it carries the address they need to get in — so the last
+    // known copy is served rather than nothing. Crucially the engagement stays REAL either way
+    // (`realWork` below), so a check-in made from a cached screen is queued for the API and never
+    // silently written to a demo fixture.
+    const { value: d } = await this.cache.through(`work:${id}`, () => this.api.workDetail(id));
+    if (d === null) {
+      return null;
+    }
     try {
-      const d = await this.api.workDetail(id);
       const addr = d.address ?? null;
       const detail: WorkDetail = {
         id: d.id,
@@ -469,8 +495,16 @@ export class ProviderService {
       }
       return { ok: true };
     }
+    // The fix is taken NOW and travels with the queued write: a check-in replayed an hour later
+    // must record where the worker was when they arrived, not where their phone found signal.
     const fix = await currentPosition();
-    return this.attempt(() => this.api.checkIn(id, fix?.latitude, fix?.longitude, fix?.accuracyM));
+    return this.enqueue({
+      kind: 'check_in',
+      method: 'POST',
+      path: '/engagements/{engagement}/check-in',
+      pathParams: { engagement: id },
+      body: geoBody(fix),
+    });
   }
 
   /** Check out (POST /engagements/{id}/check-out) — closes the open session with the end geo. */
@@ -483,7 +517,13 @@ export class ProviderService {
       return { ok: true };
     }
     const fix = await currentPosition();
-    return this.attempt(() => this.api.checkOut(id, fix?.latitude, fix?.longitude, fix?.accuracyM));
+    return this.enqueue({
+      kind: 'check_out',
+      method: 'POST',
+      path: '/engagements/{engagement}/check-out',
+      pathParams: { engagement: id },
+      body: geoBody(fix),
+    });
   }
 
   /** Emit a structured status signal (POST /engagements/{id}/status) — narrated into the timeline. */
@@ -500,7 +540,13 @@ export class ProviderService {
       // postable. The chip list never offers them; this is the belt to that braces.
       return { ok: false };
     }
-    return this.attempt(() => this.api.recordStatus(id, status));
+    return this.enqueue({
+      kind: 'status',
+      method: 'POST',
+      path: '/engagements/{engagement}/status',
+      pathParams: { engagement: id },
+      body: { status },
+    });
   }
 
   /** Submit the on-site job report (POST /engagements/{id}/report) — summary, materials, photos. */
@@ -544,6 +590,24 @@ export class ProviderService {
    * usually a real rule (remote check-in, a session already open), and the worker deserves to read
    * it rather than a generic error.
    */
+  /**
+   * Run one execution mutation THROUGH THE OFFLINE QUEUE (P5-02).
+   *
+   * These are the writes a worker makes in the field — a basement, a compound behind a concrete
+   * wall, a village at the edge of coverage — where "try again when you have signal" is not a real
+   * instruction. Each is persisted with its own idempotency key before it is attempted, so it
+   * survives the app being killed and can be replayed without ever creating a second work session.
+   *
+   * A refusal still reads as a refusal: the server's problem+json `detail` comes back through the
+   * queue, so "this engagement is remote" reaches the worker exactly as it did before.
+   */
+  private async enqueue(spec: WriteSpec): Promise<MutationResult> {
+    const { outcome, detail } = await this.queue.submit(spec);
+    return outcome === 'failed'
+      ? { ok: false, detail }
+      : { ok: true, queued: outcome === 'queued' };
+  }
+
   private async attempt(call: () => Promise<unknown>): Promise<MutationResult> {
     try {
       await call();

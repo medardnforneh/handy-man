@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { IonicModule, ToastController } from '@ionic/angular';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
+import { OfflineStripComponent } from '../../core/offline/offline-strip.component';
 import { Deliverable, ReportDraft, ReportMaterial, WorkDetail, WorkStatus } from '../provider.models';
 import { MutationResult, ProviderService } from '../provider.service';
 
@@ -20,7 +21,7 @@ import { MutationResult, ProviderService } from '../provider.service';
   selector: 'app-provider-work-detail',
   templateUrl: './work-detail.page.html',
   styleUrls: ['./work-detail.page.scss'],
-  imports: [CommonModule, FormsModule, IonicModule, TranslatePipe],
+  imports: [CommonModule, FormsModule, IonicModule, TranslatePipe, OfflineStripComponent],
 })
 export class ProviderWorkDetailPage {
   private readonly provider = inject(ProviderService);
@@ -64,15 +65,30 @@ export class ProviderWorkDetailPage {
     this.work.set(real ?? { ...this.provider.workDetail(this.id) });
   }
 
-  private async toast(key: string, color: 'success' | 'danger' = 'success', message?: string): Promise<void> {
+  private async toast(
+    key: string,
+    color: 'success' | 'danger' | 'warning' = 'success',
+    message?: string,
+  ): Promise<void> {
     const t = await this.toasts.create({
       message: message ?? this.translate.instant(key), duration: 2200, position: 'top', color,
     });
     await t.present();
   }
 
-  /** Run one mutation with the busy guard, then re-read the server's state either way. */
-  private async run(call: () => Promise<MutationResult>, successKey: string): Promise<boolean> {
+  /**
+   * Run one mutation with the busy guard, then re-read the server's state either way.
+   *
+   * When the write only reached the offline queue (P5-02) the server has nothing new to tell us, so
+   * the `optimistic` patch reflects what the worker just did — otherwise tapping "Check in" in a
+   * basement would appear to do nothing at all. That is not a lie: the connectivity strip above says
+   * plainly that it is still waiting to send, and the real state replaces this on the next read.
+   */
+  private async run(
+    call: () => Promise<MutationResult>,
+    successKey: string,
+    optimistic?: (work: WorkDetail) => WorkDetail,
+  ): Promise<boolean> {
     if (this.busy()) {
       return false;
     }
@@ -80,27 +96,46 @@ export class ProviderWorkDetailPage {
     try {
       const result = await call();
       await this.refresh();
-      if (result.ok) {
-        await this.toast(successKey);
-      } else {
+      if (!result.ok) {
         await this.toast('work.action_failed', 'danger', result.detail);
+        return false;
       }
-      return result.ok;
+      if (result.queued) {
+        if (optimistic !== undefined) {
+          this.work.update(optimistic);
+        }
+        await this.toast('offline.queued_action', 'warning');
+        return true;
+      }
+      await this.toast(successKey);
+      return true;
     } finally {
       this.busy.set(false);
     }
   }
 
   async checkIn(): Promise<void> {
-    await this.run(() => this.provider.checkIn(this.id), 'work.checked_in_toast');
+    await this.run(
+      () => this.provider.checkIn(this.id),
+      'work.checked_in_toast',
+      (w) => ({ ...w, checkedIn: true, status: 'arrived' }),
+    );
   }
 
   async checkOut(): Promise<void> {
-    await this.run(() => this.provider.checkOut(this.id), 'work.checked_out_toast');
+    await this.run(
+      () => this.provider.checkOut(this.id),
+      'work.checked_out_toast',
+      (w) => ({ ...w, checkedIn: false }),
+    );
   }
 
   async setStatus(status: WorkStatus): Promise<void> {
-    await this.run(() => this.provider.setWorkStatus(this.id, status), 'work.status_toast');
+    await this.run(
+      () => this.provider.setWorkStatus(this.id, status),
+      'work.status_toast',
+      (w) => ({ ...w, status }),
+    );
   }
 
   openReport(): void {

@@ -21,6 +21,9 @@
       </div>
     }
   </ion-toolbar>
+
+  <!-- Offline / catching-up state. In the header's flow, so it can never cover the composer. -->
+  <app-offline-strip></app-offline-strip>
 </ion-header>
 
 <ion-content [fullscreen]="true" class="thread-bg">
@@ -31,9 +34,20 @@
       @for (m of thread.messages; track m.id) {
         @switch (m.kind) {
           @case ('text') {
-            <div class="bub" [class.mine]="m.mine">
+            <div class="bub" [class.mine]="m.mine" [class.undelivered]="m.delivery">
               <span>{{ m.body }}</span>
-              <small class="tm">{{ m.time }}</small>
+              <small class="tm">
+                <!-- A message this device is still holding says so, rather than looking sent.
+                     Drawn in CSS, not an ion-icon: the icon asset is fetched lazily and would be
+                     the one thing that cannot load in the very state it exists to describe. -->
+                @if (m.delivery === 'queued') {
+                  <span class="dmark" role="img" [attr.aria-label]="'offline.queued_message' | translate"></span>
+                }
+                @if (m.delivery === 'failed') {
+                  <span class="dmark bad" role="img" [attr.aria-label]="'offline.failed' | translate:{ count: 1 }"></span>
+                }
+                {{ m.time }}
+              </small>
             </div>
           }
 

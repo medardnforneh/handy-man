@@ -53,6 +53,17 @@
     "upgrade_required": "Veuillez mettre à jour l'application pour continuer.",
     "generic": "Une erreur s'est produite. Veuillez réessayer."
   },
+  "offline": {
+    "title": "Vous êtes hors ligne",
+    "showing_saved": "Affichage de votre copie enregistrée",
+    "waiting": "{{count}} en attente d'envoi",
+    "sending": "Envoi de {{count}}…",
+    "failed": "{{count}} n'ont pas pu être envoyés",
+    "retry": "Réessayer",
+    "discard": "Abandonner",
+    "queued_message": "En attente d'envoi",
+    "queued_action": "Enregistré. L'envoi se fera dès votre retour en ligne."
+  },
   "verify": {
     "required_title": "Vérification requise",
     "required_body": "Vous devez vérifier votre identité avant d'accepter ce travail.",

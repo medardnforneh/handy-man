@@ -49,6 +49,11 @@ const authMiddleware: Middleware = {
 export const api = createClient<paths>({
   baseUrl: environment.apiBaseUrl,
   headers: { Accept: 'application/json' },
+  // Resolve `fetch` per request rather than letting openapi-fetch capture `globalThis.fetch` when
+  // this module is evaluated. The behaviour is identical at runtime, and it means the transport can
+  // actually be stood in for — a test that swaps `window.fetch` after import (which is the only
+  // time it can) was otherwise silently talking to the real network.
+  fetch: (request) => globalThis.fetch(request),
 });
 
 api.use(authMiddleware);

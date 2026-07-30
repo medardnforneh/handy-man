@@ -1,6 +1,8 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { ApiService } from '../api/api.service';
 import { LocaleService } from '../core/locale.service';
+import { OfflineCache } from '../core/offline/offline-cache.service';
+import { WriteOutcome, WriteQueue } from '../core/offline/write-queue.service';
 import {
   Accent, Category, ChatSummary, EngagementMode, JobDetail, JobStatus, JobSummary, MilestoneStatus,
   NewJobInput, Provider, ProviderProfile, ProviderReview, SavedAddress, WorkspaceMessage,
@@ -162,6 +164,8 @@ const CATEGORY_ICONS: Record<string, string> = {
 export class CustomerService {
   private readonly api = inject(ApiService);
   private readonly locales = inject(LocaleService);
+  private readonly queue = inject(WriteQueue);
+  private readonly cache = inject(OfflineCache);
 
   /**
    * The signed-in customer. Loaded from `GET /auth/me` when a session token is present, else the
@@ -201,10 +205,16 @@ export class CustomerService {
     }
   }
 
-  /** Load the customer's real jobs (with engagement summary); keep the fixtures when offline. */
+  /**
+   * Load the customer's real jobs (with engagement summary).
+   *
+   * Read-through the offline cache (P5-02): with no network this resolves to the jobs list from the
+   * last successful read instead of the demo fixtures — someone else's fictional plumbing job is a
+   * far worse thing to show a customer than their own slightly-old one.
+   */
   private async loadJobs(): Promise<void> {
-    try {
-      const jobs = await this.api.jobs();
+    const { value: jobs } = await this.cache.through('jobs', () => this.api.jobs());
+    if (jobs !== null) {
       this.jobs.set(jobs.map((j) => ({
         id: j.id,
         reference: j.reference,
@@ -215,36 +225,37 @@ export class CustomerService {
         milestonesDone: j.engagement?.milestones_done ?? 0,
         milestonesTotal: j.engagement?.milestones_total ?? 0,
       })));
-    } catch {
-      // No session / offline — keep the demo fixtures.
     }
   }
 
+  /** The signed-in identity, cached: a name and phone are exactly what should survive a dead network. */
   private async loadMe(): Promise<void> {
-    try {
-      const u = await this.api.me();
+    const { value: u } = await this.cache.through('me', () => this.api.me());
+    if (u !== null) {
       const name = u.display_name ?? u.phone_e164;
       this.me.set({ id: u.id, name, initials: initialsOf(name), phone: u.phone_e164 });
-    } catch {
-      // No session / offline — keep the fixture identity.
     }
   }
 
-  /** Real skill categories drive the discover rail; the curated fixtures stand in when offline. */
+  /**
+   * Real skill categories drive the discover rail. Cached per locale — the taxonomy is bilingual and
+   * changes about once a quarter, so it is the single best thing in the app to serve from disk: a
+   * customer with no signal can still browse every trade and compose a request.
+   */
   private async loadCategories(): Promise<void> {
-    try {
-      const skills = await this.api.skills(this.locales.current);
-      if (skills.length > 0) {
-        this.categories.set(skills.map((s) => ({
-          id: s.slug,
-          label: s.name ?? s.slug,
-          icon: CATEGORY_ICONS[s.slug] ?? 'briefcase-outline',
-          skillId: s.id,
-          leaves: (s.children ?? []).map((c) => ({ id: c.id, label: c.name ?? c.slug })),
-        })));
-      }
-    } catch {
-      // Offline — keep the curated fixture categories.
+    const locale = this.locales.current;
+    const { value: skills } = await this.cache.through(
+      `skills:${locale}`,
+      () => this.api.skills(locale),
+    );
+    if (skills !== null && skills.length > 0) {
+      this.categories.set(skills.map((s) => ({
+        id: s.slug,
+        label: s.name ?? s.slug,
+        icon: CATEGORY_ICONS[s.slug] ?? 'briefcase-outline',
+        skillId: s.id,
+        leaves: (s.children ?? []).map((c) => ({ id: c.id, label: c.name ?? c.slug })),
+      })));
     }
   }
 
@@ -409,8 +420,11 @@ export class CustomerService {
    * null when there's no session / the backend is unreachable, so callers keep the fixture.
    */
   async fetchJobDetail(id: string): Promise<JobDetail | null> {
+    const { value: j } = await this.cache.through(`job:${id}`, () => this.api.job(id));
+    if (j === null) {
+      return null;
+    }
     try {
-      const j = await this.api.job(id);
       const eng = j.engagement ?? null;
       const milestones = (eng?.milestones ?? []).map((m) => ({
         id: m.id, title: m.title, amountMinor: m.amount_minor, status: mapMilestoneStatus(m.status),
@@ -443,19 +457,33 @@ export class CustomerService {
     }
   }
 
-  /** Approve a milestone on the real backend then re-fetch the detail; falls back to the fixture. */
-  async approveAndRefresh(jobId: string, milestoneId: string): Promise<JobDetail> {
-    try {
-      await this.api.approveMilestone(milestoneId);
+  /**
+   * Approve a milestone — releases its escrow slice (P3-10). Queued when offline, like every other
+   * write, but the money is deliberately NOT shown as released until the server says so: the whole
+   * point of escrow is that the customer knows exactly what has left it, and an optimistic
+   * "released" that later fails would be a lie about their money. A queued approval reads as
+   * "we'll send this", and the detail refreshes for real once it lands.
+   */
+  async approveAndRefresh(jobId: string, milestoneId: string): Promise<{ outcome: WriteOutcome; job: JobDetail | null }> {
+    const { outcome } = await this.queue.submit({
+      kind: 'milestone_approval',
+      method: 'POST',
+      path: '/milestones/{milestone}/approve',
+      pathParams: { milestone: milestoneId },
+    });
+
+    if (outcome === 'sent') {
       const real = await this.fetchJobDetail(jobId);
       if (real !== null) {
-        return real;
+        return { outcome, job: real };
       }
-    } catch {
-      // fall through to the fixture path (offline / demo job)
+      // The approval landed but the re-read didn't — reflect it locally rather than showing a
+      // milestone the server has already released as still pending.
+      this.approveMilestone(jobId, milestoneId);
+      return { outcome, job: this.jobDetail(jobId) };
     }
-    this.approveMilestone(jobId, milestoneId);
-    return this.jobDetail(jobId);
+    // Queued or refused: nothing about the job has changed yet, so the screen keeps what it has.
+    return { outcome, job: null };
   }
 
   /**
@@ -514,11 +542,14 @@ export class CustomerService {
    */
   async fetchThread(jobId: string): Promise<WorkspaceThread | null> {
     try {
-      const [detail, thread] = await Promise.all([
+      const [detail, cachedThread] = await Promise.all([
         this.fetchJobDetail(jobId),
-        this.api.messages(jobId),
+        // Cached too: a conversation is the most valuable thing to still be able to READ when the
+        // network dies mid-job — the address, the agreed price and what was promised are all in it.
+        this.cache.through(`messages:${jobId}`, () => this.api.messages(jobId)),
       ]);
-      if (detail === null) {
+      const thread = cachedThread.value;
+      if (detail === null || thread === null) {
         return null;
       }
       const name = detail.providerName ?? detail.title;
@@ -567,14 +598,24 @@ export class CustomerService {
     return this.api.mediaObjectUrl(url);
   }
 
-  /** Post a free-form message to the thread, then re-fetch it. Returns null on failure (offline / demo). */
-  async sendMessage(jobId: string, body: string): Promise<WorkspaceThread | null> {
-    try {
-      await this.api.postMessage(jobId, body);
-      return await this.fetchThread(jobId);
-    } catch {
-      return null;
-    }
+  /**
+   * Post a free-form message (P5-02: through the offline queue).
+   *
+   * A message typed with no signal is not an error — it is the normal case on the networks this
+   * product serves. It is persisted with its own idempotency key and replayed when the API is
+   * reachable, so it can never arrive twice. Returns the outcome plus the re-fetched thread when
+   * the server actually took it; a queued message stays on screen as the caller's optimistic bubble.
+   */
+  async sendMessage(jobId: string, body: string): Promise<{ outcome: WriteOutcome; thread: WorkspaceThread | null }> {
+    const { outcome } = await this.queue.submit({
+      kind: 'message',
+      method: 'POST',
+      path: '/jobs/{job}/messages',
+      pathParams: { job: jobId },
+      body: { body },
+    });
+    const thread = outcome === 'sent' ? await this.fetchThread(jobId) : null;
+    return { outcome, thread };
   }
 
   /**

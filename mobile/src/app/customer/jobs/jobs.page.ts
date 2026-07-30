@@ -3,6 +3,7 @@ import { Component, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { TranslatePipe } from '@ngx-translate/core';
+import { OfflineStripComponent } from '../../core/offline/offline-strip.component';
 import { JobStatus, JobSummary } from '../customer.models';
 import { CustomerService } from '../customer.service';
 import { MoneyPipe } from '../money.pipe';
@@ -12,7 +13,7 @@ import { MoneyPipe } from '../money.pipe';
   selector: 'app-jobs',
   templateUrl: './jobs.page.html',
   styleUrls: ['./jobs.page.scss'],
-  imports: [CommonModule, IonicModule, TranslatePipe, MoneyPipe],
+  imports: [CommonModule, IonicModule, TranslatePipe, MoneyPipe, OfflineStripComponent],
 })
 export class JobsPage {
   private readonly customers = inject(CustomerService);

@@ -2,6 +2,8 @@ import { Injectable, inject, signal } from '@angular/core';
 import { Preferences } from '@capacitor/preferences';
 import { api } from '../api/client';
 import { tokenStore } from '../api/token-store';
+import { OfflineCache } from './offline/offline-cache.service';
+import { WriteQueue } from './offline/write-queue.service';
 import { RealtimeService } from './realtime.service';
 
 const AUTH_KEY = 'authed';
@@ -21,6 +23,8 @@ const REFRESH_KEY = 'refresh_token';
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly realtime = inject(RealtimeService);
+  private readonly offline = inject(OfflineCache);
+  private readonly queue = inject(WriteQueue);
 
   readonly authed = signal(false);
   private readonly ready: Promise<void>;
@@ -128,6 +132,14 @@ export class AuthService {
     this.authed.set(false);
     this.pendingPhone = '';
     tokenStore.set(null); // drop the bearer so no stale token rides the next request
+
+    // Everything the offline layer holds belongs to the session that just ended (P5-02). The cache
+    // is this user's jobs, addresses and conversations — it must not survive into the next login on
+    // a shared phone. The outbox goes too, and that is a deliberate trade: those writes would be
+    // replayed with the NEXT session's Bearer, attributing one person's actions to another, which
+    // is far worse than losing an unsent message.
+    await this.offline.clear();
+    await this.queue.clear();
     // Close the socket too: it was authorized with the token we just dropped, so leaving it open
     // would keep streaming this user's threads into the next session.
     this.realtime.disconnect();

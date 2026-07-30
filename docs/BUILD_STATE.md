@@ -3,7 +3,7 @@
 > Living tracker for the build. Updated as work progresses. Source of truth for **where we
 > are** and **how this machine is set up**. Read this first when resuming.
 
-_Last updated: 2026-07-28 (mobile↔API wiring: provider execution surface — check-in / status / report)_
+_Last updated: 2026-07-30 (P5-02: offline read cache + durable write queue, verified through a real airplane-mode episode)_
 
 ## Environment (this dev machine — Windows 10 Pro, non-admin)
 
@@ -133,7 +133,7 @@ Task IDs come from `docs/05-build-plan.md`.
 | P4-08 | `deliverables` submit/accept/reject (remote path) | **DONE** — `deliverables` (native `deliverable_status`; `media_url` until the P4-05 media table); `SubmitDeliverable` (provider; narrates `deliverable_submitted` in-transaction) + `ReviewDeliverable` (customer accept/reject with reason, row-locked, once-only); provider/customer-gated `POST /v1/engagements/{engagement}/deliverables` + `/deliverables/{deliverable}/review`; 7 tests |
 | P4-06 | Ionic workspace UI | **DONE** — the thread renders free-form bubbles + every server-narrated lifecycle kind as a system chip; composer posts free-form text only (rule #11) |
 | P4-04 (live messages) + P4-07 | live message delivery + reconnect reconciliation | **DONE** — `MessagePosted` broadcast off the committed outbox on `private-engagement.{id}`; client subscribes after fetching, dedupes on id, and refetches on channel re-subscribe / foreground. Verified against a real Reverb kill-and-restart |
-| P4-04 (remainder) | typing indicators + presence | **not started** — a whisper-based attempt was built and REVERTED: the client event reaches the socket but the listener never binds (`Pusher.prototype.channel` never called, so the lookup guard returns early). Transport is proven; the binding is not |
+| P4-04 (remainder) | typing indicators + presence | **DONE** — both landed and were verified end to end with a second authorized client; see the entries below. Typing is a whisper (client event, never persisted), presence is its own channel alongside the private one |
 | P4-05 | voice notes | **DONE (backend + client)** — first-class `voice` messages with attached audio, plus the media access rail (`GET /media/{media}`) that report photos also needed. Mic capture and in-app playback decode are unverified — see the entry below |
 
 ### Phase 5 — Execution (provider section + native capabilities)
@@ -143,10 +143,11 @@ Task IDs come from `docs/05-build-plan.md`.
 | P5-03 + P5-06 | `work_sessions` check-in/out (geo + timestamp) + structured provider status actions | **DONE** — `work_sessions` (geography start/end points + GPS accuracy; `work_sessions_span_check`; **partial unique `one_open_session_per_assignment`** — can't check in twice); `CheckIn` opens a session and narrates `arrived` in-transaction (rule #11), gated to onsite/hybrid via `EngagementModePolicy` (**remote → 422 `check-in-not-supported`**, no affordance); `CheckOut` row-locks and closes the open session (pure work-time close — completion stays a separate signal); `RecordStatus` narrates the structured `ProviderStatus` signals (on_the_way/started/paused/resumed/completed — `arrived` reserved to check-in); acting user must be an active assigned worker (provider section queries `assignments` only, no individual-vs-company branch); `POST /v1/engagements/{engagement}/check-in`, `/check-out`, `/status`; OpenAPI + TS client updated; 8 tests incl. **remote-refuses-check-in, double-check-in 409, arrived-not-postable-via-status**. Later joined by the read side: `GET /v1/provider/work/{engagement}` + `WorkProgress` (checked_in / current_status / report_submitted all DERIVED from the rows the Actions write), authorised by the same active-assignment boundary; 4 tests |
 | P5-04 | `job_reports` + before/after `media`, EXIF stripped server-side | **DONE** — polymorphic `media` table (owner party, attachable type/id, kind, sha256, bytes, `captured_point` geography; CHECKs on bytes/type/kind) + `job_reports` (summary, materials jsonb, extra_charges, signature slot); `StoreMedia` **re-encodes raster images through GD to strip every EXIF/XMP/GPS segment**, records the client-reported geo in `captured_point` server-side (never in the file), and stores sha256/bytes of the CLEAN file; `SubmitJobReport` (worker; attaches before/after photos in one txn); `POST /v1/engagements/{engagement}/report` (multipart); OpenAPI + TS client updated; 4 tests incl. **injected-EXIF-marker gone from stored bytes + geo-in-DB** |
 | P5-05 | Push notifications (FCM) via outbox | **DONE** — provider-agnostic `PushSender` abstraction + normalised `PushMessage`; `FakePushSender` (records sends, default) + `FcmPushSender` (HTTP v1, one request/token, per-token failure logged not thrown — live delivery pends real project creds); config-selected in `NotificationsServiceProvider` (`config/notifications.php`, default `fake`). Push **rides the transactional outbox**: `NotifyOnOutboxMessage` subscribes to the `OutboxMessagePublished` seam and, for a relayed `message.created`, notifies the conversation's participants **except the sender** on their non-revoked devices, **each in their own comms locale** (`push.*` i18n keys, parity OK). New endpoints: none (server-internal). 4 tests incl. **sender-excluded + per-locale copy + sole-participant no-op** |
-| P5-01, P5-02 | Ionic PWA/Android/iOS + secure token storage; offline-first cache (Drift) + write queue | not started (client/native — need device builds) |
+| P5-02 | offline-first cache + write queue with idempotency keys | **DONE** — `core/offline/`: a small IndexedDB wrapper (`idb.ts`, two stores — a disposable `cache` and a never-evicted `outbox`), `ConnectivityService` (browser events as hints, the requests themselves as evidence), `OfflineCache` (read-through: last server answer beats a fixture, fixture beats a spinner) and `WriteQueue`. **The acceptance property is one idempotency key minted at enqueue and reused on every replay**, so a write the server already took is recognised rather than repeated. Persist-before-attempt, strict FIFO (never skip a backing-off entry — a thread that reorders is worse than one that pauses), 5xx/429 retried with backoff, other 4xx terminal with the problem+json `detail` surfaced, outbox dropped on logout (it would otherwise replay under the next user's Bearer). Queued today: chat messages, check-in/out, provider status, milestone approval; cached: jobs, job detail, thread, skills taxonomy, provider work detail. **`ion-icon`/`ion-spinner` are deliberately absent from the offline UI** — their assets load lazily, i.e. exactly what a dead network can't deliver (observed as a ChunkLoadError). 5 Karma specs (real Chrome, real IndexedDB) + a live browser run — see the entry below |
+| P5-01 | Ionic PWA/Android/iOS + secure token storage | not started (needs a PWA service worker + device builds) |
 
-**Phase 5's cleanly-backend tasks (P5-03/04/05/06) are done; P5-01/02 are the native/offline client
-build, which lands with the app UI work.**
+**Phase 5's backend tasks (P5-03/04/05/06) are done and P5-02 (offline cache + write queue) has
+landed; P5-01 (PWA install/service worker, native builds, OS-secure token storage) is the remainder.**
 
 ### Phase 6 — Trust, safety, reputation
 
@@ -227,11 +228,73 @@ build, which lands with the app UI work.**
     entry). Both are token-driven (light+dark, no-literal-colour + no-bare-string linters clean),
     English-default with a working FR/EN switch, and the responsive shell now really shows a side
     rail on web (the split-pane `ion-tabs` overlap bug was fixed) and a tab bar on phones.
-  - **Still owed:** Blade public/SEO pages; native/offline (Capacitor build, secure token storage,
-    Drift offline cache — P5-01/02); wiring the fixture services to the generated API client; and
-    real-time/media surfaces (voice notes, presence, reconnect — P4-04..07).
+  - **Still owed:** native/PWA (Capacitor device builds, a service worker + install manifest,
+    OS-secure token storage — P5-01) and finishing the fixture→API-client migration on the screens
+    that still read fixtures. The public/SEO Blade pages, the realtime/media surfaces (P4-04..07)
+    and the offline layer (P5-02) have landed.
 
 ## What was done, most recent first
+
+- **Offline-first: a read cache and a durable write queue (P5-02).** On the networks this product is
+  for, "you're offline, try again" is not an instruction a user can follow. Two halves, in
+  `mobile/src/app/core/offline/`:
+  - **Reads.** `OfflineCache.through(key, loader)` caches what the API last answered and serves it
+    when the loader fails. This replaced a genuinely bad behaviour: every screen's `catch` fell back
+    to the DEMO FIXTURES, so a customer with no signal saw a stranger's fictional plumbing job
+    presented as their own. Now they see their own jobs, slightly old. Cached: jobs list, job
+    detail, thread, the bilingual skills taxonomy (per locale — it changes quarterly and lets
+    someone browse every trade offline) and the provider work detail. Cleared on logout; pruned at 7
+    days.
+  - **Writes.** `WriteQueue.submit()` persists a mutation to IndexedDB **before** attempting it,
+    then replays FIFO when the API is reachable. The single load-bearing field is
+    `idempotencyKey`, **minted once at enqueue and reused on every attempt** — that is what makes a
+    write the server already accepted (but whose response was lost) replay into the stored response
+    from P0-06 rather than a second message, second work session, second escrow release.
+  - **Deliberate choices.** IndexedDB, not a SQLite plugin: it is the one engine that behaves
+    identically in the browser, Android WebView and WKWebView with nothing to build, and it doesn't
+    block the UI thread the way `localStorage` (what Capacitor Preferences uses on web) would on a
+    low-end phone. Strict FIFO with no skipping past a backing-off entry, because a thread that
+    reorders itself is worse than one that pauses. A network failure never exhausts the retry
+    budget — being offline for a day is not an error — but a server that keeps refusing gives up
+    after 8 tries and says so, since an invisible forever-retry is worse than an honest failure. The
+    outbox is **dropped on logout**: those writes would otherwise replay under the next session's
+    Bearer and attribute one person's actions to another.
+  - **What is queued vs not.** Chat messages, check-in/check-out (with the GPS fix taken at the
+    moment of the action, not of the replay), provider status signals, milestone approval. Creating
+    a job is NOT queued — a queue can promise eventual delivery, never an id the next screen needs.
+    Milestone approval is queued but never shown as released until the server says so: escrow is the
+    customer's money and an optimistic "released" that later fails is not a cosmetic error.
+  - **UI.** A token-driven connectivity strip inside the page header (in flow, so it can never cover
+    a title, tab bar or composer), on the workspace, jobs, job-detail and provider work screens. It
+    says three different things — offline / catching up / refused — and renders nothing when there is
+    nothing true to say. Messages composed offline appear immediately, dimmed, with a hollow ring;
+    the server's copies replace them when the queue drains.
+  - **Four real bugs, all found by running it rather than building it:**
+    1. **The app froze on boot.** The effect that flushes on reconnect called `flushNow()`
+       *synchronously inside its own tracking context* — which reads `pending` and then writes it,
+       and a fresh array is never `Object.is`-equal to the last, so it re-triggered itself forever.
+       The main thread was unresponsive within one second. `untracked()` fixes it.
+    2. **A reconnect mid-flush replayed the first message twice.** `flushNow` read the queue, awaited
+       its disk writes, then wrote the whole list back — resurrecting an entry the in-flight flush
+       had sent and removed across that gap. It now patches by id instead of replacing.
+    3. **A slow outbox read could resurrect a sent write** the same way; flushes now wait on it.
+    4. **`ion-icon` / `ion-spinner` fetch their assets in a lazy chunk** — so the offline banner's
+       icon was the one thing that couldn't load offline (a real ChunkLoadError the instant the
+       connection dropped). Every mark in the offline UI is now drawn in CSS.
+    Also fixed: the strip was transparent over a translucent header, so scrolled message bubbles
+    showed through the warning; and `client.ts` now resolves `fetch` per request instead of letting
+    openapi-fetch capture it at module load — without that, a test that swaps the transport was
+    silently talking to the real API.
+  - **Verified**, since a green build proves nothing here: 5 Karma specs in real Chrome against real
+    IndexedDB (stable over 3 consecutive runs), **plus a real browser driven through an actual
+    airplane-mode episode** — load the workspace, cut the network at the CDP level, type two
+    messages, and both appear dimmed with 2 durable outbox rows carrying 2 distinct keys; restore the
+    network and the strip clears, the marks clear, the outbox empties — and the **database holds
+    exactly one row per queued message**. A separate probe replayed one Idempotency-Key against the
+    live API and got a byte-identical response with the message count up by exactly 1.
+  - Prod build green, i18n parity 408 × 2, colour + bare-string linters clean. No backend change.
+  - **NOT verified**: the failed-state strip (retry/discard) has no live reproduction — it needs a
+    server that refuses a queued write; only its unit test covers it.
 
 - **Voice notes (P4-05) + the media access rail.** Speaking a problem is far easier than typing it in
   a second language, so a voice note is a **first-class thread entry** (kind `voice`) with its audio

@@ -5,6 +5,10 @@
     </ion-buttons>
     <ion-title>{{ work().reference }}</ion-title>
   </ion-toolbar>
+
+  <!-- The screen a worker uses in the field — where the network is worst and the state of the
+       connection matters most. -->
+  <app-offline-strip></app-offline-strip>
 </ion-header>
 
 <ion-content [fullscreen]="true">
