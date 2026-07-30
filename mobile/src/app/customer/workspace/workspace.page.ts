@@ -115,6 +115,12 @@ export class WorkspacePage implements OnDestroy {
     this.thread.set(real);
     this.listen(real.engagementId);
 
+    // Opening the thread IS reading it — clear the unread marker so the messages tab agrees with
+    // what the user just saw. Best-effort and fire-and-forget; it must never delay the thread.
+    if (real.conversationId !== null) {
+      void this.customers.markChatRead(real.conversationId);
+    }
+
     // Anything sent while the socket was away was never delivered, so a reconnect means the thread
     // is stale — REST is the record, the socket is only a notification (P4-07).
     this.unwatchReconnect();

@@ -214,8 +214,34 @@ export class ApiService {
       throw error;
     }
     // `meta.engagement_id` names the live channel: the thread is keyed by the job, the channel by
-    // the engagement (P4-03/04).
-    return { messages: data.data, engagementId: data.meta?.engagement_id ?? null };
+    // the engagement (P4-03/04). `conversation_id` is what marks the thread read.
+    return {
+      messages: data.data,
+      engagementId: data.meta?.engagement_id ?? null,
+      conversationId: data.meta?.conversation_id ?? null,
+    };
+  }
+
+  /**
+   * The signed-in user's conversations — the messages tab. Membership decides what is listed, the
+   * same gate the thread itself uses, so nothing can appear here that the user couldn't then open.
+   */
+  async conversations() {
+    const { data, error } = await api.GET('/conversations');
+    if (error) {
+      throw error;
+    }
+    return data.data;
+  }
+
+  /** Mark a conversation read (clears its unread badge). Forward-only and idempotent server-side. */
+  async markConversationRead(conversationId: string): Promise<void> {
+    const { error } = await api.POST('/conversations/{conversation}/read', {
+      params: { path: { conversation: conversationId }, header: { 'Idempotency-Key': crypto.randomUUID() } },
+    });
+    if (error) {
+      throw error;
+    }
   }
 
   /** Post a free-form text message to the thread (P4-02). Structured kinds are rejected server-side. */

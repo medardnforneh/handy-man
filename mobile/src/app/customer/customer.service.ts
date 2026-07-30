@@ -78,6 +78,31 @@ const EVENT_CHIP_KEY: Record<string, string> = {
   document: 'workspace.attachment',
 };
 
+/**
+ * The i18n key for a chat row whose last message was NOT free-form text. The list must not print a
+ * server-composed sentence — the reader's language is a client fact — so the kind is turned into a
+ * key here, reusing the same `workspace.*` copy the thread already renders for that event.
+ */
+function chatPreviewKey(kind: string): string {
+  if (kind === 'voice') {
+    return 'chats.voice_note';
+  }
+  return EVENT_CHIP_KEY[kind] ?? `workspace.${kind}`;
+}
+
+/**
+ * A list timestamp: the clock for today's messages, a short date for anything older. Both come from
+ * `toLocale*` so they follow the device's own conventions rather than an English format — and it
+ * needs no extra translated strings ("Yesterday" would).
+ */
+function shortTime(iso: string): string {
+  const at = new Date(iso);
+  const isToday = at.toDateString() === new Date().toDateString();
+  return isToday
+    ? at.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    : at.toLocaleDateString([], { day: '2-digit', month: 'short' });
+}
+
 /** "0:14" from milliseconds — the shape a voice bubble reads best. */
 function formatDuration(ms: number): string {
   const total = Math.round(ms / 1000);
@@ -282,10 +307,12 @@ export class CustomerService {
     { id: 'a2', label: 'Bureau', line: 'Boulevard de la Liberté, Bonanjo, Douala' },
   ]);
 
+  // Demo rows, shown until GET /conversations answers (and when there is no session). `null`
+  // conversation ids are what keep them inert: a fixture row can't be marked read on the server.
   private readonly chats: ChatSummary[] = [
-    { id: 'j1', providerName: 'Atelier Nkeng', initials: 'AN', reference: 'JOB-7K2M9', preview: 'Je peux passer demain matin.', time: '09:22', unread: 2, accent: 'brand' },
-    { id: 'j2', providerName: 'Marie Fotso', initials: 'MF', reference: 'JOB-Q4T1A', preview: 'Les maquettes sont prêtes.', time: 'Hier', unread: 0, accent: 'info' },
-    { id: 'j3', providerName: 'Douala Cool Services', initials: 'DC', reference: 'JOB-9BZ3C', preview: 'Bien reçu, merci.', time: 'Lun', unread: 0, accent: 'warning' },
+    { id: 'j1', conversationId: null, providerName: 'Atelier Nkeng', initials: 'AN', reference: 'JOB-7K2M9', preview: 'Je peux passer demain matin.', time: '09:22', unread: 2, accent: 'brand' },
+    { id: 'j2', conversationId: null, providerName: 'Marie Fotso', initials: 'MF', reference: 'JOB-Q4T1A', preview: 'Les maquettes sont prêtes.', time: 'Hier', unread: 0, accent: 'info' },
+    { id: 'j3', conversationId: null, providerName: 'Douala Cool Services', initials: 'DC', reference: 'JOB-9BZ3C', preview: 'Bien reçu, merci.', time: 'Lun', unread: 0, accent: 'warning' },
   ];
 
   private readonly threads: Record<string, WorkspaceThread> = {
@@ -299,6 +326,7 @@ export class CustomerService {
       accent: 'brand',
       // A fixture thread has no engagement to subscribe to — it stays static, which is correct.
       engagementId: null,
+      conversationId: null,
       messages: [
         { id: 'm1', kind: 'text', mine: false, body: 'Bonjour, j’ai regardé les photos. Je peux passer demain matin pour un devis.', time: '08:12' },
         { id: 'm2', kind: 'text', mine: true, body: 'Parfait, merci !', time: '08:14' },
@@ -530,6 +558,53 @@ export class CustomerService {
     return this.chats;
   }
 
+  /**
+   * The real messages tab (GET /conversations), cached so it opens populated with no network.
+   * Returns null on failure so the caller keeps the demo rows.
+   */
+  async fetchChats(): Promise<ChatSummary[] | null> {
+    const { value } = await this.cache.through('conversations', () => this.api.conversations());
+    if (value === null) {
+      return null;
+    }
+    return value.map((c) => this.mapChat(c));
+  }
+
+  /** Mark a thread read so its badge clears. Best-effort: a failure just leaves the badge up. */
+  async markChatRead(conversationId: string): Promise<void> {
+    try {
+      await this.api.markConversationRead(conversationId);
+    } catch {
+      // Offline or refused — the count is a courtesy, not something worth surfacing an error for.
+    }
+  }
+
+  /** Map one API conversation summary onto a chat row. */
+  private mapChat(c: {
+    id: string; job_id: string; reference?: string | null; title?: string | null;
+    counterpart_name?: string | null; unread_count: number;
+    last_message?: { kind: string; preview?: string | null; mine?: boolean; created_at: string } | null;
+  }): ChatSummary {
+    // Before an engagement forms there is no provider to name, so the job's own title is what the
+    // customer would recognise — never a placeholder like "Unknown".
+    const name = c.counterpart_name ?? c.title ?? '';
+    const last = c.last_message ?? null;
+
+    return {
+      // The row navigates to the workspace, which is keyed by JOB.
+      id: c.job_id,
+      conversationId: c.id,
+      providerName: name,
+      initials: initialsOf(name),
+      reference: c.reference ?? '',
+      preview: last?.kind === 'text' ? (last.preview ?? '') : '',
+      previewKey: last === null || last.kind === 'text' ? undefined : chatPreviewKey(last.kind),
+      time: last === null ? '' : shortTime(last.created_at),
+      unread: c.unread_count,
+      accent: accentFor(c.id),
+    };
+  }
+
   thread(id: string): WorkspaceThread | null {
     return this.threads[id] ?? this.threads['j1'] ?? null;
   }
@@ -563,6 +638,7 @@ export class CustomerService {
         accent: detail.accent,
         messages: thread.messages.map((m) => mapMessage(m, this.me().id)),
         engagementId: thread.engagementId,
+        conversationId: thread.conversationId,
       };
     } catch {
       return null;

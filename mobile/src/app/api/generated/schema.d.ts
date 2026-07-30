@@ -1146,6 +1146,47 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/conversations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The signed-in user's conversations (the messages tab)
+         * @description An index over the threads this user participates in, so a conversation can be found without already knowing its job. Membership of `conversation_participants` is the only thing that decides what appears — the same gate the thread read and post endpoints use.
+         *     `last_message.kind` travels instead of rendered prose: a server-narrated message must be shown in the reader's own language, and only the client knows which that is. `preview` is populated only for free-form text.
+         */
+        get: operations["listConversations"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/conversations/{conversation}/read": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Mark a conversation read up to now (participants only)
+         * @description Sets the caller's `last_read_at`, which is what gives `unread_count` meaning. Idempotent and forward-only: re-opening an old thread never resurrects messages already seen.
+         */
+        post: operations["markConversationRead"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/media/{media}": {
         parameters: {
             query?: never;
@@ -1752,6 +1793,27 @@ export interface components {
             }[];
             /** Format: date-time */
             created_at: string;
+        };
+        /** @description One row of the messages tab. `job_id` is what the client navigates with — the workspace route is keyed by job, not by conversation. */
+        ConversationSummary: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            job_id: string;
+            reference?: string | null;
+            title?: string | null;
+            status?: string | null;
+            /** @description The other side, from this user's point of view — the provider for a customer, the customer for a provider. Null before an engagement exists (there is no provider yet). */
+            counterpart_name?: string | null;
+            unread_count: number;
+            last_message?: {
+                kind: string;
+                /** @description The message text; null for voice and for every server-narrated kind (render those from `kind`). */
+                preview?: string | null;
+                mine?: boolean;
+                /** Format: date-time */
+                created_at: string;
+            } | null;
         };
         /** @description One end (start or end) of a work session — geo captured server-side. */
         WorkSessionEndpoint: {
@@ -4413,6 +4475,62 @@ export interface operations {
             403: components["responses"]["Problem"];
             404: components["responses"]["Problem"];
             422: components["responses"]["ValidationProblem"];
+        };
+    };
+    listConversations: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Conversations, most recently active first */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["ConversationSummary"][];
+                    };
+                };
+            };
+            401: components["responses"]["Problem"];
+        };
+    };
+    markConversationRead: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description A client-generated UUID. Replaying it returns the stored response (CLAUDE.md rule */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                conversation: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The new read marker */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            /** Format: date-time */
+                            last_read_at?: string;
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["Problem"];
+            403: components["responses"]["Problem"];
+            404: components["responses"]["Problem"];
         };
     };
     showMedia: {

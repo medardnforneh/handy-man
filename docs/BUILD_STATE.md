@@ -3,8 +3,8 @@
 > Living tracker for the build. Updated as work progresses. Source of truth for **where we
 > are** and **how this machine is set up**. Read this first when resuming.
 
-_Last updated: 2026-07-30 (P5-01/02: offline cache + write queue, PWA service worker, secure token
-storage, and a real Android APK — Phase 5 complete)_
+_Last updated: 2026-07-31 (messages tab wired to a new `GET /conversations`; before that P5-01/02 —
+offline cache + write queue, PWA service worker, secure token storage, a real Android APK)_
 
 ## Environment (this dev machine — Windows 10 Pro, non-admin)
 
@@ -230,12 +230,41 @@ registered yet — it must be set before the first store build, or the native ap
     entry). Both are token-driven (light+dark, no-literal-colour + no-bare-string linters clean),
     English-default with a working FR/EN switch, and the responsive shell now really shows a side
     rail on web (the split-pane `ion-tabs` overlap bug was fixed) and a tab bar on phones.
-  - **Still owed:** finishing the fixture→API-client migration on the screens that still read
-    fixtures, and an on-device pass (emulator/handset) for the things only a device can prove. The
+  - **Still owed:** the discover tab's provider rail (it browses a fixture list — there is no public,
+    non-job-scoped provider search endpoint yet; `ProviderSearch` is owner-gated and job-keyed) and
+    the provider-profile screen's fallback fixtures; plus an on-device pass (emulator/handset) for
+    the things only a device can prove. The messages tab is now real. The
     public/SEO Blade pages, the realtime/media surfaces (P4-04..07), the offline layer (P5-02) and
     the PWA/Android build (P5-01) have all landed.
 
 ## What was done, most recent first
+
+- **The messages tab is real (new `GET /conversations`).** The chats screen was three hard-coded
+  French placeholders — one of the last surfaces still showing fixtures to a signed-in user. There
+  was no conversations-index endpoint at all: the thread has always been reachable only via
+  `/jobs/{job}/messages`, so a client could open a conversation but never *find* one.
+  - `UserConversations` builds the list from `conversation_participants` — **membership is the only
+    thing that decides what appears**, the same gate the thread read/post endpoints use, so nothing
+    can be listed that the user could not then open. One query for the last message of every
+    conversation rather than one per row: the list grows without bound for a busy provider, and N+1
+    would be felt on exactly the connection this product can't rely on.
+  - **`counterpart_name` is per-viewer** — the provider for a customer, the customer for a provider —
+    which is why it is computed in a read model rather than a resource. Before an engagement exists
+    there is no provider to name, and it falls back to the job title rather than a placeholder.
+  - **The preview sends the KIND, never a rendered sentence.** A server-narrated message
+    ("quote accepted") must appear in the reader's language, and only the client knows which that is;
+    prose here would hard-code one locale into the API. `preview` is populated only for free-form
+    text, and the client renders everything else from the same `workspace.*` copy the thread uses.
+  - **`POST /conversations/{id}/read`** ships in the same slice, because without it `unread_count`
+    could only ever grow. It is forward-only: a second device reporting a stale read must not
+    resurrect messages already seen.
+  - Client: the tab loads on every entry (an unread badge that is stale is worse than one that takes
+    a moment), clears the badge optimistically on tap, and the workspace marks the thread read on
+    open so the two screens agree. The row list is cached by P5-02, so it opens populated offline.
+  - **Verified**: 8 backend tests (membership gating both ways, per-viewer counterpart, unread rising
+    and clearing, own messages never unread, narrated-kind preview, forward-only marker), plus a real
+    browser against the live API — the tab shows the **actual** conversation and not the fixtures,
+    with a 4-message badge that clears to 0 after opening the thread and **stays cleared on reload**.
 
 - **PWA, secure token storage, and a real Android build (P5-01).** The offline layer from P5-02 is
   unreachable without this: you cannot queue a message in an app that won't open.

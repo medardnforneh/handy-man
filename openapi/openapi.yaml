@@ -1529,6 +1529,59 @@ paths:
         "404": { $ref: "#/components/responses/Problem" }
         "422": { $ref: "#/components/responses/ValidationProblem" }
 
+  /conversations:
+    get:
+      tags: [Platform]
+      operationId: listConversations
+      summary: The signed-in user's conversations (the messages tab)
+      description: >
+        An index over the threads this user participates in, so a conversation can be found without
+        already knowing its job. Membership of `conversation_participants` is the only thing that
+        decides what appears — the same gate the thread read and post endpoints use.
+
+        `last_message.kind` travels instead of rendered prose: a server-narrated message must be
+        shown in the reader's own language, and only the client knows which that is. `preview` is
+        populated only for free-form text.
+      responses:
+        "200":
+          description: Conversations, most recently active first
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data: { type: array, items: { $ref: "#/components/schemas/ConversationSummary" } }
+        "401": { $ref: "#/components/responses/Problem" }
+
+  /conversations/{conversation}/read:
+    post:
+      tags: [Platform]
+      operationId: markConversationRead
+      summary: Mark a conversation read up to now (participants only)
+      description: >
+        Sets the caller's `last_read_at`, which is what gives `unread_count` meaning. Idempotent and
+        forward-only: re-opening an old thread never resurrects messages already seen.
+      parameters:
+        - { name: conversation, in: path, required: true, schema: { type: string, format: uuid } }
+        - $ref: "#/components/parameters/IdempotencyKey"
+      responses:
+        "200":
+          description: The new read marker
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      last_read_at: { type: string, format: date-time }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404": { $ref: "#/components/responses/Problem" }
+
   /media/{media}:
     get:
       tags: [Platform]
@@ -2206,6 +2259,35 @@ components:
               url: { type: string, format: uri }
               bytes: { type: integer }
         created_at: { type: string, format: date-time }
+
+    ConversationSummary:
+      type: object
+      description: >
+        One row of the messages tab. `job_id` is what the client navigates with — the workspace route
+        is keyed by job, not by conversation.
+      required: [id, job_id, unread_count]
+      properties:
+        id: { type: string, format: uuid }
+        job_id: { type: string, format: uuid }
+        reference: { type: [string, "null"] }
+        title: { type: [string, "null"] }
+        status: { type: [string, "null"] }
+        counterpart_name:
+          description: >
+            The other side, from this user's point of view — the provider for a customer, the
+            customer for a provider. Null before an engagement exists (there is no provider yet).
+          type: [string, "null"]
+        unread_count: { type: integer }
+        last_message:
+          type: [object, "null"]
+          required: [kind, created_at]
+          properties:
+            kind: { type: string }
+            preview:
+              description: The message text; null for voice and for every server-narrated kind (render those from `kind`).
+              type: [string, "null"]
+            mine: { type: boolean }
+            created_at: { type: string, format: date-time }
 
     WorkSessionEndpoint:
       type: object

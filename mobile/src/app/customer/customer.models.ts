@@ -138,11 +138,21 @@ export interface NewJobInput {
 }
 
 export interface ChatSummary {
+  /** The JOB id — the workspace route is keyed by job, so this is what `open()` navigates with. */
   id: string;
+  /** The conversation id, used to mark the thread read. Null on a fixture row. */
+  conversationId: string | null;
   providerName: string;
   initials: string;
   reference: string;
+  /** Free-form preview text. Empty when the last message was server-narrated — see `previewKey`. */
   preview: string;
+  /**
+   * i18n key for a server-narrated last message ("quote accepted", "on the way"). The API sends the
+   * KIND, not a sentence, precisely so the row renders in the reader's language rather than the
+   * server's.
+   */
+  previewKey?: string;
   time: string;
   unread: number;
   accent: Accent;
@@ -199,4 +209,6 @@ export interface WorkspaceThread {
   messages: WorkspaceMessage[];
   /** The live channel's key (`private-engagement.{id}`), or null on a fixture/unengaged thread. */
   engagementId: string | null;
+  /** The conversation this thread belongs to — what marks it read. Null on a fixture thread. */
+  conversationId: string | null;
 }

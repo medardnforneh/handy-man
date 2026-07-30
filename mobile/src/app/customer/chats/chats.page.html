@@ -2,11 +2,13 @@
   <ion-toolbar>
     <ion-title>{{ 'chats.title' | translate }}</ion-title>
   </ion-toolbar>
+
+  <app-offline-strip></app-offline-strip>
 </ion-header>
 
 <ion-content [fullscreen]="true">
   <div class="page">
-    @if (hasChats) {
+    @if (hasChats()) {
       <ion-searchbar
         class="hm-tap"
         [value]="query()"
@@ -26,7 +28,13 @@
             <small class="hm-muted">{{ chat.time }}</small>
           </div>
           <div class="line">
-            <span class="preview hm-muted">{{ chat.preview }}</span>
+            <!-- A server-narrated last message arrives as a KIND, so it is translated here rather
+                 than printed in whatever language the server happened to compose it in. -->
+            @if (chat.previewKey) {
+              <span class="preview hm-muted">{{ chat.previewKey | translate }}</span>
+            } @else {
+              <span class="preview hm-muted">{{ chat.preview }}</span>
+            }
             @if (chat.unread > 0) {
               <span class="unread">{{ chat.unread }}</span>
             }
@@ -37,7 +45,7 @@
     } @empty {
       <div class="empty">
         <ion-icon name="chatbubbles-outline" aria-hidden="true"></ion-icon>
-        <p class="hm-empty">{{ (hasChats ? 'chats.no_match' : 'chats.empty') | translate }}</p>
+        <p class="hm-empty">{{ (hasChats() ? 'chats.no_match' : 'chats.empty') | translate }}</p>
       </div>
     }
   </div>

@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\V1\Auth\AuthController;
 use App\Http\Controllers\Api\V1\Auth\OtpController;
 use App\Http\Controllers\Api\V1\CashSettlementController;
 use App\Http\Controllers\Api\V1\ConsentController;
+use App\Http\Controllers\Api\V1\ConversationController;
 use App\Http\Controllers\Api\V1\DeliverableController;
 use App\Http\Controllers\Api\V1\DeviceController;
 use App\Http\Controllers\Api\V1\DisputeController;
@@ -148,6 +149,12 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
         Route::post('/jobs/{job}/messages', [MessageController::class, 'store'])->name('jobs.messages.store');
         // Voice notes (P4-05) — multipart audio, posted as a first-class `voice` message.
         Route::post('/jobs/{job}/voice-messages', [MessageController::class, 'storeVoice'])->name('jobs.messages.voice');
+
+        // The messages tab: an index over the conversations this user participates in, so a thread
+        // can be found without already knowing its job. Marking read is what gives `unread_count`
+        // meaning — without it the count could only ever grow.
+        Route::get('/conversations', [ConversationController::class, 'index'])->name('conversations.index');
+        Route::post('/conversations/{conversation}/read', [ConversationController::class, 'markRead'])->name('conversations.read');
 
         // Deliverables (P4-08). Provider submits; customer accepts/rejects.
         Route::post('/engagements/{engagement}/deliverables', [DeliverableController::class, 'store'])->name('engagements.deliverables.store');
