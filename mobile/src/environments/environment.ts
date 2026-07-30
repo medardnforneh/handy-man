@@ -7,6 +7,9 @@ export const environment = {
   // Dev: the app (served on another port) talks to the Laravel API on :8100 — 8000 is taken on this
   // machine. Start it with `php artisan serve --port=8100` from backend/.
   apiBaseUrl: 'http://127.0.0.1:8100/api/v1',
+  // A packaged app can't use a relative URL (its origin is the device), and from the Android
+  // emulator the host machine is 10.0.2.2 — `127.0.0.1` there means the emulator itself.
+  nativeApiBaseUrl: 'http://10.0.2.2:8100/api/v1',
   appVersion: '1.0.0',
   // Reverb (P4-03/04). Must match backend/.env REVERB_APP_KEY / REVERB_PORT — start it with
   // `php artisan reverb:start` from backend/.
@@ -15,6 +18,7 @@ export const environment = {
   reverb: {
     key: 'bwnksdabq0wufulekwsw',
     host: '127.0.0.1',
+    nativeHost: '10.0.2.2',
     port: 8080,
     scheme: 'http' as 'http' | 'https',
   },

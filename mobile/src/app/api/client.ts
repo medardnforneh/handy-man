@@ -1,7 +1,17 @@
+import { Capacitor } from '@capacitor/core';
 import createClient, { type Middleware } from 'openapi-fetch';
 import { environment } from '../../environments/environment';
 import type { paths } from './generated/schema';
 import { tokenStore } from './token-store';
+
+/**
+ * Where the API lives, for THIS target (P5-01). A browser build is served from the same host as the
+ * API and uses a relative path; a packaged app's origin is the device, so a relative path would
+ * resolve to `capacitor://localhost` and never leave the phone — native must use the absolute URL.
+ */
+export const apiBaseUrl = Capacitor.isNativePlatform()
+  ? environment.nativeApiBaseUrl
+  : environment.apiBaseUrl;
 
 /**
  * The typed API client for /api/v1 (build plan P0-10). Every request/response is typed against the
@@ -47,7 +57,7 @@ const authMiddleware: Middleware = {
 };
 
 export const api = createClient<paths>({
-  baseUrl: environment.apiBaseUrl,
+  baseUrl: apiBaseUrl,
   headers: { Accept: 'application/json' },
   // Resolve `fetch` per request rather than letting openapi-fetch capture `globalThis.fetch` when
   // this module is evaluated. The behaviour is identical at runtime, and it means the transport can

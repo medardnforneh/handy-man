@@ -5,6 +5,7 @@ import { tokenStore } from '../api/token-store';
 import { OfflineCache } from './offline/offline-cache.service';
 import { WriteQueue } from './offline/write-queue.service';
 import { RealtimeService } from './realtime.service';
+import { secureStore } from './secure-store';
 
 const AUTH_KEY = 'authed';
 const TOKEN_KEY = 'access_token';
@@ -99,7 +100,7 @@ export class AuthService {
   private refreshAccessToken(): Promise<string | null> {
     this.refreshing ??= (async () => {
       try {
-        const refresh = (await Preferences.get({ key: REFRESH_KEY })).value;
+        const refresh = await secureStore.get(REFRESH_KEY);
         if (refresh === null) {
           return null;
         }
@@ -122,10 +123,16 @@ export class AuthService {
     return this.refreshing;
   }
 
+  /**
+   * Persist the pair in the OS secure store (P5-01), not plain preferences. The refresh token is the
+   * one that matters — it is valid for 30 days and mints access tokens on demand — but the access
+   * token goes with it rather than living somewhere else, because two storage locations for one
+   * session is how one of them gets forgotten on logout.
+   */
   private async storeTokens(accessToken: string, refreshToken: string): Promise<void> {
     tokenStore.set(accessToken);
-    await Preferences.set({ key: TOKEN_KEY, value: accessToken });
-    await Preferences.set({ key: REFRESH_KEY, value: refreshToken });
+    await secureStore.set(TOKEN_KEY, accessToken);
+    await secureStore.set(REFRESH_KEY, refreshToken);
   }
 
   async logout(): Promise<void> {
@@ -143,17 +150,29 @@ export class AuthService {
     // Close the socket too: it was authorized with the token we just dropped, so leaving it open
     // would keep streaming this user's threads into the next session.
     this.realtime.disconnect();
-    await Preferences.remove({ key: TOKEN_KEY });
-    await Preferences.remove({ key: REFRESH_KEY });
+    await secureStore.remove(TOKEN_KEY);
+    await secureStore.remove(REFRESH_KEY);
     await Preferences.set({ key: AUTH_KEY, value: '0' });
   }
 
+  /**
+   * Rehydrate the session on boot. `authed` stays in plain preferences deliberately — it is a
+   * boolean about whether to show the welcome screen, not a secret, and reading the secure store
+   * can prompt on some devices.
+   */
   private async load(): Promise<void> {
     const stored = (await Preferences.get({ key: AUTH_KEY })).value;
     this.authed.set(stored === '1');
-    const token = (await Preferences.get({ key: TOKEN_KEY })).value;
+    const token = await secureStore.get(TOKEN_KEY);
     if (token !== null) {
       tokenStore.set(token); // rehydrate the Bearer so authenticated calls work after a reload
+      // An install from before P5-01 has its tokens in plain preferences; `secureStore.set` reads
+      // them through the fallback and rewrites them into the OS store, removing the readable copy.
+      // Without this, upgrading users would keep a plaintext refresh token forever.
+      const refresh = await secureStore.get(REFRESH_KEY);
+      if (refresh !== null) {
+        await this.storeTokens(token, refresh);
+      }
     }
   }
 }

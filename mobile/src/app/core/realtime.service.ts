@@ -1,7 +1,9 @@
 import { Injectable } from '@angular/core';
+import { Capacitor } from '@capacitor/core';
 import Echo from 'laravel-echo';
 import Pusher from 'pusher-js';
 import { environment } from '../../environments/environment';
+import { apiBaseUrl } from '../api/client';
 import { tokenStore } from '../api/token-store';
 
 /** The live message payload, shaped exactly like a fetched one (see MessagePosted::broadcastWith). */
@@ -77,7 +79,9 @@ export class RealtimeService {
       (window as unknown as { Pusher: typeof Pusher }).Pusher = Pusher;
 
       const options = {
-        wsHost: environment.reverb.host,
+        // Same rule as the API base URL (P5-01): a packaged app's `window.location.hostname` is
+        // the device, so native must be told the deployed socket host explicitly.
+        wsHost: Capacitor.isNativePlatform() ? environment.reverb.nativeHost : environment.reverb.host,
         wsPort: environment.reverb.port,
         wssPort: environment.reverb.port,
         forceTLS: environment.reverb.scheme === 'https',
@@ -85,7 +89,7 @@ export class RealtimeService {
         cluster: '',
         // Bearer clients can't use Laravel's session-based /broadcasting/auth (P4-03), so Echo
         // posts to the sanctum-guarded endpoint and attaches the access token itself.
-        authEndpoint: `${environment.apiBaseUrl}/broadcasting/auth`,
+        authEndpoint: `${apiBaseUrl}/broadcasting/auth`,
         auth: {
           headers: {
             Authorization: `Bearer ${tokenStore.get() ?? ''}`,

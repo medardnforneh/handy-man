@@ -3,7 +3,8 @@
 > Living tracker for the build. Updated as work progresses. Source of truth for **where we
 > are** and **how this machine is set up**. Read this first when resuming.
 
-_Last updated: 2026-07-30 (P5-02: offline read cache + durable write queue, verified through a real airplane-mode episode)_
+_Last updated: 2026-07-30 (P5-01/02: offline cache + write queue, PWA service worker, secure token
+storage, and a real Android APK — Phase 5 complete)_
 
 ## Environment (this dev machine — Windows 10 Pro, non-admin)
 
@@ -144,10 +145,11 @@ Task IDs come from `docs/05-build-plan.md`.
 | P5-04 | `job_reports` + before/after `media`, EXIF stripped server-side | **DONE** — polymorphic `media` table (owner party, attachable type/id, kind, sha256, bytes, `captured_point` geography; CHECKs on bytes/type/kind) + `job_reports` (summary, materials jsonb, extra_charges, signature slot); `StoreMedia` **re-encodes raster images through GD to strip every EXIF/XMP/GPS segment**, records the client-reported geo in `captured_point` server-side (never in the file), and stores sha256/bytes of the CLEAN file; `SubmitJobReport` (worker; attaches before/after photos in one txn); `POST /v1/engagements/{engagement}/report` (multipart); OpenAPI + TS client updated; 4 tests incl. **injected-EXIF-marker gone from stored bytes + geo-in-DB** |
 | P5-05 | Push notifications (FCM) via outbox | **DONE** — provider-agnostic `PushSender` abstraction + normalised `PushMessage`; `FakePushSender` (records sends, default) + `FcmPushSender` (HTTP v1, one request/token, per-token failure logged not thrown — live delivery pends real project creds); config-selected in `NotificationsServiceProvider` (`config/notifications.php`, default `fake`). Push **rides the transactional outbox**: `NotifyOnOutboxMessage` subscribes to the `OutboxMessagePublished` seam and, for a relayed `message.created`, notifies the conversation's participants **except the sender** on their non-revoked devices, **each in their own comms locale** (`push.*` i18n keys, parity OK). New endpoints: none (server-internal). 4 tests incl. **sender-excluded + per-locale copy + sole-participant no-op** |
 | P5-02 | offline-first cache + write queue with idempotency keys | **DONE** — `core/offline/`: a small IndexedDB wrapper (`idb.ts`, two stores — a disposable `cache` and a never-evicted `outbox`), `ConnectivityService` (browser events as hints, the requests themselves as evidence), `OfflineCache` (read-through: last server answer beats a fixture, fixture beats a spinner) and `WriteQueue`. **The acceptance property is one idempotency key minted at enqueue and reused on every replay**, so a write the server already took is recognised rather than repeated. Persist-before-attempt, strict FIFO (never skip a backing-off entry — a thread that reorders is worse than one that pauses), 5xx/429 retried with backoff, other 4xx terminal with the problem+json `detail` surfaced, outbox dropped on logout (it would otherwise replay under the next user's Bearer). Queued today: chat messages, check-in/out, provider status, milestone approval; cached: jobs, job detail, thread, skills taxonomy, provider work detail. **`ion-icon`/`ion-spinner` are deliberately absent from the offline UI** — their assets load lazily, i.e. exactly what a dead network can't deliver (observed as a ChunkLoadError). 5 Karma specs (real Chrome, real IndexedDB) + a live browser run — see the entry below |
-| P5-01 | Ionic PWA/Android/iOS + secure token storage | not started (needs a PWA service worker + device builds) |
+| P5-01 | Ionic PWA/Android/iOS + secure token storage | **DONE (PWA + Android; iOS declared, not built)** — `@angular/service-worker` precaches the shell, every JS chunk **and `/assets/i18n/*.json`** (the stock config omits them, which offline means every label renders as a raw key), disabled on native since a packaged app already serves assets locally. Install manifest is **generated from `tokens/tokens.json`** like every other surface, and the token build now **fails if `index.html`'s two `theme-color` metas drift from the brand token** — the one place a colour must be a literal and the no-literal-colour lint can't reach. `core/secure-store.ts` puts the **refresh token in the OS store** (Android EncryptedSharedPreferences / iOS Keychain via `@aparajita/capacitor-secure-storage`), falling back to Preferences on web with the limitation stated rather than hidden, and migrating an existing plaintext token on first launch. **Native API/socket URLs**: a packaged app's origin is the device, so the prod build's relative `/api/v1` and `window.location.hostname` would never leave the phone — `nativeApiBaseUrl`/`nativeHost` are now chosen at runtime via `Capacitor.isNativePlatform()`. Verified: app opens and renders **fully offline with translations resolved** (real browser, network cut at CDP level), and `gradlew assembleDebug` produces a **5.3 MB APK** against the local SDK. **iOS is not built here** (needs macOS/Xcode) — the codebase is platform-agnostic and `npx cap add ios` is the whole step |
 
-**Phase 5's backend tasks (P5-03/04/05/06) are done and P5-02 (offline cache + write queue) has
-landed; P5-01 (PWA install/service worker, native builds, OS-secure token storage) is the remainder.**
+**Phase 5 complete.** P5-01's remaining external dependency is the deployed origin: `NATIVE_API_ORIGIN`
+in `environment.prod.ts` is a **placeholder** (`https://app.handyman.cm`) because no domain is
+registered yet — it must be set before the first store build, or the native app will call nothing.
 
 ### Phase 6 — Trust, safety, reputation
 
@@ -228,12 +230,43 @@ landed; P5-01 (PWA install/service worker, native builds, OS-secure token storag
     entry). Both are token-driven (light+dark, no-literal-colour + no-bare-string linters clean),
     English-default with a working FR/EN switch, and the responsive shell now really shows a side
     rail on web (the split-pane `ion-tabs` overlap bug was fixed) and a tab bar on phones.
-  - **Still owed:** native/PWA (Capacitor device builds, a service worker + install manifest,
-    OS-secure token storage — P5-01) and finishing the fixture→API-client migration on the screens
-    that still read fixtures. The public/SEO Blade pages, the realtime/media surfaces (P4-04..07)
-    and the offline layer (P5-02) have landed.
+  - **Still owed:** finishing the fixture→API-client migration on the screens that still read
+    fixtures, and an on-device pass (emulator/handset) for the things only a device can prove. The
+    public/SEO Blade pages, the realtime/media surfaces (P4-04..07), the offline layer (P5-02) and
+    the PWA/Android build (P5-01) have all landed.
 
 ## What was done, most recent first
+
+- **PWA, secure token storage, and a real Android build (P5-01).** The offline layer from P5-02 is
+  unreachable without this: you cannot queue a message in an app that won't open.
+  - **Service worker.** The stock `ng add @angular/pwa` config precaches CSS/JS but **not
+    `/assets/i18n/*.json`** — offline that leaves every label as a raw dotted key, the exact failure
+    the UI bar warns about. They are now a prefetch group. Registration is skipped on native, where a
+    second cache in front of already-local files buys nothing and fights the store's update cycle.
+  - **Manifest from tokens.** `tokens/build.mjs` now emits `manifest.webmanifest`, so the install
+    splash can't drift from the brand. `index.html`'s two `theme-color` metas are the one place a
+    colour genuinely must be a literal (a meta tag is read before any stylesheet) and the
+    no-literal-colour lint doesn't reach `src/index.html` — so the token build **asserts** them
+    instead of trusting a comment.
+  - **Secure token storage.** A refresh token is a 30-day credential that mints access tokens on
+    demand; it now lives in Android's EncryptedSharedPreferences / the iOS Keychain rather than the
+    plain preferences file next to the theme setting. On web there is no OS keystore to reach and it
+    falls back to Preferences — a real limitation, stated rather than papered over. An install from
+    before this rewrites its plaintext token into the secure store on first launch.
+  - **Native URLs — a bug the APK would have shipped with.** The prod environment uses a relative
+    `/api/v1` and `window.location.hostname`, which are right for a PWA and meaningless in a packaged
+    app whose origin is the device: every request would have resolved to `capacitor://localhost`.
+    Both are now chosen at runtime from `Capacitor.isNativePlatform()`.
+  - **Verified**: the app **opens and renders fully offline with translations resolved** (real
+    browser, service worker controlling, network cut at the CDP level), and `gradlew assembleDebug`
+    produced a **5.3 MB debug APK**. Building it needed SDK platform 36 + build-tools 35 installed
+    into the machine's existing Android SDK (it topped out at 33/32).
+  - **NOT done**: iOS is not built — it needs macOS/Xcode. Nothing in the codebase is
+    Android-specific; `npx cap add ios` is the step. `mobile/android` and `mobile/ios` stay
+    gitignored (pre-existing decision), so the native project is regenerated with
+    `npm run build && npx cap add android && npx cap sync android`.
+  - **NOT verified**: anything that needs a device or emulator — the secure store really using the
+    Keystore, the app running from the APK, push registration. Only the build is proven here.
 
 - **Offline-first: a read cache and a durable write queue (P5-02).** On the networks this product is
   for, "you're offline, try again" is not an instruction a user can follow. Two halves, in

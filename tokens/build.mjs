@@ -128,6 +128,32 @@ function buildTailwindPreset() {
   return `// GENERATED from tokens/tokens.json — do not edit by hand. Run \`npm run tokens:build\`.\nmodule.exports = ${JSON.stringify(preset, null, 2)};\n`;
 }
 
+/**
+ * The PWA install manifest (P5-01).
+ *
+ * It is generated here for the same reason every other surface is: a manifest cannot reference a
+ * CSS variable, so its two colours would otherwise be the one place in the product where the brand
+ * palette is copied by hand — and the splash screen would silently drift from the app. `theme_color`
+ * is the brand green and `background_color` is the light surface, because the install splash shows
+ * before any code runs and therefore before a theme preference can be read.
+ */
+function buildWebManifest(existing) {
+  const icons = existing?.icons ?? [];
+  return `${JSON.stringify({
+    name: 'HandyMan',
+    short_name: 'HandyMan',
+    description: 'Find trusted help in Cameroon — on-site or remote.',
+    display: 'standalone',
+    orientation: 'portrait',
+    scope: './',
+    start_url: './',
+    theme_color: tokens.color['brand.primary'].light,
+    background_color: tokens.color['surface.base'].light,
+    categories: ['business', 'productivity'],
+    icons,
+  }, null, 2)}\n`;
+}
+
 function write(path, content) {
   mkdirSync(dirname(path), { recursive: true });
   writeFileSync(path, content, 'utf8');
@@ -153,6 +179,28 @@ write(join(root, 'backend', 'public', 'css', 'tokens.css'), tokensCss);
 if (existsSync(join(root, 'mobile'))) {
   write(join(root, 'mobile', 'src', 'theme', 'tokens.css'), tokensCss);
   write(join(root, 'mobile', 'src', 'theme', 'ionic-tokens.css'), ionicCss);
+
+  // The install manifest keeps its generated icon list; only the identity and colours come from here.
+  const manifestPath = join(root, 'mobile', 'public', 'manifest.webmanifest');
+  if (existsSync(manifestPath)) {
+    write(manifestPath, buildWebManifest(JSON.parse(readFileSync(manifestPath, 'utf8'))));
+  }
+
+  // index.html's `theme-color` metas are the one place the palette CANNOT be a variable — a meta
+  // tag takes a literal, and the browser reads it before any stylesheet. They are therefore the one
+  // place brand colour can silently drift, and the no-literal-colour lint does not reach
+  // `src/index.html`. So assert them here instead of trusting a comment.
+  const indexPath = join(root, 'mobile', 'src', 'index.html');
+  if (existsSync(indexPath)) {
+    const html = readFileSync(indexPath, 'utf8');
+    for (const [scheme, expected] of [['light', tokens.color['brand.primary'].light], ['dark', tokens.color['brand.primary'].dark]]) {
+      const found = new RegExp(`prefers-color-scheme:\\s*${scheme}\\)"\\s*content="([^"]+)"`).exec(html)?.[1];
+      if (found !== expected) {
+        console.error(`index.html theme-color (${scheme}) is ${found ?? 'missing'}, expected the brand token ${expected}`);
+        process.exitCode = 1;
+      }
+    }
+  }
 }
 
 console.log('tokens build complete.');
