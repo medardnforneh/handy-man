@@ -71,6 +71,28 @@ export class ApiService {
     return data.data;
   }
 
+  /**
+   * Browse providers by trade — the discover rail. Public: no session needed, which is the point
+   * (a customer judges the marketplace before signing up). When a Bearer IS present the server
+   * honours that user's blocks.
+   */
+  async browseProviders(options: { skill?: string; mode?: 'onsite' | 'remote'; locale?: 'fr' | 'en'; limit?: number } = {}) {
+    const { data, error } = await api.GET('/providers', {
+      params: {
+        query: {
+          skill: options.skill,
+          mode: options.mode,
+          locale: options.locale,
+          limit: options.limit,
+        },
+      },
+    });
+    if (error) {
+      throw error;
+    }
+    return data.data;
+  }
+
   /** The signed-in user (P1-03) — requires the Bearer. Drives the account/profile identity. */
   async me() {
     const { data, error } = await api.GET('/auth/me');

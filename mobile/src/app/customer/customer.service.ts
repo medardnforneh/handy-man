@@ -387,6 +387,51 @@ export class CustomerService {
     return mode === 'both' ? this.providers : this.providers.filter((p) => p.mode === mode);
   }
 
+  /**
+   * The real discover rail (GET /providers) — public, so it works before sign-in, which is exactly
+   * when a customer is deciding whether this marketplace has anyone worth hiring. Cached per
+   * (mode, category) so the rail opens populated with no network. Returns null on failure so the
+   * caller keeps the demo cards.
+   */
+  async fetchProviders(mode: EngagementMode | 'both', categoryId?: string): Promise<Provider[] | null> {
+    // `hybrid` is a JOB's mode, not a provider's — a provider either travels or doesn't, so it maps
+    // onto the on-site pool rather than inventing a third kind of listing.
+    const apiMode = mode === 'remote' ? 'remote' : mode === 'both' ? undefined : 'onsite';
+    const skill = categoryId === undefined ? undefined : this.categories().find((c) => c.id === categoryId)?.id;
+    const locale = this.locales.current;
+
+    const { value } = await this.cache.through(
+      `providers:${apiMode ?? 'any'}:${skill ?? 'all'}:${locale}`,
+      () => this.api.browseProviders({ skill, mode: apiMode, locale }),
+    );
+    if (value === null) {
+      return null;
+    }
+    return value.map((p) => this.mapPublicProvider(p));
+  }
+
+  /** Map one public provider onto a discover card. The API sends no name — the headline stands in. */
+  private mapPublicProvider(p: {
+    party_id: string; headline?: string | null; verification_tier: number;
+    rating_avg?: string | null; serves_onsite?: boolean;
+    skills?: { skill_id?: string; name?: string | null }[];
+  }): Provider {
+    const headline = p.headline ?? '';
+    const skill = (p.skills ?? []).map((s) => s.name ?? '').find(Boolean) ?? '';
+    return {
+      id: p.party_id,
+      name: headline || skill,
+      initials: headlineInitials(headline || skill),
+      skill,
+      mode: p.serves_onsite === true ? 'onsite' : 'remote',
+      // Never a precise distance: the resource carries no location at all, by design.
+      distanceKm: null,
+      rating: p.rating_avg !== null && p.rating_avg !== undefined ? Number(p.rating_avg) : 0,
+      verified: verifiedTier(p.verification_tier),
+      accent: accentFor(p.party_id),
+    };
+  }
+
   listAddresses(): SavedAddress[] {
     return this.addresses();
   }

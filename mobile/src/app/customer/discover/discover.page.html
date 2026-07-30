@@ -73,12 +73,22 @@
               }
             </div>
             <div class="pro-meta">
-              <span class="rating"><ion-icon name="star" aria-hidden="true"></ion-icon>{{ p.rating }}</span>
+              <!-- An unrated provider says so. A bare "0" would read as a terrible score rather than
+                   no score, which is the opposite of the truth for someone new (P6-09/P6-12). -->
+              @if (p.rating > 0) {
+                <span class="rating"><ion-icon name="star" aria-hidden="true"></ion-icon>{{ p.rating }}</span>
+              } @else {
+                <span class="rating new">{{ 'provider.unrated' | translate }}</span>
+              }
               <span class="dot" aria-hidden="true"></span>
               <span>{{ p.skill }}</span>
               @if (p.mode === 'remote') {
                 <span class="hm-pill tone-info">{{ 'discover.mode.remote' | translate }}</span>
-              } @else {
+              }
+              <!-- Only when a distance is actually known. The public directory carries no location
+                   at all (it is PII), so this is absent for every real browse result — and a
+                   "null km away" chip is worse than no chip. -->
+              @if (p.mode !== 'remote' && p.distanceKm !== null) {
                 <span class="hm-pill tone-brand">{{ 'discover.distance' | translate:{ km: p.distanceKm } }}</span>
               }
             </div>

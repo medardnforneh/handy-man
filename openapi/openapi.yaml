@@ -204,6 +204,54 @@ paths:
                     items:
                       $ref: "#/components/schemas/Skill"
 
+  /providers:
+    get:
+      tags: [Platform]
+      operationId: browseProviders
+      summary: Browse providers by trade (public)
+      security: []
+      description: >
+        The discover rail, and the API twin of the crawlable `/services` directory. Unauthenticated
+        by design: a customer judges whether the marketplace has anyone worth hiring before they sign
+        up. A Bearer is OPTIONAL and changes exactly one thing — blocks are honoured for the holder
+        (P6-07), and they never see their own card.
+
+        Suspended providers and those not accepting direct approaches are excluded, ranked by
+        verification tier then Bayesian-shrunk rating — the same order search and the public
+        directory use. Passing a CATEGORY slug matches every trade beneath it.
+
+        Geography is deliberately not a filter: a rail is browsed before there is an address to match
+        against, and a service area is PII.
+      parameters:
+        - name: skill
+          in: query
+          required: false
+          description: A trade slug (leaf or category). Omit to browse the whole pool. An unknown slug returns nobody.
+          schema: { type: string, maxLength: 120 }
+        - name: mode
+          in: query
+          required: false
+          description: >
+            `onsite` = providers who travel (they have declared a service area); `remote` = those who
+            do not. Omit for both. The areas themselves are never returned — only this yes/no.
+          schema: { type: string, enum: [onsite, remote] }
+        - { name: limit, in: query, required: false, schema: { type: integer, minimum: 1, maximum: 50, default: 30 } }
+        - name: locale
+          in: query
+          description: Language for the skill labels (the taxonomy is bilingual, P1-07).
+          schema: { type: string, enum: [fr, en] }
+      responses:
+        "200":
+          description: Providers offering the trade
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data: { type: array, items: { $ref: "#/components/schemas/PublicProvider" } }
+        "422": { $ref: "#/components/responses/ValidationProblem" }
+
   /providers/{party}/metrics:
     get:
       tags: [Platform]
@@ -2259,6 +2307,35 @@ components:
               url: { type: string, format: uri }
               bytes: { type: integer }
         created_at: { type: string, format: date-time }
+
+    PublicProvider:
+      type: object
+      description: >
+        A provider as an anonymous or pre-engagement viewer may see them (doc 08): the public
+        headline, the verification badge, the shrunk rating and the trades offered. Never a person's
+        name, never a service area, never a coordinate. `party_id` is the handle every other public
+        endpoint takes (metrics, reviews) and what an offer is addressed to.
+      required: [party_id, verification_tier]
+      properties:
+        party_id: { type: string, format: uuid }
+        headline: { type: [string, "null"] }
+        bio: { type: [string, "null"] }
+        verification_tier: { type: integer }
+        rating_avg:
+          description: Bayesian-shrunk (P6-09) — never a bare "5.0 (1 review)". Null when unrated.
+          type: [string, "null"]
+        rating_count: { type: integer }
+        jobs_completed: { type: integer }
+        serves_onsite:
+          description: Whether they travel to the customer. A yes/no about the kind of work — never where they are.
+          type: boolean
+        skills:
+          type: array
+          items:
+            type: object
+            properties:
+              skill_id: { type: string, format: uuid }
+              name: { type: [string, "null"], description: Localized label for the requested locale. }
 
     ConversationSummary:
       type: object

@@ -27,11 +27,32 @@ export class DiscoverPage {
 
   readonly categories = this.customers.categories;
   readonly mode = signal<ModeFilter>('onsite');
+  /** Demo cards until the real rail loads (and when there is no network) — never mixed. */
   readonly providers = signal<Provider[]>(this.customers.listProviders('onsite'));
+
+  constructor() {
+    void this.load();
+  }
 
   setMode(mode: ModeFilter): void {
     this.mode.set(mode);
+    // Show the matching fixtures immediately so the segment feels instant, then replace them with
+    // the real pool. On a good connection the swap is invisible; on a bad one the screen still moved.
     this.providers.set(this.customers.listProviders(mode));
+    void this.load();
+  }
+
+  /**
+   * Load the real rail. This endpoint is public, so it works before sign-in — the one screen where
+   * that matters most, since it is what a new customer looks at to decide whether to bother.
+   */
+  private async load(): Promise<void> {
+    const mode = this.mode();
+    const real = await this.customers.fetchProviders(mode);
+    // Ignore a response that lost the race with a faster tap on another segment.
+    if (real !== null && this.mode() === mode) {
+      this.providers.set(real);
+    }
   }
 
   openProfile(provider: Provider): void {

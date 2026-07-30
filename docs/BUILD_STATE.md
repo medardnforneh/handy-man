@@ -3,8 +3,8 @@
 > Living tracker for the build. Updated as work progresses. Source of truth for **where we
 > are** and **how this machine is set up**. Read this first when resuming.
 
-_Last updated: 2026-07-31 (messages tab wired to a new `GET /conversations`; before that P5-01/02 —
-offline cache + write queue, PWA service worker, secure token storage, a real Android APK)_
+_Last updated: 2026-07-31 (discover rail on a new public `GET /providers`; messages tab on
+`GET /conversations`; before that P5-01/02 — offline cache + write queue, PWA, secure tokens, APK)_
 
 ## Environment (this dev machine — Windows 10 Pro, non-admin)
 
@@ -230,14 +230,54 @@ registered yet — it must be set before the first store build, or the native ap
     entry). Both are token-driven (light+dark, no-literal-colour + no-bare-string linters clean),
     English-default with a working FR/EN switch, and the responsive shell now really shows a side
     rail on web (the split-pane `ion-tabs` overlap bug was fixed) and a tab bar on phones.
-  - **Still owed:** the discover tab's provider rail (it browses a fixture list — there is no public,
-    non-job-scoped provider search endpoint yet; `ProviderSearch` is owner-gated and job-keyed) and
-    the provider-profile screen's fallback fixtures; plus an on-device pass (emulator/handset) for
-    the things only a device can prove. The messages tab is now real. The
+  - **Still owed:** the provider-profile screen still falls back to fixtures (it needs the job
+    context to resolve a headline, so a party-keyed public profile endpoint is the missing piece),
+    the discover search box and category taps don't filter the rail yet, and an on-device pass
+    (emulator/handset) for the things only a device can prove. The messages tab and the discover
+    rail are now real. The
     public/SEO Blade pages, the realtime/media surfaces (P4-04..07), the offline layer (P5-02) and
     the PWA/Android build (P5-01) have all landed.
 
 ## What was done, most recent first
+
+- **The discover rail is real (new public `GET /providers`).** The app's home screen browsed five
+  hard-coded providers. `ProviderSearch` couldn't back it: it answers "who can do THIS job", needing
+  a job for the skill, mode and address, and it is owner-gated — the wrong shape for a customer who
+  is still deciding what to ask for.
+  - `PublicProviderDirectory` is the same act one step earlier: browse a trade, see who does it. Its
+    listing rules are deliberately **identical to the crawlable `/services` directory**, because a
+    stranger looking at who offers a trade should not get two different answers depending on which
+    door they came through — suspended excluded, `accepts_direct` only, ranked by verification tier
+    then shrunk rating. A **category** slug matches every trade beneath it, so a customer browsing
+    "Plumbing" needn't know which leaf their problem falls under. An unknown slug returns nobody
+    rather than everybody.
+  - **Unauthenticated, with an optional Bearer.** The guard is asked directly (`user('sanctum')`)
+    rather than via middleware, so an anonymous visitor gets an answer and a signed-in one gets
+    their **blocks honoured** (P6-07) — a blocked party must not reappear just because the customer
+    took a different route to the same list.
+  - **A separate `PublicProviderResource`, not a reuse.** `ProviderProfileResource` exposes
+    `display_name` conditionally on whether the `party` relation happens to be loaded — safe today,
+    but one stray `->with('party')` would silently start leaking real names onto a public endpoint.
+    Here the name has no code path at all. A test asserts the name appears **nowhere in the
+    payload**, not merely that the field is absent.
+  - **On-site vs remote without leaking location**: filtered on whether a provider has declared any
+    service area, and surfaced as a single `serves_onsite` boolean. The areas themselves stay
+    private. The directory takes a `travels` **bool**, not a mode — the P2-02 scan test caught an
+    inline `=== 'onsite'` and was right to: modes belong to jobs, so the controller translates once
+    through `EngagementModePolicy::supportsDispatch()`, which is exactly the property that requires
+    a service area.
+  - **Two UI bugs the fixtures had been hiding**, both visible the moment real data arrived: a
+    "null km away" chip (the public resource carries no location, by design) and a bare **"★ 0"** for
+    an unrated provider — which reads as a terrible score rather than no score, the opposite of the
+    truth for someone new, and contrary to P6-09/P6-12. Now "No ratings yet", in muted grey rather
+    than the rating's amber.
+  - **Verified**: 10 backend tests (suite 433 passed), and a real browser against the live API —
+    anonymous `GET /providers` returns 200 with no `display_name` anywhere, and the signed-in rail
+    shows 1 on-site vs 7 remote providers from the database, the segment changing the pool
+    server-side. **Note**: the discover TAB itself sits behind `auth.guard`, so signed-out users are
+    still sent to `/welcome`; the public surface for the pre-signup case remains the Blade
+    `/services` directory. The endpoint being public costs nothing and is what an unauthenticated app
+    shell would need.
 
 - **The messages tab is real (new `GET /conversations`).** The chats screen was three hard-coded
   French placeholders — one of the last surfaces still showing fixtures to a signed-in user. There

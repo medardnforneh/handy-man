@@ -185,6 +185,13 @@ ion-searchbar {
     gap: 0.15rem;
     color: var(--hm-color-status-warning);
     font-weight: 700;
+
+    // "New" is a neutral fact, not a warning — it must not borrow the rating's amber emphasis, or
+    // an unrated provider reads as a flagged one.
+    &.new {
+      color: var(--hm-color-text-muted);
+      font-weight: 600;
+    }
   }
 
   .dot {

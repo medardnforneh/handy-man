@@ -27,6 +27,7 @@ use App\Http\Controllers\Api\V1\PayoutController;
 use App\Http\Controllers\Api\V1\ProfileController;
 use App\Http\Controllers\Api\V1\ProviderController;
 use App\Http\Controllers\Api\V1\ProviderCustomerController;
+use App\Http\Controllers\Api\V1\ProviderDirectoryController;
 use App\Http\Controllers\Api\V1\ProviderEarningsController;
 use App\Http\Controllers\Api\V1\ProviderMetricsController;
 use App\Http\Controllers\Api\V1\ProviderOpportunityController;
@@ -78,6 +79,11 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
     // Skills catalog (P1-07) — public discovery (no app bundle needed, doc 08).
     Route::get('/skills', [SkillController::class, 'index'])->name('skills.index');
     Route::get('/skills/search', [SkillController::class, 'search'])->name('skills.search');
+
+    // Browse providers by trade — the discover rail, and the API twin of the crawlable /services
+    // directory. Public by design: a customer judges whether the marketplace has anyone worth
+    // hiring before signing up. A Bearer is optional and only makes blocks apply (P6-07).
+    Route::get('/providers', [ProviderDirectoryController::class, 'index'])->name('providers.index');
 
     // Published reviews for a party (P6-08) — public reputation signal.
     Route::get('/providers/{party}/reviews', [ReviewController::class, 'forParty'])->name('providers.reviews.index');

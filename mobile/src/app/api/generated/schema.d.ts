@@ -146,6 +146,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/providers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Browse providers by trade (public)
+         * @description The discover rail, and the API twin of the crawlable `/services` directory. Unauthenticated by design: a customer judges whether the marketplace has anyone worth hiring before they sign up. A Bearer is OPTIONAL and changes exactly one thing — blocks are honoured for the holder (P6-07), and they never see their own card.
+         *     Suspended providers and those not accepting direct approaches are excluded, ranked by verification tier then Bayesian-shrunk rating — the same order search and the public directory use. Passing a CATEGORY slug matches every trade beneath it.
+         *     Geography is deliberately not a filter: a rail is browsed before there is an address to match against, and a service area is PII.
+         */
+        get: operations["browseProviders"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/providers/{party}/metrics": {
         parameters: {
             query?: never;
@@ -1794,6 +1816,26 @@ export interface components {
             /** Format: date-time */
             created_at: string;
         };
+        /** @description A provider as an anonymous or pre-engagement viewer may see them (doc 08): the public headline, the verification badge, the shrunk rating and the trades offered. Never a person's name, never a service area, never a coordinate. `party_id` is the handle every other public endpoint takes (metrics, reviews) and what an offer is addressed to. */
+        PublicProvider: {
+            /** Format: uuid */
+            party_id: string;
+            headline?: string | null;
+            bio?: string | null;
+            verification_tier: number;
+            /** @description Bayesian-shrunk (P6-09) — never a bare "5.0 (1 review)". Null when unrated. */
+            rating_avg?: string | null;
+            rating_count?: number;
+            jobs_completed?: number;
+            /** @description Whether they travel to the customer. A yes/no about the kind of work — never where they are. */
+            serves_onsite?: boolean;
+            skills?: {
+                /** Format: uuid */
+                skill_id?: string;
+                /** @description Localized label for the requested locale. */
+                name?: string | null;
+            }[];
+        };
         /** @description One row of the messages tab. `job_id` is what the client navigates with — the workspace route is keyed by job, not by conversation. */
         ConversationSummary: {
             /** Format: uuid */
@@ -2546,6 +2588,37 @@ export interface operations {
                     };
                 };
             };
+        };
+    };
+    browseProviders: {
+        parameters: {
+            query?: {
+                /** @description A trade slug (leaf or category). Omit to browse the whole pool. An unknown slug returns nobody. */
+                skill?: string;
+                /** @description `onsite` = providers who travel (they have declared a service area); `remote` = those who do not. Omit for both. The areas themselves are never returned — only this yes/no. */
+                mode?: "onsite" | "remote";
+                limit?: number;
+                /** @description Language for the skill labels (the taxonomy is bilingual, P1-07). */
+                locale?: "fr" | "en";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Providers offering the trade */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["PublicProvider"][];
+                    };
+                };
+            };
+            422: components["responses"]["ValidationProblem"];
         };
     };
     providerMetrics: {
