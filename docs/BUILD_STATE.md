@@ -230,15 +230,14 @@ registered yet — it must be set before the first store build, or the native ap
     entry). Both are token-driven (light+dark, no-literal-colour + no-bare-string linters clean),
     English-default with a working FR/EN switch, and the responsive shell now really shows a side
     rail on web (the split-pane `ion-tabs` overlap bug was fixed) and a tab bar on phones.
-  - **Still owed:** native networking on device (BUG 2 above — the app can't `fetch` a plain-HTTP dev
-    API through the WebView), on-device proof of secure token storage, and the "See all" / "Map"
-    affordances on discover. **"Map" needs a product decision before it is built**: this product
-    deliberately never exposes a provider's service area or coordinates (P2-03, and the public
-    resource carries no location at all), so a map of providers would contradict that stance. The
-    messages tab, the discover rail (search + category filters) and the provider profile are now
-    real. The
-    public/SEO Blade pages, the realtime/media surfaces (P4-04..07), the offline layer (P5-02) and
-    the PWA/Android build (P5-01) have all landed.
+  - **Still owed:** on-device proof of secure token storage; an iOS build (never attempted — needs
+    macOS/Xcode); and the "See all" / "Map" affordances on discover. **"Map" needs a product decision
+    before it is built**: this product deliberately never exposes a provider's service area or
+    coordinates (P2-03, and the public resource carries no location at all), so a map of providers
+    would contradict that stance. The messages tab, the discover rail (search + category filters),
+    the provider profile, the public/SEO Blade pages, the realtime/media surfaces (P4-04..07), the
+    offline layer (P5-02) and the PWA/Android build (P5-01) have all landed, and native networking
+    on device now works (CapacitorHttp).
 
 ## What was done, most recent first
 
