@@ -107,6 +107,18 @@ export class ApiService {
     return data.data;
   }
 
+  /**
+   * Full-text search over LEAF trades (P1-07b), in the matching language dictionary — searching
+   * "plomberie" uses the French config, "plumbing" the English one. Public.
+   */
+  async searchSkills(q: string, locale: 'fr' | 'en') {
+    const { data, error } = await api.GET('/skills/search', { params: { query: { q, locale } } });
+    if (error) {
+      throw error;
+    }
+    return data.data;
+  }
+
   /** The signed-in user (P1-03) — requires the Bearer. Drives the account/profile identity. */
   async me() {
     const { data, error } = await api.GET('/auth/me');

@@ -88,6 +88,45 @@ ion-searchbar {
   &::-webkit-scrollbar { display: none; }
 }
 
+// Trade matches under the search box. In normal flow rather than an overlay: a dropdown floating
+// over the categories would cover the very thing it is an alternative to, and on a small screen an
+// overlay that can be scrolled behind is a reliable source of mis-taps.
+.matches {
+  display: flex;
+  flex-direction: column;
+  margin-block: var(--hm-space-xs) var(--hm-space-sm);
+  border: 1px solid var(--hm-color-border-subtle);
+  border-radius: var(--hm-radius-lg);
+  background: var(--hm-color-surface-raised);
+  overflow: hidden;
+}
+
+.match {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  width: 100%;
+  padding: 0.7rem var(--hm-space-md);
+  border: 0;
+  background: none;
+  color: var(--hm-color-text-primary);
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+
+  & + & { border-block-start: 1px solid var(--hm-color-border-subtle); }
+
+  ion-icon {
+    flex: none;
+    color: var(--hm-color-text-muted);
+  }
+}
+
+.no-match {
+  padding-block: var(--hm-space-sm);
+  text-align: start;
+}
+
 .cat {
   flex: none;
   width: 74px;

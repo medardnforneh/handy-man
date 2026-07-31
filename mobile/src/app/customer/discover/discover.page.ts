@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, signal } from '@angular/core';
+import { Component, DestroyRef, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { TranslatePipe } from '@ngx-translate/core';
@@ -32,7 +32,58 @@ export class DiscoverPage {
   /** Demo cards until the real rail loads (and when there is no network) — never mixed. */
   readonly providers = signal<Provider[]>(this.customers.listProviders('onsite'));
 
+  /** What the customer typed, and the trades it matched. */
+  readonly query = signal('');
+  readonly matches = signal<{ id: string; slug: string; label: string }[]>([]);
+  readonly searched = signal(false);
+  private searchTimer: ReturnType<typeof setTimeout> | null = null;
+
   constructor() {
+    void this.load();
+    inject(DestroyRef).onDestroy(() => {
+      if (this.searchTimer !== null) {
+        clearTimeout(this.searchTimer);
+      }
+    });
+  }
+
+  /**
+   * Search as you type, debounced. 250ms is long enough to collapse a burst of keystrokes into one
+   * request and short enough that the list feels like it is keeping up — this runs on networks
+   * where an extra round trip is expensive.
+   */
+  onSearch(value: string | null | undefined): void {
+    const q = value ?? '';
+    this.query.set(q);
+
+    if (this.searchTimer !== null) {
+      clearTimeout(this.searchTimer);
+    }
+    if (q.trim() === '') {
+      this.matches.set([]);
+      this.searched.set(false);
+      return;
+    }
+    this.searchTimer = setTimeout(() => {
+      void this.runSearch(q);
+    }, 250);
+  }
+
+  private async runSearch(q: string): Promise<void> {
+    const results = await this.customers.searchSkills(q);
+    // Drop a result set for a query the user has already typed past.
+    if (this.query() === q) {
+      this.matches.set(results);
+      this.searched.set(true);
+    }
+  }
+
+  /** Pick a matched trade: it becomes the rail's filter, and the search collapses. */
+  pickSkill(slug: string): void {
+    this.category.set(slug);
+    this.query.set('');
+    this.matches.set([]);
+    this.searched.set(false);
     void this.load();
   }
 

@@ -103,6 +103,15 @@ function shortTime(iso: string): string {
     : at.toLocaleDateString([], { day: '2-digit', month: 'short' });
 }
 
+/**
+ * Lower-case and strip accents, for matching what someone typed against a label. Half this
+ * taxonomy is French: without folding, "electricite" would not match "Électricité", and a customer
+ * on a phone keyboard will not reach for the accent.
+ */
+function fold(value: string): string {
+  return value.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase();
+}
+
 /** "0:14" from milliseconds — the shape a voice bubble reads best. */
 function formatDuration(ms: number): string {
   const total = Math.round(ms / 1000);
@@ -409,6 +418,44 @@ export class CustomerService {
       return null;
     }
     return value.map((p) => this.mapPublicProvider(p));
+  }
+
+  /**
+   * Search trades by name (P1-07b) — the discover search box.
+   *
+   * Deliberately a search over the TAXONOMY, not over providers: what a customer types is the thing
+   * they need done ("fuite", "AC repair"), and the taxonomy is bilingual and indexed for exactly
+   * that. Searching provider headlines would match business names instead, which is not the
+   * question being asked. Returns [] on failure — a search box that errors is worse than one that
+   * finds nothing.
+   */
+  async searchSkills(query: string): Promise<{ id: string; slug: string; label: string }[]> {
+    const q = query.trim();
+    if (q.length < 2) {
+      return []; // one letter matches most of the catalogue — not a useful answer
+    }
+
+    // `/skills/search` covers LEAF trades only. That is right for the index, but it means a customer
+    // typing a perfectly natural word that happens to be one of our CATEGORIES ("plumbing",
+    // "plomberie") is told no trade matches — while the app is holding the category list in memory.
+    // So categories are matched here, locally: 13 bilingual labels, no request, works offline, and
+    // the directory already accepts a category slug and expands it to every leaf beneath.
+    const needle = fold(q);
+    const categories = this.categories()
+      .filter((c) => fold(c.label).includes(needle))
+      .map((c) => ({ id: c.id, slug: c.id, label: c.label }));
+
+    let leaves: { id: string; slug: string; label: string }[] = [];
+    try {
+      const results = await this.api.searchSkills(q, this.locales.current);
+      leaves = results.map((s) => ({ id: s.id, slug: s.slug, label: s.name }));
+    } catch {
+      // Offline or refused — the local category matches are still a useful answer on their own.
+    }
+
+    // Categories first: they are the broader, safer pick when a customer is unsure which specific
+    // trade their problem falls under.
+    return [...categories, ...leaves];
   }
 
   /** Map one public provider onto a discover card. The API sends no name — the headline stands in. */

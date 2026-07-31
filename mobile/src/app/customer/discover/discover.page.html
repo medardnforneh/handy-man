@@ -21,9 +21,28 @@
 
     <ion-searchbar
       class="hm-tap"
+      [value]="query()"
+      (ionInput)="onSearch($any($event.target).value)"
+      (ionClear)="onSearch('')"
       [placeholder]="'discover.search_placeholder' | translate"
       [attr.aria-label]="'discover.search_placeholder' | translate"
     ></ion-searchbar>
+
+    <!-- Matching TRADES, not providers: what a customer types is the thing they need done, and the
+         taxonomy is bilingual and indexed for exactly that (P1-07b). Picking one filters the rail. -->
+    @if (matches().length > 0) {
+      <div class="matches" role="listbox">
+        @for (m of matches(); track m.id) {
+          <button class="match hm-tap" type="button" role="option" (click)="pickSkill(m.slug)">
+            <ion-icon name="search-outline" aria-hidden="true"></ion-icon>
+            <span>{{ m.label }}</span>
+          </button>
+        }
+      </div>
+    }
+    @if (searched() && matches().length === 0) {
+      <p class="hm-empty no-match">{{ 'discover.no_trade_match' | translate:{ query: query() } }}</p>
+    }
 
     <ion-segment class="mode" [value]="mode()">
       <ion-segment-button class="hm-tap" value="onsite" (click)="setMode('onsite')">

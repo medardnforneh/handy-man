@@ -61,6 +61,7 @@
     "discover.verified": "Verified",
     "discover.distance": "{{km}} km away",
     "money.currency": "FCFA",
+    "discover.no_trade_match": "No trade matches “{{query}}”. Try a different word.",
     "discover.in_category": "Providers in this category",
     "discover.clear_filter": "Show all",
     "discover.no_providers": "No providers match this filter yet.",

@@ -230,14 +230,34 @@ registered yet — it must be set before the first store build, or the native ap
     entry). Both are token-driven (light+dark, no-literal-colour + no-bare-string linters clean),
     English-default with a working FR/EN switch, and the responsive shell now really shows a side
     rail on web (the split-pane `ion-tabs` overlap bug was fixed) and a tab bar on phones.
-  - **Still owed:** the discover search box (free-text over trades — `/skills/search` exists and is
-    unused by the app), the "See all" / "Map" affordances, and an on-device pass (emulator/handset)
-    for the things only a device can prove. The messages tab, the discover rail (with working
-    category filters) and the provider profile are now real. The
+  - **Still owed:** the "See all" and "Map" affordances on discover, and an on-device pass
+    (emulator/handset) for the things only a device can prove. The messages tab, the discover rail
+    (search + category filters) and the provider profile are now real. The
     public/SEO Blade pages, the realtime/media surfaces (P4-04..07), the offline layer (P5-02) and
     the PWA/Android build (P5-01) have all landed.
 
 ## What was done, most recent first
+
+- **The discover search box works.** It searches **trades, not providers** — what a customer types is
+  the thing they need done ("fuite", "AC repair"), and the taxonomy is bilingual and indexed for
+  exactly that (P1-07b); matching provider headlines would return business names, which is not the
+  question being asked. Picking a result filters the rail and collapses the search.
+  - Debounced at 250ms (one request per burst of typing, on networks where a round trip is
+    expensive), and a result set for a query the user has already typed past is discarded.
+  - **`/skills/search` covers LEAF trades only** — right for the index, but it meant typing a
+    perfectly natural word that happens to be one of our own CATEGORIES ("plumbing", "plomberie")
+    was answered with "no trade matches", while the app was holding the category list in memory.
+    Categories are now matched **locally**: 13 bilingual labels, no request, works offline, and
+    accent-folded so "electricite" finds "Électricité" — a customer on a phone keyboard will not
+    reach for the accent. Categories are listed first, being the safer pick when someone is unsure
+    which specific trade their problem falls under.
+  - **Verified** in a real browser: "plumb" → the Plumbing category (server FTS alone returns nothing
+    for it), "electric" → the category plus both electrical leaves, "zzzzqq" → the no-match message,
+    and picking a result narrows 8 providers to 1, clears the box and hides the list. One request per
+    query, three for three queries.
+  - **Harness note**: an early run disagreed with itself because it raced a cold API — the giveaway
+    was the rail showing 5 cards (the fixture count) instead of 8. Re-run warm, it is consistent.
+    The local category match legitimately can't work before the category list has loaded.
 
 - **Discover categories actually filter.** The category rail was decorative — twelve real trades that
   did nothing when tapped. Now a tap narrows the provider list to that trade **server-side**

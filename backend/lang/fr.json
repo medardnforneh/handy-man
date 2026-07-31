@@ -61,6 +61,7 @@
   "discover.verified": "Vérifié",
   "discover.distance": "à :km km",
   "money.currency": "FCFA",
+  "discover.no_trade_match": "Aucun métier ne correspond à « :query ». Essayez un autre mot.",
   "discover.in_category": "Prestataires de cette catégorie",
   "discover.clear_filter": "Tout afficher",
   "discover.no_providers": "Aucun prestataire ne correspond à ce filtre.",
