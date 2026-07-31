@@ -230,13 +230,51 @@ registered yet — it must be set before the first store build, or the native ap
     entry). Both are token-driven (light+dark, no-literal-colour + no-bare-string linters clean),
     English-default with a working FR/EN switch, and the responsive shell now really shows a side
     rail on web (the split-pane `ion-tabs` overlap bug was fixed) and a tab bar on phones.
-  - **Still owed:** the "See all" and "Map" affordances on discover, and an on-device pass
-    (emulator/handset) for the things only a device can prove. The messages tab, the discover rail
-    (search + category filters) and the provider profile are now real. The
+  - **Still owed:** native networking on device (BUG 2 above — the app can't `fetch` a plain-HTTP dev
+    API through the WebView), on-device proof of secure token storage, and the "See all" / "Map"
+    affordances on discover. **"Map" needs a product decision before it is built**: this product
+    deliberately never exposes a provider's service area or coordinates (P2-03, and the public
+    resource carries no location at all), so a map of providers would contradict that stance. The
+    messages tab, the discover rail (search + category filters) and the provider profile are now
+    real. The
     public/SEO Blade pages, the realtime/media surfaces (P4-04..07), the offline layer (P5-02) and
     the PWA/Android build (P5-01) have all landed.
 
 ## What was done, most recent first
+
+- **First on-device pass (Android emulator) — the APK really runs, and two real networking bugs.**
+  No AVD existed; created one (`android-31`, x86_64), booted it headless, installed the debug APK.
+  - **Verified on the device**: the app installs and launches with no crash, renders correctly
+    (icon, bilingual copy resolved, layout, light theme), the **SecureStorage plugin is registered**
+    (`Capacitor: Registering plugin instance: SecureStorage`), and real touch input navigates
+    welcome → OTP screen.
+  - **BUG 1 (fixed): a packaged build could not reach a plain-HTTP dev API.** Android 9+ blocks
+    cleartext, so `10.0.2.2:8100` was refused — *"Cleartext HTTP traffic to 10.0.2.2 not permitted"*.
+    Worse, it failed **silently**: `AuthService` treats an unreachable backend as "offline" and walks
+    on to the next screen, so the app looked like it worked while talking to nothing (the OTP screen
+    appeared with no OTP ever requested). Fixed with an opt-in `HM_NATIVE_DEV=1` cleartext flag in
+    `capacitor.config.ts` (never on for production, where the API is HTTPS) **plus a debug-only
+    `AndroidManifest.xml` overlay** carrying `usesCleartextTraffic`. After it, a request from the app
+    reached the API for the first time.
+  - **BUG 2 (open): mixed content blocks the WebView's own `fetch` on native.** Capacitor serves the
+    app from `https://localhost`, so *any* plain-HTTP API is mixed content and blocked in the WebView
+    regardless of the cleartext fix — `CapacitorHttp` (native transport) got through, `fetch` did
+    not. Two candidate fixes, both with consequences worth a decision: enabling `CapacitorHttp` app
+    wide (routes all `fetch` natively — also removes CORS preflights, but changes how multipart
+    uploads and blob responses behave, which is how voice notes and report photos work), or serving
+    the app over `http://localhost` in dev via `server.androidScheme`.
+  - **⚠ The manifest fix lives in `mobile/android/`, which is GITIGNORED** — so it is destroyed by the
+    documented `npx cap add android` regeneration step. Committing the native projects is standard
+    Capacitor practice precisely because they hold app-specific config (manifest, icons, signing);
+    the current ignore makes any native customization unkeepable. **A decision, not a defect** — left
+    for the founder rather than silently reversing repo policy.
+  - **STILL NOT verified**: that a refresh token written by the app's own code path is encrypted at
+    rest. The plugin's native `set` rejects a raw-bridge call (it expects the JS wrapper's tagged
+    format), and driving the app's real `secureStore` needs a completed login, which BUG 2 blocks.
+    The claim rests on the plugin's own guarantees until that is possible. Reproduce the setup with:
+    `avdmanager create avd -n handyman -k "system-images;android-31;default;x86_64" -d pixel_5`,
+    `emulator -avd handyman -no-window -gpu swiftshader_indirect`, then
+    `HM_NATIVE_DEV=1 npx cap sync android && ./gradlew assembleDebug && adb install -r …`.
 
 - **The discover search box works.** It searches **trades, not providers** — what a customer types is
   the thing they need done ("fuite", "AC repair"), and the taxonomy is bilingual and indexed for
