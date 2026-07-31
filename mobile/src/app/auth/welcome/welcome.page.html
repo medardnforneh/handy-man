@@ -30,13 +30,20 @@
         [attr.aria-label]="'auth.phone' | translate"
       ></ion-input>
     </div>
-    <p class="hint hm-muted">{{ 'auth.phone_hint' | translate }}</p>
+    <!-- The server's own reason for refusing (a rate limit, a rejected number). Shown in place of
+         the hint rather than beside it: two lines of small print under a field is where an error
+         goes unread. -->
+    @if (error()) {
+      <p class="hint error" role="alert">{{ error() }}</p>
+    } @else {
+      <p class="hint hm-muted">{{ 'auth.phone_hint' | translate }}</p>
+    }
   </div>
 </ion-content>
 
 <ion-footer class="ion-no-border">
   <div class="cta">
-    <ion-button expand="block" class="hm-tap" [disabled]="!canSend()" (click)="sendCode()">
+    <ion-button expand="block" class="hm-tap" [disabled]="!canSend() || sending()" (click)="sendCode()">
       {{ 'auth.send_code' | translate }}
     </ion-button>
     <p class="terms hm-muted">{{ 'auth.terms' | translate }}</p>

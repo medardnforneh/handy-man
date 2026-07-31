@@ -8,6 +8,15 @@ import { RealtimeService } from './realtime.service';
 import { secureStore } from './secure-store';
 import { uuid } from './uuid';
 
+/**
+ * What asking for a code did. `refused` means the SERVER answered no (rate limit, bad number);
+ * `unreachable` means nothing answered at all.
+ */
+export interface OtpRequestResult {
+  outcome: 'sent' | 'refused' | 'unreachable';
+  detail?: string;
+}
+
 const AUTH_KEY = 'authed';
 const TOKEN_KEY = 'access_token';
 const REFRESH_KEY = 'refresh_token';
@@ -48,16 +57,33 @@ export class AuthService {
     return this.pendingPhone;
   }
 
-  /** Start the OTP challenge for an E.164 phone — the server texts (or, in dev, logs) the code. */
-  async requestOtp(phoneE164: string): Promise<void> {
+  /**
+   * Start the OTP challenge for an E.164 phone — the server texts (or, in dev, logs) the code.
+   *
+   * The three outcomes are kept apart, because sending the user to wait for a code that was never
+   * sent is the worst of them. A REFUSAL is the server answering (a rate limit — 3/hr per phone,
+   * P1-02 — or a rejected number): the caller must show it and stay put. A thrown request means no
+   * answer at all, which is the offline case the demo path is for.
+   *
+   * The same distinction the write queue makes: an HTTP error is not "offline".
+   */
+  async requestOtp(phoneE164: string): Promise<OtpRequestResult> {
     this.pendingPhone = phoneE164;
     try {
-      await api.POST('/auth/otp/request', {
+      const { error } = await api.POST('/auth/otp/request', {
         body: { phone_e164: phoneE164, purpose: 'login' },
         params: { header: { 'Idempotency-Key': uuid() } },
       });
+      if (error !== undefined) {
+        const problem = error as { detail?: unknown; title?: unknown };
+        const detail = [problem.detail, problem.title]
+          .find((v): v is string => typeof v === 'string' && v.trim() !== '');
+        return { outcome: 'refused', detail };
+      }
+      return { outcome: 'sent' };
     } catch {
       // Backend unreachable — the offline fixture demo still proceeds to the verify screen.
+      return { outcome: 'unreachable' };
     }
   }
 

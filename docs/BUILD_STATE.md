@@ -266,10 +266,15 @@ registered yet — it must be set before the first store build, or the native ap
   - **Verified after the fix**: the app reached the API and rendered the server's own answer — a
     real OTP round trip, and a genuine "That code isn't right" rendered from a real rejection. Before
     the fix the same tap produced no request at all.
-  - **Known issue, not yet fixed**: `AuthService.requestOtp` discards a non-2xx response, so a
-    rate-limited or refused request still advances the user to the code screen to wait for a code
-    that was never sent. The offline fallback should key on a THROWN request (no answer), the same
-    distinction the write queue already makes between a transport failure and an HTTP error.
+  - **Fixed (follow-up): a refused OTP request no longer sends the user to wait for nothing.**
+    `requestOtp` discarded its result, so a rate limit or a rejected number still advanced to the
+    code screen — the user sat there until the resend timer expired with no idea why. It now returns
+    `sent` / `refused` / `unreachable`, keeping the three apart the same way the write queue
+    separates an HTTP error from a transport failure: a REFUSAL is the server answering and is shown
+    in place; only a thrown request takes the offline path. **Verified against a real rate limit**
+    (P1-02's 3/hr per phone, driven for real rather than stubbed): the app stays on welcome and
+    renders the server's own words — "Too many verification codes requested. Please wait and try
+    again." — in the danger tone where the hint would be.
   - **STILL NOT verified**: secure token storage at rest. It needs a completed login, and the OTP
     limits (3/hr per phone, 10/hr per IP — P1-02, working as designed) were exhausted by the
     debugging above. Everything up to the final verify step is now proven on device.

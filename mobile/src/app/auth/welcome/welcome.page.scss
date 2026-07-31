@@ -101,6 +101,13 @@ ion-content {
 .hint {
   margin: var(--hm-space-sm) 0 0;
   font-size: 0.78rem;
+
+  // A refusal takes the hint's place, so it needs to read as a different KIND of message — the
+  // danger tone plus weight, not just different words in the same grey.
+  &.error {
+    color: var(--hm-color-status-danger);
+    font-weight: 600;
+  }
 }
 
 // ---- Footer CTA --------------------------------------------------------
