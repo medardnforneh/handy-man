@@ -94,6 +94,8 @@
     "quote": "Devis",
     "verified": "Vérifié",
     "distance": "à {{km}} km",
+    "in_category": "Prestataires de cette catégorie",
+    "clear_filter": "Tout afficher",
     "no_providers": "Aucun prestataire ne correspond à ce filtre."
   },
   "money": {

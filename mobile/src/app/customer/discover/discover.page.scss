@@ -111,6 +111,16 @@ ion-searchbar {
     ion-icon { font-size: 1.5rem; }
   }
 
+  // Selected: the rail below is filtered to this trade. Marked by filling the tile rather than by
+  // colour alone, so the state survives a colour-blind reading and a dimmed screen in sunlight.
+  &.on .ic {
+    background: var(--hm-color-brand-primary);
+    border-color: var(--hm-color-brand-primary);
+    color: var(--hm-color-brand-onPrimary);
+  }
+
+  &.on .cat-label { color: var(--hm-color-brand-primary); }
+
   .cat-label {
     display: block;
     font-size: 0.7rem;

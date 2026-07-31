@@ -94,6 +94,8 @@
     "quote": "Quote",
     "verified": "Verified",
     "distance": "{{km}} km away",
+    "in_category": "Providers in this category",
+    "clear_filter": "Show all",
     "no_providers": "No providers match this filter yet."
   },
   "money": {

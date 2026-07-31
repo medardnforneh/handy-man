@@ -27,6 +27,8 @@ export class DiscoverPage {
 
   readonly categories = this.customers.categories;
   readonly mode = signal<ModeFilter>('onsite');
+  /** The selected trade, or null for the whole pool. */
+  readonly category = signal<string | null>(null);
   /** Demo cards until the real rail loads (and when there is no network) — never mixed. */
   readonly providers = signal<Provider[]>(this.customers.listProviders('onsite'));
 
@@ -43,14 +45,25 @@ export class DiscoverPage {
   }
 
   /**
+   * Tap a category to narrow the rail to that trade; tap it again to clear. A toggle rather than a
+   * one-way selection because the only other way back to everything would be reloading the tab.
+   */
+  toggleCategory(id: string): void {
+    this.category.update((current) => (current === id ? null : id));
+    void this.load();
+  }
+
+  /**
    * Load the real rail. This endpoint is public, so it works before sign-in — the one screen where
    * that matters most, since it is what a new customer looks at to decide whether to bother.
    */
   private async load(): Promise<void> {
     const mode = this.mode();
-    const real = await this.customers.fetchProviders(mode);
-    // Ignore a response that lost the race with a faster tap on another segment.
-    if (real !== null && this.mode() === mode) {
+    const category = this.category();
+    const real = await this.customers.fetchProviders(mode, category ?? undefined);
+    // Ignore a response that lost the race with a faster tap on another segment or category —
+    // otherwise a slow request for the previous filter overwrites the list the user is looking at.
+    if (real !== null && this.mode() === mode && this.category() === category) {
       this.providers.set(real);
     }
   }

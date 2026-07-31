@@ -61,6 +61,8 @@
   "discover.verified": "Vérifié",
   "discover.distance": "à :km km",
   "money.currency": "FCFA",
+  "discover.in_category": "Prestataires de cette catégorie",
+  "discover.clear_filter": "Tout afficher",
   "discover.no_providers": "Aucun prestataire ne correspond à ce filtre.",
   "jobs.title": "Vos travaux",
   "jobs.empty": "Vous n'avez pas encore de travaux. Trouvez de l'aide pour commencer.",

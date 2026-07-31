@@ -61,6 +61,8 @@
   "discover.verified": "Verified",
   "discover.distance": ":km km away",
   "money.currency": "FCFA",
+  "discover.in_category": "Providers in this category",
+  "discover.clear_filter": "Show all",
   "discover.no_providers": "No providers match this filter yet.",
   "jobs.title": "Your jobs",
   "jobs.empty": "You have no jobs yet. Find help to get started.",

@@ -397,7 +397,8 @@ export class CustomerService {
     // `hybrid` is a JOB's mode, not a provider's — a provider either travels or doesn't, so it maps
     // onto the on-site pool rather than inventing a third kind of listing.
     const apiMode = mode === 'remote' ? 'remote' : mode === 'both' ? undefined : 'onsite';
-    const skill = categoryId === undefined ? undefined : this.categories().find((c) => c.id === categoryId)?.id;
+    // A category's `id` IS its taxonomy slug (see loadCategories), which is what the endpoint takes.
+    const skill = categoryId;
     const locale = this.locales.current;
 
     const { value } = await this.cache.through(

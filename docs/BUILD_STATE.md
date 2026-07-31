@@ -230,13 +230,27 @@ registered yet — it must be set before the first store build, or the native ap
     entry). Both are token-driven (light+dark, no-literal-colour + no-bare-string linters clean),
     English-default with a working FR/EN switch, and the responsive shell now really shows a side
     rail on web (the split-pane `ion-tabs` overlap bug was fixed) and a tab bar on phones.
-  - **Still owed:** the discover search box and category taps don't filter the rail yet, and an
-    on-device pass (emulator/handset) for the things only a device can prove. The messages tab, the
-    discover rail and the provider profile are now real. The
+  - **Still owed:** the discover search box (free-text over trades — `/skills/search` exists and is
+    unused by the app), the "See all" / "Map" affordances, and an on-device pass (emulator/handset)
+    for the things only a device can prove. The messages tab, the discover rail (with working
+    category filters) and the provider profile are now real. The
     public/SEO Blade pages, the realtime/media surfaces (P4-04..07), the offline layer (P5-02) and
     the PWA/Android build (P5-01) have all landed.
 
 ## What was done, most recent first
+
+- **Discover categories actually filter.** The category rail was decorative — twelve real trades that
+  did nothing when tapped. Now a tap narrows the provider list to that trade **server-side**
+  (`?skill=`), a second tap clears it, the tile fills to show it is selected (a fill, not colour
+  alone, so the state survives a colour-blind reading or a dimmed screen in sunlight), and the
+  section heading changes from "Top providers near you" to "Providers in this category" — leaving the
+  old heading over a filtered list would quietly misdescribe it. A stale response for a
+  since-changed filter is discarded rather than overwriting what the user is looking at.
+  - **Verified** in a real browser: 8 providers → 1 for `skill=hvac-and-refrigeration`, tile marked,
+    heading changed, and back to 8 on clear. (The doubled requests in the network log are CORS
+    preflights from the cross-origin dev setup — one GET per load, and none in production, which is
+    same-origin.)
+  - Still decorative on this screen: the search box, "See all" and "Map".
 
 - **The provider profile no longer needs a job (`GET /providers/{party}`).** The profile screen could
   only get a headline by re-reading a job's match list, so it **bailed out entirely without a `?job=`
