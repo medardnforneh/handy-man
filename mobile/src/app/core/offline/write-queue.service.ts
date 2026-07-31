@@ -1,5 +1,6 @@
 import { DestroyRef, Injectable, effect, inject, signal, untracked } from '@angular/core';
 import { api } from '../../api/client';
+import { uuid } from '../uuid';
 import { ConnectivityService } from './connectivity.service';
 import { OUTBOX_STORE, idb } from './idb';
 
@@ -102,7 +103,7 @@ function problemDetail(error: unknown): string | undefined {
 
 /** A time-ordered id: sorts by queue time in IndexedDB's key order, still globally unique. */
 function orderedId(): string {
-  return `${Date.now().toString().padStart(14, '0')}-${crypto.randomUUID()}`;
+  return `${Date.now().toString().padStart(14, '0')}-${uuid()}`;
 }
 
 /**
@@ -200,7 +201,7 @@ export class WriteQueue {
       path: spec.path,
       pathParams: spec.pathParams ?? {},
       body: spec.body,
-      idempotencyKey: crypto.randomUUID(),
+      idempotencyKey: uuid(),
       queuedAt: Date.now(),
       attempts: 0,
       nextAttemptAt: 0,

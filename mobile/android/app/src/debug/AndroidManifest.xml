@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  DEBUG-ONLY manifest overlay.
+
+  Android 9+ blocks cleartext HTTP, so a packaged debug build cannot reach a developer's plain-HTTP
+  API (`10.0.2.2:8100` from the emulator, or `localhost:8100` via `adb reverse`). Without this the
+  app fails silently: AuthService treats an unreachable backend as "offline" and walks on to the
+  next screen, so it looks like it works while talking to nothing.
+
+  Scoped to the `debug` source set on purpose — the release manifest never gets this attribute, and
+  production talks HTTPS. `tools:replace` is needed because the main manifest already declares the
+  attribute (as false, the platform default).
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <application
+        android:usesCleartextTraffic="true"
+        tools:replace="android:usesCleartextTraffic" />
+
+</manifest>

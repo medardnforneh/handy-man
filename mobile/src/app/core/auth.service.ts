@@ -6,6 +6,7 @@ import { OfflineCache } from './offline/offline-cache.service';
 import { WriteQueue } from './offline/write-queue.service';
 import { RealtimeService } from './realtime.service';
 import { secureStore } from './secure-store';
+import { uuid } from './uuid';
 
 const AUTH_KEY = 'authed';
 const TOKEN_KEY = 'access_token';
@@ -53,7 +54,7 @@ export class AuthService {
     try {
       await api.POST('/auth/otp/request', {
         body: { phone_e164: phoneE164, purpose: 'login' },
-        params: { header: { 'Idempotency-Key': crypto.randomUUID() } },
+        params: { header: { 'Idempotency-Key': uuid() } },
       });
     } catch {
       // Backend unreachable — the offline fixture demo still proceeds to the verify screen.
@@ -72,7 +73,7 @@ export class AuthService {
     try {
       const { data, error } = await api.POST('/auth/otp/verify', {
         body: { phone_e164: this.pendingPhone, code, purpose: 'login' },
-        params: { header: { 'Idempotency-Key': crypto.randomUUID() } },
+        params: { header: { 'Idempotency-Key': uuid() } },
       });
       if (error !== undefined || data === undefined) {
         return false; // reachable backend rejected the code (wrong/expired) — a real failure
@@ -106,7 +107,7 @@ export class AuthService {
         }
         const { data, error } = await api.POST('/auth/refresh', {
           body: { refresh_token: refresh },
-          params: { header: { 'Idempotency-Key': crypto.randomUUID() } },
+          params: { header: { 'Idempotency-Key': uuid() } },
         });
         if (error !== undefined || data === undefined) {
           await this.logout();

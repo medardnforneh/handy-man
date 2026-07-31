@@ -19,6 +19,22 @@ const config: CapacitorConfig = {
   appName: 'HandyMan',
   webDir: 'www',
   ...(nativeDev ? { server: { cleartext: true } } : {}),
+  plugins: {
+    /**
+     * Route `fetch` through the native HTTP stack on device.
+     *
+     * The app is served from `https://localhost` in a packaged build, so a call to any `http://`
+     * API is MIXED CONTENT and the WebView refuses it — independently of Android's cleartext
+     * policy. Observed on an emulator: `CapacitorHttp` reached the API while a plain `fetch` threw
+     * "Failed to fetch". Native transport also skips CORS entirely, so the preflight round trip
+     * before every request disappears — which matters on the connections this product targets.
+     *
+     * This has teeth: multipart uploads (voice notes, P4-05; report photos, P5-04) and binary
+     * responses (the authorized media route) go through a different implementation on device than
+     * in the browser, so those paths are the ones to re-check after any Capacitor upgrade.
+     */
+    CapacitorHttp: { enabled: true },
+  },
 };
 
 export default config;

@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { environment } from '../../environments/environment';
+import { uuid } from '../core/uuid';
 import { api } from './client';
 import { tokenStore } from './token-store';
 
@@ -135,7 +136,7 @@ export class ApiService {
    */
   async setLocalePreference(locale: 'fr' | 'en') {
     const { data, error } = await api.PATCH('/me/preferences', {
-      params: { header: { 'Idempotency-Key': crypto.randomUUID() } },
+      params: { header: { 'Idempotency-Key': uuid() } },
       body: { locale },
     });
     if (error) {
@@ -156,7 +157,7 @@ export class ApiService {
     }
 
     const { data, error } = await api.POST('/jobs/{job}/voice-messages', {
-      params: { path: { job: jobId }, header: { 'Idempotency-Key': crypto.randomUUID() } },
+      params: { path: { job: jobId }, header: { 'Idempotency-Key': uuid() } },
       body: form as never,
       bodySerializer: (body: unknown) => body as FormData,
     });
@@ -208,7 +209,7 @@ export class ApiService {
   /** Approve a milestone — releases its escrow slice to the provider (P3-10). Customer-gated. */
   async approveMilestone(milestoneId: string): Promise<void> {
     const { error } = await api.POST('/milestones/{milestone}/approve', {
-      params: { path: { milestone: milestoneId }, header: { 'Idempotency-Key': crypto.randomUUID() } },
+      params: { path: { milestone: milestoneId }, header: { 'Idempotency-Key': uuid() } },
     });
     if (error) {
       throw error;
@@ -235,7 +236,7 @@ export class ApiService {
   }) {
     const { data, error } = await api.POST('/jobs', {
       body,
-      params: { header: { 'Idempotency-Key': crypto.randomUUID() } },
+      params: { header: { 'Idempotency-Key': uuid() } },
     });
     if (error) {
       throw error;
@@ -246,7 +247,7 @@ export class ApiService {
   /** Publish a draft job (draft → open) so providers can be found (P2-03). */
   async publishJob(id: string): Promise<void> {
     const { error } = await api.POST('/jobs/{job}/publish', {
-      params: { path: { job: id }, header: { 'Idempotency-Key': crypto.randomUUID() } },
+      params: { path: { job: id }, header: { 'Idempotency-Key': uuid() } },
     });
     if (error) {
       throw error;
@@ -285,7 +286,7 @@ export class ApiService {
   /** Mark a conversation read (clears its unread badge). Forward-only and idempotent server-side. */
   async markConversationRead(conversationId: string): Promise<void> {
     const { error } = await api.POST('/conversations/{conversation}/read', {
-      params: { path: { conversation: conversationId }, header: { 'Idempotency-Key': crypto.randomUUID() } },
+      params: { path: { conversation: conversationId }, header: { 'Idempotency-Key': uuid() } },
     });
     if (error) {
       throw error;
@@ -295,7 +296,7 @@ export class ApiService {
   /** Post a free-form text message to the thread (P4-02). Structured kinds are rejected server-side. */
   async postMessage(jobId: string, body: string) {
     const { data, error } = await api.POST('/jobs/{job}/messages', {
-      params: { path: { job: jobId }, header: { 'Idempotency-Key': crypto.randomUUID() } },
+      params: { path: { job: jobId }, header: { 'Idempotency-Key': uuid() } },
       body: { body },
     });
     if (error) {
@@ -389,7 +390,7 @@ export class ApiService {
   /** Check in at the job site (P5-03) — opens a work session with geo, narrates `arrived`. */
   async checkIn(engagementId: string, latitude?: number, longitude?: number, accuracyM?: number) {
     const { data, error } = await api.POST('/engagements/{engagement}/check-in', {
-      params: { path: { engagement: engagementId }, header: { 'Idempotency-Key': crypto.randomUUID() } },
+      params: { path: { engagement: engagementId }, header: { 'Idempotency-Key': uuid() } },
       body: { latitude, longitude, accuracy_m: accuracyM },
     });
     if (error) {
@@ -401,7 +402,7 @@ export class ApiService {
   /** Check out (P5-03) — closes the open work session with the end geo. */
   async checkOut(engagementId: string, latitude?: number, longitude?: number, accuracyM?: number) {
     const { data, error } = await api.POST('/engagements/{engagement}/check-out', {
-      params: { path: { engagement: engagementId }, header: { 'Idempotency-Key': crypto.randomUUID() } },
+      params: { path: { engagement: engagementId }, header: { 'Idempotency-Key': uuid() } },
       body: { latitude, longitude, accuracy_m: accuracyM },
     });
     if (error) {
@@ -413,7 +414,7 @@ export class ApiService {
   /** Emit a structured status signal (P5-06) — narrated into the workspace timeline. */
   async recordStatus(engagementId: string, status: ProviderStatusSignal) {
     const { data, error } = await api.POST('/engagements/{engagement}/status', {
-      params: { path: { engagement: engagementId }, header: { 'Idempotency-Key': crypto.randomUUID() } },
+      params: { path: { engagement: engagementId }, header: { 'Idempotency-Key': uuid() } },
       body: { status },
     });
     if (error) {
@@ -441,7 +442,7 @@ export class ApiService {
     });
 
     const { data, error } = await api.POST('/engagements/{engagement}/report', {
-      params: { path: { engagement: engagementId }, header: { 'Idempotency-Key': crypto.randomUUID() } },
+      params: { path: { engagement: engagementId }, header: { 'Idempotency-Key': uuid() } },
       // The generated body type describes the multipart FIELDS; the wire form is a FormData that
       // the serializer passes through untouched, so fetch sets the boundary itself.
       body: form as never,
@@ -459,7 +460,7 @@ export class ApiService {
    */
   async submitDeliverable(engagementId: string, title: string, mediaUrl?: string) {
     const { data, error } = await api.POST('/engagements/{engagement}/deliverables', {
-      params: { path: { engagement: engagementId }, header: { 'Idempotency-Key': crypto.randomUUID() } },
+      params: { path: { engagement: engagementId }, header: { 'Idempotency-Key': uuid() } },
       body: { title, media_url: mediaUrl ?? null },
     });
     if (error) {
@@ -475,7 +476,7 @@ export class ApiService {
    */
   async submitQuotation(jobId: string, quote: QuotationInput) {
     const { data, error } = await api.POST('/jobs/{job}/quotations', {
-      params: { path: { job: jobId }, header: { 'Idempotency-Key': crypto.randomUUID() } },
+      params: { path: { job: jobId }, header: { 'Idempotency-Key': uuid() } },
       body: {
         lines: quote.lines.map((l) => ({
           kind: l.kind,
@@ -497,7 +498,7 @@ export class ApiService {
   /** Accept a direct offer → forms the engagement (P2-06). Provider-gated; may 409 on a fact gate. */
   async acceptOffer(offerId: string) {
     const { data, error } = await api.POST('/offers/{offer}/accept', {
-      params: { path: { offer: offerId }, header: { 'Idempotency-Key': crypto.randomUUID() } },
+      params: { path: { offer: offerId }, header: { 'Idempotency-Key': uuid() } },
     });
     if (error) {
       throw error;
@@ -517,7 +518,7 @@ export class ApiService {
   /** Send a direct offer to a provider for one of the caller's jobs (P2-05). Owner-gated, idempotent. */
   async createDirectOffer(jobId: string, providerPartyId: string, message?: string) {
     const { data, error } = await api.POST('/jobs/{job}/offers', {
-      params: { path: { job: jobId }, header: { 'Idempotency-Key': crypto.randomUUID() } },
+      params: { path: { job: jobId }, header: { 'Idempotency-Key': uuid() } },
       body: { provider_party_id: providerPartyId, message: message ?? null },
     });
     if (error) {

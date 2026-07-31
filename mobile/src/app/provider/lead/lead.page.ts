@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { IonicModule, ToastController } from '@ionic/angular';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
+import { uuid } from '../../core/uuid';
 import { MoneyPipe } from '../../customer/money.pipe';
 import { Lead, QuoteDraft, QuoteLine, QuoteLineKind } from '../provider.models';
 import { ProviderService } from '../provider.service';
@@ -116,7 +117,7 @@ export class ProviderLeadPage {
 
   addLine(): void {
     this.lines.update((rows) => [...rows, {
-      id: crypto.randomUUID(),
+      id: uuid(),
       kind: 'labour',
       label: '',
       quantity: 1,

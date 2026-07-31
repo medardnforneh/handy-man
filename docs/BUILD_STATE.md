@@ -242,6 +242,38 @@ registered yet — it must be set before the first store build, or the native ap
 
 ## What was done, most recent first
 
+- **On-device pass, round two: native networking fixed, and a compatibility bug that broke every
+  write on older WebViews.** Both decisions from round one were taken: `mobile/android` and
+  `mobile/ios` are **no longer gitignored** (the native projects hold app-specific config — manifest,
+  icons, signing, plugin registrations — that has nowhere else to live; their own generated
+  `.gitignore` already excludes the parts that really are build output), and **`CapacitorHttp` is
+  enabled app-wide**.
+  - **BUG 2 fixed.** With `fetch` routed through the native HTTP stack, the WebView reached the
+    plain-HTTP dev API for the first time (`HTTP 200` where it had thrown "Failed to fetch"). Native
+    transport also skips CORS, so the preflight before every request disappears. The trade recorded
+    in `capacitor.config.ts`: multipart uploads (voice notes, report photos) and binary responses
+    (the media route) now use a different implementation on device than in the browser, so those are
+    the paths to re-check after any Capacitor upgrade.
+  - **BUG 3 (the serious one): `crypto.randomUUID` does not exist before Chrome 92.** The app minted
+    every Idempotency-Key with it — in `AuthService`, all 15 `ApiService` writes, the offline write
+    queue, the quote composer. On the emulator's WebView (Chrome 91) **every unsafe write in the app
+    threw**, and `AuthService` catches and walks on, so the app advanced to the code-entry screen
+    having never requested a code. Android's System WebView is updatable but frequently isn't — a
+    cheap handset that has never had a WebView update is precisely this product's target device.
+    Replaced with `core/uuid.ts`, which prefers `randomUUID`, falls back to `getRandomValues` (these
+    are idempotency keys: a repeat would make two distinct writes look like a replay of one), and
+    only then to `Math.random`.
+  - **Verified after the fix**: the app reached the API and rendered the server's own answer — a
+    real OTP round trip, and a genuine "That code isn't right" rendered from a real rejection. Before
+    the fix the same tap produced no request at all.
+  - **Known issue, not yet fixed**: `AuthService.requestOtp` discards a non-2xx response, so a
+    rate-limited or refused request still advances the user to the code screen to wait for a code
+    that was never sent. The offline fallback should key on a THROWN request (no answer), the same
+    distinction the write queue already makes between a transport failure and an HTTP error.
+  - **STILL NOT verified**: secure token storage at rest. It needs a completed login, and the OTP
+    limits (3/hr per phone, 10/hr per IP — P1-02, working as designed) were exhausted by the
+    debugging above. Everything up to the final verify step is now proven on device.
+
 - **First on-device pass (Android emulator) — the APK really runs, and two real networking bugs.**
   No AVD existed; created one (`android-31`, x86_64), booted it headless, installed the debug APK.
   - **Verified on the device**: the app installs and launches with no crash, renders correctly

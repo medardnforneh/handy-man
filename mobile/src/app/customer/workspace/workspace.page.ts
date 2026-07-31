@@ -6,6 +6,7 @@ import { TranslatePipe } from '@ngx-translate/core';
 import { OfflineStripComponent } from '../../core/offline/offline-strip.component';
 import { WriteQueue } from '../../core/offline/write-queue.service';
 import { RealtimeService, Unsubscribe } from '../../core/realtime.service';
+import { uuid } from '../../core/uuid';
 import { Recording, VoiceRecorderService } from '../../core/voice-recorder.service';
 import { CustomerService } from '../customer.service';
 import { JobStatus, WorkspaceMessage, WorkspaceThread } from '../customer.models';
@@ -240,7 +241,7 @@ export class WorkspacePage implements OnDestroy {
     }
     this.sending.set(true);
 
-    const localId = `local-${crypto.randomUUID()}`;
+    const localId = `local-${uuid()}`;
     this.append({
       id: localId,
       kind: 'text',
