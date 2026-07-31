@@ -168,6 +168,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/providers/{party}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * One provider's public card (public)
+         * @description The same minimisation as the browse list — headline, verification badge, shrunk rating, trades. Keyed by PARTY, so a profile does not depend on the route the viewer arrived by.
+         *     Returns 404, never an empty profile, when the provider is suspended or blocked in either direction: a party id is guessable from any page that shows one, so a loadable profile would make a block cosmetic.
+         */
+        get: operations["showProvider"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/providers/{party}/metrics": {
         parameters: {
             query?: never;
@@ -2619,6 +2640,33 @@ export interface operations {
                 };
             };
             422: components["responses"]["ValidationProblem"];
+        };
+    };
+    showProvider: {
+        parameters: {
+            query?: {
+                locale?: "fr" | "en";
+            };
+            header?: never;
+            path: {
+                party: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The provider's public card */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["PublicProvider"];
+                    };
+                };
+            };
+            404: components["responses"]["Problem"];
         };
     };
     providerMetrics: {

@@ -794,46 +794,52 @@ export class CustomerService {
   }
 
   /**
-   * The real public provider profile: the matched-provider resource (for the headline/skills/bio) plus
-   * the display-safe metrics (P6-12) and published double-blind reviews (P6-08). Needs the job context
-   * because the only public source of a provider's headline is the job's match list. Returns null on
-   * failure so the caller keeps the fixture profile.
+   * The real public provider profile: their public card, the display-safe metrics (P6-12) and the
+   * published double-blind reviews (P6-08).
+   *
+   * Keyed by PARTY alone. It used to need a job id, because the only public source of a headline was
+   * that job's match list — so arriving from anywhere else (the discover rail, a rebook) fell back
+   * to demo data. `GET /providers/{party}` removed that dependency: a public profile shouldn't
+   * depend on the route the viewer took to reach it. Returns null when the provider is suspended,
+   * blocked or unknown (the endpoint 404s), and the caller keeps what it had.
    */
-  async fetchProviderProfile(partyId: string, jobId: string): Promise<ProviderProfile | null> {
-    try {
-      const [providers, metrics, reviews]: [ApiProvider[], ApiMetrics, ApiReview[]] = await Promise.all([
-        this.api.jobProviders(jobId),
+  async fetchProviderProfile(partyId: string): Promise<ProviderProfile | null> {
+    const locale = this.locales.current;
+    const { value } = await this.cache.through(`provider:${partyId}:${locale}`, async () => {
+      const [card, metrics, reviews] = await Promise.all([
+        this.api.provider(partyId, locale),
         this.api.providerMetrics(partyId),
         this.api.providerReviews(partyId),
       ]);
-      const base = providers.find((p) => p.party_id === partyId);
-      if (!base) {
-        return null;
-      }
-      const headline = base.headline ?? '';
-      const skills = (base.skills ?? []).map((s) => this.skillLabel(s)).filter(Boolean);
-      return {
-        id: partyId,
-        name: headline || (skills[0] ?? ''),
-        initials: headlineInitials(headline || (skills[0] ?? '')),
-        headline: skills[0] ?? headline,
-        accent: accentFor(partyId),
-        verified: verifiedTier(base.verification_tier),
-        mode: this.providerMode(base),
-        city: '', // the public resource never exposes a precise location (PII)
-        ratingAvg: metrics.rating_avg ?? null,
-        ratingCount: metrics.rating_count,
-        jobsCompleted90d: metrics.jobs_completed_90d,
-        onTimeRate: metrics.on_time_rate ?? null,
-        responseTime: '', // not a public signal yet — the stat card hides when empty
-        memberSince: '', // not exposed publicly — the line hides when empty
-        skills,
-        about: base.bio ?? '',
-        reviews: reviews.map((r) => this.mapReview(r)),
-      };
-    } catch {
+      return { card, metrics, reviews };
+    });
+
+    if (value === null) {
       return null;
     }
+    const { card, metrics, reviews } = value;
+    const headline = card.headline ?? '';
+    const skills = (card.skills ?? []).map((s) => s.name ?? '').filter(Boolean);
+
+    return {
+      id: partyId,
+      name: headline || (skills[0] ?? ''),
+      initials: headlineInitials(headline || (skills[0] ?? '')),
+      headline: skills[0] ?? headline,
+      accent: accentFor(partyId),
+      verified: verifiedTier(card.verification_tier),
+      mode: card.serves_onsite === true ? 'onsite' : 'remote',
+      city: '', // the public resource never exposes a location at all (PII)
+      ratingAvg: metrics.rating_avg ?? null,
+      ratingCount: metrics.rating_count,
+      jobsCompleted90d: metrics.jobs_completed_90d,
+      onTimeRate: metrics.on_time_rate ?? null,
+      responseTime: '', // not a public signal yet — the stat card hides when empty
+      memberSince: '', // not exposed publicly — the line hides when empty
+      skills,
+      about: card.bio ?? '',
+      reviews: reviews.map((r) => this.mapReview(r)),
+    };
   }
 
   /** Map one published review. The author is anonymised server-side — the client shows no name. */

@@ -93,6 +93,20 @@ export class ApiService {
     return data.data;
   }
 
+  /**
+   * One provider's public card, keyed by party. 404s for a suspended or blocked provider, which is
+   * why the caller treats a failure as "no such provider" rather than "try again".
+   */
+  async provider(partyId: string, locale?: 'fr' | 'en') {
+    const { data, error } = await api.GET('/providers/{party}', {
+      params: { path: { party: partyId }, query: { locale } },
+    });
+    if (error) {
+      throw error;
+    }
+    return data.data;
+  }
+
   /** The signed-in user (P1-03) — requires the Bearer. Drives the account/profile identity. */
   async me() {
     const { data, error } = await api.GET('/auth/me');

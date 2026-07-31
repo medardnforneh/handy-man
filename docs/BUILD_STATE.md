@@ -230,15 +230,30 @@ registered yet — it must be set before the first store build, or the native ap
     entry). Both are token-driven (light+dark, no-literal-colour + no-bare-string linters clean),
     English-default with a working FR/EN switch, and the responsive shell now really shows a side
     rail on web (the split-pane `ion-tabs` overlap bug was fixed) and a tab bar on phones.
-  - **Still owed:** the provider-profile screen still falls back to fixtures (it needs the job
-    context to resolve a headline, so a party-keyed public profile endpoint is the missing piece),
-    the discover search box and category taps don't filter the rail yet, and an on-device pass
-    (emulator/handset) for the things only a device can prove. The messages tab and the discover
-    rail are now real. The
+  - **Still owed:** the discover search box and category taps don't filter the rail yet, and an
+    on-device pass (emulator/handset) for the things only a device can prove. The messages tab, the
+    discover rail and the provider profile are now real. The
     public/SEO Blade pages, the realtime/media surfaces (P4-04..07), the offline layer (P5-02) and
     the PWA/Android build (P5-01) have all landed.
 
 ## What was done, most recent first
+
+- **The provider profile no longer needs a job (`GET /providers/{party}`).** The profile screen could
+  only get a headline by re-reading a job's match list, so it **bailed out entirely without a `?job=`
+  in the URL** and showed demo data — which is exactly the path a customer takes when they tap a card
+  on the discover rail. A public profile should not depend on the route the viewer arrived by.
+  - Same minimisation as the browse list (it is the same resource). Returns **404, never an empty
+    profile**, when the provider is suspended or blocked in either direction: a party id is guessable
+    from any page that shows one, so a still-loadable profile would make a block cosmetic — hiding
+    them from the list is only half the job.
+  - The screen keeps its `?job=` for the *offer* flow, which genuinely needs a job. Only the read
+    stopped depending on it.
+  - **A display bug this exposed**: with no listed trade, the sub-headline falls back to the headline
+    — which is already the name directly above it, so the profile printed the same string twice. It
+    now renders only when it differs.
+  - **Verified**: 4 more backend tests (suite 437 passed) and a real browser tapping through discover
+    → profile with **no `?job=` in the URL**, showing that provider's real bio, "No ratings yet" and
+    the below-floor on-time treatment.
 
 - **The discover rail is real (new public `GET /providers`).** The app's home screen browsed five
   hard-coded providers. `ProviderSearch` couldn't back it: it answers "who can do THIS job", needing

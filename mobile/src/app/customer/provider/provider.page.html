@@ -22,7 +22,12 @@
       </div>
 
       <div class="hero-sub">
-        <span>{{ p.headline }}</span>
+        <!-- The sub-line is the trade. A provider with no listed skill has nothing else to say here,
+             and its fallback is the headline — which is already the name above it, so showing it
+             again reads as a rendering fault rather than information. -->
+        @if (p.headline && p.headline !== p.name) {
+          <span>{{ p.headline }}</span>
+        }
         @if (p.city) {
           <span class="dot" aria-hidden="true"></span>
           <span class="hm-muted"><ion-icon name="location-outline" aria-hidden="true"></ion-icon>{{ p.city }}</span>

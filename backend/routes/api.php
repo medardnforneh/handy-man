@@ -84,6 +84,10 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
     // directory. Public by design: a customer judges whether the marketplace has anyone worth
     // hiring before signing up. A Bearer is optional and only makes blocks apply (P6-07).
     Route::get('/providers', [ProviderDirectoryController::class, 'index'])->name('providers.index');
+    // One provider's public card. Same minimisation as the list, and 404 (never an empty profile)
+    // when they are suspended or blocked either way — a party id is guessable from any page that
+    // shows one, so a loadable profile would make the block cosmetic.
+    Route::get('/providers/{party}', [ProviderDirectoryController::class, 'show'])->name('providers.show');
 
     // Published reviews for a party (P6-08) — public reputation signal.
     Route::get('/providers/{party}/reviews', [ReviewController::class, 'forParty'])->name('providers.reviews.index');

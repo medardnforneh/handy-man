@@ -29,6 +29,28 @@ use Illuminate\Database\Eloquent\Collection;
 final class PublicProviderDirectory
 {
     /**
+     * One provider's public card, by party.
+     *
+     * Returns null — a 404, not an empty profile — whenever they should not be visible to this
+     * viewer: no profile, suspended, or blocked in either direction. Hiding them here matters as
+     * much as hiding them from the list: a party id is guessable from any page that shows one, so a
+     * "they don't appear in search but their profile still loads" gap would make the block cosmetic.
+     */
+    public function show(string $partyId, ?string $viewerPartyId = null): ?ProviderProfile
+    {
+        if ($viewerPartyId !== null && Block::existsBetween($viewerPartyId, $partyId)) {
+            return null;
+        }
+
+        return ProviderProfile::query()
+            ->where('party_id', $partyId)
+            ->whereNull('suspended_at')
+            ->withCount('serviceAreas')
+            ->with(['skills.skill'])
+            ->first();
+    }
+
+    /**
      * @param  string|null  $skillSlug  A leaf trade to filter by; null browses the whole pool.
      * @param  string|null  $viewerPartyId  The signed-in party, when there is one — used only to
      *                                      honour blocks. Anonymous browsing passes null.

@@ -252,6 +252,36 @@ paths:
                   data: { type: array, items: { $ref: "#/components/schemas/PublicProvider" } }
         "422": { $ref: "#/components/responses/ValidationProblem" }
 
+  /providers/{party}:
+    get:
+      tags: [Platform]
+      operationId: showProvider
+      summary: One provider's public card (public)
+      security: []
+      description: >
+        The same minimisation as the browse list — headline, verification badge, shrunk rating,
+        trades. Keyed by PARTY, so a profile does not depend on the route the viewer arrived by.
+
+        Returns 404, never an empty profile, when the provider is suspended or blocked in either
+        direction: a party id is guessable from any page that shows one, so a loadable profile would
+        make a block cosmetic.
+      parameters:
+        - { name: party, in: path, required: true, schema: { type: string, format: uuid } }
+        - name: locale
+          in: query
+          schema: { type: string, enum: [fr, en] }
+      responses:
+        "200":
+          description: The provider's public card
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data: { $ref: "#/components/schemas/PublicProvider" }
+        "404": { $ref: "#/components/responses/Problem" }
+
   /providers/{party}/metrics:
     get:
       tags: [Platform]

@@ -56,4 +56,22 @@ final class ProviderDirectoryController extends Controller
 
         return PublicProviderResource::collection($providers);
     }
+
+    /**
+     * One provider's public card, keyed by PARTY.
+     *
+     * Before this, the app's profile screen could only get a headline by re-reading a job's match
+     * list, which meant it needed a job it might not have — and fell back to demo data when it
+     * didn't. A public profile shouldn't depend on the route the viewer arrived by.
+     */
+    public function show(Request $request, string $party, PublicProviderDirectory $directory): PublicProviderResource
+    {
+        /** @var User|null $user */
+        $user = $request->user('sanctum');
+
+        $profile = $directory->show($party, $user?->party_id);
+        abort_if($profile === null, 404, 'No such provider.');
+
+        return PublicProviderResource::make($profile);
+    }
 }

@@ -8,6 +8,7 @@ use App\Models\ProviderSkill;
 use App\Models\ServiceArea;
 use App\Models\Skill;
 use App\Models\User;
+use Illuminate\Support\Str;
 use Laravel\Sanctum\Sanctum;
 
 /**
@@ -164,6 +165,43 @@ it('splits on-site from remote by whether a service area exists, without reveali
     $card = test()->getJson("/api/v1/providers?skill={$skill->slug}&mode=onsite")->json('data.0');
     expect($card['serves_onsite'])->toBeTrue()
         ->and($card)->not->toHaveKey('service_areas');
+});
+
+it('serves one provider public card by party, with no job context needed', function () {
+    $profile = providerOffering(leafSkill(), ['headline' => 'Plomberie Akwa']);
+
+    test()->getJson("/api/v1/providers/{$profile->party_id}")
+        ->assertOk()
+        ->assertJsonPath('data.party_id', $profile->party_id)
+        ->assertJsonPath('data.headline', 'Plomberie Akwa');
+});
+
+it('404s a suspended provider card rather than serving an empty profile', function () {
+    $profile = providerOffering(leafSkill(), ['suspended_at' => now()]);
+
+    test()->getJson("/api/v1/providers/{$profile->party_id}")->assertNotFound();
+});
+
+it('404s the card of a party blocked in either direction', function () {
+    $profile = providerOffering(leafSkill());
+    $customer = User::factory()->create();
+    Block::query()->create([
+        'party_id' => $customer->party_id,
+        'blocked_party_id' => $profile->party_id,
+    ]);
+
+    // A party id is guessable from anywhere one is shown, so a still-loadable profile would make the
+    // block cosmetic — hiding them from the list is only half the job.
+    Sanctum::actingAs($customer);
+    test()->getJson("/api/v1/providers/{$profile->party_id}")->assertNotFound();
+
+    // The same card is fine for an unrelated visitor: a block is between two parties, not a ban.
+    Sanctum::actingAs(User::factory()->create());
+    test()->getJson("/api/v1/providers/{$profile->party_id}")->assertOk();
+});
+
+it('404s an unknown party', function () {
+    test()->getJson('/api/v1/providers/'.Str::uuid()->toString())->assertNotFound();
 });
 
 it('ranks verified providers above unverified, then by rating', function () {

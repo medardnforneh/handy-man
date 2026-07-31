@@ -39,11 +39,13 @@ export class ProviderPage {
     void this.loadReal();
   }
 
+  /**
+   * The real profile, keyed by party alone. This used to bail out entirely without a job in the
+   * query string — so arriving from the discover rail showed demo data — because a headline could
+   * only be read out of a job's match list. `GET /providers/{party}` removed that dependency.
+   */
   private async loadReal(): Promise<void> {
-    if (this.jobId === null) {
-      return; // no job context → no public source for the headline; keep the fixture
-    }
-    const real = await this.customers.fetchProviderProfile(this.partyId, this.jobId);
+    const real = await this.customers.fetchProviderProfile(this.partyId);
     if (real !== null) {
       this.provider.set(real);
     }
