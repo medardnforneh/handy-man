@@ -304,6 +304,26 @@
     "quote_pending_customer": {
       "title": "Un devis vous attend",
       "body": "{{provider}} vous a envoyé un devis. Acceptez-le ou posez une question — cela prend un instant."
+    },
+    "job_unquoted": {
+      "title": "Personne n’a encore répondu",
+      "body": "Votre demande est toujours ouverte. Ajouter une photo ou un budget accélère souvent les réponses."
+    },
+    "site_visit_reminder": {
+      "title": "Visite technique à venir",
+      "body": "Votre prestataire doit passer voir le travail avant de vous établir un devis."
+    },
+    "job_starting_soon": {
+      "title": "Votre mission commence bientôt",
+      "body": "Votre prestataire doit commencer sous peu. Écrivez-lui si quelque chose a changé."
+    },
+    "awaiting_approval": {
+      "title": "Un travail attend votre validation",
+      "body": "Votre prestataire a soumis son travail. Vérifiez-le et validez, ou indiquez ce qui doit être repris."
+    },
+    "payout_ready": {
+      "title": "Votre argent est disponible",
+      "body": "Vous avez un solde disponible. Retirez-le sur votre compte mobile money quand vous le souhaitez."
     }
   },
   "provider": {

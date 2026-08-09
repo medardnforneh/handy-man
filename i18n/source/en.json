@@ -450,5 +450,15 @@
     "followup.maintenance_due.title": "Time to service your {{service}}?",
     "followup.maintenance_due.body": "It has been a while since your last {{service}}. Book the same provider again in a couple of taps.",
     "followup.quote_pending_customer.title": "A quote is waiting for you",
-    "followup.quote_pending_customer.body": "{{provider}} sent you a quote. Accept it or ask a question — it only takes a moment."
+    "followup.quote_pending_customer.body": "{{provider}} sent you a quote. Accept it or ask a question — it only takes a moment.",
+    "followup.job_unquoted.title": "No one has responded yet",
+    "followup.job_unquoted.body": "Your request is still open. Adding a photo or a budget usually brings replies faster.",
+    "followup.site_visit_reminder.title": "Site visit coming up",
+    "followup.site_visit_reminder.body": "Your provider is due to visit and take a look before quoting.",
+    "followup.job_starting_soon.title": "Your job starts soon",
+    "followup.job_starting_soon.body": "Your provider is booked to start shortly. Message them if anything has changed.",
+    "followup.awaiting_approval.title": "Work is waiting for your review",
+    "followup.awaiting_approval.body": "Your provider has submitted their work. Take a look and accept it, or say what needs fixing.",
+    "followup.payout_ready.title": "Your money is ready to withdraw",
+    "followup.payout_ready.body": "You have a balance available. Withdraw it to your mobile money account whenever you like."
 }

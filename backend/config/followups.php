@@ -27,4 +27,19 @@ return [
     */
     'quote_pending_hours' => (int) env('FOLLOWUPS_QUOTE_PENDING_HOURS', 24),
     'quote_expiring_lead_hours' => (int) env('FOLLOWUPS_QUOTE_EXPIRING_LEAD_HOURS', 24),
+
+    /*
+    |--------------------------------------------------------------------------
+    | The rest of the doc-07 catalogue
+    |--------------------------------------------------------------------------
+    */
+    // A job open with nobody offering — the customer's most likely moment to give up on us.
+    'job_unquoted_hours' => (int) env('FOLLOWUPS_JOB_UNQUOTED_HOURS', 6),
+
+    // Work submitted and waiting on the customer, well before the auto-approve deadline warning.
+    'awaiting_approval_hours' => (int) env('FOLLOWUPS_AWAITING_APPROVAL_HOURS', 24),
+
+    // Don't tell a provider to withdraw a trivial balance: the message costs us and the transfer
+    // costs them. 50 000 XAF is a withdrawal worth making a trip for.
+    'payout_ready_threshold_minor' => (int) env('FOLLOWUPS_PAYOUT_READY_THRESHOLD_MINOR', 50_000),
 ];

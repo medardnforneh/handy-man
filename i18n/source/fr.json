@@ -450,5 +450,15 @@
     "followup.maintenance_due.title": "C’est le moment d’entretenir votre {{service}} ?",
     "followup.maintenance_due.body": "Cela fait un moment depuis votre dernier {{service}}. Reprenez le même prestataire en quelques clics.",
     "followup.quote_pending_customer.title": "Un devis vous attend",
-    "followup.quote_pending_customer.body": "{{provider}} vous a envoyé un devis. Acceptez-le ou posez une question — cela prend un instant."
+    "followup.quote_pending_customer.body": "{{provider}} vous a envoyé un devis. Acceptez-le ou posez une question — cela prend un instant.",
+    "followup.job_unquoted.title": "Personne n’a encore répondu",
+    "followup.job_unquoted.body": "Votre demande est toujours ouverte. Ajouter une photo ou un budget accélère souvent les réponses.",
+    "followup.site_visit_reminder.title": "Visite technique à venir",
+    "followup.site_visit_reminder.body": "Votre prestataire doit passer voir le travail avant de vous établir un devis.",
+    "followup.job_starting_soon.title": "Votre mission commence bientôt",
+    "followup.job_starting_soon.body": "Votre prestataire doit commencer sous peu. Écrivez-lui si quelque chose a changé.",
+    "followup.awaiting_approval.title": "Un travail attend votre validation",
+    "followup.awaiting_approval.body": "Votre prestataire a soumis son travail. Vérifiez-le et validez, ou indiquez ce qui doit être repris.",
+    "followup.payout_ready.title": "Votre argent est disponible",
+    "followup.payout_ready.body": "Vous avez un solde disponible. Retirez-le sur votre compte mobile money quand vous le souhaitez."
 }

@@ -3,13 +3,20 @@
 declare(strict_types=1);
 
 use App\Domain\Engagements\Actions\CompleteEngagement;
+use App\Domain\Jobs\Actions\PublishJob;
+use App\Domain\Offers\Actions\CreateDirectOffer;
+use App\Domain\Quotations\Actions\CompleteSiteVisit;
+use App\Domain\Quotations\Actions\ScheduleSiteVisit;
 use App\Domain\Reviews\Actions\SubmitReview;
 use App\Domain\Warranties\Actions\IssueWarranty;
+use App\Domain\Workspace\Actions\ReviewDeliverable;
+use App\Domain\Workspace\Actions\SubmitDeliverable;
 use App\Models\Engagement;
 use App\Models\FollowUp;
 use App\Models\Job;
 use App\Models\Skill;
 use App\Models\User;
+use App\Support\Outbox;
 use App\Support\OutboxRelay;
 use Database\Seeders\SkillsSeeder;
 use Illuminate\Support\Str;
@@ -138,4 +145,80 @@ it('seeds maintenance intervals only on trades that recur', function () {
         ->and(Skill::query()->where('slug', 'custom-furniture')->value('maintenance_interval_days'))->toBeNull()
         // The list is deliberately short: most of the taxonomy schedules nothing.
         ->and(Skill::query()->whereNotNull('maintenance_interval_days')->count())->toBeLessThan(10);
+});
+
+it('nudges a customer whose published job nobody has offered on, and stops the moment one does', function () {
+    // doc 07: a job open with no offers is the customer's most likely moment to give up on us.
+    $customer = User::factory()->create();
+    // The factory already defaults to draft, which is what PublishJob expects.
+    $job = Job::factory()->create([
+        'customer_party_id' => $customer->party_id, 'created_by_user_id' => $customer->id,
+    ]);
+
+    app(PublishJob::class)->handle($job);
+    app(OutboxRelay::class)->drain();
+
+    expect(FollowUp::query()->where('kind', 'job_unquoted')->where('status', 'scheduled')->count())->toBe(1);
+
+    app(CreateDirectOffer::class)->handle($job->fresh(), User::factory()->create()->party_id);
+    app(OutboxRelay::class)->drain();
+
+    expect(FollowUp::query()->where('kind', 'job_unquoted')->where('status', 'scheduled')->count())->toBe(0)
+        ->and(FollowUp::query()->where('kind', 'job_unquoted')->where('status', 'cancelled')->count())->toBe(1);
+});
+
+it('reminds a customer of a site visit a day and two hours out, and cancels once it happens', function () {
+    $customer = User::factory()->create();
+    $provider = User::factory()->create();
+    $job = Job::factory()->create(['customer_party_id' => $customer->party_id, 'created_by_user_id' => $customer->id]);
+    $at = now()->addDays(5);
+
+    $visit = app(ScheduleSiteVisit::class)->handle($provider, $job, $at, false, 0);
+    app(OutboxRelay::class)->drain();
+
+    $due = FollowUp::query()->where('kind', 'site_visit_reminder')->orderBy('scheduled_for')->pluck('scheduled_for');
+    expect($due)->toHaveCount(2)
+        ->and($due[0]->toDateTimeString())->toBe($at->copy()->subHours(24)->toDateTimeString())
+        ->and($due[1]->toDateTimeString())->toBe($at->copy()->subHours(2)->toDateTimeString());
+
+    app(CompleteSiteVisit::class)->handle($visit, null, null);
+    app(OutboxRelay::class)->drain();
+
+    expect(FollowUp::query()->where('kind', 'site_visit_reminder')->where('status', 'scheduled')->count())->toBe(0);
+});
+
+// `grantPayable()` is declared in tests/Feature/Money/PayoutTest.php — Pest test helpers are global
+// once loaded, so it is reused here rather than redeclared (which is a fatal error).
+it('tells a provider their money is withdrawable once the balance is worth withdrawing', function () {
+    // doc 07 `payout_ready`. Nudging someone to withdraw a pittance costs us a message and costs
+    // them a transfer fee, so it is gated on a threshold rather than fired on every release.
+    config()->set('followups.payout_ready_threshold_minor', 100_000);
+
+    ['engagement' => $engagement, 'provider' => $provider] = orchestrationEngagement();
+
+    grantPayable($provider, 20_000);
+    app(Outbox::class)->publish('milestone.approved', ['engagement_id' => $engagement->id]);
+    app(OutboxRelay::class)->drain();
+    expect(FollowUp::query()->where('kind', 'payout_ready')->count())->toBe(0);
+
+    grantPayable($provider, 200_000); // now well over the threshold
+    app(Outbox::class)->publish('milestone.approved', ['engagement_id' => $engagement->id]);
+    app(OutboxRelay::class)->drain();
+    expect(FollowUp::query()->where('kind', 'payout_ready')->count())->toBe(1);
+});
+
+it('nudges a customer that submitted work is waiting on them, and stops when they review it', function () {
+    ['engagement' => $engagement, 'provider' => $provider, 'customer' => $customer] = orchestrationEngagement();
+
+    $deliverable = app(SubmitDeliverable::class)->handle($provider, $engagement, 'Design files');
+    app(OutboxRelay::class)->drain();
+
+    // Two distinct messages: "this is waiting on you", and later "it auto-approves tomorrow".
+    expect(FollowUp::query()->where('kind', 'awaiting_approval')->where('status', 'scheduled')->count())->toBe(1)
+        ->and(FollowUp::query()->where('kind', 'auto_approve_warning')->where('status', 'scheduled')->count())->toBe(1);
+
+    app(ReviewDeliverable::class)->handle($deliverable, true);
+    app(OutboxRelay::class)->drain();
+
+    expect(FollowUp::query()->whereIn('kind', ['awaiting_approval', 'auto_approve_warning'])->where('status', 'scheduled')->count())->toBe(0);
 });

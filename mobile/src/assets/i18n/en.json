@@ -304,6 +304,26 @@
     "quote_pending_customer": {
       "title": "A quote is waiting for you",
       "body": "{{provider}} sent you a quote. Accept it or ask a question — it only takes a moment."
+    },
+    "job_unquoted": {
+      "title": "No one has responded yet",
+      "body": "Your request is still open. Adding a photo or a budget usually brings replies faster."
+    },
+    "site_visit_reminder": {
+      "title": "Site visit coming up",
+      "body": "Your provider is due to visit and take a look before quoting."
+    },
+    "job_starting_soon": {
+      "title": "Your job starts soon",
+      "body": "Your provider is booked to start shortly. Message them if anything has changed."
+    },
+    "awaiting_approval": {
+      "title": "Work is waiting for your review",
+      "body": "Your provider has submitted their work. Take a look and accept it, or say what needs fixing."
+    },
+    "payout_ready": {
+      "title": "Your money is ready to withdraw",
+      "body": "You have a balance available. Withdraw it to your mobile money account whenever you like."
     }
   },
   "provider": {
