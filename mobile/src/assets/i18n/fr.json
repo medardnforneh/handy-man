@@ -97,7 +97,8 @@
     "no_trade_match": "Aucun métier ne correspond à « {{query}} ». Essayez un autre mot.",
     "in_category": "Prestataires de cette catégorie",
     "clear_filter": "Tout afficher",
-    "no_providers": "Aucun prestataire ne correspond à ce filtre."
+    "no_providers": "Aucun prestataire ne correspond à ce filtre.",
+    "show_less": "Réduire"
   },
   "money": {
     "currency": "FCFA"

@@ -436,5 +436,6 @@
   "crm.jobs_count_other": ":count missions",
   "crm.completed_count_one": ":count terminée",
   "crm.completed_count_other": ":count terminées",
-  "crm.more_for": "Plus d’options pour :name"
+  "crm.more_for": "Plus d’options pour :name",
+  "discover.show_less": "Réduire"
 }

@@ -436,5 +436,6 @@
     "crm.jobs_count_other": "{{count}} jobs",
     "crm.completed_count_one": "{{count}} completed",
     "crm.completed_count_other": "{{count}} completed",
-    "crm.more_for": "More options for {{name}}"
+    "crm.more_for": "More options for {{name}}",
+    "discover.show_less": "Show less"
 }

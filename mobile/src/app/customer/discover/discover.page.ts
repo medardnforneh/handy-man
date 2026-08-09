@@ -26,6 +26,8 @@ export class DiscoverPage {
   readonly userInitials = this.customers.me;
 
   readonly categories = this.customers.categories;
+  /** False = the horizontal rail (default), true = every category laid out as a grid. */
+  readonly allCategories = signal(false);
   readonly mode = signal<ModeFilter>('onsite');
   /** The selected trade, or null for the whole pool. */
   readonly category = signal<string | null>(null);
@@ -102,6 +104,14 @@ export class DiscoverPage {
   toggleCategory(id: string): void {
     this.category.update((current) => (current === id ? null : id));
     void this.load();
+  }
+
+  /**
+   * Swap the category rail between a horizontal scroller and a full grid. Purely a layout change —
+   * the same categories are already in memory either way, so it costs no request and works offline.
+   */
+  toggleAllCategories(): void {
+    this.allCategories.update((on) => !on);
   }
 
   /**

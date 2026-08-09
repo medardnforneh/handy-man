@@ -86,6 +86,20 @@ ion-searchbar {
   padding-inline: var(--hm-space-md);
 
   &::-webkit-scrollbar { display: none; }
+
+  // "See all": the same tiles, laid out as a grid instead of a swipeable rail. `auto-fill` with a
+  // 74px minimum keeps the tiles at their designed size and simply fits as many per row as there is
+  // room for — 4 on a 360px phone, more on a tablet, without a breakpoint per device.
+  &.expanded {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(74px, 1fr));
+    row-gap: var(--hm-space-md);
+    overflow-x: visible;
+
+    // The rail pins each tile to 74px so it can't be squeezed by its neighbours; in the grid the
+    // cell already does that job, and a fixed width would leave ragged gaps between columns.
+    .cat { width: auto; }
+  }
 }
 
 // Trade matches under the search box. In normal flow rather than an overlay: a dropdown floating

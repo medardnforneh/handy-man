@@ -97,7 +97,8 @@
     "no_trade_match": "No trade matches “{{query}}”. Try a different word.",
     "in_category": "Providers in this category",
     "clear_filter": "Show all",
-    "no_providers": "No providers match this filter yet."
+    "no_providers": "No providers match this filter yet.",
+    "show_less": "Show less"
   },
   "money": {
     "currency": "FCFA"

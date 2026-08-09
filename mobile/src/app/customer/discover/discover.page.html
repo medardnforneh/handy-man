@@ -56,12 +56,24 @@
       </ion-segment-button>
     </ion-segment>
 
+    <!-- The rail holds every category, but a horizontal scroller hides most of them behind a swipe —
+         and "is there a category for my problem?" is exactly the question someone opens this screen
+         with. "See all" lays them out as a grid. No request: the taxonomy is already in memory, so
+         this works offline like the rest of the category path. -->
     <div class="hm-section-head">
       <h2>{{ 'discover.categories' | translate }}</h2>
-      <a href="#">{{ 'discover.see_all' | translate }}</a>
+      <a
+        role="button"
+        tabindex="0"
+        [attr.aria-expanded]="allCategories()"
+        (click)="toggleAllCategories()"
+        (keyup.enter)="toggleAllCategories()"
+      >
+        {{ (allCategories() ? 'discover.show_less' : 'discover.see_all') | translate }}
+      </a>
     </div>
 
-    <div class="cats">
+    <div class="cats" [class.expanded]="allCategories()">
       @for (cat of categories(); track cat.id) {
         <button
           class="cat hm-tap"
