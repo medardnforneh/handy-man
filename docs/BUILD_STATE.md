@@ -3,8 +3,8 @@
 > Living tracker for the build. Updated as work progresses. Source of truth for **where we
 > are** and **how this machine is set up**. Read this first when resuming.
 
-_Last updated: 2026-08-09 (the provider client book — P7-08's missing screen; discover "See all";
-two real bugs found while verifying them: API 500-instead-of-401, and a non-ISO timestamp)_
+_Last updated: 2026-08-09 (on-device: secure storage PROVEN + two total device-only bugs fixed; the
+provider client book P7-08; discover "See all"; API 500-instead-of-401; a non-ISO timestamp)_
 
 ## Environment (this dev machine — Windows 10 Pro, non-admin)
 
@@ -235,14 +235,52 @@ registered yet — it must be set before the first store build, or the native ap
     location at all), so there was no map of providers to show and the link had never done anything.
     The affordance and its i18n key are gone; customers find someone through search, categories and
     the ranked rail. Discover now has **zero dead links** (verified in a browser).
-  - **Still owed:** on-device proof of secure token storage; and an iOS build (never attempted —
-    needs macOS/Xcode).
+  - **Secure token storage: VERIFIED on device 2026-08-09** (see the entry below). The claim that
+    had rested on the plugin's own guarantees since P5-01 is now demonstrated.
+  - **Still owed:** an iOS build (never attempted — needs macOS/Xcode); and voice notes / report
+    photos on device (the one multipart path the native-transport fix could not be proven against).
     The messages tab, the discover rail (search + category filters + "See all"), the provider
     profile, the **provider client book (P7-08)**, the public/SEO Blade pages, the realtime/media
     surfaces (P4-04..07), the offline layer (P5-02) and the PWA/Android build (P5-01) have all
     landed, and native networking on device now works (CapacitorHttp).
 
 ## What was done, most recent first
+
+- **On-device round three: secure storage finally PROVEN, and the packaged app was profoundly
+  broken in two ways no browser can show.** Driven by attaching to the APK's WebView over the debug
+  protocol (`adb forward` → CDP) rather than tapping coordinates — this is the technique that makes
+  device work tractable, and it is how all of the below was found.
+  - **The two bugs.** Capacitor routes `fetch` through the OS HTTP stack (enabled app-wide in round
+    two so the WebView could reach the API at all). Its patched `fetch` is not a drop-in:
+    1. **Every write arrived empty.** The patch reads the request BODY from its second argument
+       only, and openapi-fetch calls `fetch(request)` — one `Request`, no init. Headers survive; the
+       body does not. An OTP request reached the server with no phone number and came back 422 "the
+       phone e164 field is required", which reads exactly like a client validation bug.
+    2. **Every read came back as nothing.** The synthesized response reports `Content-Length: 0`
+       whatever the body is (a 679-byte list claiming to be empty). openapi-fetch uses that header
+       to decide whether to parse, so every read resolved to `data: undefined`; callers threw on
+       `data.data`, the offline cache caught the throw as "could not refresh", and each screen fell
+       back to its FIXTURE. **The app looked healthy while showing demo data on every surface** —
+       server logs showed traffic, the UI showed no error.
+    Fixed in `mobile/src/app/api/client.ts` (`sendRequest` + `normalizeNativeResponse`). Verified:
+    a real OTP login completes on device, and discover renders the server's own answer (UUID ids,
+    "No ratings yet" against a null rating, the real taxonomy) where it had shown "4.9 ★ · 2.1 km".
+  - **Secure token storage — VERIFIED, the claim P5-01 could only assert.** After a real login on
+    device: `shared_prefs/CapacitorStorage.xml` (the PLAIN preferences file) contains **only**
+    `authed=1` — no tokens; `WSSecureStorageSharedPreferences.xml` holds
+    `capacitor-storage_refresh_token` and `..._access_token` as **base64 ciphertext**, neither
+    resembling the `NN|…` Sanctum token nor the 64-hex refresh token. A **cold restart** (force-stop
+    → relaunch) lands straight on `/tabs/discover` rather than `/welcome`, and the server log shows
+    the restored session calling the `auth:sanctum`-gated `/auth/me` — so the bytes on disk are
+    encrypted **and** the app decrypts them. Note the plugin's raw bridge `get` returns null (it
+    expects the JS wrapper's tagged format), which is why earlier attempts read nothing.
+  - **Reproduce**: `emulator -avd handyman -no-window -gpu swiftshader_indirect`; `HM_NATIVE_DEV=1
+    npx cap sync android`; `gradlew assembleDebug`; `adb install -r`; then
+    `adb shell cat /proc/net/unix | grep webview_devtools` → `adb forward tcp:9222 localabstract:<socket>`
+    and speak CDP to `http://127.0.0.1:9222/json/list`. **Note: `Network.*` CDP events show nothing**
+    — native-transport requests never touch the WebView stack; watch the `php artisan serve` log
+    instead. The dev build exposes `window.ng`, so `ng.getComponent(host)` reads live signal state,
+    which is how "the data arrived but the component still holds fixtures" was pinned down.
 
 - **The provider client book (P7-08) — the CRM's missing screen, plus two real bugs it surfaced.**
   P7-08's backend has existed since Phase 7 (customer list with history + LTV, manual re-engagement
