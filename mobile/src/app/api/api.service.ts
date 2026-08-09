@@ -529,6 +529,18 @@ export class ApiService {
   }
 
   /**
+   * The provider's work funnel (P7-08) — offers awaiting an answer, quotes out with the customer,
+   * work in flight, work completed in the window. Counts and values only; not a weighted forecast.
+   */
+  async providerPipeline() {
+    const { data, error } = await api.GET('/provider/pipeline');
+    if (error) {
+      throw error;
+    }
+    return data.data;
+  }
+
+  /**
    * Schedule a manual re-engagement nudge for one customer (P7-08). Rides the SAME budget and
    * consent gates as an automated follow-up, so a 422 here is the platform refusing to let a
    * provider over-contact someone — the `detail` is worth showing verbatim.

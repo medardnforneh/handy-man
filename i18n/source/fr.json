@@ -410,8 +410,8 @@
     "work.deliverable.submitted": "En attente de validation",
     "work.deliverable.accepted": "Accepté",
     "work.deliverable.rejected": "Modifications demandées",
-    "crm.title": "Clients",
-    "crm.home_hint": "Votre historique, la valeur générée et les relances",
+    "crm.title": "Mon activité",
+    "crm.home_hint": "Votre pipeline, l’historique clients et les relances",
     "crm.search_placeholder": "Rechercher un client",
     "crm.stat.clients": "Clients",
     "crm.stat.repeat": "Fidèles",
@@ -436,5 +436,15 @@
     "crm.completed_count_one": "{{count}} terminée",
     "crm.completed_count_other": "{{count}} terminées",
     "crm.more_for": "Plus d’options pour {{name}}",
-    "discover.show_less": "Réduire"
+    "discover.show_less": "Réduire",
+    "crm.tab.pipeline": "Pipeline",
+    "crm.tab.clients": "Clients",
+    "crm.stage.leads": "En attente de votre réponse",
+    "crm.stage.quoted": "Devis chez le client",
+    "crm.stage.engaged": "Travaux en cours",
+    "crm.stage.completed": "Terminés",
+    "crm.no_price_yet": "Pas encore de prix convenu",
+    "crm.pipeline_note": "Les nombres et les montants proviennent de vos propres offres, devis et missions. Rien ici n’est une prévision.",
+    "crm.pipeline_empty_title": "Rien dans le pipeline pour l’instant",
+    "crm.pipeline_empty_body": "Les offres reçues, les devis envoyés et les missions gagnées apparaîtront ici au fil de leur avancement."
 }

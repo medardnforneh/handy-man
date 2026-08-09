@@ -410,8 +410,8 @@
   "work.deliverable.submitted": "Awaiting review",
   "work.deliverable.accepted": "Accepted",
   "work.deliverable.rejected": "Changes requested",
-  "crm.title": "Clients",
-  "crm.home_hint": "Your history, lifetime value, and re-engagement",
+  "crm.title": "My business",
+  "crm.home_hint": "Your pipeline, client history and re-engagement",
   "crm.search_placeholder": "Search a client",
   "crm.stat.clients": "Clients",
   "crm.stat.repeat": "Came back",
@@ -436,5 +436,15 @@
   "crm.completed_count_one": ":count completed",
   "crm.completed_count_other": ":count completed",
   "crm.more_for": "More options for :name",
-  "discover.show_less": "Show less"
+  "discover.show_less": "Show less",
+  "crm.tab.pipeline": "Pipeline",
+  "crm.tab.clients": "Clients",
+  "crm.stage.leads": "Waiting on your answer",
+  "crm.stage.quoted": "Quotes with the customer",
+  "crm.stage.engaged": "Work in progress",
+  "crm.stage.completed": "Completed",
+  "crm.no_price_yet": "No price agreed yet",
+  "crm.pipeline_note": "Counts and amounts come from your own offers, quotes and jobs. Nothing here is a forecast.",
+  "crm.pipeline_empty_title": "Nothing in the pipeline yet",
+  "crm.pipeline_empty_body": "Offers you receive, quotes you send and jobs you win will show up here as they move."
 }

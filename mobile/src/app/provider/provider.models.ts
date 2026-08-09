@@ -186,3 +186,17 @@ export interface ProviderClient {
   lastEngagedLabel: string | null;
   doNotContact: boolean;
 }
+
+/** The four stages of the provider's work funnel (P7-08). Order is the funnel's own order. */
+export type PipelineStage = 'leads' | 'quoted' | 'engaged' | 'completed';
+
+/**
+ * One stage of the funnel: how many, and what it is worth. `valueMinor` is 0 rather than null when
+ * the work carries no stated price — the count is still real, and guessing at the money would
+ * overstate the funnel in exactly the direction a provider wants to believe.
+ */
+export interface PipelineEntry {
+  stage: PipelineStage;
+  count: number;
+  valueMinor: number;
+}

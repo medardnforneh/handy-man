@@ -5,8 +5,8 @@ import { LocaleService } from '../core/locale.service';
 import { OfflineCache } from '../core/offline/offline-cache.service';
 import { WriteQueue, WriteSpec } from '../core/offline/write-queue.service';
 import {
-  ActiveWork, Lead, Payout, PayoutStatus, ProviderClient, ProviderIdentity, ProviderStats, QuoteDraft,
-  ReportDraft, WorkDetail, WorkStatus, ProviderWallet,
+  ActiveWork, Lead, Payout, PayoutStatus, PipelineEntry, PipelineStage, ProviderClient,
+  ProviderIdentity, ProviderStats, QuoteDraft, ReportDraft, WorkDetail, WorkStatus, ProviderWallet,
 } from './provider.models';
 
 /** The outcome of one execution mutation: accepted, or refused with the server's own explanation. */
@@ -520,6 +520,28 @@ export class ProviderService {
       lastEngagedAt: c.last_engaged_at ?? null,
       lastEngagedLabel: c.last_engaged_at ? this.relativeTime(c.last_engaged_at) || null : null,
       doNotContact: c.do_not_contact ?? false,
+    }));
+  }
+
+  /**
+   * The work funnel (GET /provider/pipeline, P7-08). Read-through cached like the client book — a
+   * remembered funnel is still a useful picture of the business when the network is not there.
+   *
+   * The stage ORDER is fixed here rather than trusted from the response: it is the funnel's own
+   * order (lead → quote → won → done), and a funnel drawn out of order stops being a funnel.
+   */
+  async fetchPipeline(): Promise<PipelineEntry[] | null> {
+    const { value } = await this.cache.through('provider:pipeline', () => this.api.providerPipeline());
+    if (value === null) {
+      return null;
+    }
+    const order: PipelineStage[] = ['leads', 'quoted', 'engaged', 'completed'];
+    const byStage = new Map((value.stages ?? []).map((s) => [s.stage as PipelineStage, s]));
+
+    return order.map((stage) => ({
+      stage,
+      count: byStage.get(stage)?.count ?? 0,
+      valueMinor: byStage.get(stage)?.value_minor ?? 0,
     }));
   }
 

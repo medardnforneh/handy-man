@@ -202,6 +202,7 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
 
         // Provider CRM (P7-08). Customer book + manual re-engagement (same budget) + do-not-contact.
         Route::get('/provider/customers', [ProviderCustomerController::class, 'index'])->name('provider.customers.index');
+        Route::get('/provider/pipeline', [ProviderCustomerController::class, 'pipeline'])->name('provider.pipeline');
         Route::post('/provider/customers/{party}/follow-up', [ProviderCustomerController::class, 'followUp'])->name('provider.customers.follow-up');
         Route::post('/provider/customers/{party}/do-not-contact', [ProviderCustomerController::class, 'setDoNotContact'])->name('provider.customers.dnc.set');
         Route::delete('/provider/customers/{party}/do-not-contact', [ProviderCustomerController::class, 'removeDoNotContact'])->name('provider.customers.dnc.remove');

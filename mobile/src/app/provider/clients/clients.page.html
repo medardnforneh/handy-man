@@ -36,12 +36,63 @@
         <ion-button expand="block" fill="outline" class="hm-tap retry" (click)="load()">
           {{ 'common.retry' | translate }}
         </ion-button>
-      } @else if ((clients() ?? []).length === 0) {
-        <div class="hm-empty first">
-          <h2>{{ 'crm.empty_title' | translate }}</h2>
-          <p>{{ 'crm.empty_body' | translate }}</p>
-        </div>
       } @else {
+        <!-- The CRM surface is two things (P7-08): the funnel of work, and the book of clients.
+             A segment rather than two screens — they answer "how is business?" together. -->
+        <ion-segment class="crm-tabs" [value]="tab()">
+          <ion-segment-button class="hm-tap" value="pipeline" (click)="showTab('pipeline')">
+            <ion-label>{{ 'crm.tab.pipeline' | translate }}</ion-label>
+          </ion-segment-button>
+          <ion-segment-button class="hm-tap" value="clients" (click)="showTab('clients')">
+            <ion-label>{{ 'crm.tab.clients' | translate }}</ion-label>
+          </ion-segment-button>
+        </ion-segment>
+
+        @if (tab() === 'pipeline') {
+          @if (pipeline() === null) {
+            <p class="hm-empty unreachable">{{ 'crm.unreachable' | translate }}</p>
+          } @else if (pipelineEmpty()) {
+            <div class="hm-empty first">
+              <h2>{{ 'crm.pipeline_empty_title' | translate }}</h2>
+              <p>{{ 'crm.pipeline_empty_body' | translate }}</p>
+            </div>
+          } @else {
+            <div class="funnel">
+              @for (s of pipeline(); track s.stage) {
+                <div class="stage" [class.none]="s.count === 0">
+                  <div class="stage-head">
+                    <b class="stage-name">{{ 'crm.stage.' + s.stage | translate }}</b>
+                    <span class="stage-count">{{ s.count }}</span>
+                  </div>
+                  <!-- Bars share one scale (the widest stage), so their lengths are comparable.
+                       Drawn with a div rather than a chart library: four numbers do not justify a
+                       payload on a low-end phone. -->
+                  <div class="bar-track" role="presentation">
+                    <div class="bar" [style.width.%]="barWidth(s)"></div>
+                  </div>
+                  <div class="stage-foot">
+                    @if (s.valueMinor > 0) {
+                      <span class="stage-value">{{ s.valueMinor | money }} <small>{{ 'money.currency' | translate }}</small></span>
+                    } @else if (s.count > 0) {
+                      <!-- Counted but unpriced. Saying so beats printing "0 FCFA", which reads as
+                           worthless rather than as not-yet-quoted. -->
+                      <span class="stage-value none">{{ 'crm.no_price_yet' | translate }}</span>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+            <p class="foot hm-muted">{{ 'crm.pipeline_note' | translate }}</p>
+          }
+        } @else if ((clients() ?? []).length === 0) {
+          <!-- An empty BOOK, not a failed load — and it no longer hides the funnel, because a new
+               provider with live leads and no completed job yet is exactly who has one and not the
+               other. -->
+          <div class="hm-empty first">
+            <h2>{{ 'crm.empty_title' | translate }}</h2>
+            <p>{{ 'crm.empty_body' | translate }}</p>
+          </div>
+        } @else {
         <!-- Summary: three counts, each derived from the list already on screen rather than a
              second request the provider would wait for. -->
         <div class="summary">
@@ -130,6 +181,7 @@
         }
 
         <p class="foot hm-muted">{{ 'crm.budget_note' | translate }}</p>
+        }
       }
     }
   </div>

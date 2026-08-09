@@ -500,8 +500,8 @@
     }
   },
   "crm": {
-    "title": "Clients",
-    "home_hint": "Votre historique, la valeur générée et les relances",
+    "title": "Mon activité",
+    "home_hint": "Votre pipeline, l’historique clients et les relances",
     "search_placeholder": "Rechercher un client",
     "stat": {
       "clients": "Clients",
@@ -527,6 +527,20 @@
     "jobs_count_other": "{{count}} missions",
     "completed_count_one": "{{count}} terminée",
     "completed_count_other": "{{count}} terminées",
-    "more_for": "Plus d’options pour {{name}}"
+    "more_for": "Plus d’options pour {{name}}",
+    "tab": {
+      "pipeline": "Pipeline",
+      "clients": "Clients"
+    },
+    "stage": {
+      "leads": "En attente de votre réponse",
+      "quoted": "Devis chez le client",
+      "engaged": "Travaux en cours",
+      "completed": "Terminés"
+    },
+    "no_price_yet": "Pas encore de prix convenu",
+    "pipeline_note": "Les nombres et les montants proviennent de vos propres offres, devis et missions. Rien ici n’est une prévision.",
+    "pipeline_empty_title": "Rien dans le pipeline pour l’instant",
+    "pipeline_empty_body": "Les offres reçues, les devis envoyés et les missions gagnées apparaîtront ici au fil de leur avancement."
   }
 }

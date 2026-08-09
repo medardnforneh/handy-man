@@ -5,6 +5,8 @@ declare(strict_types=1);
 use App\Models\Engagement;
 use App\Models\FollowUp;
 use App\Models\Job;
+use App\Models\JobOffer;
+use App\Models\Quotation;
 use App\Models\User;
 use Illuminate\Support\Str;
 use Laravel\Sanctum\Sanctum;
@@ -81,4 +83,77 @@ it('refuses a manual follow-up to a do-not-contact customer (P7-08)', function (
 
     expect(FollowUp::query()->count())->toBe(0);
     $this->getJson('/api/v1/provider/customers')->assertJsonPath('data.0.do_not_contact', true);
+});
+
+it('reports the work funnel from real rows, and leaves resolved work out of it', function () {
+    $provider = User::factory()->create();
+    $customer = User::factory()->create();
+    $job = fn () => Job::factory()->create(['customer_party_id' => $customer->party_id, 'created_by_user_id' => $customer->id]);
+
+    // Two offers awaiting an answer; one already declined (resolved — not a lead any more).
+    JobOffer::factory()->create(['job_id' => $job()->id, 'provider_party_id' => $provider->party_id, 'amount_minor' => 300_000]);
+    JobOffer::factory()->create(['job_id' => $job()->id, 'provider_party_id' => $provider->party_id, 'amount_minor' => 200_000]);
+    JobOffer::factory()->create(['job_id' => $job()->id, 'provider_party_id' => $provider->party_id, 'status' => 'declined', 'amount_minor' => 999_000]);
+
+    // One quote out with the customer; a draft is not the customer's to see and must not count.
+    Quotation::factory()->submitted()->create(['job_id' => $job()->id, 'provider_party_id' => $provider->party_id, 'subtotal_minor' => 750_000]);
+    Quotation::factory()->create(['job_id' => $job()->id, 'provider_party_id' => $provider->party_id, 'subtotal_minor' => 111_000]);
+
+    // One engagement in flight, one completed.
+    Engagement::factory()->create(['job_id' => $job()->id, 'provider_party_id' => $provider->party_id, 'agreed_amount_minor' => 400_000, 'completed_at' => null]);
+    Engagement::factory()->create(['job_id' => $job()->id, 'provider_party_id' => $provider->party_id, 'agreed_amount_minor' => 600_000, 'completed_at' => now()->subDay()]);
+
+    Sanctum::actingAs($provider);
+    $stages = collect($this->getJson('/api/v1/provider/pipeline')->assertOk()->json('data.stages'))
+        ->keyBy('stage');
+
+    expect($stages['leads'])->toMatchArray(['count' => 2, 'value_minor' => 500_000])
+        ->and($stages['quoted'])->toMatchArray(['count' => 1, 'value_minor' => 750_000])
+        ->and($stages['engaged'])->toMatchArray(['count' => 1, 'value_minor' => 400_000])
+        ->and($stages['completed'])->toMatchArray(['count' => 1, 'value_minor' => 600_000]);
+});
+
+it('counts a lead with no stated price without inventing a value for it', function () {
+    // A funnel that guesses at unpriced work overstates itself in exactly the direction a provider
+    // wants to believe. The lead is real, so it is counted; the money is unknown, so it is zero.
+    $provider = User::factory()->create();
+    $customer = User::factory()->create();
+    $job = Job::factory()->create([
+        'customer_party_id' => $customer->party_id, 'created_by_user_id' => $customer->id, 'budget_minor' => null,
+    ]);
+    JobOffer::factory()->create(['job_id' => $job->id, 'provider_party_id' => $provider->party_id, 'amount_minor' => null]);
+
+    Sanctum::actingAs($provider);
+    $leads = collect($this->getJson('/api/v1/provider/pipeline')->assertOk()->json('data.stages'))
+        ->firstWhere('stage', 'leads');
+
+    expect($leads)->toMatchArray(['count' => 1, 'value_minor' => 0]);
+});
+
+it('falls back to the job budget when an offer names no amount', function () {
+    $provider = User::factory()->create();
+    $customer = User::factory()->create();
+    $job = Job::factory()->create([
+        'customer_party_id' => $customer->party_id, 'created_by_user_id' => $customer->id, 'budget_minor' => 250_000,
+    ]);
+    JobOffer::factory()->create(['job_id' => $job->id, 'provider_party_id' => $provider->party_id, 'amount_minor' => null]);
+
+    Sanctum::actingAs($provider);
+    $leads = collect($this->getJson('/api/v1/provider/pipeline')->assertOk()->json('data.stages'))
+        ->firstWhere('stage', 'leads');
+
+    expect($leads)->toMatchArray(['count' => 1, 'value_minor' => 250_000]);
+});
+
+it('never shows one provider another provider\'s funnel', function () {
+    $mine = User::factory()->create();
+    $theirs = User::factory()->create();
+    $customer = User::factory()->create();
+    $job = Job::factory()->create(['customer_party_id' => $customer->party_id, 'created_by_user_id' => $customer->id]);
+    JobOffer::factory()->create(['job_id' => $job->id, 'provider_party_id' => $theirs->party_id, 'amount_minor' => 900_000]);
+
+    Sanctum::actingAs($mine);
+    $stages = collect($this->getJson('/api/v1/provider/pipeline')->assertOk()->json('data.stages'));
+
+    expect($stages->sum('count'))->toBe(0)->and($stages->sum('value_minor'))->toBe(0);
 });

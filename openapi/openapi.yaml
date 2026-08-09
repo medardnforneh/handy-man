@@ -483,6 +483,41 @@ paths:
                         do_not_contact: { type: boolean }
         "401": { $ref: "#/components/responses/Problem" }
 
+  /provider/pipeline:
+    get:
+      tags: [Platform]
+      operationId: providerPipeline
+      summary: The provider's work funnel (CRM pipeline)
+      description: >
+        Four stages read straight off existing rows — offers awaiting an answer, quotes out with the
+        customer, work in flight, and work completed inside the rolling window. Counts and values only;
+        deliberately not a weighted forecast.
+      responses:
+        "200":
+          description: The funnel
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: object
+                    required: [currency, window_days, stages]
+                    properties:
+                      currency: { type: string }
+                      window_days: { type: integer }
+                      stages:
+                        type: array
+                        items:
+                          type: object
+                          required: [stage, count, value_minor]
+                          properties:
+                            stage: { type: string, enum: [leads, quoted, engaged, completed] }
+                            count: { type: integer }
+                            value_minor: { type: integer }
+        "401": { $ref: "#/components/responses/Problem" }
+
   /provider/customers/{party}/follow-up:
     post:
       tags: [Platform]

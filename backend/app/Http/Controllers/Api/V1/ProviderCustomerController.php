@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Domain\FollowUps\Actions\ScheduleManualFollowUp;
 use App\Domain\FollowUps\ProviderCustomers;
+use App\Domain\FollowUps\ProviderPipeline;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Api\V1\FollowUpResource;
 use App\Models\DoNotContact;
@@ -22,6 +23,12 @@ final class ProviderCustomerController extends Controller
     public function index(Request $request, ProviderCustomers $customers): JsonResponse
     {
         return response()->json(['data' => $customers->forProvider($this->user($request)->party_id)]);
+    }
+
+    /** The work funnel (P7-08): offers awaiting an answer, quotes out, work in flight, work finished. */
+    public function pipeline(Request $request, ProviderPipeline $pipeline): JsonResponse
+    {
+        return response()->json(['data' => $pipeline->forProvider($this->user($request)->party_id)]);
     }
 
     public function followUp(Request $request, string $party, ScheduleManualFollowUp $action): JsonResponse

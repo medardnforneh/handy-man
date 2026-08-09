@@ -500,8 +500,8 @@
     }
   },
   "crm": {
-    "title": "Clients",
-    "home_hint": "Your history, lifetime value, and re-engagement",
+    "title": "My business",
+    "home_hint": "Your pipeline, client history and re-engagement",
     "search_placeholder": "Search a client",
     "stat": {
       "clients": "Clients",
@@ -527,6 +527,20 @@
     "jobs_count_other": "{{count}} jobs",
     "completed_count_one": "{{count}} completed",
     "completed_count_other": "{{count}} completed",
-    "more_for": "More options for {{name}}"
+    "more_for": "More options for {{name}}",
+    "tab": {
+      "pipeline": "Pipeline",
+      "clients": "Clients"
+    },
+    "stage": {
+      "leads": "Waiting on your answer",
+      "quoted": "Quotes with the customer",
+      "engaged": "Work in progress",
+      "completed": "Completed"
+    },
+    "no_price_yet": "No price agreed yet",
+    "pipeline_note": "Counts and amounts come from your own offers, quotes and jobs. Nothing here is a forecast.",
+    "pipeline_empty_title": "Nothing in the pipeline yet",
+    "pipeline_empty_body": "Offers you receive, quotes you send and jobs you win will show up here as they move."
   }
 }

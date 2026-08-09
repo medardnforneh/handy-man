@@ -14,6 +14,80 @@ ion-title { font-weight: 800; letter-spacing: -0.02em; }
   margin: 0 auto;
 }
 
+.crm-tabs {
+  --background: var(--hm-color-surface-sunken);
+  margin-bottom: var(--hm-space-md);
+}
+
+// ---- Work funnel (P7-08) -----------------------------------------------
+// Four rows with bars on a shared scale. Hand-drawn divs, not a chart library: four numbers do not
+// justify a charting payload on a low-end Android over a slow network.
+.funnel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--hm-space-md);
+
+  .stage {
+    // A stage with nothing in it stays on screen — the shape of the funnel is the information, and
+    // hiding empty stages would quietly redraw it.
+    &.none { opacity: 0.55; }
+  }
+
+  .stage-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--hm-space-sm);
+  }
+
+  .stage-name {
+    font-size: 0.92rem;
+    letter-spacing: -0.01em;
+    overflow-wrap: anywhere;
+  }
+
+  .stage-count {
+    flex: none;
+    font-size: 1.15rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .bar-track {
+    height: 10px;
+    margin-top: 0.4rem;
+    border-radius: var(--hm-radius-pill);
+    background: var(--hm-color-surface-sunken);
+    overflow: hidden;
+  }
+
+  .bar {
+    height: 100%;
+    border-radius: var(--hm-radius-pill);
+    background: var(--hm-color-brand-primary);
+    transition: width 240ms ease;
+  }
+
+  .stage-foot {
+    margin-top: 0.3rem;
+    min-height: 1rem;   // reserved, so rows do not jump as values load or a stage goes unpriced
+  }
+
+  .stage-value {
+    font-size: 0.82rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+
+    small { font-weight: 600; font-size: 0.68rem; opacity: 0.7; margin-inline-start: 0.15rem; }
+    &.none { font-weight: 600; color: var(--hm-color-text-muted); }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .funnel .bar { transition: none; }
+}
+
 // ---- Summary tiles -----------------------------------------------------
 // 3 across on anything roomy, 2 across on a phone (the money tile spans the row so a seven-figure
 // lifetime value never has to shrink to fit a third of 360px).

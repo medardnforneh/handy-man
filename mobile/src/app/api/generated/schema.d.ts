@@ -363,6 +363,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/provider/pipeline": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The provider's work funnel (CRM pipeline)
+         * @description Four stages read straight off existing rows — offers awaiting an answer, quotes out with the customer, work in flight, and work completed inside the rolling window. Counts and values only; deliberately not a weighted forecast.
+         */
+        get: operations["providerPipeline"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/provider/customers/{party}/follow-up": {
         parameters: {
             query?: never;
@@ -2957,6 +2977,38 @@ export interface operations {
                             last_engaged_at?: string | null;
                             do_not_contact?: boolean;
                         }[];
+                    };
+                };
+            };
+            401: components["responses"]["Problem"];
+        };
+    };
+    providerPipeline: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The funnel */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            currency: string;
+                            window_days: number;
+                            stages: {
+                                /** @enum {string} */
+                                stage: "leads" | "quoted" | "engaged" | "completed";
+                                count: number;
+                                value_minor: number;
+                            }[];
+                        };
                     };
                 };
             };

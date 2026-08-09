@@ -4,7 +4,7 @@ import { ActionSheetController, IonicModule, ToastController } from '@ionic/angu
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { MoneyPipe } from '../../customer/money.pipe';
 import { OfflineStripComponent } from '../../core/offline/offline-strip.component';
-import { ProviderClient } from '../provider.models';
+import { PipelineEntry, ProviderClient } from '../provider.models';
 import { ProviderService } from '../provider.service';
 
 /** Strip accents so "Rene" finds "René" — a phone keyboard rarely reaches for the accent. */
@@ -50,6 +50,20 @@ export class ProviderClientsPage {
   /** The party id of a row with a write in flight, so only that row's controls go busy. */
   readonly busy = signal<string | null>(null);
 
+  /** Which half of the CRM surface is showing — the funnel, or the client book. */
+  readonly tab = signal<'pipeline' | 'clients'>('pipeline');
+  readonly pipeline = signal<PipelineEntry[] | null>(null);
+
+  /** The widest stage, so the bars are drawn to a shared scale rather than each to its own. */
+  readonly pipelinePeak = computed(
+    () => Math.max(1, ...(this.pipeline() ?? []).map((s) => s.count)),
+  );
+
+  /** True when the funnel is genuinely empty — a new provider, not a failed load. */
+  readonly pipelineEmpty = computed(
+    () => (this.pipeline() ?? []).every((s) => s.count === 0),
+  );
+
   readonly filtered = computed(() => {
     const all = this.clients() ?? [];
     const q = fold(this.query().trim());
@@ -69,10 +83,25 @@ export class ProviderClientsPage {
 
   async load(): Promise<void> {
     this.loading.set(true);
-    const list = await this.provider.fetchClients();
-    this.unreachable.set(list === null);
+    // Both halves in parallel: this screen opens on the funnel, and a provider switching to the
+    // client book should not then wait for a second round trip on a slow network.
+    const [list, pipeline] = await Promise.all([
+      this.provider.fetchClients(),
+      this.provider.fetchPipeline(),
+    ]);
+    this.unreachable.set(list === null && pipeline === null);
     this.clients.set(list ?? []);
+    this.pipeline.set(pipeline);
     this.loading.set(false);
+  }
+
+  showTab(tab: 'pipeline' | 'clients'): void {
+    this.tab.set(tab);
+  }
+
+  /** Bar width as a percentage of the widest stage. Floored so a non-zero stage is always visible. */
+  barWidth(entry: PipelineEntry): number {
+    return entry.count === 0 ? 0 : Math.max(6, Math.round((entry.count / this.pipelinePeak()) * 100));
   }
 
   /** Pull-to-refresh: a client book is a screen providers re-check rather than open once. */
