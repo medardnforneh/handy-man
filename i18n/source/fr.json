@@ -446,5 +446,9 @@
     "crm.no_price_yet": "Pas encore de prix convenu",
     "crm.pipeline_note": "Les nombres et les montants proviennent de vos propres offres, devis et missions. Rien ici n’est une prévision.",
     "crm.pipeline_empty_title": "Rien dans le pipeline pour l’instant",
-    "crm.pipeline_empty_body": "Les offres reçues, les devis envoyés et les missions gagnées apparaîtront ici au fil de leur avancement."
+    "crm.pipeline_empty_body": "Les offres reçues, les devis envoyés et les missions gagnées apparaîtront ici au fil de leur avancement.",
+    "followup.maintenance_due.title": "C’est le moment d’entretenir votre {{service}} ?",
+    "followup.maintenance_due.body": "Cela fait un moment depuis votre dernier {{service}}. Reprenez le même prestataire en quelques clics.",
+    "followup.quote_pending_customer.title": "Un devis vous attend",
+    "followup.quote_pending_customer.body": "{{provider}} vous a envoyé un devis. Acceptez-le ou posez une question — cela prend un instant."
 }

@@ -446,5 +446,9 @@
   "crm.no_price_yet": "No price agreed yet",
   "crm.pipeline_note": "Counts and amounts come from your own offers, quotes and jobs. Nothing here is a forecast.",
   "crm.pipeline_empty_title": "Nothing in the pipeline yet",
-  "crm.pipeline_empty_body": "Offers you receive, quotes you send and jobs you win will show up here as they move."
+  "crm.pipeline_empty_body": "Offers you receive, quotes you send and jobs you win will show up here as they move.",
+  "followup.maintenance_due.title": "Time to service your :service?",
+  "followup.maintenance_due.body": "It has been a while since your last :service. Book the same provider again in a couple of taps.",
+  "followup.quote_pending_customer.title": "A quote is waiting for you",
+  "followup.quote_pending_customer.body": ":provider sent you a quote. Accept it or ask a question — it only takes a moment."
 }

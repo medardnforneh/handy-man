@@ -8,8 +8,10 @@ use App\Domain\Warranties\Actions\IssueWarranty;
 use App\Models\Engagement;
 use App\Models\FollowUp;
 use App\Models\Job;
+use App\Models\Skill;
 use App\Models\User;
 use App\Support\OutboxRelay;
+use Database\Seeders\SkillsSeeder;
 use Illuminate\Support\Str;
 use Laravel\Sanctum\Sanctum;
 
@@ -86,4 +88,54 @@ it('forbids responding to someone else\'s follow-up', function () {
     Sanctum::actingAs(User::factory()->create());
     $this->postJson("/api/v1/follow-ups/{$followUp->id}/respond", ['response_action' => 'opened'], ['Idempotency-Key' => (string) Str::uuid()])
         ->assertForbidden();
+});
+
+it('schedules maintenance_due only for a trade that genuinely recurs (P7-07)', function () {
+    // An air conditioner really does want servicing again; the interval lives on the skill.
+    $customer = User::factory()->create();
+    $skill = Skill::factory()->create(['is_leaf' => true, 'maintenance_interval_days' => 180]);
+    $job = Job::factory()->create([
+        'customer_party_id' => $customer->party_id, 'created_by_user_id' => $customer->id, 'skill_id' => $skill->id,
+    ]);
+    $engagement = Engagement::factory()->create([
+        'job_id' => $job->id, 'provider_party_id' => User::factory()->create()->party_id,
+    ]);
+
+    app(CompleteEngagement::class)->handle($engagement);
+    app(OutboxRelay::class)->drain();
+
+    $followUp = FollowUp::query()->where('kind', 'maintenance_due')->first();
+    expect($followUp)->not->toBeNull()
+        // Anchored to COMPLETION, not to the moment the outbox happened to be relayed.
+        ->and($followUp->scheduled_for->toDateString())
+        ->toBe($engagement->fresh()->completed_at->copy()->addDays(180)->toDateString());
+});
+
+it('schedules no maintenance nudge for a one-off trade', function () {
+    // A wardrobe built once does not need servicing, and a reminder saying it does is exactly the
+    // message that teaches a customer to ignore the channel.
+    $customer = User::factory()->create();
+    $skill = Skill::factory()->create(['is_leaf' => true, 'maintenance_interval_days' => null]);
+    $job = Job::factory()->create([
+        'customer_party_id' => $customer->party_id, 'created_by_user_id' => $customer->id, 'skill_id' => $skill->id,
+    ]);
+    $engagement = Engagement::factory()->create([
+        'job_id' => $job->id, 'provider_party_id' => User::factory()->create()->party_id,
+    ]);
+
+    app(CompleteEngagement::class)->handle($engagement);
+    app(OutboxRelay::class)->drain();
+
+    expect(FollowUp::query()->where('kind', 'maintenance_due')->count())->toBe(0)
+        // The review nudges still fire — this gate is about maintenance only.
+        ->and(FollowUp::query()->where('kind', 'review_request')->count())->toBe(1);
+});
+
+it('seeds maintenance intervals only on trades that recur', function () {
+    $this->seed(SkillsSeeder::class);
+
+    expect(Skill::query()->where('slug', 'ac-maintenance')->value('maintenance_interval_days'))->toBe(180)
+        ->and(Skill::query()->where('slug', 'custom-furniture')->value('maintenance_interval_days'))->toBeNull()
+        // The list is deliberately short: most of the taxonomy schedules nothing.
+        ->and(Skill::query()->whereNotNull('maintenance_interval_days')->count())->toBeLessThan(10);
 });

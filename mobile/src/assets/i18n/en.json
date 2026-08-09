@@ -296,6 +296,14 @@
     "warranty_expiring": {
       "title": "Warranty expiring soon",
       "body": "Your warranty ends soon. Open a claim if anything needs fixing."
+    },
+    "maintenance_due": {
+      "title": "Time to service your {{service}}?",
+      "body": "It has been a while since your last {{service}}. Book the same provider again in a couple of taps."
+    },
+    "quote_pending_customer": {
+      "title": "A quote is waiting for you",
+      "body": "{{provider}} sent you a quote. Accept it or ask a question — it only takes a moment."
     }
   },
   "provider": {

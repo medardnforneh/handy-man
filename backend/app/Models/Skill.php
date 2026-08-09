@@ -36,6 +36,7 @@ final class Skill extends Model
 
     protected $fillable = [
         'parent_id', 'slug', 'name_fr', 'name_en', 'is_leaf', 'requires_license', 'risk_tier',
+        'maintenance_interval_days',
     ];
 
     protected function casts(): array
@@ -44,6 +45,7 @@ final class Skill extends Model
             'is_leaf' => 'boolean',
             'requires_license' => 'boolean',
             'risk_tier' => 'integer',
+            'maintenance_interval_days' => 'integer',
         ];
     }
 

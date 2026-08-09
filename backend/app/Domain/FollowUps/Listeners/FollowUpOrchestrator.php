@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\FollowUps\Listeners;
 
 use App\Domain\FollowUps\ChannelLadder;
+use App\Domain\FollowUps\FollowUpChannel;
 use App\Domain\FollowUps\FollowUpKind;
 use App\Domain\FollowUps\FollowUpScheduler;
 use App\Events\OutboxMessagePublished;
@@ -142,6 +143,42 @@ final class FollowUpOrchestrator
         $this->scheduler->schedule(
             FollowUpKind::ReviewReminder, $customer, $channel, now()->addDays(3),
             'engagement', $engagement->id, engagementId: $engagement->id,
+        );
+
+        $this->scheduleMaintenanceDue($engagement, $customer, $channel);
+    }
+
+    /**
+     * The maintenance nudge (P7-07). Scheduled ONLY when the job's trade genuinely recurs — the
+     * interval lives on the skill and is null for most of the taxonomy, so a one-off wardrobe or a
+     * haircut schedules nothing. Reminding someone to service work that does not need servicing is
+     * how a channel teaches people to ignore it.
+     *
+     * It is a non-transactional kind, so it already sits behind the marketing-consent gate (P7-04)
+     * and the per-channel budget (P7-03) at dispatch. Nothing here bypasses either.
+     */
+    private function scheduleMaintenanceDue(Engagement $engagement, User $customer, FollowUpChannel $channel): void
+    {
+        $job = $engagement->job()->first();
+        if ($job === null) {
+            return;
+        }
+
+        $intervalDays = $job->skill()->first()?->maintenance_interval_days;
+        if (! is_int($intervalDays) || $intervalDays <= 0) {
+            return;
+        }
+
+        // Anchored to completion, not to now: a completion relayed late must not shift the date the
+        // customer's equipment is actually due.
+        $completedAt = $engagement->completed_at !== null
+            ? Carbon::parse((string) $engagement->completed_at)
+            : now();
+
+        $this->scheduler->schedule(
+            FollowUpKind::MaintenanceDue, $customer, $channel,
+            $completedAt->copy()->addDays($intervalDays),
+            'engagement', $engagement->id, jobId: $job->id, engagementId: $engagement->id,
         );
     }
 

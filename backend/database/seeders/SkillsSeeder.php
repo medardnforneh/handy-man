@@ -16,6 +16,27 @@ use Illuminate\Support\Str;
  */
 final class SkillsSeeder extends Seeder
 {
+    /**
+     * Trades that genuinely need doing again, and how often (P7-07's `maintenance_due`).
+     *
+     * Deliberately a SHORT list. Every trade absent from it schedules no maintenance nudge at all,
+     * because a reminder to "service" a wardrobe or a haircut is noise, and noise is what trains
+     * people to ignore the reminders that matter. Intervals are the honest service life of the work
+     * in this climate — Douala humidity is hard on air conditioning, generators run often and long.
+     *
+     * @var array<string, int>
+     */
+    private const MAINTENANCE_INTERVAL_DAYS = [
+        // Keys are the generated slugs, which come from the ENGLISH leaf name (see taxonomy()).
+        'ac-maintenance' => 180,      // servicing — twice a year is the real cadence in this climate
+        'ac-installation' => 180,     // a newly installed unit still wants its first service
+        'generator' => 180,           // generators here are run hard and often
+        'garden-maintenance' => 90,   // a garden in the rainy season does not wait a year
+        'oil-change' => 180,
+        'drain-unclogging' => 365,    // recurring for a household that has needed it once
+        'house-cleaning' => 90,
+    ];
+
     public function run(): void
     {
         foreach ($this->taxonomy() as $category) {
@@ -40,6 +61,7 @@ final class SkillsSeeder extends Seeder
                         'is_leaf' => true,
                         'requires_license' => $leaf['license'] ?? false,
                         'risk_tier' => $leaf['risk'],
+                        'maintenance_interval_days' => self::MAINTENANCE_INTERVAL_DAYS[$leaf['slug']] ?? null,
                     ],
                 );
             }
