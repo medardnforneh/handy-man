@@ -1,0 +1,264 @@
+// Provider client book (P7-08). Shared primitives (.hm-card, .hm-pill, .hm-empty…) load globally.
+// SEMANTIC TOKENS ONLY — never a literal colour (doc 08; enforced by `npm run lint:colors`).
+
+ion-toolbar {
+  --background: var(--hm-color-surface-base);
+  --border-width: 0;
+}
+
+ion-title { font-weight: 800; letter-spacing: -0.02em; }
+
+.page {
+  padding: var(--hm-space-sm) var(--hm-space-md) var(--hm-space-xl);
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+// ---- Summary tiles -----------------------------------------------------
+// 3 across on anything roomy, 2 across on a phone (the money tile spans the row so a seven-figure
+// lifetime value never has to shrink to fit a third of 360px).
+.summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--hm-space-sm);
+  margin-bottom: var(--hm-space-md);
+
+  .tile {
+    padding: var(--hm-space-md) var(--hm-space-sm);
+    text-align: center;
+    min-width: 0;
+
+    b {
+      display: block;
+      font-size: 1.35rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      overflow-wrap: anywhere;
+
+      em { font-style: normal; font-size: 0.72rem; font-weight: 600; opacity: 0.7; }
+    }
+
+    small { display: block; font-size: 0.74rem; margin-top: 0.15rem; }
+  }
+}
+
+ion-searchbar {
+  --background: var(--hm-color-surface-sunken);
+  --box-shadow: none;
+  --border-radius: var(--hm-radius-md);
+  padding: 0 0 var(--hm-space-sm);
+}
+
+// ---- One client --------------------------------------------------------
+.client {
+  padding: var(--hm-space-md);
+  margin-bottom: var(--hm-space-sm);
+
+  // A blocked row stays legible but visibly stands down — it is a row the provider can no longer act
+  // on, and it should read that way at a glance without disappearing from their own history.
+  &.blocked .who { opacity: 0.62; }
+
+  .who {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--hm-space-sm);
+  }
+
+  .av {
+    width: 42px;
+    height: 42px;
+    font-size: 0.92rem;
+  }
+
+  .ident {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .name {
+    display: block;
+    font-size: 0.98rem;
+    letter-spacing: -0.01em;
+    overflow-wrap: anywhere;
+  }
+
+  .meta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;          // three facts wrap onto a second line rather than pushing the money off
+    gap: 0.3rem;
+    font-size: 0.78rem;
+    margin-top: 0.15rem;
+
+    .dot {
+      width: 0.2rem;
+      height: 0.2rem;
+      border-radius: 50%;
+      background: currentColor;
+      opacity: 0.6;
+    }
+  }
+
+  .ltv {
+    flex: none;
+    text-align: end;
+    line-height: 1.15;
+
+    b { font-size: 1rem; font-weight: 800; letter-spacing: -0.02em; }
+    small { display: block; font-size: 0.68rem; }
+  }
+
+  // One line, right-aligned. Named `client-acts`, NOT `.acts`: that class is a global primitive in
+  // customer/ui.scss which stretches any `ion-button` inside it (`flex: 1`) and laid this row out on
+  // the cross axis, so the two controls stacked and centred. `flex-direction` is declared rather
+  // than left to the default for the same reason — the axis is load-bearing here.
+  .client-acts {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: nowrap;
+    gap: var(--hm-space-sm);
+    margin-top: var(--hm-space-sm);
+    padding-top: var(--hm-space-sm);
+    border-top: 1px solid var(--hm-color-border-subtle);
+  }
+
+  .nudge {
+    --border-radius: var(--hm-radius-md);
+    --border-color: var(--hm-color-brand-primary);
+    --color: var(--hm-color-brand-primary);
+    --padding-start: var(--hm-space-md);
+    --padding-end: var(--hm-space-md);
+    // Sentence case: SHOUTING a marketing action on every row reads as pressure, and the uppercase
+    // label was also the widest thing in the card.
+    text-transform: none;
+    letter-spacing: 0;
+    font-size: 0.82rem;
+    font-weight: 700;
+    height: 34px;
+    min-height: 34px;   // beats .hm-tap's 44px here — the row's own hit area is comfortable
+    margin: 0;
+  }
+
+  // Icon-only overflow. Kept to the 44px tap target even though the glyph is small.
+  .more {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 40px;
+    height: 34px;
+    padding: 0;
+    background: none;
+    border: 1px solid var(--hm-color-border-subtle);
+    border-radius: var(--hm-radius-md);
+    color: var(--hm-color-text-muted);
+    font-size: 1.05rem;
+    cursor: pointer;
+
+    &[disabled] { opacity: 0.5; cursor: default; }
+  }
+}
+
+// ---- Empty / unreachable ----------------------------------------------
+.hm-empty.first {
+  padding-top: var(--hm-space-xl);
+
+  h2 {
+    margin: 0 0 var(--hm-space-xs);
+    font-size: 1.05rem;
+    color: var(--hm-color-text-primary);
+  }
+
+  p { margin: 0; font-size: 0.88rem; }
+}
+
+.retry {
+  --border-radius: var(--hm-radius-md);
+  max-width: 260px;
+  margin: 0 auto;
+}
+
+.foot {
+  font-size: 0.76rem;
+  text-align: center;
+  margin: var(--hm-space-lg) 0 0;
+  padding: 0 var(--hm-space-sm);
+}
+
+// ---- Loading skeletons -------------------------------------------------
+@keyframes hm-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.45; }
+}
+
+.sk-strip {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--hm-space-sm);
+  margin-bottom: var(--hm-space-md);
+}
+
+.sk-tile,
+.sk-av,
+.sk-line {
+  background: var(--hm-color-surface-sunken);
+  border-radius: var(--hm-radius-md);
+  animation: hm-pulse 1.4s ease-in-out infinite;
+}
+
+.sk-tile { height: 74px; }
+
+.sk-row {
+  display: flex;
+  align-items: center;
+  gap: var(--hm-space-sm);
+  padding: var(--hm-space-md);
+  margin-bottom: var(--hm-space-sm);
+}
+
+.sk-av { width: 42px; height: 42px; flex: none; }
+
+.sk-lines { flex: 1; min-width: 0; }
+
+.sk-line {
+  display: block;
+  height: 10px;
+  border-radius: var(--hm-radius-sm);
+
+  &.w60 { width: 60%; }
+  &.w40 { width: 40%; margin-top: 0.5rem; }
+}
+
+// ---- Small phones ------------------------------------------------------
+// The money tile takes the full second row so it never has to shrink; rows keep their shape.
+@media (max-width: 420px) {
+  .summary,
+  .sk-strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .summary .tile.wide,
+  .sk-strip .sk-tile:last-child {
+    grid-column: 1 / -1;
+  }
+
+  .summary .tile b { font-size: 1.2rem; }
+}
+
+@media (max-width: 360px) {
+  .page { padding-inline: var(--hm-space-sm); }
+
+  .client {
+    padding: var(--hm-space-sm);
+
+    .ltv b { font-size: 0.92rem; }
+  }
+}
+
+// Respect a user who has asked for less motion — the skeleton settles rather than pulses.
+@media (prefers-reduced-motion: reduce) {
+  .sk-tile,
+  .sk-av,
+  .sk-line { animation: none; }
+}

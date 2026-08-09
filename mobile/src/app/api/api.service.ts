@@ -515,6 +515,54 @@ export class ApiService {
     return data.data;
   }
 
+  /**
+   * The provider's customer book (P7-08) — every customer they have engaged, with job count,
+   * completions, lifetime value, last engagement and do-not-contact status. Server-ordered by most
+   * recently engaged.
+   */
+  async providerCustomers() {
+    const { data, error } = await api.GET('/provider/customers');
+    if (error) {
+      throw error;
+    }
+    return data.data;
+  }
+
+  /**
+   * Schedule a manual re-engagement nudge for one customer (P7-08). Rides the SAME budget and
+   * consent gates as an automated follow-up, so a 422 here is the platform refusing to let a
+   * provider over-contact someone — the `detail` is worth showing verbatim.
+   */
+  async scheduleManualFollowUp(partyId: string) {
+    const { data, error } = await api.POST('/provider/customers/{party}/follow-up', {
+      params: { path: { party: partyId }, header: { 'Idempotency-Key': uuid() } },
+    });
+    if (error) {
+      throw error;
+    }
+    return data.data;
+  }
+
+  /** Mark a customer do-not-contact (P7-08). Honoured absolutely — at schedule time and at dispatch. */
+  async setDoNotContact(partyId: string): Promise<void> {
+    const { error } = await api.POST('/provider/customers/{party}/do-not-contact', {
+      params: { path: { party: partyId }, header: { 'Idempotency-Key': uuid() } },
+    });
+    if (error) {
+      throw error;
+    }
+  }
+
+  /** Lift a do-not-contact (P7-08). */
+  async removeDoNotContact(partyId: string): Promise<void> {
+    const { error } = await api.DELETE('/provider/customers/{party}/do-not-contact', {
+      params: { path: { party: partyId }, header: { 'Idempotency-Key': uuid() } },
+    });
+    if (error) {
+      throw error;
+    }
+  }
+
   /** Send a direct offer to a provider for one of the caller's jobs (P2-05). Owner-gated, idempotent. */
   async createDirectOffer(jobId: string, providerPartyId: string, message?: string) {
     const { data, error } = await api.POST('/jobs/{job}/offers', {

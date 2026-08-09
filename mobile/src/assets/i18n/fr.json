@@ -498,5 +498,35 @@
       "accepted": "Accepté",
       "rejected": "Modifications demandées"
     }
+  },
+  "crm": {
+    "title": "Clients",
+    "home_hint": "Votre historique, la valeur générée et les relances",
+    "search_placeholder": "Rechercher un client",
+    "stat": {
+      "clients": "Clients",
+      "repeat": "Fidèles",
+      "lifetime": "Valeur totale"
+    },
+    "nudge": "Envoyer une relance",
+    "nudge_sending": "Envoi…",
+    "nudge_sent": "Relance programmée pour {{name}}",
+    "nudge_failed": "Impossible d’envoyer cette relance. Veuillez réessayer.",
+    "dnc_badge": "Ne pas contacter",
+    "dnc_set_cta": "Ne pas contacter",
+    "dnc_lift": "Autoriser le contact",
+    "dnc_set": "{{name}} ne sera plus contacté",
+    "dnc_lifted": "Vous pouvez à nouveau contacter {{name}}",
+    "dnc_confirm_body": "{{name}} ne recevra plus jamais de relance de votre part. Vous pourrez revenir en arrière.",
+    "budget_note": "Les relances partagent la même limite quotidienne que les rappels automatiques : un client n’est jamais sur-sollicité.",
+    "empty_title": "Pas encore de clients",
+    "empty_body": "Chaque mission terminée ajoute le client ici, avec la valeur du travail et la date de votre dernière intervention.",
+    "no_match": "Aucun client ne correspond à « {{query}} »",
+    "unreachable": "Impossible de charger votre carnet de clients. Vérifiez votre connexion et réessayez.",
+    "jobs_count_one": "{{count}} mission",
+    "jobs_count_other": "{{count}} missions",
+    "completed_count_one": "{{count}} terminée",
+    "completed_count_other": "{{count}} terminées",
+    "more_for": "Plus d’options pour {{name}}"
   }
 }

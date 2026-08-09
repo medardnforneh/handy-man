@@ -55,6 +55,14 @@ const routes: Routes = [
     loadComponent: () => import('./provider/lead/lead.page').then((m) => m.ProviderLeadPage),
   },
   {
+    // The provider's client book (CRM, P7-08), pushed over the provider tabs. Deliberately not a
+    // sixth tab: six labelled tab buttons do not fit a 360px phone without truncating, and this is
+    // a screen providers review periodically rather than live in.
+    path: 'clients',
+    canActivate: [authGuard],
+    loadComponent: () => import('./provider/clients/clients.page').then((m) => m.ProviderClientsPage),
+  },
+  {
     // Provider work detail (check-in, status, report), pushed over the provider tabs.
     path: 'work/:id',
     canActivate: [authGuard],

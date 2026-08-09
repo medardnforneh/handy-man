@@ -1,0 +1,136 @@
+<ion-header [translucent]="true" class="ion-no-border">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/pro/home" [text]="''"></ion-back-button>
+    </ion-buttons>
+    <ion-title>{{ 'crm.title' | translate }}</ion-title>
+  </ion-toolbar>
+
+  <app-offline-strip></app-offline-strip>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-refresher slot="fixed" (ionRefresh)="refresh($any($event))">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <div class="page">
+    @if (loading()) {
+      <!-- CSS-only skeletons: nothing here loads a lazy asset, so the first paint is the same on a
+           dead connection as on a good one. -->
+      <div class="sk-strip" aria-hidden="true">
+        <div class="sk-tile"></div><div class="sk-tile"></div><div class="sk-tile"></div>
+      </div>
+      @for (n of [1, 2, 3, 4]; track n) {
+        <div class="sk-row hm-card" aria-hidden="true">
+          <div class="sk-av"></div>
+          <div class="sk-lines"><span class="sk-line w60"></span><span class="sk-line w40"></span></div>
+        </div>
+      }
+      <p class="sr-only">{{ 'common.loading' | translate }}</p>
+    } @else {
+      @if (unreachable()) {
+        <!-- The book was never reachable AND nothing was remembered. Distinct from an empty book:
+             one means "we couldn't ask", the other means "you have no clients yet". -->
+        <p class="hm-empty unreachable">{{ 'crm.unreachable' | translate }}</p>
+        <ion-button expand="block" fill="outline" class="hm-tap retry" (click)="load()">
+          {{ 'common.retry' | translate }}
+        </ion-button>
+      } @else if ((clients() ?? []).length === 0) {
+        <div class="hm-empty first">
+          <h2>{{ 'crm.empty_title' | translate }}</h2>
+          <p>{{ 'crm.empty_body' | translate }}</p>
+        </div>
+      } @else {
+        <!-- Summary: three counts, each derived from the list already on screen rather than a
+             second request the provider would wait for. -->
+        <div class="summary">
+          <div class="tile hm-card">
+            <b>{{ (clients() ?? []).length }}</b>
+            <small class="hm-muted">{{ 'crm.stat.clients' | translate }}</small>
+          </div>
+          <div class="tile hm-card">
+            <b>{{ repeatCount() }}</b>
+            <small class="hm-muted">{{ 'crm.stat.repeat' | translate }}</small>
+          </div>
+          <div class="tile hm-card wide">
+            <b>{{ lifetimeTotalMinor() | money }} <em>{{ 'money.currency' | translate }}</em></b>
+            <small class="hm-muted">{{ 'crm.stat.lifetime' | translate }}</small>
+          </div>
+        </div>
+
+        <ion-searchbar
+          class="hm-tap"
+          [value]="query()"
+          (ionInput)="onSearch($any($event.target).value)"
+          (ionClear)="onSearch('')"
+          [placeholder]="'crm.search_placeholder' | translate"
+          [attr.aria-label]="'crm.search_placeholder' | translate"
+        ></ion-searchbar>
+
+        @for (c of filtered(); track c.partyId) {
+          <div class="client hm-card" [class.blocked]="c.doNotContact">
+            <div class="who">
+              <div [class]="'hm-avatar av accent-' + c.accent" aria-hidden="true">{{ c.initials }}</div>
+              <div class="ident">
+                <b class="name">{{ c.name }}</b>
+                <!-- Singular/plural picked explicitly: there is no ICU message compiler wired in,
+                     so "1 missions" is the failure mode a bare interpolation would ship. -->
+                <div class="meta hm-muted">
+                  <span>{{ (c.jobCount === 1 ? 'crm.jobs_count_one' : 'crm.jobs_count_other') | translate:{ count: c.jobCount } }}</span>
+                  @if (c.completedCount > 0) {
+                    <span class="dot" aria-hidden="true"></span>
+                    <span>{{ (c.completedCount === 1 ? 'crm.completed_count_one' : 'crm.completed_count_other') | translate:{ count: c.completedCount } }}</span>
+                  }
+                  @if (c.lastEngagedLabel) {
+                    <span class="dot" aria-hidden="true"></span>
+                    <span>{{ c.lastEngagedLabel }}</span>
+                  }
+                </div>
+              </div>
+              <div class="ltv">
+                <b>{{ c.lifetimeValueMinor | money }}</b>
+                <small class="hm-muted">{{ 'money.currency' | translate }}</small>
+              </div>
+            </div>
+
+            <!-- One line, right-aligned: the primary action plus an overflow. Do-not-contact is
+                 deliberately behind the overflow — it is rare, hard to undo in spirit, and putting
+                 it beside the nudge as a second button made every card look like a decision. -->
+            <div class="client-acts">
+              @if (c.doNotContact) {
+                <!-- No nudge affordance at all when the customer has said no. The server would
+                     refuse it (P7-08), and offering a button that cannot work is worse than
+                     offering none. -->
+                <span class="hm-pill tone-neutral">{{ 'crm.dnc_badge' | translate }}</span>
+              } @else {
+                <ion-button
+                  size="small"
+                  fill="outline"
+                  class="hm-tap nudge"
+                  [disabled]="busy() !== null"
+                  (click)="followUp(c)"
+                >
+                  {{ (busy() === c.partyId ? 'crm.nudge_sending' : 'crm.nudge') | translate }}
+                </ion-button>
+              }
+              <button
+                class="more hm-tap"
+                type="button"
+                [disabled]="busy() !== null"
+                (click)="openActions(c)"
+              >
+                <ion-icon name="ellipsis-horizontal" aria-hidden="true"></ion-icon>
+                <span class="sr-only">{{ 'crm.more_for' | translate:{ name: c.name } }}</span>
+              </button>
+            </div>
+          </div>
+        } @empty {
+          <p class="hm-empty">{{ 'crm.no_match' | translate:{ query: query() } }}</p>
+        }
+
+        <p class="foot hm-muted">{{ 'crm.budget_note' | translate }}</p>
+      }
+    }
+  </div>
+</ion-content>

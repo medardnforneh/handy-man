@@ -112,6 +112,38 @@ ion-title { font-size: 0.95rem; font-weight: 700; }
   font-weight: 800;
 }
 
+// ---- Client book entry -------------------------------------------------
+.clients {
+  display: flex;
+  align-items: center;
+  gap: var(--hm-space-sm);
+  width: 100%;
+  padding: var(--hm-space-md);
+  margin-top: var(--hm-space-md);
+  text-align: start;
+  color: inherit;
+  cursor: pointer;
+
+  .ic {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 38px;
+    height: 38px;
+    border-radius: var(--hm-radius-md);
+    background: color-mix(in srgb, var(--hm-color-brand-primary) 12%, transparent);
+    color: var(--hm-color-brand-primary);
+    font-size: 1.1rem;
+  }
+
+  .ct { flex: 1; min-width: 0; }
+
+  b { display: block; font-size: 0.95rem; }
+  small { display: block; font-size: 0.78rem; margin-top: 0.1rem; }
+
+  .chev { flex: none; font-size: 1rem; color: var(--hm-color-text-muted); }
+}
+
 // ---- Lead cards --------------------------------------------------------
 .lead {
   display: flex;

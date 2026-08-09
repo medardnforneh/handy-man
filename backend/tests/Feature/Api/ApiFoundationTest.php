@@ -47,3 +47,15 @@ it('returns problem+json for an unknown api route', function () {
         ->assertHeader('Content-Type', 'application/problem+json')
         ->assertJsonStructure(['type', 'title', 'status', 'detail', 'trace_id']);
 });
+
+it('answers an unauthenticated API request with 401 problem+json even without an Accept header', function () {
+    // `getJson` sets Accept: application/json, which is the path that always worked. A client that
+    // omits it — curl, a proxy that strips it, an older HTTP library — used to hit Laravel's default
+    // guest redirect to `route('login')`, a route this app has never defined, and got a **500** for
+    // what is only an expired token. The RFC 7807 renderer never saw the exception at all.
+    $this->get('/api/v1/auth/me')
+        ->assertStatus(401)
+        ->assertHeader('Content-Type', 'application/problem+json')
+        ->assertJsonPath('type', 'https://errors.handyman.cm/unauthenticated')
+        ->assertJsonStructure(['type', 'title', 'status', 'detail', 'trace_id']);
+});

@@ -161,3 +161,28 @@ export interface Payout {
   status: PayoutStatus;
   date: string;
 }
+
+/**
+ * One entry in the provider's client book (P7-08, doc 07). Every field is a fact the platform can
+ * prove from the provider's own engagements — job count, completions, lifetime value, last
+ * engagement — which is what makes a provider's history feel like an asset held here rather than
+ * in a phone's contact list.
+ *
+ * `doNotContact` is the customer's absolute veto on re-engagement: honoured at schedule time AND
+ * again at dispatch, so a row carrying it offers no nudge affordance at all.
+ */
+export interface ProviderClient {
+  /** The customer's PARTY id — the handle the CRM endpoints take. */
+  partyId: string;
+  name: string;
+  initials: string;
+  accent: Accent;
+  jobCount: number;
+  completedCount: number;
+  lifetimeValueMinor: number;
+  /** ISO timestamp of the most recent engagement, or null if none is recorded. */
+  lastEngagedAt: string | null;
+  /** The same moment as a localised "3 months ago" — null when there is no engagement date. */
+  lastEngagedLabel: string | null;
+  doNotContact: boolean;
+}

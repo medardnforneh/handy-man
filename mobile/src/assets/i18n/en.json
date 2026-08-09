@@ -498,5 +498,35 @@
       "accepted": "Accepted",
       "rejected": "Changes requested"
     }
+  },
+  "crm": {
+    "title": "Clients",
+    "home_hint": "Your history, lifetime value, and re-engagement",
+    "search_placeholder": "Search a client",
+    "stat": {
+      "clients": "Clients",
+      "repeat": "Came back",
+      "lifetime": "Lifetime value"
+    },
+    "nudge": "Send a nudge",
+    "nudge_sending": "Sending…",
+    "nudge_sent": "Nudge scheduled for {{name}}",
+    "nudge_failed": "Couldn’t send that nudge. Please try again.",
+    "dnc_badge": "Do not contact",
+    "dnc_set_cta": "Do not contact",
+    "dnc_lift": "Allow contact",
+    "dnc_set": "{{name}} will no longer be contacted",
+    "dnc_lifted": "You can contact {{name}} again",
+    "dnc_confirm_body": "{{name}} will never receive a follow-up from you again. You can undo this later.",
+    "budget_note": "Nudges share the same daily limit as automatic reminders, so a client is never over-contacted.",
+    "empty_title": "No clients yet",
+    "empty_body": "Every job you complete adds the customer here, with what the work was worth and when you last saw them.",
+    "no_match": "No client matches “{{query}}”",
+    "unreachable": "Your client book couldn’t be loaded. Check your connection and try again.",
+    "jobs_count_one": "{{count}} job",
+    "jobs_count_other": "{{count}} jobs",
+    "completed_count_one": "{{count}} completed",
+    "completed_count_other": "{{count}} completed",
+    "more_for": "More options for {{name}}"
   }
 }

@@ -36,6 +36,16 @@ return Application::configure(basePath: dirname(__DIR__))
             prepend: [EnforceAppVersion::class],
             append: [Idempotency::class],
         );
+
+        // Never redirect a guest to a login page. Laravel's default sends anyone who fails `auth`
+        // and does not "expect JSON" to `route('login')` — a route this app has never had, because
+        // no web route is behind `auth` (Filament runs its own auth, the public pages are public).
+        // The result was that an unauthenticated API request WITHOUT an `Accept: application/json`
+        // header died with `Route [login] not defined` — a **500** for what is simply an expired
+        // token, and the RFC 7807 renderer below never even saw it. Clients that omit the header
+        // are ordinary (curl, a proxy that strips it, an older HTTP library). Returning null keeps
+        // the AuthenticationException intact so it renders as the documented 401 (P0-08).
+        $middleware->redirectGuestsTo(fn (Request $request) => null);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         // Render every API error as RFC 7807 application/problem+json (CLAUDE.md API conventions).

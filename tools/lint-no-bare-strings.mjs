@@ -41,9 +41,11 @@ function stripToText(src) {
     .replace(/\{\{--[\s\S]*?--\}\}/g, ' ')   // Blade comments
     .replace(/\{\{[\s\S]*?\}\}/g, ' ')       // {{ … }} interpolation (Angular + Blade)
     .replace(/\{!![\s\S]*?!!\}/g, ' ')       // {!! … !!} Blade raw
-    // @lang('…'), @if(…), Blade @forelse ($a->b('c') as $d), Angular @for (x of f(); track y).
+    // @lang('…'), @if(…), Blade @forelse ($a->b('c') as $d), Angular @for (x of f(); track y),
+    // and Angular's two-word `@else if (…)` — without the optional `if`, only `@else` was stripped
+    // and the condition was left behind to be read as user copy.
     // Parens nest, so match up to three levels rather than stopping at the first ')'.
-    .replace(/@\w+\s*\((?:[^()]|\((?:[^()]|\([^()]*\))*\))*\)/g, ' ')
+    .replace(/@\w+(?:\s+if)?\s*\((?:[^()]|\((?:[^()]|\([^()]*\))*\))*\)/g, ' ')
     .replace(/@\w+/g, ' ')                   // bare @else, @endif …
     .replace(/<[^>]*>/g, ' ')                // all tags (drops attribute values too)
     .replace(/&[a-zA-Z]+;|&#\d+;/g, ' ');    // HTML entities (&nbsp; …) are markup, not copy

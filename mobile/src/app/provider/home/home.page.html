@@ -52,6 +52,17 @@
       </div>
     </div>
 
+    <!-- The client book (P7-08). One row rather than a preview list: it costs no extra request on a
+         slow network, and this is a screen a provider goes to deliberately. -->
+    <button class="clients hm-card hm-tap" type="button" (click)="openClients()">
+      <span class="ic" aria-hidden="true"><ion-icon name="people-outline"></ion-icon></span>
+      <span class="ct">
+        <b>{{ 'crm.title' | translate }}</b>
+        <small class="hm-muted">{{ 'crm.home_hint' | translate }}</small>
+      </span>
+      <ion-icon class="chev" name="chevron-forward" aria-hidden="true"></ion-icon>
+    </button>
+
     <!-- Opportunities -->
     <div class="hm-section-head">
       <h2>{{ 'pro.opportunities' | translate }}</h2>

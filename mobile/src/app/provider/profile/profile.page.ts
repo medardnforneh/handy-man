@@ -61,6 +61,11 @@ export class ProviderProfilePage {
     void this.themes.set(choice);
   }
 
+  /** The client book (P7-08) — a periodic review surface, so it lives here rather than in the tabs. */
+  openClients(): void {
+    void this.router.navigate(['/clients']);
+  }
+
   backToCustomer(): void {
     void this.router.navigate(['/tabs/discover']);
   }

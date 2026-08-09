@@ -43,6 +43,19 @@ it('lists the provider\'s customers with history and lifetime value', function (
         ->assertJsonPath('data.0.do_not_contact', false);
 });
 
+it('returns last_engaged_at as ISO-8601, not Postgres\'s own timestamp format', function () {
+    // The list is an aggregate over a raw query, so no cast reaches it and Postgres would otherwise
+    // hand back "2026-07-28 05:15:57+00". V8 parses that; iOS JSC and older Android WebViews return
+    // Invalid Date — which is exactly the client this product ships to.
+    ['provider' => $provider] = providerAndCustomer();
+
+    Sanctum::actingAs($provider);
+    $value = $this->getJson('/api/v1/provider/customers')->assertOk()->json('data.0.last_engaged_at');
+
+    expect($value)->toBeString()
+        ->and($value)->toMatch('/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}$/');
+});
+
 it('schedules a manual re-engagement follow-up attributed to the provider', function () {
     ['provider' => $provider, 'customer' => $customer] = providerAndCustomer();
 

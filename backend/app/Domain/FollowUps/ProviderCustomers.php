@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\FollowUps;
 
 use App\Models\DoNotContact;
+use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -45,7 +46,13 @@ final class ProviderCustomers
                 'job_count' => (int) $r->job_count,
                 'completed_count' => (int) $r->completed_count,
                 'lifetime_value_minor' => (int) $r->lifetime_value_minor,
-                'last_engaged_at' => $r->last_engaged_at !== null ? (string) $r->last_engaged_at : null,
+                // ISO-8601 with offset, per the API convention. This is an aggregate over a raw
+                // query, so nothing casts it for us and Postgres hands back its own
+                // "2026-07-28 05:15:57+00" — which V8 happens to parse and stricter engines
+                // (iOS JSC, older WebViews) reject outright as an invalid date.
+                'last_engaged_at' => $r->last_engaged_at !== null
+                    ? CarbonImmutable::parse((string) $r->last_engaged_at)->toIso8601String()
+                    : null,
                 'do_not_contact' => $blocked->has($r->customer_party_id),
             ];
         }

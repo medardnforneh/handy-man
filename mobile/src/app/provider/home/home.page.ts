@@ -94,6 +94,11 @@ export class ProviderHomePage {
     void this.router.navigate(['/work', work.id]);
   }
 
+  /** The client book (P7-08) — history, lifetime value, and the manual re-engagement nudge. */
+  openClients(): void {
+    void this.router.navigate(['/clients']);
+  }
+
   seeOpportunities(): void {
     void this.router.navigate(['/pro/opportunities']);
   }

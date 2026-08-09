@@ -5,8 +5,8 @@ import { LocaleService } from '../core/locale.service';
 import { OfflineCache } from '../core/offline/offline-cache.service';
 import { WriteQueue, WriteSpec } from '../core/offline/write-queue.service';
 import {
-  ActiveWork, Lead, Payout, PayoutStatus, ProviderIdentity, ProviderStats, QuoteDraft, ReportDraft,
-  WorkDetail, WorkStatus, ProviderWallet,
+  ActiveWork, Lead, Payout, PayoutStatus, ProviderClient, ProviderIdentity, ProviderStats, QuoteDraft,
+  ReportDraft, WorkDetail, WorkStatus, ProviderWallet,
 } from './provider.models';
 
 /** The outcome of one execution mutation: accepted, or refused with the server's own explanation. */
@@ -349,7 +349,13 @@ export class ProviderService {
 
   /** A localised "x minutes ago" from an ISO timestamp, in the provider's current UI locale. */
   private relativeTime(iso: string): string {
-    const diffMs = Date.now() - new Date(iso).getTime();
+    const at = new Date(iso).getTime();
+    if (Number.isNaN(at)) {
+      // A timestamp this engine can't parse renders as nothing rather than "NaN days ago". Date
+      // parsing differs sharply across the WebViews this app runs in, and no label beats a wrong one.
+      return '';
+    }
+    const diffMs = Date.now() - at;
     const rtf = new Intl.RelativeTimeFormat(this.locales.current, { numeric: 'auto' });
     const mins = Math.round(diffMs / 60000);
     if (Math.abs(mins) < 60) {
@@ -359,7 +365,16 @@ export class ProviderService {
     if (Math.abs(hours) < 24) {
       return rtf.format(-hours, 'hour');
     }
-    return rtf.format(-Math.round(hours / 24), 'day');
+    const days = Math.round(hours / 24);
+    if (Math.abs(days) < 30) {
+      return rtf.format(-days, 'day');
+    }
+    // The client book reaches back years, where "247 days ago" is arithmetic rather than an answer.
+    // Leads are always recent, so they never get here and their wording is unchanged.
+    const months = Math.round(days / 30);
+    return Math.abs(months) < 12
+      ? rtf.format(-months, 'month')
+      : rtf.format(-Math.round(months / 12), 'year');
   }
 
   private readonly workDetails: Record<string, WorkDetail> = {
@@ -479,6 +494,53 @@ export class ProviderService {
     } catch {
       return null;
     }
+  }
+
+  /**
+   * The provider's client book (GET /provider/customers, P7-08).
+   *
+   * Read-through the offline cache: this is a history screen, and a remembered copy of who a
+   * provider has worked for is still true when the network isn't. There is no fixture behind it —
+   * an empty book is a real and common answer for a new provider, and inventing demo clients would
+   * misrepresent their own business back to them.
+   */
+  async fetchClients(): Promise<ProviderClient[] | null> {
+    const { value } = await this.cache.through('provider:customers', () => this.api.providerCustomers());
+    if (value === null) {
+      return null;
+    }
+    return value.map((c) => ({
+      partyId: c.customer_party_id ?? '',
+      name: c.customer_name ?? '',
+      initials: initialsOf(c.customer_name ?? ''),
+      accent: accentFor(c.customer_party_id ?? ''),
+      jobCount: c.job_count ?? 0,
+      completedCount: c.completed_count ?? 0,
+      lifetimeValueMinor: c.lifetime_value_minor ?? 0,
+      lastEngagedAt: c.last_engaged_at ?? null,
+      lastEngagedLabel: c.last_engaged_at ? this.relativeTime(c.last_engaged_at) || null : null,
+      doNotContact: c.do_not_contact ?? false,
+    }));
+  }
+
+  /**
+   * Send one customer a re-engagement nudge (POST /provider/customers/{party}/follow-up).
+   *
+   * Deliberately NOT queued offline. The other provider writes are field actions where "try again
+   * with signal" is not a real instruction; this is a marketing message, and the server's answer is
+   * the whole point — the budget and consent gates (P7-03/04) refuse it far more often than they
+   * accept it, and a queued nudge would report success for something the platform is about to
+   * decline. The refusal's own words go straight to the screen.
+   */
+  async sendFollowUp(partyId: string): Promise<MutationResult> {
+    return this.attempt(() => this.api.scheduleManualFollowUp(partyId));
+  }
+
+  /** Set or lift a customer's do-not-contact (P7-08). Absolute — no budget, no override. */
+  async setDoNotContact(partyId: string, blocked: boolean): Promise<MutationResult> {
+    return this.attempt(() => blocked
+      ? this.api.setDoNotContact(partyId)
+      : this.api.removeDoNotContact(partyId));
   }
 
   /**
