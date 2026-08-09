@@ -237,8 +237,8 @@ registered yet — it must be set before the first store build, or the native ap
     the ranked rail. Discover now has **zero dead links** (verified in a browser).
   - **Secure token storage: VERIFIED on device 2026-08-09** (see the entry below). The claim that
     had rested on the plugin's own guarantees since P5-01 is now demonstrated.
-  - **Still owed:** an iOS build (never attempted — needs macOS/Xcode); and voice notes / report
-    photos on device (the one multipart path the native-transport fix could not be proven against).
+  - **Multipart on device: VERIFIED 2026-08-09** — it was broken too, and the fix carries it (below).
+  - **Still owed:** an iOS build (never attempted — needs macOS/Xcode).
     The messages tab, the discover rail (search + category filters + "See all"), the provider
     profile, the **provider client book (P7-08)**, the public/SEO Blade pages, the realtime/media
     surfaces (P4-04..07), the offline layer (P5-02) and the PWA/Android build (P5-01) have all
@@ -265,6 +265,15 @@ registered yet — it must be set before the first store build, or the native ap
     Fixed in `mobile/src/app/api/client.ts` (`sendRequest` + `normalizeNativeResponse`). Verified:
     a real OTP login completes on device, and discover renders the server's own answer (UUID ids,
     "No ratings yet" against a null rating, the real taxonomy) where it had shown "4.9 ★ · 2.1 km".
+  - **Multipart was broken on device too, and the fix carries it.** Voice notes and report photos
+    were the one path left unproven. Against the real API from the device, posting a valid WAV to
+    `/jobs/{job}/voice-messages`: the OLD shape (`fetch(new Request(…))` with FormData) returns
+    **422** — the audio field dropped exactly like every other body — while the unwrap the fix
+    performs returns **201** with a real `voice` message row, and the stored media is **1644 bytes**,
+    precisely the 44-byte header + 1600 samples that were sent. The bytes survive the native
+    transport and the re-generated boundary. (This exercised `sendRequest`'s multipart branch by
+    replicating it exactly against the live endpoint, not by driving the in-app recorder — mic
+    capture on an emulator is a separate problem, and it is the transport that was in question.)
   - **Secure token storage — VERIFIED, the claim P5-01 could only assert.** After a real login on
     device: `shared_prefs/CapacitorStorage.xml` (the PLAIN preferences file) contains **only**
     `authed=1` — no tokens; `WSSecureStorageSharedPreferences.xml` holds
