@@ -18,10 +18,9 @@ const STORAGE_KEY = 'locale';
 @Injectable({ providedIn: 'root' })
 export class LocaleService {
   private readonly api = inject(ApiService);
+  private readonly translate = inject(TranslateService);
   private currentLocale: Locale = DEFAULT_LOCALE;
   private chosen = false;
-
-  constructor(private readonly translate: TranslateService) {}
 
   async init(): Promise<void> {
     const stored = (await Preferences.get({ key: STORAGE_KEY })).value as Locale | null;

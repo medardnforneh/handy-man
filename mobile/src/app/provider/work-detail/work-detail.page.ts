@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { IonicModule, ToastController } from '@ionic/angular';
@@ -23,7 +23,7 @@ import { MutationResult, ProviderService } from '../provider.service';
   styleUrls: ['./work-detail.page.scss'],
   imports: [CommonModule, FormsModule, IonicModule, TranslatePipe, OfflineStripComponent],
 })
-export class ProviderWorkDetailPage {
+export class ProviderWorkDetailPage implements OnInit {
   private readonly provider = inject(ProviderService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);

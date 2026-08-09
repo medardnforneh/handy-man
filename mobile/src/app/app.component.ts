@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { LocaleService } from './core/locale.service';
 import { ThemeService } from './core/theme.service';
 
@@ -9,10 +9,10 @@ import { ThemeService } from './core/theme.service';
   standalone: false,
 })
 export class AppComponent {
-  constructor(
-    private readonly locale: LocaleService,
-    private readonly theme: ThemeService,
-  ) {
+  private readonly locale = inject(LocaleService);
+  private readonly theme = inject(ThemeService);
+
+  constructor() {
     // Detect + apply the UI language on launch (persisted choice wins; else device locale).
     void this.locale.init();
     // Re-apply the persisted light/dark choice so it survives a reload.

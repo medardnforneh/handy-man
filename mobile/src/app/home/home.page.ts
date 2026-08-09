@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { LocaleService, Locale } from '../core/locale.service';
 
 @Component({
@@ -8,7 +8,7 @@ import { LocaleService, Locale } from '../core/locale.service';
   standalone: false,
 })
 export class HomePage {
-  constructor(private readonly localeService: LocaleService) {}
+  private readonly localeService = inject(LocaleService);
 
   get otherLocale(): Locale {
     return this.localeService.current === 'fr' ? 'en' : 'fr';
