@@ -3,8 +3,8 @@
 > Living tracker for the build. Updated as work progresses. Source of truth for **where we
 > are** and **how this machine is set up**. Read this first when resuming.
 
-_Last updated: 2026-08-09 (P7-08 pipeline — the last unbuilt part of the plan; native-origin guard;
-on-device: secure storage PROVEN + three total device-only bugs fixed; the provider client book)_
+_Last updated: 2026-08-09 (the unbuilt-but-specified work: P7-08 pipeline, 6 dead follow-up kinds;
+native-origin guard; on-device secure storage PROVEN + three device-only bugs; the client book)_
 
 ## Environment (this dev machine — Windows 10 Pro, non-admin)
 
@@ -179,7 +179,7 @@ registered yet — it must be set before the first store build, or the native ap
 | P7-03 | `comms_log` + per-user per-channel budget | **DONE** — `CommsBudget` counts real sends in `comms_log` over rolling windows (config `followups.budget`: push 4/d, sms 2/d + 3/wk, whatsapp 3/d, email 2/d; in_app unlimited); over cap → `suppressed`, not sent. Test: **5 SMS → 2 sent, 3 suppressed** |
 | P7-04 | Consent gate on non-transactional kinds | **DONE** — `FollowUpKind::requiresMarketingConsent()` (reengagement/maintenance_due) gated on the `marketing` grant via `ConsentState`; `isTransactional()` kinds (check_in_overdue/auto_approve_warning/payout_ready/…) bypass the budget entirely. Test: **revoke marketing → reengagement suppressed, check_in_overdue still sent** |
 | P7-02 | Event-driven scheduling + cancellation | **DONE** — `FollowUpOrchestrator` subscribes to the outbox seam: `engagement.completed` → review_request (+2h) + review_reminder (+3d); `review.submitted` (by the customer) → cancels both by dedupe-prefix; `warranty.issued` → warranty_expiring 14d before expiry. New `CompleteEngagement` action (publishes `engagement.completed`, idempotent); `SubmitReview`/`IssueWarranty` now publish their events. `POST /v1/engagements/{engagement}/complete`. Test: **complete → 2 scheduled; review submitted → both cancelled; completing twice → still 2** |
-| P7-07 | `quote_pending_customer` / `warranty_expiring` / `review_request` / `maintenance_due` + `response_action` | **DONE (core)** — review_request/reminder + warranty_expiring wired to events (above); every follow-up carries a single **`response_action`** recorded via `POST /v1/follow-ups/{followUp}/respond` (target-gated, enum'd actions), `GET /v1/follow-ups` lists a user's nudges. quote_pending_customer / maintenance_due scheduling lands when their source events are wired. Test: **response_action recorded → status responded; non-target → 403** |
+| P7-07 | `quote_pending_customer` / `warranty_expiring` / `review_request` / `maintenance_due` + `response_action` | **DONE (all four named kinds, 2026-08-09)** — review_request/reminder, warranty_expiring and quote_pending_customer wired to events; **maintenance_due** now fires too, gated on a per-skill `maintenance_interval_days` that is null for most of the taxonomy (a wardrobe built once needs no servicing). Every follow-up carries a single **`response_action`** recorded via `POST /v1/follow-ups/{followUp}/respond` (target-gated, enum'd), `GET /v1/follow-ups` lists a user's nudges. Beyond the four named here, five more of doc 07's catalogue were also wired (job_unquoted, site_visit_reminder, job_starting_soon, awaiting_approval, payout_ready) — see the entry below; three remain unwired for stated reasons. Tests: response_action recorded → responded; non-target → 403 |
 | P7-05 | WhatsApp Business API + approved templates + deep links | **DONE (adapter)** — `WhatsAppSender` rail (Fake/Log, config-selected, mirroring push/SMS); template = kind, variables + **deep link back to the follow-up**, sent in the target's **comms locale** (`followup.*` i18n copy, parity OK). `FollowUpDelivery` routes each follow-up to the right transport at dispatch; a transport failure marks the row `failed`. Live template approval is the remaining external dependency (like CinetPay creds). Test: **WhatsApp follow-up → transport got template + fr locale + deep link** |
 | P7-06 | Channel ladder in_app → push → whatsapp → sms → email | **DONE** — `ChannelLadder::pick` chooses the outbound channel (push if a live device token, else WhatsApp — the workhorse), used by the orchestrator; the follow-up row is always the in-app record; SMS/email reserved (SMS transactional, email for receipts). Test: **ladder picks push with a token, WhatsApp without; push follow-up reaches the device token** |
 | P7-08 | Provider CRM surface (customer list, pipeline, manual follow-up, do-not-contact) | **DONE (all four parts, 2026-08-09)** — the **pipeline** was the missing quarter and is now real: `ProviderPipeline` + `GET /v1/provider/pipeline` reports four stages off existing rows (offers awaiting an answer / quotes out / work in flight / completed in the window), each a count and a value. **Not a forecast** (nothing weighted by a probability of closing) and an **unpriced lead is counted but contributes no money** — falling back to the job budget where the customer named one, never inventing a figure. Client surface is the "My business" screen (Pipeline / Clients segment). 4 tests incl. unpriced-lead and cross-provider isolation. Backend below — `ProviderCustomers` builds the client book (per customer: job count, completions, lifetime value, last engagement) from the provider's engagements; `ScheduleManualFollowUp` lets a provider send a `reengagement` nudge on the **same budget + consent gates** (`created_by_user_id` recorded) — a provider can't spam through the platform; `do_not_contacts` (per provider→customer) is **honoured absolutely** — refused at schedule time and re-checked at dispatch. `GET /v1/provider/customers`, `POST /v1/provider/customers/{party}/follow-up`, `POST`/`DELETE .../do-not-contact`. 3 tests. (Pipeline view is a client/admin UI surface.) |
@@ -246,6 +246,29 @@ remainder, and it is external (credentials), not code.**
     landed, and native networking on device now works (CapacitorHttp).
 
 ## What was done, most recent first
+
+- **The follow-up catalogue is now mostly real, not just declared.** `FollowUpKind` listed sixteen
+  kinds; nine were reachable and seven were dead enum cases. Doc 07 §"The catalogue" specifies all
+  sixteen with exact triggers, delays and cancel conditions — so these were **specified and unbuilt**,
+  the same pattern as the P7-08 pipeline. Six now fire (`maintenance_due` plus the five below), each
+  off an event the domain already published:
+  - `job_unquoted` (job.published +6h, cancelled by the first offer), `site_visit_reminder`
+    (24h + 2h before, cancelled on completion), `job_starting_soon` (24h + 1h before a booked window,
+    and only when the assignment carries one), `awaiting_approval` (deliverable.submitted +24h — a
+    different message from the auto-approve *deadline* warning), and `payout_ready` (money released
+    into `provider_payable`, immediate, **over a threshold**: nudging someone to withdraw a pittance
+    costs us a message and costs them a transfer fee).
+  - All got per-kind copy in both languages instead of the generic fallback.
+  - **Three remain deliberately unwired, and none is a silent gap.** `payment_due` has no trigger in
+    this domain at all — there are no invoices; money moves through escrow and milestones.
+    `abandoned_draft` needs a `job.draft_created` event nothing publishes. `check_in_overdue` needs an
+    en-route ETA the app never captures, and P6-06 already covers a no-show's *safety* side as a staff
+    alert. Each needs a product decision or a new event, not just wiring.
+  - **A latent bug fell out of giving kinds their own copy**: `FollowUpDelivery::copy()` resolved
+    templates with **no replacements**, so any per-kind string naming a variable would have gone out
+    with a raw `:service` in it — the one defect a recipient definitely notices. Variables are now
+    resolved (the service in the target's own language, since the taxonomy is bilingual) and `copy()`
+    refuses to send a string with an unresolved placeholder, falling back to the generic wording.
 
 - **P7-08's pipeline — the quarter of a task that was carried as done and never built.** The build
   plan names four things (customer list, pipeline, manual follow-up, do-not-contact); three existed,
