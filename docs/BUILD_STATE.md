@@ -230,13 +230,13 @@ registered yet — it must be set before the first store build, or the native ap
     entry). Both are token-driven (light+dark, no-literal-colour + no-bare-string linters clean),
     English-default with a working FR/EN switch, and the responsive shell now really shows a side
     rail on web (the split-pane `ion-tabs` overlap bug was fixed) and a tab bar on phones.
-  - **Still owed:** on-device proof of secure token storage; an iOS build (never attempted — needs
-    macOS/Xcode); and the **"Map"** affordance on discover. **"Map" needs a product decision before
-    it is built**: this product deliberately never exposes a provider's service area or coordinates
-    (P2-03, and the public resource carries no location at all), so a map of providers would
-    contradict that stance. It is still an `<a href="#">` — a dead link on a shipping screen — and
-    the honest options are to drop it or to redefine it as something that does not leak location
-    (e.g. a map of the CUSTOMER's own saved addresses when composing a request).
+  - **"Map" on discover: DECIDED — dropped** (founder decision, 2026-08-09). This product never
+    exposes a provider's service area or coordinates (P2-03; the public provider resource carries no
+    location at all), so there was no map of providers to show and the link had never done anything.
+    The affordance and its i18n key are gone; customers find someone through search, categories and
+    the ranked rail. Discover now has **zero dead links** (verified in a browser).
+  - **Still owed:** on-device proof of secure token storage; and an iOS build (never attempted —
+    needs macOS/Xcode).
     The messages tab, the discover rail (search + category filters + "See all"), the provider
     profile, the **provider client book (P7-08)**, the public/SEO Blade pages, the realtime/media
     surfaces (P4-04..07), the offline layer (P5-02) and the PWA/Android build (P5-01) have all
@@ -282,7 +282,10 @@ registered yet — it must be set before the first store build, or the native ap
 - **Discover's "See all" is no longer a dead link.** `.cats` is a horizontal scroller, so 10 of the
   14 categories sat behind a swipe. It now expands the same tiles into a grid (4 across at 360px via
   `auto-fill`) and the label becomes "Show less" — no request, works offline, since the taxonomy is
-  already in memory. **"Map" is still `href="#"` and still needs the product decision above.**
+  already in memory.
+  - **"Map" was dropped** rather than built, on the founder's call: a map of providers would have
+    required publishing provider location, reversing P2-03's deliberate stance, and the link had
+    been decorative since the mockup. Discover now has **zero `href="#"` links**.
 
 - **On-device pass, round two: native networking fixed, and a compatibility bug that broke every
   write on older WebViews.** Both decisions from round one were taken: `mobile/android` and

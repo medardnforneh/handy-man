@@ -92,12 +92,14 @@
       <!-- The heading names what is on screen. Leaving "Top providers" above a filtered list would
            quietly misdescribe it, and the selected chip is the only other cue that a filter is on. -->
       <h2>{{ (category() === null ? 'discover.top_providers' : 'discover.in_category') | translate }}</h2>
+      <!-- No "Map" affordance, deliberately. This product never exposes a provider's service area or
+           coordinates (P2-03 — the public provider resource carries no location at all), so there is
+           no map of providers to show, and a link that does nothing is worse than no link. Customers
+           find someone through search, categories and the ranked rail. -->
       @if (category() !== null) {
         <a role="button" tabindex="0" (click)="toggleCategory(category()!)" (keyup.enter)="toggleCategory(category()!)">
           {{ 'discover.clear_filter' | translate }}
         </a>
-      } @else {
-        <a href="#">{{ 'discover.map' | translate }}</a>
       }
     </div>
 
