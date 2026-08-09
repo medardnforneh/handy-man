@@ -3,8 +3,8 @@
 > Living tracker for the build. Updated as work progresses. Source of truth for **where we
 > are** and **how this machine is set up**. Read this first when resuming.
 
-_Last updated: 2026-08-09 (on-device: secure storage PROVEN + two total device-only bugs fixed; the
-provider client book P7-08; discover "See all"; API 500-instead-of-401; a non-ISO timestamp)_
+_Last updated: 2026-08-09 (P7-08 pipeline — the last unbuilt part of the plan; native-origin guard;
+on-device: secure storage PROVEN + three total device-only bugs fixed; the provider client book)_
 
 ## Environment (this dev machine — Windows 10 Pro, non-admin)
 
@@ -182,9 +182,10 @@ registered yet — it must be set before the first store build, or the native ap
 | P7-07 | `quote_pending_customer` / `warranty_expiring` / `review_request` / `maintenance_due` + `response_action` | **DONE (core)** — review_request/reminder + warranty_expiring wired to events (above); every follow-up carries a single **`response_action`** recorded via `POST /v1/follow-ups/{followUp}/respond` (target-gated, enum'd actions), `GET /v1/follow-ups` lists a user's nudges. quote_pending_customer / maintenance_due scheduling lands when their source events are wired. Test: **response_action recorded → status responded; non-target → 403** |
 | P7-05 | WhatsApp Business API + approved templates + deep links | **DONE (adapter)** — `WhatsAppSender` rail (Fake/Log, config-selected, mirroring push/SMS); template = kind, variables + **deep link back to the follow-up**, sent in the target's **comms locale** (`followup.*` i18n copy, parity OK). `FollowUpDelivery` routes each follow-up to the right transport at dispatch; a transport failure marks the row `failed`. Live template approval is the remaining external dependency (like CinetPay creds). Test: **WhatsApp follow-up → transport got template + fr locale + deep link** |
 | P7-06 | Channel ladder in_app → push → whatsapp → sms → email | **DONE** — `ChannelLadder::pick` chooses the outbound channel (push if a live device token, else WhatsApp — the workhorse), used by the orchestrator; the follow-up row is always the in-app record; SMS/email reserved (SMS transactional, email for receipts). Test: **ladder picks push with a token, WhatsApp without; push follow-up reaches the device token** |
-| P7-08 | Provider CRM surface (customer list, pipeline, manual follow-up, do-not-contact) | **DONE (backend)** — `ProviderCustomers` builds the client book (per customer: job count, completions, lifetime value, last engagement) from the provider's engagements; `ScheduleManualFollowUp` lets a provider send a `reengagement` nudge on the **same budget + consent gates** (`created_by_user_id` recorded) — a provider can't spam through the platform; `do_not_contacts` (per provider→customer) is **honoured absolutely** — refused at schedule time and re-checked at dispatch. `GET /v1/provider/customers`, `POST /v1/provider/customers/{party}/follow-up`, `POST`/`DELETE .../do-not-contact`. 3 tests. (Pipeline view is a client/admin UI surface.) |
+| P7-08 | Provider CRM surface (customer list, pipeline, manual follow-up, do-not-contact) | **DONE (all four parts, 2026-08-09)** — the **pipeline** was the missing quarter and is now real: `ProviderPipeline` + `GET /v1/provider/pipeline` reports four stages off existing rows (offers awaiting an answer / quotes out / work in flight / completed in the window), each a count and a value. **Not a forecast** (nothing weighted by a probability of closing) and an **unpriced lead is counted but contributes no money** — falling back to the job budget where the customer named one, never inventing a figure. Client surface is the "My business" screen (Pipeline / Clients segment). 4 tests incl. unpriced-lead and cross-provider isolation. Backend below — `ProviderCustomers` builds the client book (per customer: job count, completions, lifetime value, last engagement) from the provider's engagements; `ScheduleManualFollowUp` lets a provider send a `reengagement` nudge on the **same budget + consent gates** (`created_by_user_id` recorded) — a provider can't spam through the platform; `do_not_contacts` (per provider→customer) is **honoured absolutely** — refused at schedule time and re-checked at dispatch. `GET /v1/provider/customers`, `POST /v1/provider/customers/{party}/follow-up`, `POST`/`DELETE .../do-not-contact`. 3 tests. (Pipeline view is a client/admin UI surface.) |
 
-**Phase 7 complete (backend): 8/8 tasks. P7-05 live WhatsApp templates + the pipeline UI are the external/UI remainders.**
+**Phase 7 complete: 8/8 tasks, all parts. P7-05's live WhatsApp template approval is the only
+remainder, and it is external (credentials), not code.**
 
 ### Phase 8 — Growth and scale
 
@@ -245,6 +246,34 @@ registered yet — it must be set before the first store build, or the native ap
     landed, and native networking on device now works (CapacitorHttp).
 
 ## What was done, most recent first
+
+- **P7-08's pipeline — the quarter of a task that was carried as done and never built.** The build
+  plan names four things (customer list, pipeline, manual follow-up, do-not-contact); three existed,
+  "pipeline" appeared nowhere in the codebase, and this tracker had parked it as "a client/admin UI
+  surface". Now real: `ProviderPipeline` + `GET /v1/provider/pipeline`, four stages read straight off
+  rows that already exist, so a provider maintains nothing by hand.
+  - **Two deliberate refusals.** It is **not a forecast** — nothing is weighted by a probability of
+    closing, because the platform knows what was offered/quoted/won/finished and does not know what
+    will close; the screen says so in as many words. And an **unpriced lead is counted but adds no
+    money**: falling back to the job's budget where the customer named one is fair, inventing a
+    figure where nobody has is overstating the funnel in exactly the direction a provider wants to
+    believe. Both are tested.
+  - The screen became the CRM surface the plan describes — a Pipeline / Clients segment, renamed
+    **"My business"** since it no longer only lists clients. The empty-client-book state moved inside
+    the Clients tab: as a top-level branch it hid the funnel from a new provider with live leads and
+    no completed job, which is precisely the provider who needs one.
+  - Bars are hand-drawn divs on a shared scale — four numbers do not justify a charting payload on a
+    low-end Android. Verified in a browser against a seeded funnel (3/1/1/1 → bars 100/33/33/33),
+    both tabs on real data, no sideways scroll at 360px, light and dark.
+
+- **`NATIVE_API_ORIGIN` is now guarded instead of merely commented.** It is still the placeholder
+  (no domain registered), and shipping it produces an app that installs, opens and renders while
+  reaching nothing — quiet enough to survive a smoke test, the same shape as the native-transport
+  bugs. `npm run check:native-origin` warns on an ordinary build and **fails hard when the store
+  pipeline sets `HM_RELEASE=1`**; it also rejects a non-https origin. Wired into `verify:frontend`
+  and into CI as a warning (a gate there would fail every run over something nobody can fix until a
+  domain exists). All four paths tested: placeholder+dev → warn, placeholder+release → fail, real
+  https+release → pass, http+release → fail.
 
 - **On-device round three: secure storage finally PROVEN, and the packaged app was profoundly
   broken in two ways no browser can show.** Driven by attaching to the APK's WebView over the debug

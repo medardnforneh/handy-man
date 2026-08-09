@@ -124,6 +124,13 @@ jobs:
       - name: No hard-coded user strings
         run: npm run lint:strings
 
+      # Warns while NATIVE_API_ORIGIN is still the placeholder; the store-build pipeline sets
+      # HM_RELEASE=1, which turns the same check into a hard gate. It is deliberately not a gate
+      # here — no domain is registered yet, and failing every CI run on that would block work
+      # nobody can unblock.
+      - name: Native API origin (warns until a domain is set)
+        run: npm run check:native-origin
+
       - name: Install mobile deps
         working-directory: mobile
         run: npm ci

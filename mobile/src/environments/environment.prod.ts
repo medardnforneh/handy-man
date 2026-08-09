@@ -8,6 +8,11 @@
  *
  * **This is a placeholder.** The hosting ADR (docs/adr/0001-hosting-region.md) chose in-country
  * hosting but no domain is registered yet; set this to the real origin before the first store build.
+ *
+ * `npm run check:native-origin` guards it: a warning on an ordinary build, a hard failure when the
+ * store pipeline runs it with `HM_RELEASE=1`. Shipping the placeholder produces an app that
+ * installs, opens and renders while reaching nothing — a failure quiet enough to survive a smoke
+ * test, which is exactly why it is checked rather than left to a comment.
  */
 const NATIVE_API_ORIGIN = 'https://app.handyman.cm';
 
