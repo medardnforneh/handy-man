@@ -3,8 +3,8 @@
 > Living tracker for the build. Updated as work progresses. Source of truth for **where we
 > are** and **how this machine is set up**. Read this first when resuming.
 
-_Last updated: 2026-07-31 (discover rail on a new public `GET /providers`; messages tab on
-`GET /conversations`; before that P5-01/02 — offline cache + write queue, PWA, secure tokens, APK)_
+_Last updated: 2026-08-09 (the provider client book — P7-08's missing screen; discover "See all";
+two real bugs found while verifying them: API 500-instead-of-401, and a non-ISO timestamp)_
 
 ## Environment (this dev machine — Windows 10 Pro, non-admin)
 
@@ -231,15 +231,58 @@ registered yet — it must be set before the first store build, or the native ap
     English-default with a working FR/EN switch, and the responsive shell now really shows a side
     rail on web (the split-pane `ion-tabs` overlap bug was fixed) and a tab bar on phones.
   - **Still owed:** on-device proof of secure token storage; an iOS build (never attempted — needs
-    macOS/Xcode); and the "See all" / "Map" affordances on discover. **"Map" needs a product decision
-    before it is built**: this product deliberately never exposes a provider's service area or
-    coordinates (P2-03, and the public resource carries no location at all), so a map of providers
-    would contradict that stance. The messages tab, the discover rail (search + category filters),
-    the provider profile, the public/SEO Blade pages, the realtime/media surfaces (P4-04..07), the
-    offline layer (P5-02) and the PWA/Android build (P5-01) have all landed, and native networking
-    on device now works (CapacitorHttp).
+    macOS/Xcode); and the **"Map"** affordance on discover. **"Map" needs a product decision before
+    it is built**: this product deliberately never exposes a provider's service area or coordinates
+    (P2-03, and the public resource carries no location at all), so a map of providers would
+    contradict that stance. It is still an `<a href="#">` — a dead link on a shipping screen — and
+    the honest options are to drop it or to redefine it as something that does not leak location
+    (e.g. a map of the CUSTOMER's own saved addresses when composing a request).
+    The messages tab, the discover rail (search + category filters + "See all"), the provider
+    profile, the **provider client book (P7-08)**, the public/SEO Blade pages, the realtime/media
+    surfaces (P4-04..07), the offline layer (P5-02) and the PWA/Android build (P5-01) have all
+    landed, and native networking on device now works (CapacitorHttp).
 
 ## What was done, most recent first
+
+- **The provider client book (P7-08) — the CRM's missing screen, plus two real bugs it surfaced.**
+  P7-08's backend has existed since Phase 7 (customer list with history + LTV, manual re-engagement
+  on the same budget/consent gates, absolute do-not-contact) with **nothing in the app in front of
+  it**. `/clients` is that screen, reached from provider Home and Profile — deliberately not a sixth
+  tab, since six labelled tab buttons do not fit a 360px phone without truncating.
+  - The two writes pull in opposite directions on purpose: the nudge rides the same gates as an
+    automated follow-up (a provider cannot spam through us), while do-not-contact is the customer's
+    veto — so a blocked row offers **no nudge affordance at all** rather than a button the server
+    would refuse. The nudge is deliberately **not** queued offline: it is a marketing message, and
+    reporting success for something the platform is about to decline would be a lie. The list itself
+    is read-through cached (P5-02) — who you have worked for is still true without a network.
+  - **BUG: `last_engaged_at` was not ISO-8601.** The list is an aggregate over a raw query, so no
+    cast reaches it and Postgres handed back its own `"2026-07-28 05:15:57+00"`. V8 parses that
+    string; **iOS JSC and older Android WebViews return Invalid Date** — precisely the client this
+    product ships to. Now `toIso8601String()`, matching the API convention and the `format: date-time`
+    the OpenAPI spec already declared. Regression test asserts the shape.
+  - **BUG (wider): an unauthenticated API request without an `Accept: application/json` header
+    returned 500, not 401.** Laravel redirects failed-`auth` guests to `route('login')`, which this
+    app has never defined (no web route is behind `auth`; Filament runs its own), so the RFC 7807
+    renderer never saw the exception — a framework 500 for what is only an expired token. Clients
+    that omit the header are ordinary (curl, a proxy that strips it, an older HTTP library). Guests
+    are no longer redirected anywhere; `redirectGuestsTo(fn () => null)` in `bootstrap/app.php`.
+  - Also fixed `tools/lint-no-bare-strings.mjs`, which could not parse Angular's two-word
+    `@else if (…)` and read the condition itself as user-visible copy.
+  - **Verified in a real browser against the live API**, signed in as a seeded provider: both real
+    clients render with correct singular/plural and relative dates, search folds accents ("aicha"
+    finds "Aïcha Bello"), the no-match message appears, and **all three writes round-trip** — nudge
+    scheduled, do-not-contact set, and the row standing down to the blocked state in place. Light,
+    dark, 360/768/1200.
+  - **Gotcha worth remembering:** the row's action bar was first called `.acts`, which is a **global**
+    primitive in `customer/ui.scss` — it stretches any `ion-button` inside it and laid the row out on
+    the cross axis, so the two controls stacked and centred. No rule in the cascade declared
+    `flex-direction: column`, which made it invisible by inspection; the fix was a component-local
+    class name plus an explicit axis.
+
+- **Discover's "See all" is no longer a dead link.** `.cats` is a horizontal scroller, so 10 of the
+  14 categories sat behind a swipe. It now expands the same tiles into a grid (4 across at 360px via
+  `auto-fill`) and the label becomes "Show less" — no request, works offline, since the taxonomy is
+  already in memory. **"Map" is still `href="#"` and still needs the product decision above.**
 
 - **On-device pass, round two: native networking fixed, and a compatibility bug that broke every
   write on older WebViews.** Both decisions from round one were taken: `mobile/android` and
