@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 use App\Domain\Engagements\Actions\CompleteEngagement;
 use App\Domain\Jobs\Actions\PublishJob;
+use App\Domain\Money\AccountKind;
+use App\Domain\Money\Ledger;
+use App\Domain\Money\LedgerEntryInput;
+use App\Domain\Money\TxnKind;
 use App\Domain\Offers\Actions\CreateDirectOffer;
 use App\Domain\Quotations\Actions\CompleteSiteVisit;
 use App\Domain\Quotations\Actions\ScheduleSiteVisit;
@@ -187,8 +191,23 @@ it('reminds a customer of a site visit a day and two hours out, and cancels once
     expect(FollowUp::query()->where('kind', 'site_visit_reminder')->where('status', 'scheduled')->count())->toBe(0);
 });
 
-// `grantPayable()` is declared in tests/Feature/Money/PayoutTest.php — Pest test helpers are global
-// once loaded, so it is reused here rather than redeclared (which is a fatal error).
+/**
+ * Credit a provider's payable balance the way an escrow release does, without the money stack.
+ *
+ * Deliberately NOT reusing `grantPayable()` from PayoutTest: Pest helpers are global once loaded,
+ * so borrowing one makes this file pass only when that unrelated file happens to be in the run —
+ * `php artisan test tests/Feature/FollowUps` then fails with "undefined function", which is exactly
+ * how people run tests while working. Own name, own file, no ordering dependency.
+ */
+function grantProviderPayable(User $provider, int $amount): void
+{
+    $ledger = app(Ledger::class);
+    $ledger->post(TxnKind::Adjustment, [
+        LedgerEntryInput::debit($ledger->account(AccountKind::PlatformCash), $amount),
+        LedgerEntryInput::credit($ledger->account(AccountKind::ProviderPayable, $provider->party_id), $amount),
+    ]);
+}
+
 it('tells a provider their money is withdrawable once the balance is worth withdrawing', function () {
     // doc 07 `payout_ready`. Nudging someone to withdraw a pittance costs us a message and costs
     // them a transfer fee, so it is gated on a threshold rather than fired on every release.
@@ -196,12 +215,12 @@ it('tells a provider their money is withdrawable once the balance is worth withd
 
     ['engagement' => $engagement, 'provider' => $provider] = orchestrationEngagement();
 
-    grantPayable($provider, 20_000);
+    grantProviderPayable($provider, 20_000);
     app(Outbox::class)->publish('milestone.approved', ['engagement_id' => $engagement->id]);
     app(OutboxRelay::class)->drain();
     expect(FollowUp::query()->where('kind', 'payout_ready')->count())->toBe(0);
 
-    grantPayable($provider, 200_000); // now well over the threshold
+    grantProviderPayable($provider, 200_000); // now well over the threshold
     app(Outbox::class)->publish('milestone.approved', ['engagement_id' => $engagement->id]);
     app(OutboxRelay::class)->drain();
     expect(FollowUp::query()->where('kind', 'payout_ready')->count())->toBe(1);
