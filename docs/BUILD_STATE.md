@@ -3,8 +3,8 @@
 > Living tracker for the build. Updated as work progresses. Source of truth for **where we
 > are** and **how this machine is set up**. Read this first when resuming.
 
-_Last updated: 2026-08-09 (the unbuilt-but-specified work: P7-08 pipeline, 6 dead follow-up kinds;
-native-origin guard; on-device secure storage PROVEN + three device-only bugs; the client book)_
+_Last updated: 2026-08-09 (audited every hedged DONE: P1-06 benchmark now MET, and a sequential-scan
+defect fixed on provider search; before that P7-08 pipeline, 6 dead follow-up kinds, on-device work)_
 
 ## Environment (this dev machine — Windows 10 Pro, non-admin)
 
@@ -71,7 +71,7 @@ Task IDs come from `docs/05-build-plan.md`.
 | P1-04 | devices registration + push token capture | **DONE** — `devices` (id == client X-Device-Id, upsert), `RegisterDevice` action (moves a push token to the newest device), `POST /v1/devices` (auth:sanctum); captures platform/push_token/app_version; 5 tests |
 | P1-05 | consents (granular/versioned/revocable + presented_locale) | **DONE** — append-only `consents` log (terms/privacy/location_tracking/id_verification/marketing), policy_version, presented_locale (CHECK fr/en); `ConsentState` (latest-per-purpose), `ConsentGuard` blocks geo writes when location_tracking revoked → `consent_required` problem+json (`missing_purpose`); `GET/POST /v1/consents`; `ProvidesProblemExtras` interface |
 | P1-05b | locale + comms_locale prefs | **DONE** — columns already on users (P1-01); `PATCH /v1/me/preferences` sets UI + comms locale independently (locale=en, comms_locale=fr round-trips); app-side first-launch offer via `LocaleService` (P0-12) |
-| P1-06 | addresses + PostGIS + GIST index | **DONE** — `addresses` with `geography(Point,4326)` + GIST spatial index (via matanyadaev/laravel-eloquent-spatial); `Address::scopeNear` uses **ST_DWithin** (index-served, parameterized); `CreateAddress` gated on location_tracking consent; `GET/POST /v1/addresses`; 5 tests (proximity correctness + index existence). 100k/<50ms benchmark left to a perf script |
+| P1-06 | addresses + PostGIS + GIST index | **DONE** — `addresses` with `geography(Point,4326)` + GIST spatial index (via matanyadaev/laravel-eloquent-spatial); `Address::scopeNear` uses **ST_DWithin** (index-served, parameterized); `CreateAddress` gated on location_tracking consent; `GET/POST /v1/addresses`; 5 tests (proximity correctness + index existence). **Acceptance criterion MET 2026-08-09**: `php artisan perf:geo-benchmark` — 100k seeded addresses, index-served, **p95 10.0ms** against the 50ms budget (a 5km radius is a different story — see the audit entry below) |
 | P1-07 + P1-07b | bilingual skills taxonomy + language-matched FTS | **DONE** — self-referencing `skills` (name_fr/name_en, slug citext, risk_tier 1–3, requires_license); `SkillsSeeder` = 41 leaves / 13 categories real Cameroon trades, both languages; `Skill::scopeSearch` uses the **matching french/english FTS config** (GIN indexes per language); public `GET /v1/skills` + `/skills/search`; `DatabaseSeeder` runs staff roles + skills; 6 tests |
 | P1-08 | provider_profiles + provider_skills + service_areas | **DONE** — 3 tables (service_areas geography+GIST; provider_skills price_model enum); `CreateProviderProfile` (always allowed, doc 10), `AddProviderSkill` (gated on `has_provider_profile` via `ListSkill` capability → precondition_unmet), `SetServiceArea` (location_tracking consent). **Wired REAL fact resolvers** in AccessServiceProvider: has_provider_profile, skill_listed, identity_verified (from verification_tier) — P0-17 now data-driven. 5 tests |
 | P1-09 | Filament 5 admin panel + mandatory 2FA + admin roles | **DONE** — Filament 5.7, `/admin` gated by `canAccessPanel` (staff roles only, never customer/provider), **mandatory TOTP 2FA** (`multiFactorAuthentication(..., isRequired: true)` — can't reach dashboard un-enrolled), recovery codes; `ProviderProfileResource`; User implements FilamentUser/HasName/HasAppAuthentication(+Recovery); **Spatie teams turned OFF** (org roles live in `memberships.role` per doc 02; Spatie = global staff only); 4 tests |
@@ -200,7 +200,20 @@ remainder, and it is external (credentials), not code.**
 
 **Phase 8 (growth and scale) complete: 6/6.**
 
-**Every backend build-plan task is now done** (P3-13 — agreement-time deposit capture — was the last one). What remains is the client/native/realtime UI work: the Ionic PWA/Android/iOS build + offline write queue (P5-01/02), the engagement-workspace realtime/media surfaces (P4-04..07), and the public/SEO Blade pages — plus external dependencies awaiting real credentials (CinetPay live sandbox, FCM project, WhatsApp template approval).
+**Every build-plan task is done, backend and client** (as of 2026-08-09; the last genuinely unbuilt
+work was P7-08's pipeline and six dead `FollowUpKind` cases — see the entries below). The client,
+native, realtime and offline surfaces (P4-04..07, P5-01/02) and the public/SEO Blade pages have all
+landed.
+
+> ⚠ **This paragraph was wrong for a while, and the reason is worth keeping.** It used to say the
+> backend was complete when a quarter of P7-08 and seven follow-up kinds had never been written —
+> they were *declared* (an enum case, a table, a doc row) and nothing invoked them. Hedged status
+> markers like "DONE (backend)" and "DONE (core)" are where that hides. If you are auditing, check
+> what **calls** a thing, not what declares it.
+
+What remains is **not code**: external dependencies awaiting real credentials (CinetPay live
+sandbox, FCM project, WhatsApp template approval, SMS), an iOS build needing macOS, and the
+founder-owned legal items in doc 05's launch checklist.
 
 ## Design debt (tracked)
 
@@ -246,6 +259,34 @@ remainder, and it is external (credentials), not code.**
     landed, and native networking on device now works (CapacitorHttp).
 
 ## What was done, most recent first
+
+- **Audited every hedged DONE marker in this tracker. One was an unmet acceptance criterion, and
+  chasing it found a real performance defect on the provider-search hot path.**
+  - **P1-06 — "100k/<50ms benchmark left to a perf script".** The script never existed, so the
+    criterion had never been checked. It exists now (`php artisan perf:geo-benchmark`) and seeds real
+    Yaoundé/Douala bounding boxes rather than uniform noise — an index benchmarked against uniformly
+    random points is not benchmarked. **Result: criterion MET** — 100k addresses, 1km radius, index
+    served, **p95 10.0ms** against the 50ms budget. It does *not* hold at a 5km radius (p95 161ms),
+    but that is a result-set-size effect, not an index one: at that radius ~5% of the table matches
+    and a bitmap scan materialises every candidate before `LIMIT` can help. Worth knowing before
+    anyone exposes a wide-radius search.
+  - **A genuine defect, previously invisible: `ServiceArea::scopeCovering` was a SEQUENTIAL SCAN.**
+    Its distance comes from a *column* (`radius_m`, each provider's own reach), and a GIST index
+    cannot bound a search whose radius differs per row. It measured ~1ms in every test, because
+    providers cluster in cities so the scan hits matches immediately and `LIMIT` exits early. **A
+    point matching little or nothing has no early exit and scans the whole table: 131.8ms at 50k
+    areas, growing linearly with every provider who signs up** — on the P2-04 provider-search and
+    P8-03 dispatch path. Fixed by adding an index-served constant bound (`MAX_RADIUS_M`, a strict
+    superset of the exact predicate, so the answer is unchanged) ahead of the per-row check:
+    **index now used, worst case 131.8ms → 3.7ms.** The dense case costs ~8ms more (1.0 → 9.0ms);
+    that trade buys a bounded worst case and removes the linear growth, which is the right trade for
+    a hot path. 105 coverage/proximity tests still green.
+  - **The other hedges are all external or hardware, and none hides unbuilt code**: CinetPay live
+    sandbox, FCM delivery, WhatsApp template approval and SMS all sit behind credentials with their
+    adapters written and config defaulting to `fake` (verified: all four default to `fake`); the iOS
+    build needs macOS (verified: no `mobile/ios` directory, consistent with the claim). P4-05's
+    "mic capture and playback decode unverified" stands — the multipart *transport* is now proven on
+    device, capture itself needs a real microphone.
 
 - **The follow-up catalogue is now mostly real, not just declared.** `FollowUpKind` listed sixteen
   kinds; nine were reachable and seven were dead enum cases. Doc 07 §"The catalogue" specifies all
@@ -1413,7 +1454,9 @@ remainder, and it is external (credentials), not code.**
   RFC7807 errors; idempotency middleware; transactional outbox + relay; and the `Note` reference
   vertical slice tying Action/Policy/Request/Resource/thin-controller to that infra. 40 tests
   green overall; analyse + lint clean.
-- **P0-09**: hosting-region ADR drafted (`docs/adr/0001-hosting-region.md`), awaiting decision.
+- **P0-09**: hosting-region ADR drafted (`docs/adr/0001-hosting-region.md`). *(Superseded — it was
+  DECIDED as Option A, in-country, and the P0-09 row above records that. This line is kept only
+  because it is part of a dated historical entry.)*
 - **P0-04 done**: `app/Support/Money.php` — immutable value object; integer minor units only,
   explicit currency with scale registry (XAF/XOF scale 0), cross-currency arithmetic throws,
   `allocate()` conserves minor units, `percentage()` round-half-up, `toArray()` = API shape.
