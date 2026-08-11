@@ -6,6 +6,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
 
 /**
@@ -39,5 +40,21 @@ final class Referral extends Model
     protected function casts(): array
     {
         return ['flagged_for_review' => 'boolean', 'qualified_at' => 'datetime'];
+    }
+
+    /**
+     * @return BelongsTo<Party, $this>
+     */
+    public function referrer(): BelongsTo
+    {
+        return $this->belongsTo(Party::class, 'referrer_party_id');
+    }
+
+    /**
+     * @return BelongsTo<Party, $this>
+     */
+    public function referee(): BelongsTo
+    {
+        return $this->belongsTo(Party::class, 'referee_party_id');
     }
 }

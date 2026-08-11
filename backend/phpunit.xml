@@ -19,6 +19,12 @@
     </source>
     <php>
         <env name="APP_ENV" value="testing"/>
+        <!-- Pinned, because the SEO tests assert absolute URLs (canonical, hreflang, the robots.txt
+             Sitemap line) built from APP_URL. Dev runs the API on :8100 (and the app on :4200), so
+             .env legitimately carries a port that these assertions do not expect. Pinning here keeps
+             the suite independent of the local .env instead of forcing dev onto a port it does not
+             use. -->
+        <env name="APP_URL" value="http://localhost"/>
         <env name="APP_LOCALE" value="fr"/>
         <env name="APP_FALLBACK_LOCALE" value="fr"/>
         <env name="APP_MAINTENANCE_DRIVER" value="file"/>

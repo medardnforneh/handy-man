@@ -3,8 +3,8 @@
 > Living tracker for the build. Updated as work progresses. Source of truth for **where we
 > are** and **how this machine is set up**. Read this first when resuming.
 
-_Last updated: 2026-08-09 (audited every hedged DONE: P1-06 benchmark now MET, and a sequential-scan
-defect fixed on provider search; before that P7-08 pipeline, 6 dead follow-up kinds, on-device work)_
+_Last updated: 2026-08-11 (admin: dashboard width bug, 4 missing detail pages, reports could never be
+closed, reconciliation queue, skills CRUD; before that the hedged-DONE audit and the P1-06 benchmark)_
 
 ## Environment (this dev machine — Windows 10 Pro, non-admin)
 
@@ -220,7 +220,8 @@ founder-owned legal items in doc 05's launch checklist.
 - **UI quality bar (user-mandated): every UI must be beautiful, professional, perfect.** New UI is
   built to that bar from the start on the design-token system (light+dark, semantic colours,
   no-literal-colour lint).
-  - **Filament admin — reworked to full visual fidelity (proposal approved).** The dashboard is a
+  - **Filament admin — reworked to full visual fidelity (proposal approved), then found broken in a
+    wide window on 2026-08-11 and fixed; see the top entry.** The dashboard is a
     single bespoke-view widget (`OverviewWidget` → `resources/views/filament/widgets/overview.blade.php`)
     that reproduces the approved mockup pixel-for-pixel inside the Filament shell: KPI cards with
     hand-drawn SVG sparklines (open jobs, active engagements, escrow held, GMV 30d, revenue, open
@@ -259,6 +260,58 @@ founder-owned legal items in doc 05's launch checklist.
     landed, and native networking on device now works (CapacitorHttp).
 
 ## What was done, most recent first
+
+- **The admin panel, looked at with real data in a real browser for the first time since the rework
+  — and it was not what this tracker claimed.** Founder feedback: "the create and edit views for most
+  sections are not there" and the UIs "look horrible". Both were right.
+  - **The dashboard had been rendering inside half a column since the rework.** `OverviewWidget`
+    declared `$columnSpan = 'full'` and never received it: Filament applies its column-span classes
+    from the `<x-filament-widgets::widget>` component, and the bespoke view's root was a plain
+    `<div class="hm-dash">`, so the declaration was silently ignored and the whole dashboard laid out
+    in one 516px column of a two-column grid. Every figure wrapped mid-number ("5 280 / 000 FCFA"),
+    the needs-attention panel wrapped every two words, and a third of the page was empty gutter. The
+    "pixel-for-pixel fidelity to the approved mockup" claim below was **never true in a wide window**;
+    it was presumably only ever checked narrow. Wrapping the view fixes it (3 × 341px KPI columns).
+    Money cells also got `white-space: nowrap` — the thousands separator is a space, so "800 000"
+    broke into two lines that read as two numbers.
+  - **Four queues could be looked at and not opened.** Disputes, Reports, Safety alerts and Referrals
+    had a list page and no view page. Worst case: the dispute queue truncates the complaint to 60
+    characters and offers an Adjudicate button, so the decision was being made without the complaint
+    being readable. All four now have bespoke detail pages in the dashboard's visual language, and
+    every row action is defined once and shared by the row and the page.
+  - **Reports could never be closed.** `resolved` and `dismissed` were valid statuses that nothing in
+    the codebase could set — every report rested at `open` forever. This is the same "declared but
+    nothing invokes it" pattern as the dead `FollowUpKind` cases, and it survived the audit above
+    because the audit checked hedged DONE markers, not enum values nothing writes. New `ReviewReport`
+    domain action; the table has no reviewer column, so attribution goes to the append-only activity
+    log (P6-02) rather than a migration, and a second decision on a closed report is refused rather
+    than overwriting the first one's attribution. 4 tests.
+  - **Reconciliation exceptions had no page at all** — the dashboard had counted them as "needs a
+    human" with the link beside that count set to `href="#"`. New Money > Reconciliation Exceptions
+    resource (oldest first: a settlement gap worsens with age), detail page, dashboard link wired.
+    Resolving records who and why and posts **no** ledger entry: picking accounts for a balanced
+    adjustment from a queue dropdown is how you get a transaction that balances and is still wrong,
+    against an append-only ledger. A money-moving correction stays a deliberate separate step.
+  - **The skills taxonomy is now editable** — the first genuine create/edit surface in the admin.
+    It is reference data with no state machine and no money attached, so a form is the right tool;
+    until now the taxonomy could only be changed by editing a seeder. Delete is refused (it would
+    orphan `provider_skills` and jobs). The two fields with teeth are labelled as such in the form:
+    `risk_tier` feeds the AcceptPaidJob gate, so raising it can stop currently-verified providers
+    from accepting that work, and `maintenance_interval_days` is what makes a trade emit
+    `maintenance_due` follow-ups.
+  - **Record titles**: dispute/report/alert/referral pages were headed by a bare UUID, identical
+    between two open cases. They are named by what the case is about now. The referral queue showed
+    both parties as 8-character UUID fragments; it shows names.
+  - **One claim in the founder report was wrong and is worth recording as a method note:** the admin
+    sidebar looked unlabelled and half-height in the first screenshots. That was an artifact of
+    full-page capture (`captureBeyondViewport`) against a `position: fixed` sidebar — at true
+    viewport size it was always fine. **Judge layout from viewport-sized captures.**
+  - Still open from that founder feedback: the **public website** (essentially undesigned — the whole
+    "design system" is ~55 lines of inline CSS in `layouts/public.blade.php`) and the **Ionic app**
+    (density, clipped rails, two "+" buttons on Jobs). Also spotted and not yet fixed: **provider
+    home shows fixture stats** (★4.9 / 94% on-time) for a provider that Discover correctly reports as
+    unrated — P6-12 requires on-time to be null below a 5-job floor — and `DemoSeeder` mixes faker
+    junk ("Maiores recusandae" as a category) into otherwise real Cameroon data.
 
 - **Audited every hedged DONE marker in this tracker. One was an unmet acceptance criterion, and
   chasing it found a real performance defect on the provider-search hot path.**

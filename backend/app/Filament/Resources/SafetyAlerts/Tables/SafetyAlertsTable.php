@@ -2,15 +2,13 @@
 
 namespace App\Filament\Resources\SafetyAlerts\Tables;
 
-use App\Domain\Safety\Actions\ResolveSafetyAlert;
+use App\Filament\Resources\SafetyAlerts\Actions\SettleAlertActions;
+use App\Filament\Resources\SafetyAlerts\SafetyAlertResource;
 use App\Models\SafetyAlert;
-use App\Models\User;
-use Filament\Actions\Action;
-use Filament\Notifications\Notification;
+use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
-use Illuminate\Support\Facades\Auth;
 
 class SafetyAlertsTable
 {
@@ -33,25 +31,11 @@ class SafetyAlertsTable
                     ->default('open'),
             ])
             ->defaultSort('created_at', 'desc')
+            ->recordUrl(fn (SafetyAlert $record): string => SafetyAlertResource::getUrl('view', ['record' => $record]))
             ->recordActions([
-                Action::make('acknowledge')
-                    ->icon('heroicon-o-eye')
-                    ->visible(fn (SafetyAlert $record): bool => $record->status === 'open')
-                    ->action(fn (SafetyAlert $record) => self::settle($record, 'acknowledged')),
-                Action::make('resolve')
-                    ->icon('heroicon-o-check-circle')
-                    ->color('success')
-                    ->requiresConfirmation()
-                    ->visible(fn (SafetyAlert $record): bool => $record->status !== 'resolved')
-                    ->action(fn (SafetyAlert $record) => self::settle($record, 'resolved')),
+                ViewAction::make(),
+                SettleAlertActions::acknowledge(),
+                SettleAlertActions::resolve(),
             ]);
-    }
-
-    private static function settle(SafetyAlert $record, string $status): void
-    {
-        /** @var User $admin */
-        $admin = Auth::user();
-        app(ResolveSafetyAlert::class)->handle($record, $admin, $status);
-        Notification::make()->title("Alert {$status}")->success()->send();
     }
 }
