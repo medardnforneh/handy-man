@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
+use App\Domain\Engagements\Actions\CompleteEngagement;
 use App\Domain\Jobs\JobStateMachine;
 use App\Domain\Jobs\JobStatus;
 use App\Domain\Money\Actions\ApproveMilestone;
@@ -63,9 +64,26 @@ final class DemoSeeder extends Seeder
         $providerNames = ['Atelier Nkeng', 'Douala Cool Services', 'Marie Fotso', 'BTP Cameroun SARL', 'Éric Kamga', 'Fresh Design Studio', 'Yaoundé Élec', 'Bâti-Pro'];
         $customerNames = ['Jean Mbarga', 'Aïcha Bello', 'Paul Etoundi', 'Grace Ngo', 'Samuel Tchoua', 'Fatou Sow', 'Restaurant Le Palmier', 'Boutique Kribi'];
 
-        $providers = collect($providerNames)->map(function (string $name, int $i) {
+        // The headline is PUBLIC — it is what the crawlable trade pages print instead of a name,
+        // precisely so a pre-engagement visitor never learns who someone is. Seeding it with the
+        // provider's own name defeated that: the public directory was printing display names.
+        $headlines = [
+            'Dépannage et installation, 7j/7',
+            'Froid et climatisation — devis gratuit',
+            'Plomberie soignée, travail garanti',
+            'Bâtiment et second œuvre',
+            'Informatique et réseaux à domicile',
+            'Design graphique et identité visuelle',
+            'Électricité générale et mise aux normes',
+            'Maçonnerie et finitions',
+        ];
+
+        $providers = collect($providerNames)->map(function (string $name, int $i) use ($headlines) {
             $user = $this->person($name, '+2376'.str_pad((string) (10000000 + $i), 8, '0', STR_PAD_LEFT));
-            ProviderProfile::factory()->verified(2)->create(['party_id' => $user->party_id, 'headline' => $name]);
+            ProviderProfile::factory()->verified(2)->create([
+                'party_id' => $user->party_id,
+                'headline' => $headlines[$i % count($headlines)],
+            ]);
 
             return $user;
         });
@@ -73,16 +91,20 @@ final class DemoSeeder extends Seeder
         $customers = collect($customerNames)->map(fn (string $name, int $i) => $this->person($name, '+2376'.str_pad((string) (20000000 + $i), 8, '0', STR_PAD_LEFT)));
 
         // Fully engaged jobs with money flowing (quote → escrow → release), some advanced further.
+        // The last flag is on-site vs REMOTE: remote engagements are a headline capability (doc 06)
+        // and used to be selected by matching a skill name that no seeded skill ever had, so every
+        // demo engagement was on-site and the whole remote path — deliverables included — was
+        // invisible. It is an explicit choice per scenario now.
         $scenarios = [
-            [0, 0, 0, 900_000, 200_000, JobStatus::InProgress],
-            [3, 5, 3, 450_000, 0, JobStatus::WorkSubmitted],
-            [1, 1, 1, 1_250_000, 300_000, JobStatus::Engaged],
-            [2, 3, 2, 3_100_000, 600_000, JobStatus::Completed],
-            [4, 4, 4, 620_000, 120_000, JobStatus::InProgress],
-            [1, 6, 1, 780_000, 150_000, JobStatus::Engaged],
+            [0, 0, 0, 900_000, 200_000, JobStatus::InProgress, true],
+            [3, 5, 3, 450_000, 0, JobStatus::WorkSubmitted, true],
+            [1, 1, 1, 1_250_000, 300_000, JobStatus::Engaged, true],
+            [2, 3, 2, 3_100_000, 600_000, JobStatus::Completed, true],
+            [4, 4, 4, 620_000, 120_000, JobStatus::InProgress, false],
+            [1, 6, 1, 780_000, 150_000, JobStatus::Completed, false],
         ];
-        foreach ($scenarios as [$pi, $ci, $si, $subtotal, $deposit, $advanceTo]) {
-            $this->engage($providers[$pi], $customers[$ci], $skills[$si], $subtotal, $deposit, $advanceTo);
+        foreach ($scenarios as [$pi, $ci, $si, $subtotal, $deposit, $advanceTo, $onsite]) {
+            $this->engage($providers[$pi], $customers[$ci], $skills[$si], $subtotal, $deposit, $advanceTo, $onsite);
         }
 
         // Some jobs left open / offered for the pipeline KPIs.
@@ -113,6 +135,11 @@ final class DemoSeeder extends Seeder
             amountMinor: 2_000,
         );
 
+        // Everything the money story does not touch — trust, safety, reputation, growth, execution
+        // and lifecycle — so no admin queue and no app screen is empty. Split into its own seeder
+        // because an empty table is where the bugs hide (see DemoCoverageSeeder's docblock).
+        $this->call(DemoCoverageSeeder::class);
+
         $this->command->info('Demo data seeded. Log in at /admin with admin@handyman.cm / password.');
     }
 
@@ -126,9 +153,8 @@ final class DemoSeeder extends Seeder
         ]);
     }
 
-    private function engage(User $provider, User $customer, Skill $skill, int $subtotal, int $deposit, JobStatus $advanceTo): void
+    private function engage(User $provider, User $customer, Skill $skill, int $subtotal, int $deposit, JobStatus $advanceTo, bool $onsite = true): void
     {
-        $onsite = $skill->name_fr !== 'Design graphique';
         $job = Job::factory()
             ->status(JobStatus::Open)
             ->when(! $onsite, fn ($f) => $f->remote())
@@ -174,6 +200,15 @@ final class DemoSeeder extends Seeder
             if ($step === $advanceTo) {
                 break;
             }
+        }
+
+        // A job reaching `completed` is NOT the same as the engagement being complete: `completed_at`
+        // is stamped by CompleteEngagement, which publishes `engagement.completed` — the event that
+        // drives review follow-ups (P7-02), referral qualification (P8-01) and the provider metrics.
+        // Advancing only the job state machine left every one of those unreachable in the demo data,
+        // and reviews/warranties impossible to seed at all.
+        if ($advanceTo === JobStatus::Completed) {
+            app(CompleteEngagement::class)->handle($engagement->fresh());
         }
     }
 

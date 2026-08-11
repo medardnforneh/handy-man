@@ -37,7 +37,7 @@ const header = '/* GENERATED from tokens/tokens.json — do not edit by hand. Ru
 function buildTokensCss() {
   const light = colorVars('light');
   const dark = colorVars('dark');
-  const scalars = [scalarVars('radius'), scalarVars('space')].filter(Boolean).join('\n');
+  const scalars = [scalarVars('radius'), scalarVars('space'), scalarVars('shadow')].filter(Boolean).join('\n');
 
   return `${header}
 :root {

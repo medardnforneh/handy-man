@@ -37,7 +37,9 @@ module.exports = {
         "sm": "var(--hm-space-sm)",
         "md": "var(--hm-space-md)",
         "lg": "var(--hm-space-lg)",
-        "xl": "var(--hm-space-xl)"
+        "xl": "var(--hm-space-xl)",
+        "2xl": "var(--hm-space-2xl)",
+        "3xl": "var(--hm-space-3xl)"
       }
     }
   }
