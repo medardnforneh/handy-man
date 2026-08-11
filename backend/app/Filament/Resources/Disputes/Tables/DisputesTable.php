@@ -2,17 +2,13 @@
 
 namespace App\Filament\Resources\Disputes\Tables;
 
-use App\Domain\Disputes\Actions\AdjudicateDispute;
+use App\Filament\Resources\Disputes\Actions\AdjudicateAction;
+use App\Filament\Resources\Disputes\DisputeResource;
 use App\Models\Dispute;
-use App\Models\User;
-use Filament\Actions\Action;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Textarea;
-use Filament\Notifications\Notification;
+use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
-use Illuminate\Support\Facades\Auth;
 
 class DisputesTable
 {
@@ -34,28 +30,10 @@ class DisputesTable
                     ->default('open'),
             ])
             ->defaultSort('created_at', 'desc')
+            ->recordUrl(fn (Dispute $record): string => DisputeResource::getUrl('view', ['record' => $record]))
             ->recordActions([
-                Action::make('adjudicate')
-                    ->icon('heroicon-o-scale')
-                    ->visible(fn (Dispute $record): bool => in_array($record->status, ['open', 'reviewing'], true))
-                    ->schema([
-                        Select::make('decision')
-                            ->options(['resolved' => 'Resolve', 'rejected' => 'Reject'])
-                            ->required(),
-                        Textarea::make('resolution_note')->label('Resolution note')->required()->maxLength(5000),
-                    ])
-                    // Money-moving adjudications (balanced adjustment txns) go through the Action's
-                    // adjustmentEntries; this UI records the decision + note. A ledger adjustment is a
-                    // deliberate, separate step so a note can't accidentally move money.
-                    ->action(fn (Dispute $record, array $data) => self::adjudicate($record, (string) $data['decision'], (string) $data['resolution_note'])),
+                ViewAction::make(),
+                AdjudicateAction::make(),
             ]);
-    }
-
-    private static function adjudicate(Dispute $record, string $decision, string $note): void
-    {
-        /** @var User $admin */
-        $admin = Auth::user();
-        app(AdjudicateDispute::class)->handle($record, $admin, $decision, $note);
-        Notification::make()->title("Dispute {$decision}")->success()->send();
     }
 }

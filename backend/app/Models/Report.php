@@ -56,4 +56,20 @@ final class Report extends Model
     {
         return $this->belongsTo(Party::class, 'subject_party_id');
     }
+
+    /**
+     * @return BelongsTo<Party, $this>
+     */
+    public function reporter(): BelongsTo
+    {
+        return $this->belongsTo(Party::class, 'reporter_party_id');
+    }
+
+    /**
+     * @return BelongsTo<Job, $this>
+     */
+    public function job(): BelongsTo
+    {
+        return $this->belongsTo(Job::class);
+    }
 }

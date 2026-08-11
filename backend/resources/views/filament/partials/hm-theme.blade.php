@@ -47,11 +47,14 @@
     .hm-dash thead th{ text-align:left; font-size:10.5px; letter-spacing:.07em; text-transform:uppercase; color:var(--hm-muted); font-weight:700; padding:10px 16px; border-bottom:1px solid var(--hm-border); }
     .hm-dash tbody td{ padding:12px 16px; border-bottom:1px solid var(--hm-border); vertical-align:middle; }
     .hm-dash tbody tr:last-child td{ border-bottom:0; }
-    .hm-dash .hm-num{ text-align:right; font-variant-numeric:tabular-nums; }
+    /* A money figure must never wrap: "800 000" broken across two lines reads as two numbers. The
+       thousands separator here is a space, so nowrap is the only thing holding the figure together. */
+    .hm-dash .hm-num{ text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap; }
     .hm-dash .hm-ref{ font-weight:600; }
     .hm-dash .hm-sub{ color:var(--hm-muted); font-size:12px; }
     .hm-dash .hm-prov{ display:flex; align-items:center; gap:9px; }
     .hm-dash .hm-pa{ width:26px; height:26px; border-radius:7px; flex:none; display:grid; place-items:center; font-weight:700; font-size:11px; color:var(--hm-on-brand); background:var(--hm-brand); }
+    .hm-dash .hm-pa-lg{ width:42px; height:42px; border-radius:11px; font-size:15px; }
     .hm-dash .hm-pa.accent-info{ background:var(--hm-info); }
     .hm-dash .hm-pa.accent-warning{ background:var(--hm-warning); }
     .hm-dash .hm-pa.accent-muted{ background:var(--hm-muted); }
@@ -66,6 +69,13 @@
     .hm-dash .hm-mstones i{ width:22px; height:5px; border-radius:3px; background:var(--hm-border-strong); }
     .hm-dash .hm-mstones i.hm-done{ background:var(--hm-brand); }
     .hm-dash .hm-stack{ display:flex; flex-direction:column; gap:24px; }
+    /* Long-form prose (a complaint, a report, a resolution note) — the one place in the admin where
+       a full paragraph is read rather than scanned, so it gets a reading measure and line height. */
+    .hm-dash .hm-body{ margin:0; font-size:13.5px; line-height:1.65; color:var(--hm-text); max-width:64ch; white-space:pre-wrap; overflow-wrap:anywhere; }
+    .hm-dash .hm-linkcard{ display:flex; align-items:center; justify-content:space-between; gap:12px;
+        padding:14px 16px; border-radius:var(--hm-radius-lg, 14px); border:1px solid var(--hm-border);
+        background:var(--hm-raised); color:var(--hm-brand); font-size:13px; font-weight:600; text-decoration:none; }
+    .hm-dash .hm-linkcard:hover{ border-color:var(--hm-brand); }
     .hm-dash .hm-exc{ display:flex; gap:12px; padding:14px 16px; border-bottom:1px solid var(--hm-border); }
     .hm-dash .hm-exc:last-child{ border-bottom:0; }
     .hm-dash .hm-exc .hm-sev{ width:4px; border-radius:3px; flex:none; }
@@ -94,7 +104,9 @@
     .hm-dash .hm-head{ display:flex; align-items:center; gap:14px; padding:18px 16px; flex-wrap:wrap; }
     .hm-dash .hm-head .hm-title{ font-size:19px; font-weight:700; letter-spacing:-.02em; text-wrap:balance; }
     .hm-dash .hm-head .hm-title small{ color:var(--hm-muted); font-weight:500; font-size:13px; margin-left:8px; }
-    .hm-dash .hm-two{ display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+    /* align-items:start so a short card sizes to its content instead of stretching to match a taller
+       neighbour and trailing a block of dead space. */
+    .hm-dash .hm-two{ display:grid; grid-template-columns:1fr 1fr; gap:16px; align-items:start; }
     .hm-dash .hm-metric{ padding:14px 16px; }
     .hm-dash .hm-metric .hm-mk{ font-size:11px; color:var(--hm-muted); font-weight:600; text-transform:uppercase; letter-spacing:.05em; }
     .hm-dash .hm-metric .hm-mv{ font-size:22px; font-weight:700; letter-spacing:-.02em; margin-top:3px; }

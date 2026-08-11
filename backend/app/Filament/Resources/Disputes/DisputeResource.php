@@ -3,10 +3,13 @@
 namespace App\Filament\Resources\Disputes;
 
 use App\Filament\Resources\Disputes\Pages\ListDisputes;
+use App\Filament\Resources\Disputes\Pages\ViewDispute;
+use App\Filament\Resources\Disputes\Schemas\DisputeInfolist;
 use App\Filament\Resources\Disputes\Tables\DisputesTable;
 use App\Models\Dispute;
 use BackedEnum;
 use Filament\Resources\Resource;
+use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
@@ -26,9 +29,29 @@ class DisputeResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'id';
 
+    /**
+     * Without this the heading and breadcrumb are the bare UUID — unreadable, and identical between
+     * two open disputes. Name the case by what it is about instead.
+     */
+    public static function getRecordTitle(?Model $record): ?string
+    {
+        if (! $record instanceof Dispute) {
+            return null;
+        }
+
+        $reference = $record->engagement?->job?->reference;
+
+        return trim(__('admin.dispute.category.'.$record->category).($reference ? ' · '.$reference : ''));
+    }
+
     public static function table(Table $table): Table
     {
         return DisputesTable::configure($table);
+    }
+
+    public static function infolist(Schema $schema): Schema
+    {
+        return DisputeInfolist::configure($schema);
     }
 
     public static function getNavigationBadge(): ?string
@@ -57,6 +80,7 @@ class DisputeResource extends Resource
     {
         return [
             'index' => ListDisputes::route('/'),
+            'view' => ViewDispute::route('/{record}'),
         ];
     }
 }

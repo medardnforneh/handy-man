@@ -22,6 +22,10 @@
     $totalMoney = max(($money['escrow'] ?? 0) + ($money['payable'] ?? 0) + ($money['lead'] ?? 0), 1);
 @endphp
 
+{{-- The widget component is what applies Filament's column-span classes. Without it the root <div>
+     is just a grid item, `$columnSpan = 'full'` is silently ignored, and the whole dashboard is laid
+     out inside one 516px column of a two-column grid — which wraps every figure mid-number. --}}
+<x-filament-widgets::widget class="fi-wi-hm-overview">
 <div class="hm-dash">
 @include('filament.partials.hm-theme')
 
@@ -86,7 +90,7 @@
         {{-- Attention + money --}}
         <div class="hm-stack">
             <section class="hm-card">
-                <div class="hm-phead"><h2>{{ __('admin.needs_attention') }}</h2><a href="#">{{ __('admin.reconciliation') }}</a></div>
+                <div class="hm-phead"><h2>{{ __('admin.needs_attention') }}</h2><a href="{{ \App\Filament\Resources\ReconciliationExceptions\ReconciliationExceptionResource::getUrl() }}">{{ __('admin.reconciliation') }}</a></div>
                 @forelse ($exceptions as $x)
                     @php $crit = $x->kind === 'settlement_mismatch'; @endphp
                     <div class="hm-exc {{ $crit ? 'hm-crit' : 'hm-warn' }}">
@@ -123,3 +127,4 @@
     <div class="hm-foot">{{ __('admin.ledger_note') }}</div>
 </div>
 </div>
+</x-filament-widgets::widget>

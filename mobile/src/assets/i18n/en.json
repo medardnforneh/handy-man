@@ -258,7 +258,86 @@
     "message": "Message",
     "no_message": "No message included with this offer.",
     "offer_suffix": "offer",
-    "on_job": "on"
+    "on_job": "on",
+    "dispute": {
+      "complaint": "The complaint",
+      "resolution": "Resolution",
+      "decided_by": "Decided by",
+      "engagement": "Engagement",
+      "open_engagement": "Open the engagement",
+      "raised_by": "Raised by",
+      "age": "Age",
+      "days": "days",
+      "ledger_effect": "Ledger effect",
+      "adjustment_posted": "Adjustment posted",
+      "no_ledger_effect": "None",
+      "status": {
+        "open": "Open",
+        "reviewing": "Reviewing",
+        "resolved": "Resolved",
+        "rejected": "Rejected"
+      },
+      "category": {
+        "quality": "Quality",
+        "no_show": "No-show",
+        "payment": "Payment",
+        "other": "Other",
+        "scope": "Scope",
+        "safety": "Safety"
+      }
+    },
+    "recon": {
+      "kind": {
+        "settlement_mismatch": "Settlement mismatch",
+        "intent_missing_ledger": "Payment without ledger entry"
+      },
+      "status": {
+        "open": "Open",
+        "resolved": "Resolved"
+      },
+      "detected": "Detected",
+      "resolved_at": "Resolved at",
+      "reference": "Reference",
+      "transaction": "Adjustment transaction",
+      "what_the_check_found": "What the check found",
+      "never_auto_corrected": "The nightly check never corrects a discrepancy on its own — nothing here has been adjusted.",
+      "resolve_heading": "Close this exception",
+      "resolve_description": "This records who closed it and why. It posts no ledger entry — a money correction is a separate, deliberate step.",
+      "memo": "Why is this resolved?",
+      "memo_hint": "Recorded against the exception and attributed to you.",
+      "resolved_toast": "Exception closed"
+    },
+    "report": {
+      "category": {
+        "fraud": "Fraud",
+        "no_show": "No-show",
+        "harassment": "Harassment",
+        "safety": "Safety",
+        "spam": "Spam",
+        "off_platform": "Off-platform",
+        "other": "Other"
+      },
+      "status": {
+        "open": "Open",
+        "reviewing": "Reviewing",
+        "resolved": "Resolved",
+        "dismissed": "Dismissed"
+      },
+      "against": "against",
+      "filed_by": "Filed by",
+      "subject": "Reported party",
+      "reporter": "Reporter",
+      "prior_reports": "Other reports on this party",
+      "effect": "Automatic effect",
+      "no_penalty": "None",
+      "what_was_reported": "What was reported",
+      "decision": "Decision",
+      "decide": "Record a decision",
+      "note": "Why?",
+      "note_hint": "Recorded in the audit log and attributed to you. It is not shown to either party.",
+      "recorded": "Decision recorded",
+      "never_auto_penalises": "A report never penalises anyone by itself — no suspension, no rating effect, no money moved. Closing it records a human decision."
+    }
   },
   "push": {
     "new_message": {

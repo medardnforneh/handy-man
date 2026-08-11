@@ -52,4 +52,20 @@ final class Dispute extends Model
     {
         return $this->belongsTo(Engagement::class);
     }
+
+    /**
+     * @return BelongsTo<Party, $this>
+     */
+    public function raisedBy(): BelongsTo
+    {
+        return $this->belongsTo(Party::class, 'raised_by_party_id');
+    }
+
+    /**
+     * @return BelongsTo<User, $this>
+     */
+    public function resolvedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'resolved_by_user_id');
+    }
 }

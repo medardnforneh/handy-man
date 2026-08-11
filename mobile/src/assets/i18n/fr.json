@@ -258,7 +258,86 @@
     "message": "Message",
     "no_message": "Aucun message joint à cette offre.",
     "offer_suffix": "offre",
-    "on_job": "sur"
+    "on_job": "sur",
+    "dispute": {
+      "complaint": "La réclamation",
+      "resolution": "Résolution",
+      "decided_by": "Décidé par",
+      "engagement": "Engagement",
+      "open_engagement": "Ouvrir l'engagement",
+      "raised_by": "Signalé par",
+      "age": "Ancienneté",
+      "days": "jours",
+      "ledger_effect": "Effet comptable",
+      "adjustment_posted": "Ajustement enregistré",
+      "no_ledger_effect": "Aucun",
+      "status": {
+        "open": "Ouvert",
+        "reviewing": "En examen",
+        "resolved": "Résolu",
+        "rejected": "Rejeté"
+      },
+      "category": {
+        "quality": "Qualité",
+        "no_show": "Absence",
+        "payment": "Paiement",
+        "other": "Autre",
+        "scope": "Périmètre",
+        "safety": "Sécurité"
+      }
+    },
+    "recon": {
+      "kind": {
+        "settlement_mismatch": "Écart de règlement",
+        "intent_missing_ledger": "Paiement sans écriture"
+      },
+      "status": {
+        "open": "Ouvert",
+        "resolved": "Résolu"
+      },
+      "detected": "Détecté",
+      "resolved_at": "Résolu le",
+      "reference": "Référence",
+      "transaction": "Transaction d'ajustement",
+      "what_the_check_found": "Ce que le contrôle a trouvé",
+      "never_auto_corrected": "Le contrôle nocturne ne corrige jamais un écart de lui-même — rien ici n'a été ajusté.",
+      "resolve_heading": "Clôturer cet écart",
+      "resolve_description": "Ceci enregistre qui a clôturé et pourquoi. Aucune écriture comptable n'est passée — une correction d'argent est une étape distincte et délibérée.",
+      "memo": "Pourquoi est-ce résolu ?",
+      "memo_hint": "Enregistré sur l'écart et attribué à vous.",
+      "resolved_toast": "Écart clôturé"
+    },
+    "report": {
+      "category": {
+        "fraud": "Fraude",
+        "no_show": "Absence",
+        "harassment": "Harcèlement",
+        "safety": "Sécurité",
+        "spam": "Spam",
+        "off_platform": "Hors plateforme",
+        "other": "Autre"
+      },
+      "status": {
+        "open": "Ouvert",
+        "reviewing": "En examen",
+        "resolved": "Résolu",
+        "dismissed": "Classé sans suite"
+      },
+      "against": "contre",
+      "filed_by": "Signalé par",
+      "subject": "Partie signalée",
+      "reporter": "Auteur du signalement",
+      "prior_reports": "Autres signalements sur cette partie",
+      "effect": "Effet automatique",
+      "no_penalty": "Aucun",
+      "what_was_reported": "Ce qui a été signalé",
+      "decision": "Décision",
+      "decide": "Enregistrer une décision",
+      "note": "Pourquoi ?",
+      "note_hint": "Enregistré dans le journal d'audit et attribué à vous. Non visible par les parties.",
+      "recorded": "Décision enregistrée",
+      "never_auto_penalises": "Un signalement ne pénalise jamais personne de lui-même — aucune suspension, aucun effet sur la note, aucun mouvement d'argent. Le clôturer enregistre une décision humaine."
+    }
   },
   "push": {
     "new_message": {
