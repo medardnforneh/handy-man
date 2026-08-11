@@ -386,9 +386,40 @@ export class CustomerService {
     },
   };
 
-  /** The public provider profile (reviews + display-safe metrics). Falls back to a sensible default. */
+  /**
+   * The public provider profile (reviews + display-safe metrics).
+   *
+   * An unknown id returns a BLANK profile, not a stand-in. This used to fall back to `profiles.p1`,
+   * so opening any real provider before their profile loaded — or when the fetch failed — rendered
+   * Atelier Nkeng's name, a 4.76 rating from 128 reviews, 94% on-time and three named testimonials,
+   * attributed to whoever the customer had actually tapped. Inventing one person's reputation and
+   * showing it as another's is the most damaging thing a marketplace can display, and it is exactly
+   * what P6-09's shrinkage and P6-12's sample floor exist to prevent on the honest path.
+   */
   provider(id: string): ProviderProfile {
-    return this.profiles[id] ?? this.profiles['p1'];
+    return this.profiles[id] ?? this.blankProfile(id);
+  }
+
+  private blankProfile(id: string): ProviderProfile {
+    return {
+      id,
+      name: '',
+      initials: '',
+      headline: '',
+      accent: 'muted',
+      verified: false,
+      mode: 'onsite',
+      city: '',
+      ratingAvg: null,
+      ratingCount: 0,
+      jobsCompleted90d: 0,
+      onTimeRate: null,
+      responseTime: '',
+      memberSince: '',
+      skills: [],
+      about: '',
+      reviews: [],
+    };
   }
 
   /** Providers filtered by the discover mode segment. `both` returns everything. */

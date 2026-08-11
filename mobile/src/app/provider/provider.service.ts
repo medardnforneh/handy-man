@@ -87,6 +87,40 @@ function accentFor(id: string): Accent {
 }
 
 /**
+ * The starting state for a provider we know nothing about yet — and the state a user who has NOT
+ * created a provider profile keeps.
+ *
+ * There is a line between the two kinds of placeholder this app uses. Illustrative content (a
+ * sample lead in a list) is a demo aid. A claim ABOUT THE USER — their verification tier, their
+ * rating, their money — is not; showing an invented one is the app telling the person something
+ * false about themselves. These are the second kind, so they start empty.
+ */
+const EMPTY_IDENTITY: ProviderIdentity = {
+  partyId: null,
+  name: '',
+  initials: '',
+  headline: '',
+  verificationTier: 0, // 0 none · 1 phone · 2 ID · 3 ID + license (P6-03)
+  rating: null,
+  ratingCount: 0,
+  skills: [],
+  serviceAreaRadiusKm: null,
+};
+
+const EMPTY_STATS: ProviderStats = {
+  activeJobs: 0,
+  rating: null,
+  completed90d: 0,
+  onTimeRate: null,
+};
+
+const EMPTY_WALLET: ProviderWallet = {
+  availableMinor: 0,
+  pendingPayoutMinor: 0,
+  currency: 'XAF',
+};
+
+/**
  * Provider-section data. Earnings, opportunities, the work list and the work detail — including its
  * check-in / status / report mutations — now run against the real API; the remaining surfaces keep
  * their fixtures. Every method falls back to its fixture when there's no session or the device is
@@ -107,25 +141,24 @@ export class ProviderService {
   private readonly realWork = new Set<string>();
 
   /**
-   * Who the provider is. Starts as the fixture so the section renders instantly and stays demoable
-   * offline; `fetchProfile()` replaces it with the real profile. Screens read the SIGNAL, not a
-   * snapshot, so they pick the real values up when it lands.
+   * Who the provider is. Starts EMPTY, not as a fixture.
+   *
+   * It used to start as a demo persona — "Atelier Nkeng", tier 2, 4.9 stars from 68 reviews — and
+   * `fetchProfile()` deliberately kept that on a 404, i.e. exactly when the server had said this
+   * person has no provider profile at all. So a user who tapped "Offer services" for the first time
+   * was shown a verification tier and a reputation they had never earned, as their own. Reputation
+   * is the one thing this product must never invent: P6-12 withholds even a REAL rating below the
+   * sample floor rather than flatter someone.
+   *
+   * Screens read the SIGNAL, not a snapshot, so the real profile replaces this when it lands.
    */
-  readonly identity = signal<ProviderIdentity>({
-    partyId: null,
-    name: 'Atelier Nkeng',
-    initials: 'AN',
-    headline: 'Plomberie',
-    verificationTier: 2, // 0 none · 1 phone · 2 ID · 3 ID + license (P6-03)
-    rating: 4.9,
-    ratingCount: 68,
-    skills: ['Plomberie', 'Fuites', 'Chauffe-eau', 'Sanitaires'],
-    serviceAreaRadiusKm: 15,
-  });
+  readonly identity = signal<ProviderIdentity>(EMPTY_IDENTITY);
 
   /**
    * The caller's own provider profile (GET /provider/profile). A 404 means they haven't created one
-   * yet — that is a legitimate state, not an error, so we keep the fixture and return null.
+   * yet — a legitimate state, not an error. It returns null either way, but the identity signal now
+   * starts empty, so "no profile yet" renders as the onboarding state instead of as somebody else's
+   * reputation.
    */
   async fetchProfile(): Promise<ProviderIdentity | null> {
     try {
@@ -165,13 +198,14 @@ export class ProviderService {
     this.available = value;
   }
 
-  private readonly wallet: ProviderWallet = {
-    availableMinor: 640000, pendingPayoutMinor: 150000, currency: 'XAF',
-  };
+  /**
+   * Money and reputation start at zero rather than at a flattering demo figure. The wallet used to
+   * open at "640 000 FCFA available to withdraw" and the stats at 4.9 stars / 94% on-time — both
+   * shown to anyone whose fetch failed for ANY reason, including having no provider profile.
+   */
+  private readonly wallet: ProviderWallet = EMPTY_WALLET;
 
-  private readonly stats: ProviderStats = {
-    activeJobs: 3, rating: 4.9, completed90d: 34, onTimeRate: 0.94,
-  };
+  private readonly stats: ProviderStats = EMPTY_STATS;
 
   private readonly leads: Lead[] = [
     {
@@ -278,8 +312,17 @@ export class ProviderService {
     }
   }
 
+  /**
+   * Opportunities start EMPTY rather than at the sample leads.
+   *
+   * A lead is not decoration: it is presented as work available to this person, with a price and an
+   * age, and it is tappable. Showing invented ones to someone whose feed has not loaded — or who has
+   * no provider profile at all — invites them to quote a job that does not exist. The screens
+   * already have a proper empty state; the offline layer (P5-02) serves the last REAL feed, which is
+   * what "works offline" should mean.
+   */
   listLeads(): Lead[] {
-    return this.leads;
+    return [];
   }
 
   lead(id: string): Lead | null {
@@ -401,8 +444,9 @@ export class ProviderService {
     },
   };
 
+  /** Same reasoning as {@see listLeads()}: work in progress is a fact about this provider. */
   listActive(): ActiveWork[] {
-    return this.active;
+    return [];
   }
 
   /**

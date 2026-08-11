@@ -689,7 +689,8 @@
     "reviewer": "Client vérifié",
     "send_offer": "Envoyer une offre",
     "offer_sent": "Offre envoyée au prestataire",
-    "offer_failed": "Impossible d’envoyer l’offre. Veuillez réessayer."
+    "offer_failed": "Impossible d’envoyer l’offre. Veuillez réessayer.",
+    "loading": "Chargement du profil…"
   },
   "jobproviders": {
     "title": "Prestataires proposés",
@@ -803,7 +804,8 @@
     "back_to_customer": "Retour client",
     "no_work": "Aucun travail en cours",
     "payout_history": "Historique des retraits",
-    "no_payouts": "Aucun retrait"
+    "no_payouts": "Aucun retrait",
+    "no_profile_yet": "Créez votre profil pro pour commencer"
   },
   "payout": {
     "paid": "Versé",

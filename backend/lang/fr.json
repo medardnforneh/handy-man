@@ -758,5 +758,7 @@
   "public.hero_card_button": "Valider et libérer",
   "public.hero_card_initials": "AN",
   "public.nav_menu": "Menu",
-  "public.no_providers_body": "Publiez quand même votre demande — des professionnels de métiers proches peuvent y répondre, et de nouveaux arrivent chaque semaine."
+  "public.no_providers_body": "Publiez quand même votre demande — des professionnels de métiers proches peuvent y répondre, et de nouveaux arrivent chaque semaine.",
+  "pro.no_profile_yet": "Créez votre profil pro pour commencer",
+  "provider.loading": "Chargement du profil…"
 }

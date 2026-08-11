@@ -758,5 +758,7 @@
   "public.hero_card_button": "Approve and release",
   "public.hero_card_initials": "AN",
   "public.nav_menu": "Menu",
-  "public.no_providers_body": "Post the job anyway — professionals in nearby trades can still quote for it, and new ones join every week."
+  "public.no_providers_body": "Post the job anyway — professionals in nearby trades can still quote for it, and new ones join every week.",
+  "pro.no_profile_yet": "Set up your provider profile to start",
+  "provider.loading": "Loading profile…"
 }

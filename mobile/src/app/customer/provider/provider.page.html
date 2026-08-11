@@ -14,10 +14,16 @@
     <section class="hero hm-card">
       <div [class]="'hm-avatar hero-av accent-' + p.accent" aria-hidden="true">{{ p.initials }}</div>
 
+      <!-- No name means the real profile has not landed yet (or could not be reached). Say that,
+           rather than showing an empty line where a person's name belongs. -->
       <div class="hero-name">
-        <b>{{ p.name }}</b>
-        @if (p.verified) {
-          <ion-icon class="verified" name="shield-checkmark" [attr.aria-label]="'discover.verified' | translate"></ion-icon>
+        @if (p.name) {
+          <b>{{ p.name }}</b>
+          @if (p.verified) {
+            <ion-icon class="verified" name="shield-checkmark" [attr.aria-label]="'discover.verified' | translate"></ion-icon>
+          }
+        } @else {
+          <b class="hm-muted">{{ 'provider.loading' | translate }}</b>
         }
       </div>
 

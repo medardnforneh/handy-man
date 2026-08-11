@@ -11,10 +11,16 @@
   <div class="page">
     <div class="hello">
       <h1>{{ 'pro.greeting' | translate }}</h1>
+      <!-- Before the profile lands (or when the user has none) the name is empty; say so plainly
+           rather than rendering a blank line under the greeting. -->
       <span class="who">
-        {{ identity().name }}
-        @if (identity().verificationTier >= 2) {
-          <ion-icon class="verified" name="shield-checkmark" [attr.aria-label]="'discover.verified' | translate"></ion-icon>
+        @if (identity().name) {
+          {{ identity().name }}
+          @if (identity().verificationTier >= 2) {
+            <ion-icon class="verified" name="shield-checkmark" [attr.aria-label]="'discover.verified' | translate"></ion-icon>
+          }
+        } @else {
+          <span class="hm-muted">{{ 'pro.no_profile_yet' | translate }}</span>
         }
       </span>
     </div>
@@ -26,10 +32,15 @@
       @if (wallet().pendingPayoutMinor > 0) {
         <span class="pending">{{ 'pro.payout_pending' | translate:{ amount: (wallet().pendingPayoutMinor | money) } }} {{ 'money.currency' | translate }}</span>
       }
-      <ion-button expand="block" class="withdraw hm-tap" (click)="withdraw()">
+      <!-- Disabled at zero rather than left tappable-then-refused: a primary button that only ever
+           produces an error toast reads as a broken app, not as a rule. -->
+      <ion-button expand="block" class="withdraw hm-tap" [disabled]="wallet().availableMinor <= 0" (click)="withdraw()">
         <ion-icon name="cash-outline" slot="start" aria-hidden="true"></ion-icon>
         {{ 'pro.withdraw' | translate }}
       </ion-button>
+      @if (wallet().availableMinor <= 0) {
+        <span class="pending">{{ 'pro.nothing_to_withdraw' | translate }}</span>
+      }
     </div>
 
     <!-- Stats -->
@@ -108,6 +119,10 @@
         </div>
         <span [class]="'hm-pill ' + tone(work.status)">{{ 'status.' + work.status | translate }}</span>
       </button>
+    } @empty {
+      <!-- The opportunities list had an empty state and this one did not, so an idle provider saw a
+           heading followed by nothing at all. -->
+      <p class="hm-empty">{{ 'pro.no_work' | translate }}</p>
     }
   </div>
 </ion-content>
