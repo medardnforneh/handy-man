@@ -78,6 +78,14 @@ final class Party extends Model
         return $this->hasOne(Organization::class);
     }
 
+    /**
+     * @return HasOne<ProviderProfile, $this>
+     */
+    public function providerProfile(): HasOne
+    {
+        return $this->hasOne(ProviderProfile::class);
+    }
+
     public function isIndividual(): bool
     {
         return $this->kind === self::KIND_INDIVIDUAL;

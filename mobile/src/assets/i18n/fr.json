@@ -427,6 +427,75 @@
       "maintenance_short": "Entretien",
       "every_n_days": "tous les :n jours",
       "categories_only": "Catégories seulement"
+    },
+    "money": {
+      "payer": "Payeur",
+      "payee": "Prestataire",
+      "msisdn": "Numéro mobile",
+      "gateway_ref": "Référence passerelle",
+      "posted": "Comptabilité",
+      "posted_yes": "Enregistré",
+      "not_posted": "Non enregistré",
+      "reversed": "Contre-passé",
+      "reversed_yes": "Contre-passé",
+      "reversed_only": "Contre-passés seulement",
+      "status": {
+        "pending": "En attente",
+        "processing": "En cours",
+        "succeeded": "Réussi",
+        "failed": "Échoué",
+        "expired": "Expiré"
+      },
+      "purpose": {
+        "escrow": "Séquestre",
+        "lead_credits": "Crédits de contacts"
+      }
+    },
+    "party": {
+      "name": "Nom",
+      "kind": {
+        "individual": "Personne",
+        "organization": "Organisation"
+      },
+      "status": {
+        "pending": "En attente",
+        "active": "Actif",
+        "suspended": "Suspendu",
+        "closed": "Fermé"
+      },
+      "tier": "Niveau de vérification",
+      "tier_n": "Niveau :n",
+      "providers_only": "Prestataires seulement",
+      "erased_only": "Effacés seulement",
+      "erased": "Effacé",
+      "erased_on": "Effacé le :date",
+      "erased_explainer": "Cette personne a demandé son effacement. La ligne subsiste pour préserver la comptabilité, mais la clé permettant de déchiffrer ses données personnelles a été détruite — il ne reste rien à afficher.",
+      "joined": "inscrit le",
+      "jobs_posted": "Demandes publiées",
+      "work_taken": "Travaux acceptés",
+      "completed": "Terminés",
+      "open_reports": "Signalements ouverts",
+      "provider_side": "Côté prestataire",
+      "no_provider_profile": "Aucun profil prestataire — cette partie n a jamais fait que recruter.",
+      "rating": "Note",
+      "reviews": "Avis",
+      "unrated": "Pas encore noté",
+      "headline": "Accroche",
+      "consents": "Consentements",
+      "latest_per_purpose": "État actuel par finalité",
+      "granted": "Accordé",
+      "revoked": "Révoqué",
+      "no_consents": "Aucun consentement enregistré."
+    },
+    "audit": {
+      "when": "Quand",
+      "who": "Qui",
+      "system": "Système",
+      "action": "Action",
+      "subject": "Objet",
+      "ip": "IP",
+      "context": "Détail",
+      "document_views": "Consultations de documents seulement"
     }
   },
   "push": {

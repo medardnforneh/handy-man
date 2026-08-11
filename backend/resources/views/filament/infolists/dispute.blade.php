@@ -82,7 +82,7 @@
                 <div class="hm-phead" style="margin-top:18px"><h2>{{ __('admin.dispute.resolution') }}</h2></div>
                 <p class="hm-body">{{ $d->resolution_note }}</p>
                 <div class="hm-sub" style="margin-top:8px">
-                    {{ __('admin.dispute.decided_by') }}: {{ $d->resolvedBy?->name ?? '—' }}
+                    {{ __('admin.dispute.decided_by') }}: {{ $d->resolvedBy?->party?->display_name ?? '—' }}
                     @if ($d->resolved_at) · {{ $d->resolved_at->format('d M Y, H:i') }} @endif
                 </div>
             @endif

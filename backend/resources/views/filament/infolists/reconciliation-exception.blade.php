@@ -61,7 +61,7 @@
                 <div class="r"><span class="l">{{ __('admin.recon.reference') }}</span><span class="val">{{ $x->reference_id ?? '—' }}</span></div>
                 <div class="r"><span class="l">{{ __('admin.recon.detected') }}</span><span class="val">{{ $x->detected_at->format('d M Y, H:i') }}</span></div>
                 <div class="r"><span class="l">{{ __('admin.recon.resolved_at') }}</span><span class="val">{{ $x->resolved_at?->format('d M Y, H:i') ?? '—' }}</span></div>
-                <div class="r"><span class="l">{{ __('admin.dispute.decided_by') }}</span><span class="val">{{ $x->resolvedBy?->name ?? '—' }}</span></div>
+                <div class="r"><span class="l">{{ __('admin.dispute.decided_by') }}</span><span class="val">{{ $x->resolvedBy?->party?->display_name ?? '—' }}</span></div>
                 <div class="r"><span class="l">{{ __('admin.recon.transaction') }}</span><span class="val">{{ $x->resolution_transaction_id ?? '—' }}</span></div>
             </div>
         </section>

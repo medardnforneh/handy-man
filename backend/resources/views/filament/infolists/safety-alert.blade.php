@@ -123,7 +123,7 @@
                 <div class="hm-kv">
                     <div class="r"><span class="l">{{ __('admin.safety.raised_at') }}</span><span class="val">{{ $a->created_at->format('d M Y, H:i') }}</span></div>
                     <div class="r"><span class="l">{{ __('admin.recon.resolved_at') }}</span><span class="val">{{ $a->resolved_at?->format('d M Y, H:i') ?? '—' }}</span></div>
-                    <div class="r"><span class="l">{{ __('admin.dispute.decided_by') }}</span><span class="val">{{ $a->resolvedBy?->name ?? '—' }}</span></div>
+                    <div class="r"><span class="l">{{ __('admin.dispute.decided_by') }}</span><span class="val">{{ $a->resolvedBy?->party?->display_name ?? '—' }}</span></div>
                     <div class="r"><span class="l">{{ __('admin.safety.phone') }}</span><span class="val hm-num">{{ $a->user?->phone_e164 ?? '—' }}</span></div>
                 </div>
             </section>

@@ -427,6 +427,75 @@
       "maintenance_short": "Servicing",
       "every_n_days": "every :n days",
       "categories_only": "Categories only"
+    },
+    "money": {
+      "payer": "Payer",
+      "payee": "Provider",
+      "msisdn": "Mobile number",
+      "gateway_ref": "Gateway reference",
+      "posted": "Ledger",
+      "posted_yes": "Posted",
+      "not_posted": "Not posted",
+      "reversed": "Reversed",
+      "reversed_yes": "Reversed",
+      "reversed_only": "Reversed only",
+      "status": {
+        "pending": "Pending",
+        "processing": "Processing",
+        "succeeded": "Succeeded",
+        "failed": "Failed",
+        "expired": "Expired"
+      },
+      "purpose": {
+        "escrow": "Escrow",
+        "lead_credits": "Lead credits"
+      }
+    },
+    "party": {
+      "name": "Name",
+      "kind": {
+        "individual": "Person",
+        "organization": "Organisation"
+      },
+      "status": {
+        "pending": "Pending",
+        "active": "Active",
+        "suspended": "Suspended",
+        "closed": "Closed"
+      },
+      "tier": "Verification tier",
+      "tier_n": "Tier :n",
+      "providers_only": "Providers only",
+      "erased_only": "Erased only",
+      "erased": "Erased",
+      "erased_on": "Erased on :date",
+      "erased_explainer": "This person asked to be forgotten. The row survives so the ledger stays intact, but the key that could decrypt their personal data was destroyed — there is nothing left to show.",
+      "joined": "joined",
+      "jobs_posted": "Jobs posted",
+      "work_taken": "Work taken on",
+      "completed": "Completed",
+      "open_reports": "Open reports against",
+      "provider_side": "Provider side",
+      "no_provider_profile": "No provider profile — this party has only ever hired.",
+      "rating": "Rating",
+      "reviews": "Reviews",
+      "unrated": "Not yet rated",
+      "headline": "Headline",
+      "consents": "Consents",
+      "latest_per_purpose": "Current state per purpose",
+      "granted": "Granted",
+      "revoked": "Revoked",
+      "no_consents": "No consent recorded."
+    },
+    "audit": {
+      "when": "When",
+      "who": "Who",
+      "system": "System",
+      "action": "Action",
+      "subject": "Subject",
+      "ip": "IP",
+      "context": "Detail",
+      "document_views": "Document views only"
     }
   },
   "push": {
