@@ -1,12 +1,13 @@
 <ion-header [translucent]="true" class="ion-no-border">
   <ion-toolbar>
     <ion-buttons slot="start">
-      <div class="loc">
-        <ion-icon name="location-outline" aria-hidden="true"></ion-icon>
-        <span class="loc-text">
-          <b>{{ 'app.name' | translate }}</b>
-          <small>{{ 'discover.change_location' | translate }}</small>
-        </span>
+      <!-- This was a location pin over the app's own name with a "change" link under it — a chip
+           that claimed HandyMan was where you are, and that nothing was wired to. There is no
+           location picker in this product and search is not location-filtered, so a brand lockup
+           is what this corner honestly holds. -->
+      <div class="brand">
+        <span class="mark" aria-hidden="true"><ion-icon name="hammer-outline"></ion-icon></span>
+        <b>{{ 'app.name' | translate }}</b>
       </div>
     </ion-buttons>
     <ion-buttons slot="end">
@@ -142,7 +143,10 @@
           </div>
         </button>
 
-        <ion-button class="hm-tap" size="small" (click)="openWorkspace(p)">
+        <!-- Outline, not solid: tapping the row opens the profile, which is the main move here.
+             Five solid brand buttons down the rail turned the list into a wall of green and left
+             every provider's name truncated to make room for them. -->
+        <ion-button class="quote hm-tap" fill="outline" size="small" (click)="openWorkspace(p)">
           {{ 'discover.quote' | translate }}
         </ion-button>
       </div>

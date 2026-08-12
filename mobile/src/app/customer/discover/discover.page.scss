@@ -5,22 +5,28 @@ ion-toolbar {
   --border-width: 0;
 }
 
-.loc {
+.brand {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: 0.45rem;
   padding-inline-start: var(--hm-space-md);
 
-  ion-icon {
+  .mark {
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    flex: none;
+    border-radius: var(--hm-radius-sm);
+    background: color-mix(in srgb, var(--hm-color-brand-primary) 14%, transparent);
     color: var(--hm-color-brand-primary);
-    font-size: 1.1rem;
+
+    ion-icon { font-size: 1rem; }
   }
 
-  .loc-text {
-    line-height: 1.15;
-
-    b { font-size: 0.95rem; }
-    small { display: block; color: var(--hm-color-text-muted); font-size: 0.7rem; }
+  b {
+    font-size: 0.95rem;
+    letter-spacing: -0.01em;
   }
 }
 
@@ -76,14 +82,24 @@ ion-searchbar {
 }
 
 // Horizontally scrolling category rail — never widens the page.
+//
+// The last tile used to be sliced arbitrarily at the viewport edge, mid-word, which reads as a
+// broken layout rather than as "there is more this way". Two things fix that: snapping, so a swipe
+// always lands a tile flush against the left edge instead of leaving a random sliver, and a fade
+// at the trailing edge that turns the cut into a deliberate signal. The mask uses `currentColor`
+// only for its alpha — a mask never paints, so no colour is implied.
 .cats {
   display: flex;
+  align-items: start;
   gap: var(--hm-space-sm);
   overflow-x: auto;
   scrollbar-width: none;
   padding-bottom: 0.25rem;
   margin-inline: calc(var(--hm-space-md) * -1);
   padding-inline: var(--hm-space-md);
+  scroll-snap-type: x proximity;
+  scroll-padding-inline-start: var(--hm-space-md);
+  mask-image: linear-gradient(to right, currentColor 0 calc(100% - 1.75rem), transparent 100%);
 
   &::-webkit-scrollbar { display: none; }
 
@@ -95,6 +111,9 @@ ion-searchbar {
     grid-template-columns: repeat(auto-fill, minmax(74px, 1fr));
     row-gap: var(--hm-space-md);
     overflow-x: visible;
+    // Nothing is cut off in the grid, so neither the fade nor the snapping belongs here.
+    mask-image: none;
+    scroll-snap-type: none;
 
     // The rail pins each tile to 74px so it can't be squeezed by its neighbours; in the grid the
     // cell already does that job, and a fixed width would leave ragged gaps between columns.
@@ -149,6 +168,7 @@ ion-searchbar {
   padding: 0;
   text-align: center;
   cursor: pointer;
+  scroll-snap-align: start;
 
   .ic {
     display: grid;
@@ -174,9 +194,13 @@ ion-searchbar {
 
   &.on .cat-label { color: var(--hm-color-brand-primary); }
 
+  // Two lines' worth of room whether the label needs one or two ("Tailoring" next to "HVAC and
+  // refrigeration"). Without it the tiles are different heights and the rail's baseline wanders.
   .cat-label {
     display: block;
+    min-height: 2.4em;
     font-size: 0.7rem;
+    line-height: 1.2;
     font-weight: 600;
     color: var(--hm-color-text-muted);
   }
@@ -205,41 +229,60 @@ ion-searchbar {
   }
 
   .pro-av {
-    width: 52px;
-    height: 52px;
-    font-size: 1rem;
+    width: 46px;
+    height: 46px;
+    font-size: 0.9rem;
   }
 
   .pro-info { flex: 1; min-width: 0; }
 
   .pro-name {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 0.3rem;
 
+    // Cameroonian trade names are descriptive and long ("Froid et climatisation — dépannage
+    // 24h"). Clipping them to one line cut most of them off at the second word; two lines names
+    // the business, and the clamp still stops a very long one from pushing the row apart.
     b {
-      font-size: 0.95rem;
+      font-size: 0.9rem;
+      line-height: 1.25;
       letter-spacing: -0.01em;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
       overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
     }
   }
 
+  // Sits on the first line of the name rather than floating in the middle of a two-line one.
   .verified {
     color: var(--hm-color-brand-primary);
     font-size: 0.9rem;
     flex: none;
+    margin-top: 0.1rem;
   }
 
+  // One line, always. Wrapping left a dangling "·" at the end of a line with its two halves
+  // stranded either side of it; the trade name shortens instead, which is the part that can.
   .pro-meta {
     display: flex;
     align-items: center;
     gap: 0.4rem;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     margin-top: 0.15rem;
     color: var(--hm-color-text-muted);
     font-size: 0.78rem;
+
+    > span:not(.hm-pill):not(.dot):not(.rating) {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .hm-pill,
+    .rating { flex: none; }
   }
 
   .rating {
@@ -253,31 +296,40 @@ ion-searchbar {
     // an unrated provider reads as a flagged one.
     &.new {
       color: var(--hm-color-text-muted);
-      font-weight: 600;
+      font-weight: 500;
     }
   }
 
   .dot {
     width: 3px;
     height: 3px;
+    flex: none;
     border-radius: 50%;
     background: var(--hm-color-border-strong);
   }
 
-  ion-button {
+  .quote {
     --border-radius: var(--hm-radius-md);
+    --border-width: 1px;
+    --padding-start: 0.7rem;
+    --padding-end: 0.7rem;
+    font-size: 0.75rem;
     font-weight: 700;
     flex: none;
+    margin: 0;
   }
 }
 
-// Very small phones: let the card breathe rather than crush the CTA.
+// Very small phones. The row used to wrap its CTA onto a full-width line here, which made every
+// provider card ~215px tall — barely one and a half providers on screen, on exactly the devices
+// with the least of it. A compact outline pill fits beside the text at 320px, so the row stays a
+// row; only the name gets a little tighter.
 @media (max-width: 360px) {
-  .pro {
-    flex-wrap: wrap;
-
-    ion-button { width: 100%; }
-  }
-
   .greeting { font-size: 1.3rem; }
+
+  .pro {
+    .pro-av { width: 42px; height: 42px; }
+    .pro-name b { font-size: 0.86rem; }
+    .quote { --padding-start: 0.55rem; --padding-end: 0.55rem; font-size: 0.72rem; }
+  }
 }
