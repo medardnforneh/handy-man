@@ -7,7 +7,7 @@
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <div class="page">
+  <div class="page hm-page-fill">
     @for (work of active(); track work.id) {
       <button class="work hm-card hm-tap" type="button" (click)="open(work)">
         <div [class]="'hm-avatar work-av accent-' + work.accent" aria-hidden="true">{{ work.customerName.charAt(0) || '•' }}</div>
@@ -18,10 +18,14 @@
         <span [class]="'hm-pill ' + tone(work.status)">{{ 'status.' + work.status | translate }}</span>
       </button>
     } @empty {
-      <div class="empty">
-        <ion-icon name="construct-outline" aria-hidden="true"></ion-icon>
-        <p class="hm-empty">{{ 'pro.no_work' | translate }}</p>
-      </div>
+      <app-empty-state
+        icon="construct-outline"
+        heading="pro.no_work_title"
+        body="pro.no_work_body"
+        actionLabel="pro.opportunities"
+        actionIcon="briefcase-outline"
+        (action)="browseOpportunities()"
+      ></app-empty-state>
     }
   </div>
 </ion-content>

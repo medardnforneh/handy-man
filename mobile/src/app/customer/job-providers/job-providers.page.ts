@@ -3,6 +3,7 @@ import { Component, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { TranslatePipe } from '@ngx-translate/core';
+import { EmptyStateComponent } from '../../core/ui/empty-state.component';
 import { Provider } from '../customer.models';
 import { CustomerService } from '../customer.service';
 
@@ -17,7 +18,7 @@ import { CustomerService } from '../customer.service';
   selector: 'app-job-providers',
   templateUrl: './job-providers.page.html',
   styleUrls: ['./job-providers.page.scss'],
-  imports: [CommonModule, IonicModule, TranslatePipe],
+  imports: [CommonModule, IonicModule, TranslatePipe, EmptyStateComponent],
 })
 export class JobProvidersPage {
   private readonly customers = inject(CustomerService);

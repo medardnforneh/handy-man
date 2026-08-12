@@ -147,7 +147,17 @@
         </ion-button>
       </div>
     } @empty {
-      <p class="hm-empty">{{ 'discover.no_providers' | translate }}</p>
+      <!-- Inline: everything above this — search, filters, categories — is real content, so an
+           empty rail is one empty section, not an empty screen. -->
+      <app-empty-state
+        inline="true"
+        icon="people-outline"
+        heading="discover.no_providers_title"
+        body="discover.no_providers_body"
+        actionLabel="newjob.title"
+        actionIcon="add"
+        (action)="postRequest()"
+      ></app-empty-state>
     }
   </div>
 </ion-content>

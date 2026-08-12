@@ -58,13 +58,20 @@
 
     <!-- Skills -->
     <div class="hm-section-head"><h2>{{ 'provider.skills' | translate }}</h2></div>
-    <div class="chips">
-      @for (skill of identity().skills; track skill) {
-        <span class="chip">{{ skill }}</span>
-      } @empty {
-        <p class="hm-empty">{{ 'pro.no_skills' | translate }}</p>
-      }
-    </div>
+    @if (identity().skills.length) {
+      <div class="chips">
+        @for (skill of identity().skills; track skill) {
+          <span class="chip">{{ skill }}</span>
+        }
+      </div>
+    } @else {
+      <app-empty-state
+        inline="true"
+        icon="hammer-outline"
+        heading="pro.no_skills"
+        body="pro.no_skills_body"
+      ></app-empty-state>
+    }
 
     <!-- Service area. There is no city stored on the row, so we state the radius rather than
          invent a place name (P1-08 stores a centre point + radius). -->

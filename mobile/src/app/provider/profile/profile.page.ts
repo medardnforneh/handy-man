@@ -6,6 +6,7 @@ import { TranslatePipe } from '@ngx-translate/core';
 import { AuthService } from '../../core/auth.service';
 import { Locale, LocaleService, SUPPORTED_LOCALES } from '../../core/locale.service';
 import { ThemeChoice, ThemeService } from '../../core/theme.service';
+import { EmptyStateComponent } from '../../core/ui/empty-state.component';
 import { ProviderService } from '../provider.service';
 
 /**
@@ -18,7 +19,7 @@ import { ProviderService } from '../provider.service';
   selector: 'app-provider-profile',
   templateUrl: './profile.page.html',
   styleUrls: ['./profile.page.scss'],
-  imports: [CommonModule, IonicModule, TranslatePipe],
+  imports: [CommonModule, IonicModule, TranslatePipe, EmptyStateComponent],
 })
 export class ProviderProfilePage {
   private readonly provider = inject(ProviderService);

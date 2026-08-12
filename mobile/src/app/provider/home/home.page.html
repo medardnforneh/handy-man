@@ -102,7 +102,12 @@
         </div>
       </button>
     } @empty {
-      <p class="hm-empty">{{ 'pro.no_opportunities' | translate }}</p>
+      <app-empty-state
+        inline="true"
+        icon="briefcase-outline"
+        heading="pro.no_opportunities_title"
+        body="pro.no_opportunities_body"
+      ></app-empty-state>
     }
 
     <!-- Active work -->
@@ -122,7 +127,12 @@
     } @empty {
       <!-- The opportunities list had an empty state and this one did not, so an idle provider saw a
            heading followed by nothing at all. -->
-      <p class="hm-empty">{{ 'pro.no_work' | translate }}</p>
+      <app-empty-state
+        inline="true"
+        icon="construct-outline"
+        heading="pro.no_work_title"
+        body="pro.no_work_body"
+      ></app-empty-state>
     }
   </div>
 </ion-content>

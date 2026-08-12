@@ -3,6 +3,7 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { IonicModule, ToastController } from '@ionic/angular';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
+import { EmptyStateComponent } from '../../core/ui/empty-state.component';
 import { MoneyPipe } from '../../customer/money.pipe';
 import { JobStatus } from '../../customer/customer.models';
 import { ActiveWork, Lead, ProviderStats, ProviderWallet } from '../provider.models';
@@ -22,7 +23,7 @@ import { ProviderService } from '../provider.service';
   selector: 'app-provider-home',
   templateUrl: './home.page.html',
   styleUrls: ['./home.page.scss'],
-  imports: [CommonModule, IonicModule, TranslatePipe, MoneyPipe],
+  imports: [CommonModule, IonicModule, TranslatePipe, MoneyPipe, EmptyStateComponent],
 })
 export class ProviderHomePage {
   private readonly provider = inject(ProviderService);

@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { TranslatePipe } from '@ngx-translate/core';
 import { OfflineStripComponent } from '../../core/offline/offline-strip.component';
+import { EmptyStateComponent } from '../../core/ui/empty-state.component';
 import { JobStatus } from '../../customer/customer.models';
 import { ActiveWork } from '../provider.models';
 import { ProviderService } from '../provider.service';
@@ -13,7 +14,7 @@ import { ProviderService } from '../provider.service';
   selector: 'app-provider-work',
   templateUrl: './work.page.html',
   styleUrls: ['./work.page.scss'],
-  imports: [CommonModule, IonicModule, TranslatePipe, OfflineStripComponent],
+  imports: [CommonModule, IonicModule, TranslatePipe, OfflineStripComponent, EmptyStateComponent],
 })
 export class ProviderWorkPage {
   private readonly provider = inject(ProviderService);
@@ -44,5 +45,10 @@ export class ProviderWorkPage {
 
   open(work: ActiveWork): void {
     void this.router.navigate(['/work', work.id]);
+  }
+
+  /** With nothing in flight, the useful next screen is the one with work to bid on. */
+  browseOpportunities(): void {
+    void this.router.navigate(['/pro/opportunities']);
   }
 }

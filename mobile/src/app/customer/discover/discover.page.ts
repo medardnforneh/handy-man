@@ -3,6 +3,7 @@ import { Component, DestroyRef, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { TranslatePipe } from '@ngx-translate/core';
+import { EmptyStateComponent } from '../../core/ui/empty-state.component';
 import { EngagementMode, Provider } from '../customer.models';
 import { CustomerService } from '../customer.service';
 
@@ -16,7 +17,7 @@ type ModeFilter = EngagementMode | 'both';
   selector: 'app-discover',
   templateUrl: './discover.page.html',
   styleUrls: ['./discover.page.scss'],
-  imports: [CommonModule, IonicModule, TranslatePipe],
+  imports: [CommonModule, IonicModule, TranslatePipe, EmptyStateComponent],
 })
 export class DiscoverPage {
   private readonly customers = inject(CustomerService);
@@ -132,6 +133,11 @@ export class DiscoverPage {
   openProfile(provider: Provider): void {
     // Tapping a provider opens their public profile (reviews + metrics) before requesting a quote.
     void this.router.navigate(['/provider', provider.id]);
+  }
+
+  /** Nobody listed under this filter yet — describing the job is the way to reach whoever is. */
+  postRequest(): void {
+    void this.router.navigate(['/new-job']);
   }
 
   openWorkspace(provider: Provider): void {

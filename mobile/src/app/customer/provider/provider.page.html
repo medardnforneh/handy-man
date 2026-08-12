@@ -124,7 +124,12 @@
         </div>
       </article>
     } @empty {
-      <p class="hm-empty">{{ 'provider.no_reviews' | translate }}</p>
+      <app-empty-state
+        inline="true"
+        icon="star-outline"
+        heading="provider.no_reviews_title"
+        body="provider.no_reviews_body"
+      ></app-empty-state>
     }
   </div>
   }

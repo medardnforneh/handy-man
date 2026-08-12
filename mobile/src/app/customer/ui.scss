@@ -103,6 +103,15 @@
   padding: var(--hm-space-xl) var(--hm-space-md);
 }
 
+// A page wrapper that fills its ion-content, so a full-screen `app-empty-state` can centre in the
+// leftover height instead of leaving a screen of void beneath one grey line. `min-height: 100%`
+// resolves against Ionic's scroll container, which has a definite height.
+.hm-page-fill {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+
 // Visually hidden but read by screen readers — an accessible label for icon-only controls.
 // (Preferred over [attr.aria-label] on ion-* elements, which can trip an Ionic aria race mid-route.)
 .sr-only {

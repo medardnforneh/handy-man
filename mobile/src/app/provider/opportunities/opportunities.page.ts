@@ -3,6 +3,7 @@ import { Component, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { TranslatePipe } from '@ngx-translate/core';
+import { EmptyStateComponent } from '../../core/ui/empty-state.component';
 import { MoneyPipe } from '../../customer/money.pipe';
 import { Lead } from '../provider.models';
 import { ProviderService } from '../provider.service';
@@ -12,7 +13,7 @@ import { ProviderService } from '../provider.service';
   selector: 'app-provider-opportunities',
   templateUrl: './opportunities.page.html',
   styleUrls: ['./opportunities.page.scss'],
-  imports: [CommonModule, IonicModule, TranslatePipe, MoneyPipe],
+  imports: [CommonModule, IonicModule, TranslatePipe, MoneyPipe, EmptyStateComponent],
 })
 export class ProviderOpportunitiesPage {
   private readonly provider = inject(ProviderService);
@@ -34,5 +35,10 @@ export class ProviderOpportunitiesPage {
 
   openLead(lead: Lead): void {
     void this.router.navigate(['/opportunity', lead.id]);
+  }
+
+  /** An empty feed is usually a narrow profile — the skills and service area decide what matches. */
+  openProfile(): void {
+    void this.router.navigate(['/pro/profile']);
   }
 }

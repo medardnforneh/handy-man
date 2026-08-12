@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { TranslatePipe } from '@ngx-translate/core';
 import { OfflineStripComponent } from '../../core/offline/offline-strip.component';
+import { EmptyStateComponent } from '../../core/ui/empty-state.component';
 import { ChatSummary } from '../customer.models';
 import { CustomerService } from '../customer.service';
 
@@ -18,7 +19,7 @@ import { CustomerService } from '../customer.service';
   selector: 'app-chats',
   templateUrl: './chats.page.html',
   styleUrls: ['./chats.page.scss'],
-  imports: [CommonModule, IonicModule, TranslatePipe, OfflineStripComponent],
+  imports: [CommonModule, IonicModule, TranslatePipe, OfflineStripComponent, EmptyStateComponent],
 })
 export class ChatsPage {
   private readonly customers = inject(CustomerService);
@@ -64,6 +65,11 @@ export class ChatsPage {
 
   onSearch(value: string | null | undefined): void {
     this.query.set(value ?? '');
+  }
+
+  /** The way out of an empty inbox: there is nothing to say until you have booked someone. */
+  findHelp(): void {
+    void this.router.navigate(['/tabs/discover']);
   }
 
   /**

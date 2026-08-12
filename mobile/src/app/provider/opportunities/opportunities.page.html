@@ -5,7 +5,7 @@
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <div class="page">
+  <div class="page hm-page-fill">
     @for (lead of leads(); track lead.id) {
       <button class="lead hm-card hm-tap" type="button" (click)="openLead(lead)">
         <div [class]="'hm-avatar lead-av accent-' + lead.accent" aria-hidden="true">
@@ -35,10 +35,16 @@
         </div>
       </button>
     } @empty {
-      <div class="empty">
-        <ion-icon name="briefcase-outline" aria-hidden="true"></ion-icon>
-        <p class="hm-empty">{{ 'pro.no_opportunities' | translate }}</p>
-      </div>
+      <!-- Nothing to bid on is not a failure and there is no button that conjures a customer, so
+           this state explains what would put something here rather than offering a dead action. -->
+      <app-empty-state
+        icon="briefcase-outline"
+        heading="pro.no_opportunities_title"
+        body="pro.no_opportunities_body"
+        actionLabel="pro.no_opportunities_cta"
+        actionIcon="person-outline"
+        (action)="openProfile()"
+      ></app-empty-state>
     }
   </div>
 </ion-content>

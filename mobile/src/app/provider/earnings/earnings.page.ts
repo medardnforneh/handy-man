@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
 import { IonicModule, ToastController } from '@ionic/angular';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
+import { EmptyStateComponent } from '../../core/ui/empty-state.component';
 import { MoneyPipe } from '../../customer/money.pipe';
 import { Payout, PayoutStatus, ProviderWallet } from '../provider.models';
 import { ProviderService } from '../provider.service';
@@ -11,7 +12,7 @@ import { ProviderService } from '../provider.service';
   selector: 'app-provider-earnings',
   templateUrl: './earnings.page.html',
   styleUrls: ['./earnings.page.scss'],
-  imports: [CommonModule, IonicModule, TranslatePipe, MoneyPipe],
+  imports: [CommonModule, IonicModule, TranslatePipe, MoneyPipe, EmptyStateComponent],
 })
 export class ProviderEarningsPage {
   private readonly provider = inject(ProviderService);

@@ -8,7 +8,7 @@
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <div class="page">
+  <div class="page hm-page-fill">
     <p class="lead hm-muted">{{ 'jobproviders.lead' | translate }}</p>
 
     @for (p of providers(); track p.id) {
@@ -43,7 +43,11 @@
       @if (loading()) {
         <p class="hm-muted state"><ion-spinner name="crescent"></ion-spinner></p>
       } @else {
-        <p class="hm-empty">{{ 'jobproviders.empty' | translate }}</p>
+        <app-empty-state
+          icon="people-outline"
+          heading="jobproviders.empty_title"
+          body="jobproviders.empty_body"
+        ></app-empty-state>
       }
     }
   </div>

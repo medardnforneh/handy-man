@@ -1,19 +1,16 @@
 <ion-header [translucent]="true" class="ion-no-border">
   <ion-toolbar>
     <ion-title>{{ 'jobs.title' | translate }}</ion-title>
-    <ion-buttons slot="end">
-      <ion-button class="new-btn hm-tap" (click)="postRequest()">
-        <ion-icon slot="icon-only" name="add" aria-hidden="true"></ion-icon>
-        <span class="sr-only">{{ 'newjob.title' | translate }}</span>
-      </ion-button>
-    </ion-buttons>
   </ion-toolbar>
 
   <app-offline-strip></app-offline-strip>
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <div class="page">
+  <!-- Exactly ONE way to post a request in each state: the FAB while there are jobs to scroll past,
+       the empty state's own button when there are none. There used to be three (a toolbar icon, a
+       button and the FAB), all calling the same method. -->
+  <div class="page hm-page-fill">
     @for (job of jobs(); track job.id) {
       <button class="hm-card job hm-tap" type="button" (click)="open(job)">
         <div class="row">
@@ -41,20 +38,23 @@
         }
       </button>
     } @empty {
-      <div class="empty">
-        <p class="hm-empty">{{ 'jobs.empty' | translate }}</p>
-        <ion-button class="hm-tap" (click)="postRequest()">
-          <ion-icon name="add" slot="start" aria-hidden="true"></ion-icon>
-          {{ 'newjob.title' | translate }}
-        </ion-button>
-      </div>
+      <app-empty-state
+        icon="briefcase-outline"
+        heading="jobs.empty_title"
+        body="jobs.empty_body"
+        actionLabel="newjob.title"
+        actionIcon="add"
+        (action)="postRequest()"
+      ></app-empty-state>
     }
   </div>
 
-  <ion-fab slot="fixed" vertical="bottom" horizontal="end">
-    <ion-fab-button class="fab" (click)="postRequest()">
-      <ion-icon name="add" aria-hidden="true"></ion-icon>
-      <span class="sr-only">{{ 'newjob.title' | translate }}</span>
-    </ion-fab-button>
-  </ion-fab>
+  @if (jobs().length) {
+    <ion-fab slot="fixed" vertical="bottom" horizontal="end">
+      <ion-fab-button class="fab" (click)="postRequest()">
+        <ion-icon name="add" aria-hidden="true"></ion-icon>
+        <span class="sr-only">{{ 'newjob.title' | translate }}</span>
+      </ion-fab-button>
+    </ion-fab>
+  }
 </ion-content>

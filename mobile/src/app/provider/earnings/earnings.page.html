@@ -35,7 +35,14 @@
         <span [class]="'hm-pill ' + tone(p.status)">{{ 'payout.' + p.status | translate }}</span>
       </div>
     } @empty {
-      <p class="hm-empty">{{ 'pro.no_payouts' | translate }}</p>
+      <!-- Inline, not full-screen: the wallet above it is real content, so this is one empty
+           section rather than an empty page. -->
+      <app-empty-state
+        inline="true"
+        icon="receipt-outline"
+        heading="pro.no_payouts_title"
+        body="pro.no_payouts_body"
+      ></app-empty-state>
     }
   </div>
 </ion-content>

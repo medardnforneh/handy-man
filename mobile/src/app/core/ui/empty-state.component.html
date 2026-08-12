@@ -1,0 +1,21 @@
+<div class="es" [class.inline]="inline">
+  <span class="ic" aria-hidden="true">
+    <ion-icon [name]="icon"></ion-icon>
+  </span>
+
+  <div class="txt">
+    <h2>{{ heading | translate }}</h2>
+    @if (body) {
+      <p>{{ body | translate }}</p>
+    }
+  </div>
+
+  @if (actionLabel) {
+    <ion-button class="cta hm-tap" (click)="action.emit()">
+      @if (actionIcon) {
+        <ion-icon [name]="actionIcon" slot="start" aria-hidden="true"></ion-icon>
+      }
+      {{ actionLabel | translate }}
+    </ion-button>
+  }
+</div>

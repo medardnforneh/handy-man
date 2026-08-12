@@ -203,7 +203,10 @@
     "in_category": "Prestataires de cette catégorie",
     "clear_filter": "Tout afficher",
     "no_providers": "Aucun prestataire ne correspond à ce filtre.",
-    "show_less": "Réduire"
+    "show_less": "Réduire",
+    "no_providers_title": "Aucun prestataire ici pour le moment",
+    "no_providers_body": "Personne ne correspond à ce filtre pour l’instant. Essayez une autre catégorie, ou publiez une demande et laissez-les venir à vous.",
+    "no_match_title": "Aucun résultat"
   },
   "money": {
     "currency": "FCFA"
@@ -211,7 +214,9 @@
   "jobs": {
     "title": "Vos travaux",
     "empty": "Vous n'avez pas encore de travaux. Trouvez de l'aide pour commencer.",
-    "milestones": "jalons"
+    "milestones": "jalons",
+    "empty_title": "Aucun travail pour le moment",
+    "empty_body": "Publiez une demande et des prestataires près de chez vous vous enverront un devis."
   },
   "status": {
     "draft": "Brouillon",
@@ -229,7 +234,11 @@
     "empty": "Aucune conversation pour le moment.",
     "search": "Rechercher une conversation",
     "voice_note": "Note vocale",
-    "no_match": "Aucune conversation ne correspond à votre recherche."
+    "no_match": "Aucune conversation ne correspond à votre recherche.",
+    "empty_title": "Aucune conversation",
+    "empty_body": "Lorsque vous engagez un prestataire, vos échanges apparaissent ici.",
+    "no_match_title": "Aucune conversation ne correspond",
+    "no_match_body": "Essayez un autre nom, ou effacez la recherche pour toutes les voir."
   },
   "account": {
     "title": "Votre compte",
@@ -690,12 +699,16 @@
     "send_offer": "Envoyer une offre",
     "offer_sent": "Offre envoyée au prestataire",
     "offer_failed": "Impossible d’envoyer l’offre. Veuillez réessayer.",
-    "loading": "Chargement du profil…"
+    "loading": "Chargement du profil…",
+    "no_reviews_title": "Aucun avis pour le moment",
+    "no_reviews_body": "Les avis apparaissent une fois le travail terminé et les deux parties s’étant exprimées."
   },
   "jobproviders": {
     "title": "Prestataires proposés",
     "lead": "Prestataires correspondant à votre demande, classés par vérification et note.",
-    "empty": "Aucun prestataire ne correspond encore. Nous continuons à chercher."
+    "empty": "Aucun prestataire ne correspond encore. Nous continuons à chercher.",
+    "empty_title": "Pas encore de correspondance",
+    "empty_body": "Aucun prestataire ne couvre encore cette demande. Nous continuons à chercher et nous vous préviendrons."
   },
   "newjob": {
     "title": "Publier une demande",
@@ -805,7 +818,15 @@
     "no_work": "Aucun travail en cours",
     "payout_history": "Historique des retraits",
     "no_payouts": "Aucun retrait",
-    "no_profile_yet": "Créez votre profil pro pour commencer"
+    "no_profile_yet": "Créez votre profil pro pour commencer",
+    "no_opportunities_title": "Aucune opportunité pour le moment",
+    "no_opportunities_body": "Les demandes correspondant à vos compétences et à votre zone d’intervention arrivent ici.",
+    "no_work_title": "Aucun travail en cours",
+    "no_work_body": "Dès que vous acceptez un travail, il apparaît ici, avec le pointage et votre rapport.",
+    "no_payouts_title": "Aucun virement pour le moment",
+    "no_payouts_body": "L’argent libéré par les travaux terminés apparaît ici une fois retiré.",
+    "no_skills_body": "Ajoutez vos métiers pour que les demandes correspondantes vous parviennent.",
+    "no_opportunities_cta": "Revoir vos métiers et votre zone"
   },
   "payout": {
     "paid": "Versé",

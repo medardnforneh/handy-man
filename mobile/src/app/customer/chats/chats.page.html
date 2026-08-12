@@ -7,7 +7,7 @@
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <div class="page">
+  <div class="page hm-page-fill">
     @if (hasChats()) {
       <ion-searchbar
         class="hm-tap"
@@ -43,10 +43,24 @@
         </div>
       </button>
     } @empty {
-      <div class="empty">
-        <ion-icon name="chatbubbles-outline" aria-hidden="true"></ion-icon>
-        <p class="hm-empty">{{ (hasChats() ? 'chats.no_match' : 'chats.empty') | translate }}</p>
-      </div>
+      <!-- Two different emptinesses: a search that matched nothing (the fix is to change the
+           search) and an account with no conversations at all (the fix is to book someone). -->
+      @if (hasChats()) {
+        <app-empty-state
+          icon="search-outline"
+          heading="chats.no_match_title"
+          body="chats.no_match_body"
+        ></app-empty-state>
+      } @else {
+        <app-empty-state
+          icon="chatbubbles-outline"
+          heading="chats.empty_title"
+          body="chats.empty_body"
+          actionLabel="nav.customer"
+          actionIcon="compass-outline"
+          (action)="findHelp()"
+        ></app-empty-state>
+      }
     }
   </div>
 </ion-content>
