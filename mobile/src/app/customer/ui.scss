@@ -133,6 +133,36 @@
 }
 
 // ---------------------------------------------------------------------------
+// Disabled buttons.
+//
+// Ionic disables a button by dropping the whole element to `opacity: .5`. On a solid brand button
+// that is a dark green fill with dark green text sitting on a dark background — the control is
+// legible only as a smudge, and "WITHDRAW" on the wallet card was effectively invisible. Halving
+// the opacity of BOTH the fill and the label destroys the contrast between them, which is the one
+// relationship a disabled control still needs.
+//
+// So: full opacity, and say "inert" with colour instead. Grey on a sunken surface reads as a
+// control that is off, and keeps its label readable in both themes.
+// ---------------------------------------------------------------------------
+ion-button.button-solid.button-disabled {
+  opacity: 1;
+  --background: var(--hm-color-surface-sunken);
+  --color: var(--hm-color-text-muted);
+  --box-shadow: none;
+}
+
+// On a brand-coloured card, grey-on-green would read as a hole rather than a control, so the same
+// idea in the card's own palette: a translucent wash of the card's foreground, outlined so the
+// shape is unmistakably a button, with the label at full strength.
+.hm-on-brand ion-button.button-solid.button-disabled {
+  --background: color-mix(in srgb, var(--hm-color-brand-onPrimary) 18%, transparent);
+  --color: var(--hm-color-brand-onPrimary);
+  --border-width: 1px;
+  --border-style: solid;
+  --border-color: color-mix(in srgb, var(--hm-color-brand-onPrimary) 40%, transparent);
+}
+
+// ---------------------------------------------------------------------------
 // Structured-message cards — the chat IS the state machine (doc 06). These are
 // SERVER-narrated (rule #11) and shared by the customer and provider workspaces.
 // ---------------------------------------------------------------------------

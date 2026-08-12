@@ -8,7 +8,7 @@
   <div class="page">
     <!-- Wallet -->
     @if (wallet(); as w) {
-      <div class="wallet">
+      <div class="wallet hm-on-brand">
         <span class="wl">{{ 'pro.available' | translate }}</span>
         <div class="bal">{{ w.availableMinor | money }} <small>{{ 'money.currency' | translate }}</small></div>
         @if (w.pendingPayoutMinor > 0) {

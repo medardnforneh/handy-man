@@ -37,10 +37,15 @@ ion-title { font-weight: 800; letter-spacing: -0.02em; }
 
   .withdraw {
     margin-top: var(--hm-space-md);
-    --background: var(--hm-color-brand-onPrimary);
-    --color: var(--hm-color-brand-primary);
     --border-radius: var(--hm-radius-md);
     font-weight: 700;
+  }
+
+  // Scoped to the ENABLED state so the shared disabled treatment (ui.scss) is not out-specified
+  // by this component rule — that fight is what left a disabled button wearing enabled colours.
+  .withdraw:not(.button-disabled) {
+    --background: var(--hm-color-brand-onPrimary);
+    --color: var(--hm-color-brand-primary);
   }
 }
 
