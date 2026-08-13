@@ -746,7 +746,11 @@
     "location": "Lieu",
     "remote": "Travail à distance — pas de visite",
     "open_chat": "Ouvrir la discussion",
-    "find_providers": "Trouver des prestataires"
+    "find_providers": "Trouver des prestataires",
+    "complete_title": "Ce travail est-il terminé ?",
+    "complete_body": "Le marquer comme terminé ouvre la période d’avis pour vous deux.",
+    "complete_cta": "Terminé",
+    "complete_done": "Marqué comme terminé. Vous pouvez maintenant laisser un avis."
   },
   "milestone": {
     "pending": "En attente",
@@ -993,5 +997,15 @@
     "none_title": "Aucune adresse enregistrée",
     "none_body": "Enregistrez-en une pour que les prestataires puissent vous trouver.",
     "none_body_job": "Le travail sur site en nécessite une — c’est ainsi que le prestataire vous rejoint."
+  },
+  "review": {
+    "title": "Comment cela s’est-il passé ?",
+    "blind_note": "Aucun de vous ne voit l’avis de l’autre tant que vous n’avez pas tous les deux écrit le vôtre, ou après 14 jours.",
+    "rating": "Note",
+    "body": "Ce qui s’est passé",
+    "body_ph": "Ce qui s’est bien passé, ou moins bien (facultatif)",
+    "submit": "Envoyer l’avis",
+    "submitted": "Avis enregistré. Il reste masqué jusqu’à ce qu’ils écrivent le leur.",
+    "done": "Vous avez donné votre avis sur ce travail."
   }
 }

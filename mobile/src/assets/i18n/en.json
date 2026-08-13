@@ -746,7 +746,11 @@
     "location": "Location",
     "remote": "Remote work — no site visit",
     "open_chat": "Open chat",
-    "find_providers": "Find providers"
+    "find_providers": "Find providers",
+    "complete_title": "Is this work finished?",
+    "complete_body": "Marking it done opens the review window for both of you.",
+    "complete_cta": "Mark done",
+    "complete_done": "Marked as finished. You can leave a review now."
   },
   "milestone": {
     "pending": "Pending",
@@ -993,5 +997,15 @@
     "none_title": "No saved address",
     "none_body": "Save one so providers can find you.",
     "none_body_job": "On-site work needs one — it is how the provider gets to you."
+  },
+  "review": {
+    "title": "How did it go?",
+    "blind_note": "Neither of you sees the other’s review until you have both written one, or 14 days pass.",
+    "rating": "Rating",
+    "body": "What happened",
+    "body_ph": "What went well, what did not (optional)",
+    "submit": "Submit review",
+    "submitted": "Review saved. It stays hidden until they write theirs.",
+    "done": "You have reviewed this job."
   }
 }

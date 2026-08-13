@@ -26,6 +26,7 @@ use Illuminate\Support\Carbon;
  * @property string $currency
  * @property bool $is_escrowed
  * @property Carbon $accepted_at
+ * @property Carbon|null $completed_at Stamped by CompleteEngagement (P7-02) — opens the review window.
  */
 final class Engagement extends Model
 {

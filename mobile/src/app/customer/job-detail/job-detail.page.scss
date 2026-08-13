@@ -144,3 +144,71 @@ ion-footer {
 
   ion-button { --border-radius: var(--hm-radius-md); font-weight: 700; margin: 0; }
 }
+
+// ---- Wrapping up: finish the work, then say how it went -----------------
+// One card for two states of the same story, so the screen reads as a sequence rather than as two
+// unrelated boxes appearing in the same place.
+.wrapup {
+  display: flex;
+  align-items: center;
+  gap: var(--hm-space-sm);
+  flex-wrap: wrap;
+  padding: var(--hm-space-md);
+  margin-top: var(--hm-space-md);
+
+  .wt { flex: 1; min-width: 12rem; }
+  .wt b { display: block; font-size: 0.95rem; }
+  .wt small { display: block; font-size: 0.78rem; margin-top: 0.1rem; line-height: 1.4; }
+
+  ion-button {
+    --border-radius: var(--hm-radius-md);
+    font-weight: 700;
+    margin: 0;
+  }
+
+  &.review { flex-direction: column; align-items: stretch; }
+}
+
+.stars {
+  display: flex;
+  gap: 0.15rem;
+  margin-top: var(--hm-space-sm);
+}
+
+.star {
+  padding: 0.2rem;
+  border: 0;
+  background: none;
+  color: var(--hm-color-status-warning);
+  font-size: 1.6rem;
+  line-height: 1;
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: 2px solid var(--hm-color-brand-primary);
+    outline-offset: 2px;
+    border-radius: var(--hm-radius-sm);
+  }
+}
+
+.rbody {
+  --background: var(--hm-color-surface-base);
+  --color: var(--hm-color-text-primary);
+  --placeholder-color: var(--hm-color-text-muted);
+  --padding-start: var(--hm-space-sm);
+  --padding-end: var(--hm-space-sm);
+  margin: var(--hm-space-sm) 0;
+  border: 1px solid var(--hm-color-border-subtle);
+  border-radius: var(--hm-radius-md);
+  font-size: 0.9rem;
+}
+
+.reviewed {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: var(--hm-space-md);
+  font-size: 0.85rem;
+
+  ion-icon { color: var(--hm-color-status-success); font-size: 1.05rem; }
+}

@@ -2692,9 +2692,17 @@ components:
             - type: "null"
             - type: object
               properties:
+                id: { type: string, format: uuid, description: "The engagement, for the actions scoped to it (complete, review, dispute)." }
                 provider_name: { type: [string, "null"] }
                 agreed_amount_minor: { type: integer }
                 currency: { type: string }
+                completed_at: { type: [string, "null"], format: date-time }
+                viewer_has_reviewed:
+                  type: boolean
+                  description: >-
+                    Whether the CALLER has already reviewed this engagement. Reviews are
+                    double-blind (P6-08), so this says nothing about the other party — only that
+                    asking this person again would be a duplicate.
                 milestones_done: { type: integer }
                 milestones_total: { type: integer }
                 milestones:

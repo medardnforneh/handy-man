@@ -835,5 +835,17 @@
   "jobs.no_budget": "Devis demandé",
   "jobs.no_provider": "En attente d’un prestataire",
   "auth.dev_code_tag": "Dev",
-  "auth.dev_code_hint": "Toucher pour remplir"
+  "auth.dev_code_hint": "Toucher pour remplir",
+  "jobdetail.complete_title": "Ce travail est-il terminé ?",
+  "jobdetail.complete_body": "Le marquer comme terminé ouvre la période d’avis pour vous deux.",
+  "jobdetail.complete_cta": "Terminé",
+  "jobdetail.complete_done": "Marqué comme terminé. Vous pouvez maintenant laisser un avis.",
+  "review.title": "Comment cela s’est-il passé ?",
+  "review.blind_note": "Aucun de vous ne voit l’avis de l’autre tant que vous n’avez pas tous les deux écrit le vôtre, ou après 14 jours.",
+  "review.rating": "Note",
+  "review.body": "Ce qui s’est passé",
+  "review.body_ph": "Ce qui s’est bien passé, ou moins bien (facultatif)",
+  "review.submit": "Envoyer l’avis",
+  "review.submitted": "Avis enregistré. Il reste masqué jusqu’à ce qu’ils écrivent le leur.",
+  "review.done": "Vous avez donné votre avis sur ce travail."
 }

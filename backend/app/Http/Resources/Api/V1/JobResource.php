@@ -6,7 +6,9 @@ namespace App\Http\Resources\Api\V1;
 
 use App\Domain\Engagements\MilestoneStatus;
 use App\Domain\Jobs\EngagementModePolicy;
+use App\Models\Engagement;
 use App\Models\Job;
+use App\Models\Review;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -67,6 +69,23 @@ final class JobResource extends JsonResource
      *
      * @return array<string, mixed>|null
      */
+    /** Has the person looking at this job already left their review of it? */
+    private function viewerHasReviewed(Engagement $engagement): bool
+    {
+        $viewer = request()->user();
+        if ($viewer === null) {
+            return false;
+        }
+
+        return Review::query()
+            ->where('engagement_id', $engagement->id)
+            ->where('author_party_id', $viewer->party_id)
+            ->exists();
+    }
+
+    /**
+     * @return array<string, mixed>|null
+     */
     private function engagementSummary(): ?array
     {
         $engagement = $this->engagement;
@@ -78,9 +97,18 @@ final class JobResource extends JsonResource
         $done = $milestones->where('status', MilestoneStatus::Paid->value)->count();
 
         return [
+            // The id is what makes the engagement addressable: completing it, reviewing it and
+            // disputing it are all scoped to it, and none of that was reachable from a job without
+            // this field.
+            'id' => $engagement->id,
             'provider_name' => $engagement->provider?->display_name,
             'agreed_amount_minor' => $engagement->agreed_amount_minor,
             'currency' => $engagement->currency,
+            'completed_at' => $engagement->completed_at?->toIso8601String(),
+            // Caller-scoped, and deliberately only about the caller: reviews are double-blind
+            // (P6-08), so revealing whether the OTHER side has reviewed would leak the very thing
+            // the design withholds until both have.
+            'viewer_has_reviewed' => $this->viewerHasReviewed($engagement),
             'milestones_done' => $done,
             'milestones_total' => $milestones->count(),
             'milestones' => $milestones->map(fn ($m) => [

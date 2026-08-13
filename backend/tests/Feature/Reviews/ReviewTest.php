@@ -114,3 +114,44 @@ it('forbids a non-party from reviewing (403)', function () {
 
     submitReview(User::factory()->create(), $engagement->id, 5)->assertStatus(403);
 });
+
+/**
+ * The app could not offer either action, because the job it reads gave it nothing to act ON: the
+ * embedded engagement summary carried no id, no completion state and no sense of whether the
+ * caller had already had their say. Completing and reviewing are both scoped to the engagement,
+ * so without these three fields the endpoints were unreachable from a screen.
+ */
+it('gives the job owner what they need to finish and review the engagement', function () {
+    ['customer' => $customer, 'engagement' => $engagement] = reviewEngagement();
+
+    Sanctum::actingAs($customer);
+    $before = test()->getJson("/api/v1/jobs/{$engagement->job_id}")->assertOk();
+
+    expect($before->json('data.engagement.id'))->toBe($engagement->id)
+        ->and($before->json('data.engagement.completed_at'))->toBeNull()
+        ->and($before->json('data.engagement.viewer_has_reviewed'))->toBeFalse();
+
+    test()->postJson("/api/v1/engagements/{$engagement->id}/complete", [], ['Idempotency-Key' => (string) Str::uuid()])
+        ->assertOk();
+    submitReview($customer, $engagement->id, 5)->assertCreated();
+
+    Sanctum::actingAs($customer);
+    $after = test()->getJson("/api/v1/jobs/{$engagement->job_id}")->assertOk();
+
+    expect($after->json('data.engagement.completed_at'))->not->toBeNull()
+        ->and($after->json('data.engagement.viewer_has_reviewed'))->toBeTrue();
+});
+
+/**
+ * `viewer_has_reviewed` is about the VIEWER and nothing else. Reviews are double-blind, so a flag
+ * that flipped when the other party reviewed would leak exactly what the design withholds.
+ */
+it('does not tell one party that the other has reviewed', function () {
+    ['customer' => $customer, 'provider' => $provider, 'engagement' => $engagement] = reviewEngagement();
+
+    submitReview($provider, $engagement->id, 4)->assertCreated();
+
+    Sanctum::actingAs($customer);
+    expect(test()->getJson("/api/v1/jobs/{$engagement->job_id}")->json('data.engagement.viewer_has_reviewed'))
+        ->toBeFalse();
+});

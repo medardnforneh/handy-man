@@ -598,6 +598,9 @@ export class CustomerService {
         { id: 'm1', title: 'Deposit', amountMinor: 200000, status: 'paid' },
         { id: 'm2', title: 'Balance', amountMinor: 700000, status: 'submitted' },
       ],
+      // Demo rows carry no real engagement id, which is what keeps the engagement-scoped actions
+      // (complete, review) from offering themselves on a job the server has never heard of.
+      engagementId: null, completedAt: null, reviewed: false,
     },
     j3: {
       id: 'j3', reference: 'JOB-9BZ3C', title: 'Installation split', status: 'engaged', mode: 'onsite',
@@ -608,6 +611,7 @@ export class CustomerService {
         { id: 'm1', title: 'Deposit', amountMinor: 300000, status: 'pending' },
         { id: 'm2', title: 'Balance', amountMinor: 950000, status: 'pending' },
       ],
+      engagementId: null, completedAt: null, reviewed: false,
     },
   };
 
@@ -623,6 +627,8 @@ export class CustomerService {
       mode: 'onsite', providerName: job?.providerName ?? null, providerInitials: null, providerId: null,
       accent: 'muted', addressLine: null, currency: 'XAF',
       agreedMinor: job?.amountMinor ?? 0, escrowHeldMinor: 0, releasedMinor: 0, milestones: [],
+      // A demo row has no real engagement, so none of the engagement-scoped actions offer themselves.
+      engagementId: null, completedAt: null, reviewed: false,
     };
   }
 
@@ -676,9 +682,39 @@ export class CustomerService {
         escrowHeldMinor: Math.max(0, agreed - released),
         releasedMinor: released,
         milestones,
+        engagementId: eng?.id ?? null,
+        completedAt: eng?.completed_at ?? null,
+        reviewed: eng?.viewer_has_reviewed ?? false,
       };
     } catch {
       return null;
+    }
+  }
+
+  /**
+   * Mark the engagement finished (P7-02).
+   *
+   * Not queued for offline like the milestone approval is: completion opens a 14-day review window
+   * and schedules nudges to both parties, so sending it late is materially different from sending
+   * it now — better to fail honestly and let the person retry than to promise a timer that has not
+   * started.
+   */
+  async completeEngagement(engagementId: string): Promise<boolean> {
+    try {
+      await this.api.completeEngagement(engagementId);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  /** Review the other side of a finished engagement (P6-08) — hidden until both have, or 14 days. */
+  async submitReview(engagementId: string, rating: number, body: string): Promise<boolean> {
+    try {
+      await this.api.submitReview(engagementId, { rating, body: body || undefined });
+      return true;
+    } catch {
+      return false;
     }
   }
 

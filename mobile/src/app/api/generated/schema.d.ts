@@ -2177,9 +2177,18 @@ export interface components {
             };
             /** @description Compact engagement summary for the owner — provider, agreed money, milestone progress. Null until the job is engaged, and absent for non-owners. */
             engagement?: null | {
+                /**
+                 * Format: uuid
+                 * @description The engagement, for the actions scoped to it (complete, review, dispute).
+                 */
+                id?: string;
                 provider_name?: string | null;
                 agreed_amount_minor?: number;
                 currency?: string;
+                /** Format: date-time */
+                completed_at?: string | null;
+                /** @description Whether the CALLER has already reviewed this engagement. Reviews are double-blind (P6-08), so this says nothing about the other party — only that asking this person again would be a duplicate. */
+                viewer_has_reviewed?: boolean;
                 milestones_done?: number;
                 milestones_total?: number;
                 milestones?: {

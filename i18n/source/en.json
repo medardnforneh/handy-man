@@ -835,5 +835,17 @@
   "jobs.no_budget": "Quote requested",
   "jobs.no_provider": "Awaiting a provider",
   "auth.dev_code_tag": "Dev",
-  "auth.dev_code_hint": "Tap to fill"
+  "auth.dev_code_hint": "Tap to fill",
+  "jobdetail.complete_title": "Is this work finished?",
+  "jobdetail.complete_body": "Marking it done opens the review window for both of you.",
+  "jobdetail.complete_cta": "Mark done",
+  "jobdetail.complete_done": "Marked as finished. You can leave a review now.",
+  "review.title": "How did it go?",
+  "review.blind_note": "Neither of you sees the other’s review until you have both written one, or 14 days pass.",
+  "review.rating": "Rating",
+  "review.body": "What happened",
+  "review.body_ph": "What went well, what did not (optional)",
+  "review.submit": "Submit review",
+  "review.submitted": "Review saved. It stays hidden until they write theirs.",
+  "review.done": "You have reviewed this job."
 }

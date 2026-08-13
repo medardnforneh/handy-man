@@ -68,6 +68,62 @@
       </div>
     }
 
+    <!-- Finishing, and then saying how it went. Two states of one story, so they share a card:
+         work that is done but not marked done, and work that is done and not yet reviewed. -->
+    @if (canComplete()) {
+      <div class="wrapup hm-card">
+        <div class="wt">
+          <b>{{ 'jobdetail.complete_title' | translate }}</b>
+          <small class="hm-muted">{{ 'jobdetail.complete_body' | translate }}</small>
+        </div>
+        <ion-button size="small" class="hm-tap" [disabled]="busy()" (click)="complete()">
+          {{ 'jobdetail.complete_cta' | translate }}
+        </ion-button>
+      </div>
+    } @else if (canReview()) {
+      <div class="wrapup hm-card review">
+        <div class="wt">
+          <b>{{ 'review.title' | translate }}</b>
+          <small class="hm-muted">{{ 'review.blind_note' | translate }}</small>
+        </div>
+
+        <div class="stars" role="radiogroup" [attr.aria-label]="'review.rating' | translate">
+          @for (star of starValues; track star) {
+            <button
+              type="button"
+              class="star hm-tap"
+              role="radio"
+              [attr.aria-checked]="rating() === star"
+              [attr.aria-label]="star"
+              (click)="rating.set(star)"
+            >
+              <ion-icon [name]="star <= rating() ? 'star' : 'star-outline'"></ion-icon>
+            </button>
+          }
+        </div>
+
+        <ion-textarea
+          class="rbody hm-tap"
+          [value]="reviewBody()"
+          (ionInput)="onReviewBody($any($event.target).value)"
+          [placeholder]="'review.body_ph' | translate"
+          [attr.aria-label]="'review.body' | translate"
+          autoGrow="true"
+          maxlength="600"
+          rows="3"
+        ></ion-textarea>
+
+        <ion-button expand="block" class="hm-tap" [disabled]="rating() === 0 || busy()" (click)="submitReview()">
+          {{ 'review.submit' | translate }}
+        </ion-button>
+      </div>
+    } @else if (job().reviewed) {
+      <p class="reviewed hm-muted">
+        <ion-icon name="checkmark-circle-outline" aria-hidden="true"></ion-icon>
+        {{ 'review.done' | translate }}
+      </p>
+    }
+
     <!-- Location -->
     <div class="hm-section-head"><h2>{{ 'jobdetail.location' | translate }}</h2></div>
     @if (job().mode === 'remote') {

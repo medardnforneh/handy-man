@@ -425,6 +425,42 @@ export class ApiService {
     }
   }
 
+  /**
+   * Mark an engagement finished (P7-02). Idempotent, and either party may do it.
+   *
+   * This is the event the rest of the lifecycle hangs off: it stamps `completed_at`, opens the
+   * 14-day review window, schedules the review nudges and qualifies a referral. Nothing in the app
+   * called it, so an engagement could be started and never finished — which also meant the review
+   * flow below could never begin.
+   */
+  async completeEngagement(engagementId: string) {
+    const { data, error } = await api.POST('/engagements/{engagement}/complete', {
+      params: { path: { engagement: engagementId }, header: { 'Idempotency-Key': uuid() } },
+    });
+    if (error) {
+      throw error;
+    }
+    return data.data;
+  }
+
+  /**
+   * Review the other side of an engagement (P6-08).
+   *
+   * Double-blind: it rests hidden — even from an API peek — until both parties submit or the
+   * window closes, and then both reveal at once. `private_note` is never published; it is for the
+   * subject alone. One review per author per engagement, so a second attempt is a 409.
+   */
+  async submitReview(engagementId: string, body: { rating: number; body?: string; private_note?: string }) {
+    const { data, error } = await api.POST('/engagements/{engagement}/reviews', {
+      body,
+      params: { path: { engagement: engagementId }, header: { 'Idempotency-Key': uuid() } },
+    });
+    if (error) {
+      throw error;
+    }
+    return data.data;
+  }
+
   /** The caller's consent state (P1-05) — the latest decision per purpose, keyed by purpose. */
   async consents() {
     const { data, error } = await api.GET('/consents');

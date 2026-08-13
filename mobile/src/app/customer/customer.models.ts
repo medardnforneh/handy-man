@@ -123,6 +123,12 @@ export interface JobDetail {
   escrowHeldMinor: number;
   releasedMinor: number;
   milestones: MilestoneView[];
+  /** The engagement, when one exists — what completing, reviewing and disputing are scoped to. */
+  engagementId: string | null;
+  /** Set once either party has marked the work finished; opens the review window (P6-08). */
+  completedAt: string | null;
+  /** Whether THIS user has already reviewed. Says nothing about the other side — reviews are blind. */
+  reviewed: boolean;
 }
 
 /** What the "post a request" form collects — mirrors CreateJob (doc 06: address only off-remote). */
