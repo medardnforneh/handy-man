@@ -134,6 +134,8 @@ in the app yet — see §4.
 | Typing + presence | Same two-browser setup | |
 | Voice notes | The thread's mic button | |
 | Milestone approval | Jobs → a job (the detail page, not the chat) → a submitted milestone | Releases that slice of escrow to the provider. Works offline too — it queues and sends when you reconnect |
+| **Mark the work finished** | Jobs → a job → **Mark done** | Opens the 14-day review window for both sides and schedules the review nudges |
+| **Leave a review** | The same card, once the work is marked done | Stars plus a sentence. It stays hidden until the other side writes theirs, or 14 days pass — the confirmation says so |
 
 ### Money
 
@@ -175,10 +177,8 @@ The API can do these; the app has no screen for them. This is the honest list �
 
 | Feature | Status | Where you can still see it |
 |---|---|---|
-| **Leaving a review** | No UI in the app | Admin → the seeded reviews; the public provider profile shows published ones |
 | **Verification upload** | The profile's VERIFY button does nothing | Admin → Verification documents (seeded in three states) |
 | **Requesting a payout** | Withdraw shows a success toast and requests nothing | Admin → Payouts |
-| Completing an engagement | No UI | Seeded completed engagements |
 | Accepting or revising a quote | No UI | |
 | Reviewing a deliverable | No UI | Admin → Engagements |
 | Panic button, emergency contacts | No UI | Admin → Safety alerts (seeded) |
