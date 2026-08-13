@@ -69,12 +69,20 @@ if (ready.status !== 0) {
 // `--seed` is not used: DatabaseSeeder is the production-safe one (staff roles + the real skill
 // taxonomy). The demo data a person needs to click through the product is two extra seeders.
 if (process.argv.includes('--fresh')) {
-  log('db', 'migrate:fresh + demo seed (this DROPS the local database)');
-  const migrated = run('php', ['artisan', 'migrate:fresh', '--force'], { cwd: backend, stdio: 'inherit' });
+  log('db', 'wipe + migrate + demo seed (this DROPS the local database)');
+  // `migrate:fresh` drops TABLES but leaves Postgres's native enum types behind, so the first
+  // migration then dies on `type "party_kind" already exists`. This schema leans on native enums
+  // heavily (doc 02), so the reset has to drop types too — which is exactly what `db:wipe` does
+  // with this flag. The test suite solves the same problem its own way (TestCase::$dropTypes).
+  const wiped = run('php', ['artisan', 'db:wipe', '--drop-types', '--force'], { cwd: backend, stdio: 'inherit' });
+  if (wiped.status !== 0) fail('could not wipe the database');
+  const migrated = run('php', ['artisan', 'migrate', '--force'], { cwd: backend, stdio: 'inherit' });
   if (migrated.status !== 0) fail('migration failed');
+  // Short class names, not fully-qualified ones: Laravel resolves them under Database\Seeders,
+  // and a namespace passed through a Windows shell arrives with its backslashes mangled.
   for (const seeder of ['DemoSeeder', 'DemoCoverageSeeder']) {
     log('db', `seeding ${seeder}`);
-    const seeded = run('php', ['artisan', 'db:seed', '--force', '--class', `Database\\\\Seeders\\\\${seeder}`], { cwd: backend, stdio: 'inherit' });
+    const seeded = run('php', ['artisan', 'db:seed', '--force', `--class=${seeder}`], { cwd: backend, stdio: 'inherit' });
     if (seeded.status !== 0) fail(`${seeder} failed`);
   }
 } else {

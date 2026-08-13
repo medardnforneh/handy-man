@@ -40,6 +40,29 @@ use Illuminate\Support\Str;
  */
 final class DemoSeeder extends Seeder
 {
+    /**
+     * What a customer actually writes after the trade name.
+     *
+     * This was `fake()->words(2, true)`, which produced Latin: every seeded job read
+     * "Climatiseur — autem vitae". A demo you click through to judge the product is the one place
+     * placeholder Latin does the most damage, because it is indistinguishable from a bug in the
+     * data layer until you read it twice. These are cycled, not random, so a reseed is reproducible.
+     */
+    private const SITUATIONS = [
+        'intervention urgente',
+        'devis demandé',
+        'panne depuis hier',
+        'installation neuve',
+        'entretien annuel',
+        'réparation après dégât des eaux',
+        'deuxième étage, sans ascenseur',
+        'à faire avant vendredi',
+        'diagnostic puis réparation',
+        'remise aux normes',
+    ];
+
+    private int $jobsSeeded = 0;
+
     public function run(): void
     {
         $this->call(StaffRolesSeeder::class);
@@ -163,7 +186,7 @@ final class DemoSeeder extends Seeder
                 'created_by_user_id' => $customer->id,
                 'skill_id' => $skill->id,
                 'address_id' => $onsite ? Address::factory()->create(['party_id' => $customer->party_id])->id : null,
-                'title' => $skill->name_fr.' — '.fake()->words(2, true),
+                'title' => $skill->name_fr.' — '.self::SITUATIONS[$this->jobsSeeded++ % count(self::SITUATIONS)],
             ]);
 
         $quote = Quotation::factory()->submitted()->create([
