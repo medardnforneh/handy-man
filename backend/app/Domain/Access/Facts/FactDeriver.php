@@ -48,11 +48,34 @@ final class FactDeriver
      */
     public function derive(User $user, Fact $fact, array $context = []): FactResult
     {
-        return Cache::remember(
+        /**
+         * Cached as two scalars, never as a FactResult object.
+         *
+         * Laravel's `cache.serializable_classes` defaults to FALSE, which means every object read
+         * back out of a serializing cache store comes back as `__PHP_Incomplete_Class` — so
+         * caching the object made this method return a broken value on every cache HIT and a
+         * correct one on every MISS. Under Redis (what this app runs on) the first capability
+         * check of a flow worked and the second 500'd with a TypeError; the test suite never saw
+         * it because it runs on the `array` store, which hands objects back by reference without
+         * serializing at all. Listing a second skill during provider signup is where it surfaced.
+         *
+         * Allow-listing the class in config would also work, but a fact is two scalars and the
+         * default exists to stop object graphs coming back out of a cache at all. Rehydrating from
+         * an array keeps that guarantee and cannot break again if the store changes.
+         *
+         * @var array{satisfied: bool, level: int} $cached
+         */
+        $cached = Cache::remember(
             $this->cacheKey($user, $fact, $context),
             $this->ttlSeconds,
-            fn (): FactResult => $this->compute($user, $fact, $context),
+            function () use ($user, $fact, $context): array {
+                $result = $this->compute($user, $fact, $context);
+
+                return ['satisfied' => $result->satisfied, 'level' => $result->level];
+            },
         );
+
+        return new FactResult(satisfied: $cached['satisfied'], level: $cached['level']);
     }
 
     /**

@@ -8,6 +8,7 @@ use App\Domain\Access\Facts\FactDeriver;
 use App\Domain\Access\Facts\FactResult;
 use App\Domain\Access\PreconditionUnmetException;
 use App\Models\User;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
 
@@ -112,4 +113,37 @@ it('caches a derived fact and recomputes only after forget()', function () {
     $facts->forget($user, Fact::IdentityVerified);
     expect($facts->derive($user, Fact::IdentityVerified)->level)->toBe(2)
         ->and($calls)->toBe(2);
+});
+
+/**
+ * A cache HIT must return a usable FactResult on a store that actually serializes.
+ *
+ * The suite runs on the `array` store, which hands objects straight back without serializing —
+ * so caching the FactResult object passed every test here while returning
+ * `__PHP_Incomplete_Class` in production, where `cache.serializable_classes` is false and the
+ * store is Redis. The second capability check of any flow 500'd with a TypeError. This test
+ * drives the `file` store so a serialize/unserialize round trip really happens.
+ */
+it('returns a real FactResult from a cache hit on a serializing store', function () {
+    config()->set('cache.serializable_classes', false);
+    Cache::store('file')->flush();
+
+    // Bind the file store as the default for this test — Cache::remember() inside the deriver
+    // resolves the default store, which is what production does.
+    config()->set('cache.default', 'file');
+
+    $facts = new FactDeriver(ttlSeconds: 300);
+    $user = User::factory()->create();
+    $facts->register(Fact::IdentityVerified, fn (): FactResult => FactResult::tier(2));
+
+    $miss = $facts->derive($user, Fact::IdentityVerified);   // computed
+    $hit = $facts->derive($user, Fact::IdentityVerified);    // read back out of the cache
+
+    expect($miss)->toBeInstanceOf(FactResult::class)
+        ->and($hit)->toBeInstanceOf(FactResult::class)
+        ->and($hit->satisfied)->toBeTrue()
+        ->and($hit->level)->toBe(2)
+        ->and($hit->meets(2))->toBeTrue();
+
+    Cache::store('file')->flush();
 });
