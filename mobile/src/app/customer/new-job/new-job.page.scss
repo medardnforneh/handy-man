@@ -117,6 +117,26 @@ ion-textarea.field {
   gap: var(--hm-space-sm);
 }
 
+// "Add an address" under the list: quieter than the address cards it follows, since choosing one
+// of them is the common path and adding another is the exception.
+.addr-add {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.7rem;
+  border: 1px dashed var(--hm-color-border-strong);
+  border-radius: var(--hm-radius-lg);
+  background: none;
+  color: var(--hm-color-brand-primary);
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+
+  ion-icon { font-size: 1.05rem; }
+}
+
 .addr {
   display: flex;
   align-items: center;

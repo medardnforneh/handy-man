@@ -85,6 +85,26 @@
             </span>
             <ion-icon class="tick" [name]="addressId() === addr.id ? 'checkmark-circle' : 'ellipse-outline'" aria-hidden="true"></ion-icon>
           </button>
+        } @empty {
+          <!-- On-site work needs a real address — the column is a DB CHECK, and the pin on it is
+               what provider matching runs against. With none saved, this form cannot be finished,
+               so the way to fix that is here rather than three screens away in the account tab. -->
+          <app-empty-state
+            inline="true"
+            icon="location-outline"
+            heading="address.none_title"
+            body="address.none_body_job"
+            actionLabel="account.add_address"
+            actionIcon="add"
+            (action)="addAddress()"
+          ></app-empty-state>
+        }
+
+        @if (addresses().length) {
+          <button type="button" class="addr-add hm-tap" (click)="addAddress()">
+            <ion-icon name="add" aria-hidden="true"></ion-icon>
+            {{ 'account.add_address' | translate }}
+          </button>
         }
       </div>
     } @else {

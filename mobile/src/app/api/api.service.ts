@@ -225,6 +225,34 @@ export class ApiService {
     return data.data;
   }
 
+  /**
+   * Save an address (P1-06). Gated on location_tracking consent (P1-05) — a 403 carries
+   * `missing_purpose` rather than reading as a permission failure.
+   *
+   * The coordinates are not decoration: `addresses.point` is a `geography(Point,4326)` behind a
+   * GIST index, and provider matching for on-site work is an ST_DWithin against it (P2-04). An
+   * address without a real point is an address no provider can be matched to.
+   */
+  async createAddress(body: {
+    label?: string;
+    line1: string;
+    quarter?: string;
+    city: string;
+    landmark_note?: string;
+    latitude: number;
+    longitude: number;
+    country_code?: string;
+  }) {
+    const { data, error } = await api.POST('/addresses', {
+      body,
+      params: { header: { 'Idempotency-Key': uuid() } },
+    });
+    if (error) {
+      throw error;
+    }
+    return data.data;
+  }
+
   /** Create a job (draft) — mirrors CreateJob (P2-03). Returns the created job. */
   async createJob(body: {
     skill_id: string;

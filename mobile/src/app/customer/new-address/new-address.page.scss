@@ -1,0 +1,122 @@
+// Shared primitives load once globally — see angular.json styles.
+// SEMANTIC TOKENS ONLY — never a literal colour.
+
+ion-toolbar {
+  --background: var(--hm-color-surface-base);
+  --border-width: 0;
+}
+
+ion-title {
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.page {
+  padding: 0 var(--hm-space-md) var(--hm-space-xl);
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.lead {
+  margin: var(--hm-space-sm) 0 0;
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+// The pin row. Outlined until a fix lands, then it wears the success tint — the one field on this
+// form the user can't correct by typing, so its state has to be unmistakable at a glance.
+.pin {
+  display: flex;
+  align-items: center;
+  gap: var(--hm-space-sm);
+  padding: var(--hm-space-md);
+
+  &.done {
+    border-color: color-mix(in srgb, var(--hm-color-status-success) 45%, transparent);
+    background: color-mix(in srgb, var(--hm-color-status-success) 8%, var(--hm-color-surface-raised));
+  }
+
+  .ic {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 38px;
+    height: 38px;
+    border-radius: var(--hm-radius-md);
+    background: color-mix(in srgb, var(--hm-color-brand-primary) 12%, transparent);
+    color: var(--hm-color-brand-primary);
+    font-size: 1.1rem;
+
+    &.ok {
+      background: color-mix(in srgb, var(--hm-color-status-success) 14%, transparent);
+      color: var(--hm-color-status-success);
+    }
+  }
+
+  .pt {
+    flex: 1;
+    min-width: 0;
+
+    b { display: block; font-size: 0.92rem; }
+    small { display: block; font-size: 0.76rem; margin-top: 0.1rem; line-height: 1.35; }
+  }
+
+  ion-button {
+    flex: none;
+    --border-radius: var(--hm-radius-md);
+    font-weight: 700;
+  }
+
+  ion-spinner { width: 18px; height: 18px; }
+}
+
+.refused {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.4rem;
+  margin: var(--hm-space-sm) 0 0;
+  font-size: 0.8rem;
+  line-height: 1.4;
+  color: var(--hm-color-status-warning);
+
+  ion-icon { flex: none; margin-top: 0.1rem; font-size: 1rem; }
+}
+
+.field {
+  --background: var(--hm-color-surface-raised);
+  --color: var(--hm-color-text-primary);
+  --placeholder-color: var(--hm-color-text-muted);
+  --padding-start: var(--hm-space-md);
+  --padding-end: var(--hm-space-md);
+  margin-bottom: var(--hm-space-sm);
+  border: 1px solid var(--hm-color-border-subtle);
+  border-radius: var(--hm-radius-md);
+}
+
+ion-footer {
+  background: var(--hm-color-surface-base);
+
+  .cta {
+    padding: var(--hm-space-sm) var(--hm-space-md);
+    max-width: 720px;
+    margin: 0 auto;
+    border-top: 1px solid var(--hm-color-border-subtle);
+  }
+
+  ion-button {
+    --border-radius: var(--hm-radius-md);
+    font-weight: 700;
+    margin: 0;
+  }
+
+  ion-spinner { width: 20px; height: 20px; }
+}
+
+// Narrow phones: the pin row stacks rather than squeezing its button to two characters.
+@media (max-width: 380px) {
+  .pin {
+    flex-wrap: wrap;
+
+    ion-button { width: 100%; }
+  }
+}

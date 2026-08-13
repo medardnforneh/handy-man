@@ -3,6 +3,7 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { IonicModule, ToastController } from '@ionic/angular';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
+import { EmptyStateComponent } from '../../core/ui/empty-state.component';
 import { EngagementMode } from '../customer.models';
 import { CustomerService } from '../customer.service';
 
@@ -16,7 +17,7 @@ import { CustomerService } from '../customer.service';
   selector: 'app-new-job',
   templateUrl: './new-job.page.html',
   styleUrls: ['./new-job.page.scss'],
-  imports: [CommonModule, IonicModule, TranslatePipe],
+  imports: [CommonModule, IonicModule, TranslatePipe, EmptyStateComponent],
 })
 export class NewJobPage {
   private readonly customers = inject(CustomerService);
@@ -73,6 +74,19 @@ export class NewJobPage {
 
   onBudget(value: string | null | undefined): void {
     this.budget.set((value ?? '').replace(/\D/g, ''));
+  }
+
+  /**
+   * Save an address without losing the request being written. `returnTo` brings the user back
+   * here; the form's signals survive because this is a push, not a replace.
+   */
+  addAddress(): void {
+    void this.router.navigate(['/new-address'], { state: { returnTo: '/new-job' } });
+  }
+
+  /** The address list may have gained the one just saved. */
+  ionViewWillEnter(): void {
+    void this.customers.loadAddresses();
   }
 
   async post(): Promise<void> {

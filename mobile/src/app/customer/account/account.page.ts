@@ -6,6 +6,7 @@ import { TranslatePipe } from '@ngx-translate/core';
 import { AuthService } from '../../core/auth.service';
 import { Locale, LocaleService, SUPPORTED_LOCALES } from '../../core/locale.service';
 import { ThemeChoice, ThemeService } from '../../core/theme.service';
+import { EmptyStateComponent } from '../../core/ui/empty-state.component';
 import { ProviderService } from '../../provider/provider.service';
 import { CustomerService } from '../customer.service';
 
@@ -18,7 +19,7 @@ import { CustomerService } from '../customer.service';
   selector: 'app-account',
   templateUrl: './account.page.html',
   styleUrls: ['./account.page.scss'],
-  imports: [CommonModule, IonicModule, TranslatePipe],
+  imports: [CommonModule, IonicModule, TranslatePipe, EmptyStateComponent],
 })
 export class AccountPage {
   private readonly locales = inject(LocaleService);
@@ -41,6 +42,15 @@ export class AccountPage {
   readonly supported = SUPPORTED_LOCALES;
   readonly locale = signal<Locale>(this.locales.current);
   readonly theme = signal<ThemeChoice>(this.themes.current);
+
+  /** Re-read on entry so an address saved on the next screen is here when you come back. */
+  ionViewWillEnter(): void {
+    void this.customers.loadAddresses();
+  }
+
+  addAddress(): void {
+    void this.router.navigate(['/new-address']);
+  }
 
   /**
    * "Offer services". Someone who already has a provider profile wants their dashboard; someone

@@ -1,6 +1,7 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { ApiService } from '../api/api.service';
 import { Accent } from '../customer/customer.models';
+import { currentPosition, GeoFix } from '../core/geolocation';
 import { LocaleService } from '../core/locale.service';
 import { OfflineCache } from '../core/offline/offline-cache.service';
 import { WriteQueue, WriteSpec } from '../core/offline/write-queue.service';
@@ -40,32 +41,10 @@ function initialsOf(name: string): string {
 }
 
 /**
- * A best-effort GPS fix for check-in/out. Deliberately forgiving: a short timeout and a null result
- * on refusal or failure, because the server accepts a session without coordinates — a worker with a
- * dead GPS must still be able to check in.
- */
-function currentPosition(): Promise<{ latitude: number; longitude: number; accuracyM?: number } | null> {
-  if (typeof navigator === 'undefined' || !navigator.geolocation) {
-    return Promise.resolve(null);
-  }
-  return new Promise((resolve) => {
-    navigator.geolocation.getCurrentPosition(
-      (pos) => resolve({
-        latitude: pos.coords.latitude,
-        longitude: pos.coords.longitude,
-        accuracyM: pos.coords.accuracy ?? undefined,
-      }),
-      () => resolve(null),
-      { enableHighAccuracy: true, timeout: 8000, maximumAge: 30000 },
-    );
-  });
-}
-
-/**
  * The check-in/out body. A worker whose GPS is dead or refused still checks in, so every field is
  * optional — the server records a session with null coordinates rather than blocking the work.
  */
-function geoBody(fix: { latitude: number; longitude: number; accuracyM?: number } | null): Record<string, number | undefined> {
+function geoBody(fix: GeoFix | null): Record<string, number | undefined> {
   return { latitude: fix?.latitude, longitude: fix?.longitude, accuracy_m: fix?.accuracyM };
 }
 

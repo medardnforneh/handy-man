@@ -235,19 +235,57 @@ export class CustomerService {
     void this.loadAddresses();
   }
 
-  /** Load the customer's real saved addresses; keep the fixtures when offline. */
-  private async loadAddresses(): Promise<void> {
+  /**
+   * Load the customer's real saved addresses.
+   *
+   * Public so the screen that saves one can refresh the list without a page reload. Note it sets
+   * even an EMPTY list: "you have no saved addresses" is a true answer, and the old guard
+   * (`if (addresses.length > 0)`) meant a customer with none kept looking at the fixtures forever.
+   */
+  async loadAddresses(): Promise<void> {
     try {
       const addresses = await this.api.addresses();
-      if (addresses.length > 0) {
-        this.addresses.set(addresses.map((a) => ({
-          id: a.id,
-          label: a.label ?? a.quarter ?? a.city,
-          line: [a.line1, a.quarter, a.city].filter(Boolean).join(', '),
-        })));
-      }
+      this.addresses.set(addresses.map((a) => ({
+        id: a.id,
+        label: a.label ?? a.quarter ?? a.city,
+        line: [a.line1, a.quarter, a.city].filter(Boolean).join(', '),
+      })));
     } catch {
-      // No session / offline — keep the fixture addresses.
+      // No session / offline — leave whatever the last successful read produced.
+    }
+  }
+
+  /**
+   * Save an address and refresh the list (P1-06).
+   *
+   * Records the location_tracking consent first, because the endpoint is gated on it and the
+   * screen has just told the user their location is about to be used — asking the server for the
+   * grant after showing that sentence is the honest order.
+   */
+  async createAddress(input: {
+    label: string;
+    line1: string;
+    quarter: string;
+    city: string;
+    landmarkNote: string;
+    latitude: number;
+    longitude: number;
+  }): Promise<boolean> {
+    try {
+      await this.api.recordConsent('location_tracking', true, this.locales.current);
+      await this.api.createAddress({
+        label: input.label || undefined,
+        line1: input.line1,
+        quarter: input.quarter || undefined,
+        city: input.city,
+        landmark_note: input.landmarkNote || undefined,
+        latitude: input.latitude,
+        longitude: input.longitude,
+      });
+      await this.loadAddresses();
+      return true;
+    } catch {
+      return false;
     }
   }
 
@@ -278,7 +316,15 @@ export class CustomerService {
   private async loadMe(): Promise<void> {
     const { value: u } = await this.cache.through('me', () => this.api.me());
     if (u !== null) {
-      const name = u.display_name ?? u.phone_e164;
+      // `name` is a DISPLAY NAME or nothing.
+      //
+      // Two ways it used to become the phone number: this line fell back to it, and the server
+      // seeds `display_name` WITH the phone for a user created by OTP (there is nothing else to
+      // put there — doc 02 is phone-primary and a name is optional). Both made "name" and "phone"
+      // the same string, so the account header printed it on both of its lines and initialsOf()
+      // was handed a phone number to take initials from. A phone is not a name here.
+      const displayName = u.display_name ?? '';
+      const name = displayName === u.phone_e164 ? '' : displayName;
       this.me.set({ id: u.id, name, initials: initialsOf(name), phone: u.phone_e164 });
       // This is the first moment the app learns what language the ACCOUNT is in, which is what
       // the server renders bilingual payloads in (P1-05b). See LocaleService::reconcile.
@@ -332,11 +378,16 @@ export class CustomerService {
     { id: 'j5', reference: 'JOB-2HW6P', title: 'Étagères sur mesure', status: 'open', providerName: null, amountMinor: 620000, milestonesDone: 0, milestonesTotal: 0 },
   ]);
 
-  /** The customer's saved addresses — real (GET /addresses) once loaded, fixtures until then / offline. */
-  readonly addresses = signal<SavedAddress[]>([
-    { id: 'a1', label: 'Domicile', line: 'Rue 1.234, Akwa, Douala' },
-    { id: 'a2', label: 'Bureau', line: 'Boulevard de la Liberté, Bonanjo, Douala' },
-  ]);
+  /**
+   * The customer's saved addresses (GET /addresses).
+   *
+   * Starts EMPTY. It used to open with "Domicile — Rue 1.234, Akwa, Douala" and "Bureau —
+   * Boulevard de la Liberté, Bonanjo, Douala", which is two lies of a particular kind: they are
+   * claims about where the user lives and works, and their ids (`a1`, `a2`) exist nowhere on the
+   * server — so picking one on the new-job form produced a job the API would reject. Same rule as
+   * the provider identity: illustrative content is a demo aid, a claim about the user is not.
+   */
+  readonly addresses = signal<SavedAddress[]>([]);
 
   // Demo rows, shown until GET /conversations answers (and when there is no session). `null`
   // conversation ids are what keep them inert: a fixture row can't be marked read on the server.

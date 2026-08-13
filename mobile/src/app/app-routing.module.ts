@@ -25,6 +25,13 @@ const routes: Routes = [
     loadComponent: () => import('./customer/new-job/new-job.page').then((m) => m.NewJobPage),
   },
   {
+    // Saving an address (P1-06). Reachable from the account page and from the new-job form, which
+    // cannot post an on-site job without one.
+    path: 'new-address',
+    canActivate: [authGuard],
+    loadComponent: () => import('./customer/new-address/new-address.page').then((m) => m.NewAddressPage),
+  },
+  {
     // The public provider profile is pushed over the tabs (reviews + metrics + request a quote).
     path: 'provider/:id',
     canActivate: [authGuard],
