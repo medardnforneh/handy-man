@@ -203,10 +203,14 @@ remainder, and it is external (credentials), not code.**
 
 **Phase 8 (growth and scale) complete: 6/6.**
 
-**Every build-plan task is done, backend and client** (as of 2026-08-09; the last genuinely unbuilt
-work was P7-08's pipeline and six dead `FollowUpKind` cases — see the entries below). The client,
-native, realtime and offline surfaces (P4-04..07, P5-01/02) and the public/SEO Blade pages have all
-landed.
+**Every build-plan task is done on the BACKEND** (as of 2026-08-09; the last genuinely unbuilt work
+was P7-08's pipeline and six dead `FollowUpKind` cases — see the entries below). The client, native,
+realtime and offline surfaces (P4-04..07, P5-01/02) and the public/SEO Blade pages have all landed.
+
+> ⚠ **This paragraph used to say "backend and client", and that was wrong.** A 2026-08-13 sweep found
+> the app never calls 43 of the API's 91 operations — no reviews, no panic button, no verification
+> upload, a Withdraw button that requests nothing. See the "Open gap" section at the top. A task
+> being done end-to-end on the server, with tests, says nothing about whether any screen reaches it.
 
 > ⚠ **This paragraph was wrong for a while, and the reason is worth keeping.** It used to say the
 > backend was complete when a quarter of P7-08 and seven follow-up kinds had never been written —
@@ -269,6 +273,39 @@ founder-owned legal items in doc 05's launch checklist.
     profile, the **provider client book (P7-08)**, the public/SEO Blade pages, the realtime/media
     surfaces (P4-04..07), the offline layer (P5-02) and the PWA/Android build (P5-01) have all
     landed, and native networking on device now works (CapacitorHttp).
+
+## ⚠ Open gap: 43 of 91 API operations are never called by the app
+
+Found 2026-08-13 by a mechanical sweep of `openapi/openapi.yaml` against every `.ts` file in
+`mobile/src/app` (`operationId` → does any client file contain the literal path?). The check is
+sound: both `api.service.ts` and the offline write queue address the API by its literal templated
+path, so a called endpoint always appears verbatim.
+
+**This contradicts "every build-plan task is done, backend and client" further down.** The backend
+is done. The app reaches under half of it. Same pattern the tracker already warns about — check
+what *calls* a thing, not what declares it — but at a scale the earlier audits did not catch,
+because they audited hedged status markers rather than reachability.
+
+Closed since the sweep: `POST /devices` and `POST /auth/logout` (see the entry below — both were
+unsafe, not merely absent). **Correctly absent** (4): the payment webhook (gateway → server), the
+two `/notes` reference-slice operations (P0-05), and worker assignment, which is an org-dispatcher
+function the admin panel performs. The rest are real gaps, grouped by what they cost:
+
+| Group | Operations | What is impossible in the app today |
+|---|---|---|
+| Reputation | `POST /engagements/{e}/reviews` | **Nobody can leave a review.** The app renders reviews and computes shrunk ratings (P6-08/09) over a corpus it can never add to |
+| Safety | `/safety/panic`, `/emergency-contacts` ×3, `/blocks` ×3, `/reports` | The panic button, emergency contacts, blocking and reporting (P6-04/07) have no UI at all |
+| Verification | `/verification-documents` ×2 | The provider profile's **VERIFY button does nothing** — so no tier is ever raised, and the on-site paid-work gate can never be passed |
+| Finishing work | `/engagements/{e}/complete`, `/deliverables/{d}/review`, `/quotations/{q}/accept`, `/quotations/{q}/revise`, `/jobs/{job}/site-visits`, `/site-visits/{v}/complete` | An engagement can be started but not completed, a quote not accepted, a deliverable not reviewed |
+| Money out | `/provider/payouts`, `/provider/credits`, `/engagements/{e}/refund`, `/engagements/{e}/cash-settlements` | **Withdraw shows a success toast and requests nothing.** No refund, no cash settlement, no credit balance |
+| Money in | `/payment-intents` | Not a blocker for the deposit (P3-13 captures it server-side on `engagement.created`), but the app can initiate no payment of its own |
+| Lifecycle | `/follow-ups` ×2, `/referral-code`, `/referrals/claim`, `/providers/{party}/rebook`, `/engagements/{e}/warranty`, `/warranties/{w}/claims`, `/engagements/{e}/share`, `/engagement-shares/{s}` | Follow-ups cannot be listed or responded to, no referral code, no one-tap rebook, no warranty, no share-my-job link |
+| Rights | `DELETE /me`, `GET /me/data-export` | Erasure and data export (P1-10) are unreachable — a compliance surface, not a nice-to-have |
+| Media | `GET /media/{media}` | The media access rail is not consumed |
+| Disputes | `GET /disputes`, `POST /engagements/{e}/disputes` | A dispute can only be raised by staff, not by the party in it |
+
+Regenerate the list any time with the sweep script pattern above; it takes seconds and has now
+found four real defects.
 
 ## What was done, most recent first
 

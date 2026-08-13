@@ -10,6 +10,7 @@
     "lint:colors": "node tools/lint-no-literal-colors.mjs",
     "lint:strings": "node tools/lint-no-bare-strings.mjs",
     "verify:frontend": "npm run i18n:check && npm run lint:colors && npm run lint:strings && npm run check:native-origin",
-    "check:native-origin": "node tools/check-native-origin.mjs"
+    "check:native-origin": "node tools/check-native-origin.mjs",
+    "check:uncalled": "node tools/find-uncalled-endpoints.mjs"
   }
 }
