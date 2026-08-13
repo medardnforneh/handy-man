@@ -1,7 +1,10 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { Preferences } from '@capacitor/preferences';
+import { environment } from '../../environments/environment';
+import { ApiService } from '../api/api.service';
 import { api } from '../api/client';
 import { tokenStore } from '../api/token-store';
+import { devicePlatform, loadDeviceId } from './device';
 import { OfflineCache } from './offline/offline-cache.service';
 import { WriteQueue } from './offline/write-queue.service';
 import { RealtimeService } from './realtime.service';
@@ -36,6 +39,7 @@ export class AuthService {
   private readonly realtime = inject(RealtimeService);
   private readonly offline = inject(OfflineCache);
   private readonly queue = inject(WriteQueue);
+  private readonly api = inject(ApiService);
 
   readonly authed = signal(false);
   private readonly ready: Promise<void>;
@@ -106,6 +110,7 @@ export class AuthService {
       }
       await this.storeTokens(data.tokens.access_token, data.tokens.refresh_token);
       await this.markAuthed();
+      void this.registerDevice();
       return true;
     } catch {
       // Network error (backend unreachable) → fixture fallback keeps the offline demo working.
@@ -162,7 +167,38 @@ export class AuthService {
     await secureStore.set(REFRESH_KEY, refreshToken);
   }
 
+  /**
+   * Attach this install to the signed-in party (P1-04).
+   *
+   * Best-effort and fire-and-forget: it must never stand between someone and their session. The
+   * push token is null until this build carries a native push plugin — the row is still the thing
+   * a token later attaches to, and without any row at all the push rail (P5-05) has no recipients
+   * to look up, which is why nothing it sent could ever have arrived.
+   */
+  private async registerDevice(): Promise<void> {
+    try {
+      await this.api.registerDevice({
+        platform: devicePlatform(),
+        push_token: null,
+        app_version: environment.appVersion,
+      });
+    } catch {
+      // Offline, or the server refused it — neither is worth interrupting a login for.
+    }
+  }
+
   async logout(): Promise<void> {
+    // Tell the server FIRST, while the token that authorises the revocation is still in hand.
+    // Without this, logging out only forgot the tokens locally: the Sanctum access token and the
+    // 30-day rotating refresh family (P1-03) stayed valid on the server, which is precisely the
+    // wrong outcome on a shared or stolen phone. Best-effort — an offline user must still be able
+    // to end their session on the device.
+    try {
+      await this.api.logout();
+    } catch {
+      // No network / already-expired token. The local teardown below still happens.
+    }
+
     this.authed.set(false);
     this.pendingPhone = '';
     tokenStore.set(null); // drop the bearer so no stale token rides the next request
@@ -188,6 +224,10 @@ export class AuthService {
    * can prompt on some devices.
    */
   private async load(): Promise<void> {
+    // Before anything else: the request middleware reads the device id synchronously, and the
+    // very first call the app makes (an OTP request) is the one whose per-device limit needs it.
+    await loadDeviceId();
+
     const stored = (await Preferences.get({ key: AUTH_KEY })).value;
     this.authed.set(stored === '1');
     const token = await secureStore.get(TOKEN_KEY);

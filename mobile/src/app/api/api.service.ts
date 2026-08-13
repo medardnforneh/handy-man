@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { environment } from '../../environments/environment';
+import { loadDeviceId } from '../core/device';
 import { uuid } from '../core/uuid';
 import { api } from './client';
 import { tokenStore } from './token-store';
@@ -380,6 +381,48 @@ export class ApiService {
       throw error;
     }
     return data.data;
+  }
+
+  /**
+   * Register this install as a device (P1-04).
+   *
+   * Nothing in the app called this, so no `devices` row ever existed for a real user — and the
+   * push rail (P5-05) sends to a party's non-revoked devices, which meant it had no recipients at
+   * all. The push TOKEN still requires a native push plugin, which this build does not have; the
+   * row, the platform and the app version are real either way, and the row is what a token later
+   * attaches to.
+   */
+  async registerDevice(body: { platform: 'android' | 'ios' | 'web'; push_token?: string | null; app_version?: string }) {
+    const { data, error } = await api.POST('/devices', {
+      body,
+      params: {
+        header: {
+          'Idempotency-Key': uuid(),
+          // Required by the endpoint AND the id of the row, so it is passed explicitly rather than
+          // left to the middleware, which only attaches it once it has been loaded.
+          'X-Device-Id': await loadDeviceId(),
+          'X-App-Version': environment.appVersion,
+        },
+      },
+    });
+    if (error) {
+      throw error;
+    }
+    return data.data;
+  }
+
+  /**
+   * End the session server-side (P1-03). Revokes the access token AND the refresh-token family —
+   * without it, "log out" only forgot the tokens locally and left a 30-day refresh token valid on
+   * the server, which is exactly the wrong outcome on a shared or lost phone.
+   */
+  async logout() {
+    const { error } = await api.POST('/auth/logout', {
+      params: { header: { 'Idempotency-Key': uuid() } },
+    });
+    if (error) {
+      throw error;
+    }
   }
 
   /** The caller's consent state (P1-05) — the latest decision per purpose, keyed by purpose. */

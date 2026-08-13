@@ -1,6 +1,7 @@
 import { Capacitor } from '@capacitor/core';
 import createClient, { type Middleware } from 'openapi-fetch';
 import { environment } from '../../environments/environment';
+import { currentDeviceId } from '../core/device';
 import type { paths } from './generated/schema';
 import { tokenStore } from './token-store';
 
@@ -103,6 +104,13 @@ const authMiddleware: Middleware = {
       request.headers.set('Authorization', `Bearer ${token}`);
     }
     request.headers.set('X-App-Version', environment.appVersion);
+    // Identifies the INSTALL, not the person (see core/device.ts). The OTP limiter counts against
+    // it — 5 per hour per device, the limit that catches one handset working through a list of
+    // numbers — and it was never being sent, so that limit did nothing.
+    const device = currentDeviceId();
+    if (device !== null) {
+      request.headers.set('X-Device-Id', device);
+    }
     inFlight.set(id, request.clone());
     return request;
   },

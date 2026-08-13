@@ -92,3 +92,47 @@ it('logs out by revoking the current access token', function () {
 
     expect($user->tokens()->count())->toBe(0);
 });
+
+/**
+ * Logging out must end the SESSION, not just its short-lived half.
+ *
+ * It used to delete the access token only, leaving the refresh token valid for its full 30 days —
+ * so a "logged out" phone could mint a fresh access token for another month. Caught by logging out
+ * through the app and then replaying the saved refresh token, which answered 200.
+ */
+it('revokes this device refresh token on logout, so the session cannot be resumed', function () {
+    $user = User::factory()->create();
+    $device = (string) Str::uuid();
+    $issued = app(IssueAuthTokens::class)->handle($user, $device);
+
+    $this->withToken($issued->accessToken)
+        ->postJson('/api/v1/auth/logout', [], [
+            'Idempotency-Key' => (string) Str::uuid(),
+            'X-Device-Id' => $device,
+        ])
+        ->assertOk();
+
+    // "Session revoked", not "Invalid refresh token": presenting a revoked token is indistinguishable
+    // from replaying a stolen one, so it takes the reuse-detection path and burns the family too.
+    postRefresh($this, $issued->refreshToken)
+        ->assertStatus(401)
+        ->assertJsonPath('title', 'Session revoked');
+});
+
+/** Logging out of one phone must not sign the same person out of their other device. */
+it('leaves another device session alone', function () {
+    $user = User::factory()->create();
+    $phone = (string) Str::uuid();
+    $tablet = (string) Str::uuid();
+    $onPhone = app(IssueAuthTokens::class)->handle($user, $phone);
+    $onTablet = app(IssueAuthTokens::class)->handle($user, $tablet);
+
+    $this->withToken($onPhone->accessToken)
+        ->postJson('/api/v1/auth/logout', [], [
+            'Idempotency-Key' => (string) Str::uuid(),
+            'X-Device-Id' => $phone,
+        ])
+        ->assertOk();
+
+    postRefresh($this, $onTablet->refreshToken)->assertOk();
+});

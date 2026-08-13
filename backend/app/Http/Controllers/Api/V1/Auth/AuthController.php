@@ -8,7 +8,9 @@ use App\Domain\Identity\Actions\RotateRefreshToken;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\Auth\RefreshRequest;
 use App\Http\Resources\Api\V1\UserResource;
+use App\Models\RefreshToken;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Laravel\Sanctum\PersonalAccessToken;
@@ -34,11 +36,43 @@ final class AuthController extends Controller
         return UserResource::make($user->load('party'));
     }
 
+    /**
+     * End the session.
+     *
+     * Deleting the access token is not enough, and used to be all this did: a refresh token lives
+     * 30 days (P1-03), so a logged-out session could mint a brand-new access token for another
+     * month. "Log out" then meant "forget the short-lived half", which is the opposite of what
+     * someone handing back a shared phone — or wiping a stolen one remotely — is asking for.
+     *
+     * Scoped to THIS device rather than the whole account: the refresh token carries the device it
+     * was issued to (`refresh_tokens.device_id`), and logging out of a phone should not sign the
+     * same person out of their tablet. A device-less token (an older session, or a client that
+     * sent no `X-Device-Id`) belongs to nothing we can distinguish, so it goes with the current
+     * device's family rather than surviving as an orphan nobody can revoke.
+     */
     public function logout(Request $request): JsonResponse
     {
-        $token = $request->user()?->currentAccessToken();
+        /** @var User|null $user */
+        $user = $request->user();
+
+        $token = $user?->currentAccessToken();
         if ($token instanceof PersonalAccessToken) {
             $token->delete();
+        }
+
+        if ($user !== null) {
+            $deviceId = $request->header('X-Device-Id');
+
+            RefreshToken::query()
+                ->where('user_id', $user->getKey())
+                ->whereNull('revoked_at')
+                ->where(function (Builder $query) use ($deviceId): void {
+                    $query->whereNull('device_id');
+                    if (is_string($deviceId) && $deviceId !== '') {
+                        $query->orWhere('device_id', $deviceId);
+                    }
+                })
+                ->update(['revoked_at' => now()]);
         }
 
         return response()->json(['message' => 'ok']);
