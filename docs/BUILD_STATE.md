@@ -3,8 +3,10 @@
 > Living tracker for the build. Updated as work progresses. Source of truth for **where we
 > are** and **how this machine is set up**. Read this first when resuming.
 
-_Last updated: 2026-08-11 (admin: dashboard width bug, 4 missing detail pages, reports could never be
-closed, reconciliation queue, skills CRUD; before that the hedged-DONE audit and the P1-06 benchmark)_
+_Last updated: 2026-08-13 (Ionic app pass: one shared empty state, disabled buttons that vanished,
+Discover density + a location chip that was never real, provider signup — which did not exist — and
+a fact cache that returned a broken object on every hit; before that the public site + seed data and
+the admin queues)_
 
 ## Environment (this dev machine — Windows 10 Pro, non-admin)
 
@@ -241,10 +243,18 @@ founder-owned legal items in doc 05's launch checklist.
     exception) + a loginable superadmin, so `/admin` is full when served. Run
     `php artisan db:seed --class=Database\Seeders\DemoSeeder`; log in at `/admin` with
     `admin@handyman.cm` / `password` (enrol 2FA once).
-  - **Ionic app — customer + provider sections substantially built** (see the top "what was done"
-    entry). Both are token-driven (light+dark, no-literal-colour + no-bare-string linters clean),
-    English-default with a working FR/EN switch, and the responsive shell now really shows a side
-    rail on web (the split-pane `ion-tabs` overlap bug was fixed) and a tab bar on phones.
+  - **Ionic app — customer + provider sections built, and reworked to the bar on 2026-08-13** (see the
+    top "what was done" entry). Token-driven (light+dark, no-literal-colour + no-bare-string linters
+    clean), one shared `app-empty-state` for every empty list, a legible disabled-button treatment
+    including on brand-coloured cards, and a responsive shell with a side rail on web and a tab bar on
+    phones. Density and the clipped category rail on Discover are fixed; rows hold their shape down to
+    320px. **Judged from viewport-sized captures at 320 / 360 / 390 in both themes** against the live
+    API — `ng build` green is not verification.
+  - **Dead affordances found by looking rather than by grepping.** Discover's "change location" and
+    Jobs' two surplus "+" buttons had no handler or no distinct purpose. **Still open: "Add an address"
+    on the account page has no click handler**, and the account's saved-address list falls back to
+    fixture addresses ("Domicile / Bureau") when the fetch fails — the same claim-about-the-user
+    pattern as the provider stats, on a smaller surface.
   - **"Map" on discover: DECIDED — dropped** (founder decision, 2026-08-09). This product never
     exposes a provider's service area or coordinates (P2-03; the public provider resource carries no
     location at all), so there was no map of providers to show and the link had never done anything.
@@ -260,6 +270,105 @@ founder-owned legal items in doc 05's launch checklist.
     landed, and native networking on device now works (CapacitorHttp).
 
 ## What was done, most recent first
+
+- **The Ionic app, looked at screen by screen in a real browser — the last open piece of the founder
+  feedback. Four visual defects, two dead affordances, one whole missing flow, and a backend bug the
+  test suite was structurally unable to see.** Verified over CDP at 320 / 360 / 390px in both themes
+  against the running API, not from `ng build` green (see [[ui-quality-bar]]'s standing rule).
+  - **Every empty screen was a grey line stranded above a screen of nothing.** Eight lists ended in
+    `<p class="hm-empty">` — one muted sentence pinned to the top of a full-height scroll area with a
+    screen and a half of black under it and no way forward, which reads as a screen that failed to
+    load. One `app-empty-state` (`core/ui/`) now carries all of them: icon on a tinted disc, what
+    belongs here, one line on how it gets here, at most one action. Two shapes — `full` claims the
+    leftover height via `.hm-page-fill` (whose `min-height: 100%` resolves against Ionic's scroll
+    container) and centres; `inline` stays compact when one section of a populated page is empty.
+    An empty search and an empty account are now different states with different fixes.
+  - **Jobs had three "+" buttons** (toolbar icon, a button, and a FAB) all calling `postRequest()`.
+    One affordance per state now: the FAB when there are jobs, the empty state's button when not.
+  - **A disabled button vanished instead of looking inert.** Ionic drops the whole element to
+    `opacity: .5` — fill and label together — so WITHDRAW on the green wallet card was green on green
+    on green, and POST REQUEST was dark on dark. Disabled solid buttons keep full opacity and say
+    "off" with colour (muted on sunken); `.hm-on-brand` restates that in a brand card's own palette.
+    **The page-level rule was out-specifying the shared one** — Angular's emulated encapsulation adds
+    an attribute selector to every component rule — so `.withdraw` is scoped to `:not(.button-disabled)`.
+  - **Discover claimed a location it never had.** The toolbar carried a location pin over the app's
+    own name with "change" underneath, wired to nothing: a chip asserting HandyMan is where you are.
+    There is no location picker and search is not location-filtered, so it is a brand lockup now.
+    The category rail cut its last tile mid-word (it snaps and fades at the trailing edge now, and
+    tiles reserve two label lines so the rail's baseline stops wandering), and provider rows were
+    five solid brand buttons that truncated every name to its second word — Quote is an outline pill,
+    names get two lines, and the meta line shortens the trade instead of stranding its "·". At 360px
+    the row used to throw its CTA onto a full-width line, making each card ~215px tall on the phones
+    with the least screen; rows hold together to 320px at ~117px.
+  - **You could tap "Offer services" and never become one.** `POST /provider/profile`, `/provider/skills`
+    and `/provider/service-areas` were all built and specced, and **nothing in the app called any of
+    them** — so the only providers that could exist were seeded ones. New `/become-a-provider`:
+    headline, trades from the real bilingual taxonomy, pricing model, and a service radius for on-site
+    work only. Three calls because they are three server rules that fail separately (profile always
+    succeeds per doc 10; a skill needs the profile first; the area needs location_tracking consent,
+    asked for rather than assumed) — a refused area leaves the profile and skills standing and says so,
+    rather than claiming a setup that would silently never receive on-site work.
+  - **Three more places the app spoke about the user without knowing them** (same family as the
+    fixture-stats fix below): `me` defaulted to "Jean Mballa · +237 6 99 88 77 66", which is what you
+    saw whenever `/auth/me` failed — and an expired 15-minute access token is a 401; `initialsOf()`
+    put a lone `+` or a 👤 emoji in the avatar of anyone known by phone; and the provider screens
+    rendered a blank avatar over the tier badge, introducing a user with no profile to themselves as
+    "Building". All three say nothing and show a person glyph now, and the provider screens fall back
+    to the signed-in account's name — which is not inventing a provider, it is naming the human
+    holding the phone.
+  - **The app and the server disagreed about language.** The server ranks a user's stored locale above
+    `Accept-Language`, and first launch only DETECTS a device language and tells nobody — so English
+    chrome was being served French skill labels, and would have sent French follow-ups and push copy.
+    `LocaleService::reconcile` settles it on whoever was explicit (a device choice is pushed; an
+    unconfirmed default adopts the account's) and refetches the taxonomy when that changes.
+  - **Account IA**: "Offer services" and "Log out" sat under a "Help & support" heading, which is
+    neither. Offer services has its own heading and hint and routes to signup or the dashboard
+    depending on whether a profile exists; log out is a plain action at the end.
+  - **NOT a bug, recorded so it is not re-chased:** the provider profile looked clipped by the tab
+    bar in the first screenshot. Scrolling each tabbed page to its end over CDP shows every one stops
+    40–50px above the bar. That was the fold.
+
+- **A fact cache that returned a broken object on every hit, and a suite that could not see it.**
+  Found by driving the new signup against the real API: the first trade listed 201, the second 500 —
+  `FactDeriver::derive(): Return value must be of type FactResult, __PHP_Incomplete_Class returned`.
+  `cache.serializable_classes` defaults to **false** in this Laravel, so the cache unserializes with
+  `allowed_classes: false` and **any object read back from a serializing store comes out incomplete**.
+  `derive()` cached the `FactResult` object, so it was correct on a MISS and broken on every HIT: on
+  Redis, the first capability check of a flow works and the next 500s until the 5-minute TTL expires.
+  That is the whole P0-17 access model — the gate in front of accepting paid work, listing a skill,
+  everything. **The suite runs on the `array` store, which returns objects by reference and never
+  serializes, so five green tests on this exact class proved nothing about it.** The fix caches two
+  scalars and rehydrates (allow-listing the class would work too, but the default exists to keep
+  object graphs out of caches, and a fact is a bool and an int). The new test drives the `file` store
+  with `serializable_classes` false so a real round trip happens — **verified failing on the old code
+  with the same TypeError and passing on the new**.
+
+- **The app was inventing facts about the person using it.** Reported symptom: provider home showed
+  ★4.9 / 94% on-time for a provider Discover correctly called unrated. The cause was a pattern —
+  fixtures were the initial value AND the fallback for anything that failed, including a 404 meaning
+  "this person has no provider profile". So a first-time tap on "Offer services" showed, as your own:
+  the name Atelier Nkeng, tier 2, 4.9 stars from 68 reviews, and 640 000 FCFA to withdraw. Worse,
+  `provider(id)` returned `profiles.p1` for any unknown id, so a real provider's card could render
+  another person's reputation and testimonials under their name. Identity, stats, wallet, leads and
+  active work all start empty now; illustrative content is a demo aid, a claim about the user is not.
+
+- **A public site that sells the product, and seed data that reaches every feature.** The website's
+  whole design system had been ~55 lines of inline CSS; it is now a real landing page (hero, trust
+  strip, how-it-works, trades grid, a band for professionals, safety, JS-free FAQ, footer) whose every
+  claim is something the platform actually does, publishing **no provider counts** — "3 plumbers" is a
+  liquidity disclosure. On the data side the gaps were not cosmetic: **no provider listed a single
+  trade and none had a service area**, so every trade page read "no one offers this" and
+  `ProviderSearch` would return nobody for any on-site job; **no engagement was ever completed**, so
+  `completed_at` was never stamped and reviews/warranties/metrics could not be seeded at all; every
+  engagement was on-site, hiding the entire remote path; and the directory printed display names
+  because the seeder put the person's name in `headline`, inverting that page's privacy rule.
+
+- **The admin sections that did not exist at all** — Parties, Payment intents, Payouts and Activity
+  logs. All read-only on purpose: identity is established by OTP and an approved document (a form
+  would hand someone a tier they never proved), and a payment's state belongs to the gateway. The
+  audit table had read `actor.name`, but users have no `name` column — the display name is on the
+  party — so **every human action rendered as "System"**, the one thing an audit trail must never say;
+  the same mistake was on the dispute, reconciliation and safety-alert pages.
 
 - **The admin panel, looked at with real data in a real browser for the first time since the rework
   — and it was not what this tracker claimed.** Founder feedback: "the create and edit views for most
