@@ -122,7 +122,13 @@
         @for (c of filtered(); track c.partyId) {
           <div class="client hm-card" [class.blocked]="c.doNotContact">
             <div class="who">
-              <div [class]="'hm-avatar av accent-' + c.accent" aria-hidden="true">{{ c.initials }}</div>
+              <div [class]="'hm-avatar av accent-' + c.accent" aria-hidden="true">
+                @if (c.initials) {
+                  {{ c.initials }}
+                } @else {
+                  <ion-icon name="person-outline"></ion-icon>
+                }
+              </div>
               <div class="ident">
                 <b class="name">{{ c.name }}</b>
                 <!-- Singular/plural picked explicitly: there is no ICU message compiler wired in,

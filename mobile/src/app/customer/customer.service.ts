@@ -160,10 +160,15 @@ function mapMilestoneStatus(status: string): MilestoneStatus {
   }
 }
 
-/** Two-letter initials from a name; a phone-only "name" falls back to a neutral glyph. */
+/**
+ * Two-letter initials from a name. A phone-only "name" has no initials — "+2" is not who anyone is
+ * — so it returns nothing and the avatar falls back to its person glyph. (It used to return a 👤
+ * EMOJI, which rendered as a dark blob in a brand-coloured circle and matched no other icon in the
+ * app; the fallback is now the same outline icon every empty avatar uses.)
+ */
 function initialsOf(name: string): string {
   if (/^\+?\d/.test(name.trim())) {
-    return '👤';
+    return '';
   }
   const parts = name.trim().split(/\s+/).filter(Boolean);
   return (parts[0]?.[0] ?? '') + (parts[1]?.[0] ?? '');
@@ -202,10 +207,17 @@ export class CustomerService {
   private readonly cache = inject(OfflineCache);
 
   /**
-   * The signed-in customer. Loaded from `GET /auth/me` when a session token is present, else the
-   * offline fixture stands in — so the account identity is real when connected and demoable when not.
+   * The signed-in customer, from `GET /auth/me`.
+   *
+   * Starts EMPTY, not as a persona. It used to default to "Jean Mballa · +237 6 99 88 77 66", and
+   * that default is what you saw whenever the call didn't land — an expired access token is a 401,
+   * and a 401 here meant the app greeted you by a stranger's name and put their initials in your
+   * avatar. Someone else's identity is the one placeholder this app must never show: a demo lead in
+   * a list is an illustration, a name in YOUR avatar is a claim about you. Screens read the signal,
+   * so the real identity replaces this the moment it arrives, and until then they say nothing
+   * rather than something false.
    */
-  readonly me = signal({ id: '', name: 'Jean Mballa', initials: 'JM', phone: '+237 6 99 88 77 66' });
+  readonly me = signal({ id: '', name: '', initials: '', phone: '' });
 
   /** Discover's category rail — real skill categories (GET /skills) once loaded, curated fixtures until then. */
   readonly categories = signal<Category[]>([
@@ -268,6 +280,16 @@ export class CustomerService {
     if (u !== null) {
       const name = u.display_name ?? u.phone_e164;
       this.me.set({ id: u.id, name, initials: initialsOf(name), phone: u.phone_e164 });
+      // This is the first moment the app learns what language the ACCOUNT is in, which is what
+      // the server renders bilingual payloads in (P1-05b). See LocaleService::reconcile.
+      const was = this.locales.current;
+      await this.locales.reconcile(u.locale);
+      if (this.locales.current !== was) {
+        // The taxonomy was already requested in the previous language — its labels are the most
+        // visible bilingual payload in the app (the whole Discover rail), so fetch it again rather
+        // than leave an English category list above French chrome until the next launch.
+        await this.loadCategories();
+      }
     }
   }
 

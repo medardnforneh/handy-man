@@ -23,10 +23,27 @@ ion-title {
   gap: var(--hm-space-md);
   padding: var(--hm-space-md) 0 var(--hm-space-sm);
 
-  .id-av { width: 60px; height: 60px; border-radius: 50%; font-size: 1.2rem; text-transform: uppercase; }
+  .id-av {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    font-size: 1.2rem;
+    text-transform: uppercase;
+
+    // The fallback when we don't know who you are yet — a glyph, never someone else's initials.
+    ion-icon { font-size: 1.6rem; }
+  }
   .id-info { min-width: 0; }
   .id-info b { font-size: 1.15rem; font-weight: 800; letter-spacing: -0.02em; }
   .id-info small { display: block; font-size: 0.85rem; margin-top: 0.1rem; font-variant-numeric: tabular-nums; }
+}
+
+ion-list ion-icon[slot='start'] { color: var(--hm-color-text-muted); font-size: 1.2rem; }
+.signout {
+  margin-top: var(--hm-space-md);
+
+  ion-icon[slot='start'] { color: var(--hm-color-status-danger); }
+  ion-label { color: var(--hm-color-status-danger); font-weight: 600; }
 }
 
 .addrs ion-icon { color: var(--hm-color-text-muted); font-size: 1.2rem; }

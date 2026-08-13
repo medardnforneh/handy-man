@@ -8,10 +8,24 @@
   <div class="page">
     <!-- Profile header -->
     <div class="ident">
-      <div class="hm-avatar id-av accent-brand" aria-hidden="true">{{ me().initials }}</div>
+      <div class="hm-avatar id-av accent-brand" aria-hidden="true">
+        @if (me().initials) {
+          {{ me().initials }}
+        } @else {
+          <ion-icon name="person-outline"></ion-icon>
+        }
+      </div>
       <div class="id-info">
-        <b>{{ me().name }}</b>
-        <small class="hm-muted">{{ me().phone }}</small>
+        <!-- Never a placeholder person: a name if the server sent one, else the phone you signed in
+             with, else an honest line saying the details have not loaded. -->
+        @if (displayName()) {
+          <b>{{ displayName() }}</b>
+          @if (knowsName()) {
+            <small class="hm-muted">{{ me().phone }}</small>
+          }
+        } @else {
+          <b class="hm-muted">{{ 'account.details_unavailable' | translate }}</b>
+        }
       </div>
     </div>
 
@@ -55,12 +69,23 @@
       </ion-segment-button>
     </ion-segment>
 
-    <div class="hm-section-head"><h2>{{ 'account.help' | translate }}</h2></div>
+    <!-- These two sat under a "Help & support" heading, and neither is help or support. Becoming a
+         provider is the biggest decision on this screen and now reads as one; logging out is a
+         plain account action and needs no heading of its own. -->
+    <div class="hm-section-head"><h2>{{ 'account.work_heading' | translate }}</h2></div>
     <ion-list class="hm-card" lines="full">
       <ion-item button="true" detail="true" class="hm-tap" (click)="offerServices()">
-        <ion-label>{{ 'nav.provider' | translate }}</ion-label>
+        <ion-icon slot="start" name="hammer-outline" aria-hidden="true"></ion-icon>
+        <ion-label>
+          <b>{{ 'nav.provider' | translate }}</b>
+          <p class="hm-muted">{{ 'account.work_hint' | translate }}</p>
+        </ion-label>
       </ion-item>
-      <ion-item button="true" detail="true" class="hm-tap" (click)="logout()">
+    </ion-list>
+
+    <ion-list class="signout hm-card" lines="none">
+      <ion-item button="true" detail="false" class="hm-tap" (click)="logout()">
+        <ion-icon slot="start" name="log-out-outline" aria-hidden="true"></ion-icon>
         <ion-label>{{ 'auth.logout' | translate }}</ion-label>
       </ion-item>
     </ion-list>

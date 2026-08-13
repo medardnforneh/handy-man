@@ -22,7 +22,16 @@ ion-title { font-weight: 800; letter-spacing: -0.02em; }
   gap: 0.2rem;
   padding: var(--hm-space-md) 0 var(--hm-space-sm);
 
-  .id-av { width: 72px; height: 72px; border-radius: 50%; font-size: 1.4rem; margin-bottom: 0.3rem; }
+  .id-av {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    font-size: 1.4rem;
+    margin-bottom: 0.3rem;
+    text-transform: uppercase;
+
+    ion-icon { font-size: 1.9rem; }
+  }
 
   .id-name {
     display: inline-flex;

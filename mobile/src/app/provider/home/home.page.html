@@ -2,7 +2,13 @@
   <ion-toolbar>
     <ion-title>{{ 'pro.title' | translate }}</ion-title>
     <ion-buttons slot="end">
-      <div class="hm-avatar top-av accent-brand" aria-hidden="true">{{ identity().initials }}</div>
+      <div class="hm-avatar top-av accent-brand" aria-hidden="true">
+        @if (who().initials) {
+          {{ who().initials }}
+        } @else {
+          <ion-icon name="person-outline"></ion-icon>
+        }
+      </div>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
@@ -11,19 +17,31 @@
   <div class="page">
     <div class="hello">
       <h1>{{ 'pro.greeting' | translate }}</h1>
-      <!-- Before the profile lands (or when the user has none) the name is empty; say so plainly
-           rather than rendering a blank line under the greeting. -->
-      <span class="who">
-        @if (identity().name) {
-          {{ identity().name }}
+      <!-- The person is known whether or not they have a provider profile — they are signed in —
+           so the greeting names them either way. What used to sit here was the setup instruction
+           itself, rendered as muted text with nothing to tap; that prompt is a real card below. -->
+      @if (who().name) {
+        <span class="who">
+          {{ who().name }}
           @if (identity().verificationTier >= 2) {
             <ion-icon class="verified" name="shield-checkmark" [attr.aria-label]="'discover.verified' | translate"></ion-icon>
           }
-        } @else {
-          <span class="hm-muted">{{ 'pro.no_profile_yet' | translate }}</span>
-        }
-      </span>
+        </span>
+      }
     </div>
+
+    @if (!hasProfile()) {
+      <!-- No provider profile: the one thing worth doing on this screen, said once and actionable,
+           above a wallet that can only ever read zero until it is done. -->
+      <button class="setup hm-card hm-tap" type="button" (click)="startOnboarding()">
+        <span class="ic" aria-hidden="true"><ion-icon name="hammer-outline"></ion-icon></span>
+        <span class="ct">
+          <b>{{ 'pro.setup_title' | translate }}</b>
+          <small class="hm-muted">{{ 'pro.setup_body' | translate }}</small>
+        </span>
+        <ion-icon class="chev" name="chevron-forward" aria-hidden="true"></ion-icon>
+      </button>
+    }
 
     <!-- Wallet -->
     <div class="wallet hm-on-brand">

@@ -11,7 +11,13 @@
       </div>
     </ion-buttons>
     <ion-buttons slot="end">
-      <div class="hm-avatar accent-brand top-avatar" aria-hidden="true">{{ userInitials().initials }}</div>
+      <div class="hm-avatar accent-brand top-avatar" aria-hidden="true">
+        @if (userInitials().initials) {
+          {{ userInitials().initials }}
+        } @else {
+          <ion-icon name="person-outline"></ion-icon>
+        }
+      </div>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
@@ -107,7 +113,13 @@
     @for (p of providers(); track p.id) {
       <div class="hm-card pro">
         <button class="pro-open hm-tap" type="button" (click)="openProfile(p)">
-          <div class="hm-avatar pro-av" [class]="'hm-avatar pro-av accent-' + p.accent" aria-hidden="true">{{ p.initials }}</div>
+          <div class="hm-avatar pro-av" [class]="'hm-avatar pro-av accent-' + p.accent" aria-hidden="true">
+            @if (p.initials) {
+              {{ p.initials }}
+            } @else {
+              <ion-icon name="person-outline"></ion-icon>
+            }
+          </div>
 
           <div class="pro-info">
             <div class="pro-name">

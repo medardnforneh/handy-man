@@ -118,6 +118,16 @@ ion-title { font-size: 0.95rem; font-weight: 700; }
 }
 
 // ---- Client book entry -------------------------------------------------
+// The "become a provider" prompt shares the client-book card's shape, but carries the brand ring:
+// it is the only thing worth doing on this screen until it is done.
+.setup {
+  border-color: var(--hm-color-brand-primary);
+  background: color-mix(in srgb, var(--hm-color-brand-primary) 7%, var(--hm-color-surface-raised));
+  margin-top: 0;
+  margin-bottom: var(--hm-space-md);
+}
+
+.setup,
 .clients {
   display: flex;
   align-items: center;

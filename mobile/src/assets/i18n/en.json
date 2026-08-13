@@ -249,7 +249,9 @@
     "theme_system": "Follow system",
     "theme_light": "Light",
     "theme_dark": "Dark",
-    "help": "Help & support"
+    "details_unavailable": "Your details have not loaded",
+    "work_heading": "Work on HandyMan",
+    "work_hint": "List your trades and receive requests from customers near you."
   },
   "workspace": {
     "today": "Today",
@@ -826,7 +828,28 @@
     "no_payouts_title": "No payouts yet",
     "no_payouts_body": "Money released from completed work shows up here once you withdraw it.",
     "no_skills_body": "Add the trades you work in so matching requests reach you.",
-    "no_opportunities_cta": "Review your skills and area"
+    "no_opportunities_cta": "Review your skills and area",
+    "setup_title": "Set up your provider profile",
+    "setup_body": "List your trades and start receiving requests.",
+    "setup_lead": "Tell customers what you do. You can change any of this later from your profile.",
+    "setup_headline": "Headline",
+    "setup_headline_ph": "e.g. Plumbing and repairs, 7 days a week",
+    "setup_trades": "What do you do?",
+    "setup_trades_hint": "Pick every trade you take on — requests reach you by trade.",
+    "setup_selected": "{{count}} selected",
+    "setup_pricing": "How do you charge?",
+    "price_quote_only": "On quote",
+    "price_hourly": "By the hour",
+    "price_fixed": "Fixed price",
+    "setup_where": "Where do you work?",
+    "setup_area_body": "How far you are willing to travel, from where you are now.",
+    "setup_area_consent": "We will ask for your location once, to set the centre of this area. You can revoke it at any time.",
+    "setup_submit": "Create my provider profile",
+    "setup_submit_short": "Get started",
+    "setup_done": "Your provider profile is live.",
+    "setup_done_no_area": "Profile created — but your service area was not set, so on-site requests will not reach you yet. Add it from your profile.",
+    "setup_failed": "We could not create your profile. Please try again.",
+    "setup_nav_title": "Become a provider"
   },
   "payout": {
     "paid": "Paid",

@@ -1,0 +1,121 @@
+<ion-header [translucent]="true" class="ion-no-border">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/tabs/account" [text]="''"></ion-back-button>
+    </ion-buttons>
+    <!-- Short enough to survive a 320px toolbar; the full sentence is the lead paragraph below. -->
+    <ion-title>{{ 'pro.setup_nav_title' | translate }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <div class="page">
+    <p class="lead hm-muted">{{ 'pro.setup_lead' | translate }}</p>
+
+    <!-- Headline: optional. It is what a customer reads first, but nobody should be stopped at the
+         door by a blank text field, so it is not required to finish. -->
+    <div class="hm-section-head"><h2>{{ 'pro.setup_headline' | translate }}</h2></div>
+    <ion-input
+      class="field hm-tap"
+      [value]="headline()"
+      (ionInput)="onHeadline($any($event.target).value)"
+      [placeholder]="'pro.setup_headline_ph' | translate"
+      [attr.aria-label]="'pro.setup_headline' | translate"
+      [counter]="true"
+      maxlength="80"
+    ></ion-input>
+
+    <!-- Trades: the one required answer. A provider with no listed trade cannot be matched to any
+         request at all (P2-04), so this is the difference between a profile and a listing. -->
+    <div class="hm-section-head">
+      <h2>{{ 'pro.setup_trades' | translate }}</h2>
+      @if (selectedCount() > 0) {
+        <span class="hm-pill tone-brand">{{ 'pro.setup_selected' | translate:{ count: selectedCount() } }}</span>
+      }
+    </div>
+    <p class="hint hm-muted">{{ 'pro.setup_trades_hint' | translate }}</p>
+
+    @for (cat of categories(); track cat.id) {
+      @if (trades(cat.id).length > 0) {
+        <div class="cat-block">
+          <h3><ion-icon [name]="cat.icon" aria-hidden="true"></ion-icon>{{ cat.label }}</h3>
+          <div class="chips">
+            @for (trade of trades(cat.id); track trade.id) {
+              <button
+                class="chip hm-tap"
+                type="button"
+                [class.on]="isSelected(trade.id)"
+                [attr.aria-pressed]="isSelected(trade.id)"
+                (click)="toggleTrade(trade.id)"
+              >
+                {{ trade.label }}
+              </button>
+            }
+          </div>
+        </div>
+      }
+    }
+
+    <!-- How you charge. Stored per listed trade; one answer here rather than one per trade, because
+         a provider prices the same way across their work far more often than not. -->
+    <div class="hm-section-head"><h2>{{ 'pro.setup_pricing' | translate }}</h2></div>
+    <ion-segment class="choice" [value]="priceModel()">
+      <ion-segment-button class="hm-tap" value="quote_only" (click)="setPriceModel('quote_only')">
+        <ion-label>{{ 'pro.price_quote_only' | translate }}</ion-label>
+      </ion-segment-button>
+      <ion-segment-button class="hm-tap" value="hourly" (click)="setPriceModel('hourly')">
+        <ion-label>{{ 'pro.price_hourly' | translate }}</ion-label>
+      </ion-segment-button>
+      <ion-segment-button class="hm-tap" value="fixed" (click)="setPriceModel('fixed')">
+        <ion-label>{{ 'pro.price_fixed' | translate }}</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+
+    <!-- Where you work. Remote work has no geography at all (doc 06), so choosing it removes the
+         service-area question rather than showing a disabled one. -->
+    <div class="hm-section-head"><h2>{{ 'pro.setup_where' | translate }}</h2></div>
+    <ion-segment class="choice" [value]="mode()">
+      <ion-segment-button class="hm-tap" value="onsite" (click)="setMode('onsite')">
+        <ion-label>{{ 'discover.mode.onsite' | translate }}</ion-label>
+      </ion-segment-button>
+      <ion-segment-button class="hm-tap" value="remote" (click)="setMode('remote')">
+        <ion-label>{{ 'discover.mode.remote' | translate }}</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+
+    @if (mode() === 'onsite') {
+      <div class="area hm-card">
+        <p class="hm-muted">{{ 'pro.setup_area_body' | translate }}</p>
+        <div class="radii">
+          @for (km of radii; track km) {
+            <button
+              class="chip hm-tap"
+              type="button"
+              [class.on]="radiusKm() === km"
+              [attr.aria-pressed]="radiusKm() === km"
+              (click)="setRadius(km)"
+            >
+              {{ 'pro.service_radius' | translate:{ km: km } }}
+            </button>
+          }
+        </div>
+        <small class="consent hm-muted">
+          <ion-icon name="location-outline" aria-hidden="true"></ion-icon>
+          {{ 'pro.setup_area_consent' | translate }}
+        </small>
+      </div>
+    }
+  </div>
+</ion-content>
+
+<ion-footer class="ion-no-border">
+  <div class="cta">
+    <ion-button expand="block" class="hm-tap" [disabled]="!canSubmit()" (click)="submit()">
+      @if (saving()) {
+        <ion-spinner name="crescent"></ion-spinner>
+      } @else {
+        {{ 'pro.setup_submit' | translate }}
+      }
+    </ion-button>
+  </div>
+</ion-footer>

@@ -13,7 +13,13 @@
 
     @for (p of providers(); track p.id) {
       <button class="hm-card pro hm-tap" type="button" (click)="openProfile(p)">
-        <div [class]="'hm-avatar pro-av accent-' + p.accent" aria-hidden="true">{{ p.initials }}</div>
+        <div [class]="'hm-avatar pro-av accent-' + p.accent" aria-hidden="true">
+          @if (p.initials) {
+            {{ p.initials }}
+          } @else {
+            <ion-icon name="person-outline"></ion-icon>
+          }
+        </div>
 
         <div class="pro-info">
           <div class="pro-name">

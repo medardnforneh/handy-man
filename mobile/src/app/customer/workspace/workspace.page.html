@@ -6,7 +6,13 @@
 
     @if (thread(); as thread) {
       <div class="ws-head">
-        <div [class]="'hm-avatar ws-av accent-' + thread.accent" aria-hidden="true">{{ thread.initials }}</div>
+        <div [class]="'hm-avatar ws-av accent-' + thread.accent" aria-hidden="true">
+          @if (thread.initials) {
+            {{ thread.initials }}
+          } @else {
+            <ion-icon name="person-outline"></ion-icon>
+          }
+        </div>
         <div class="ws-title">
           <b>{{ thread.providerName }}</b>
           <!-- Presence is live-only: when the socket is down we stop claiming anyone is there,

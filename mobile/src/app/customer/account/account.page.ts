@@ -1,11 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { TranslatePipe } from '@ngx-translate/core';
 import { AuthService } from '../../core/auth.service';
 import { Locale, LocaleService, SUPPORTED_LOCALES } from '../../core/locale.service';
 import { ThemeChoice, ThemeService } from '../../core/theme.service';
+import { ProviderService } from '../../provider/provider.service';
 import { CustomerService } from '../customer.service';
 
 /**
@@ -25,15 +26,30 @@ export class AccountPage {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
   private readonly customers = inject(CustomerService);
+  private readonly providers = inject(ProviderService);
 
   readonly me = this.customers.me;
   readonly addresses = this.customers.addresses;
+
+  /**
+   * The heading of your own account page. A display name if the server sent one, otherwise the
+   * phone you signed in with — which is the identity in this product (doc 02 is phone-primary), and
+   * is always true. Only when neither has loaded does it say so, rather than filling the line in.
+   */
+  readonly displayName = computed(() => this.me().name || this.me().phone);
+  readonly knowsName = computed(() => this.me().name !== '' && this.me().phone !== '');
   readonly supported = SUPPORTED_LOCALES;
   readonly locale = signal<Locale>(this.locales.current);
   readonly theme = signal<ThemeChoice>(this.themes.current);
 
-  offerServices(): void {
-    void this.router.navigate(['/pro']);
+  /**
+   * "Offer services". Someone who already has a provider profile wants their dashboard; someone
+   * who does not wants the signup — landing them on a dashboard of zeroes with no way out of it is
+   * what this row used to do for every customer who tapped it.
+   */
+  async offerServices(): Promise<void> {
+    const profile = await this.providers.fetchProfile();
+    void this.router.navigate([profile === null ? '/become-a-provider' : '/pro']);
   }
 
   async logout(): Promise<void> {

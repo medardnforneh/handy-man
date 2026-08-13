@@ -40,6 +40,10 @@
   font-weight: 700;
   border-radius: var(--hm-radius-md);
 
+  // The fallback when there are no initials to show — someone known only by a phone number, or an
+  // identity that hasn't loaded. Sized off the avatar's own type scale so it fits any of them.
+  ion-icon { font-size: 1.25em; }
+
   &.accent-brand { background: var(--hm-color-brand-primary); }
   &.accent-info { background: var(--hm-color-status-info); }
   &.accent-warning { background: var(--hm-color-status-warning); }

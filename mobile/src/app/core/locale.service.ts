@@ -49,6 +49,39 @@ export class LocaleService {
     }
   }
 
+  /**
+   * Reconcile the app's language with the account's, once `GET /auth/me` has said what the account
+   * thinks it is.
+   *
+   * These two could disagree, and did: the server's locale precedence puts the user's STORED
+   * preference above the Accept-Language header, so a phone showing English chrome was being sent
+   * French skill labels, French follow-ups and French push copy — the exact split
+   * {@see choose()} exists to prevent, reached by never choosing. `apply()` on first launch only
+   * detects a device language; it tells nobody.
+   *
+   * Whoever was explicit wins. If the user picked a language on this device, that is a decision and
+   * it is pushed. If they never did, the account's stored locale is the more considered value (it
+   * may have been chosen on another device) and the app adopts it.
+   */
+  async reconcile(accountLocale: string): Promise<void> {
+    if (!this.isSupported(accountLocale)) {
+      return;
+    }
+    if (this.chosen) {
+      if (accountLocale !== this.currentLocale) {
+        try {
+          await this.api.setLocalePreference(this.currentLocale);
+        } catch {
+          // Offline — the next explicit change re-syncs it.
+        }
+      }
+      return;
+    }
+    if (accountLocale !== this.currentLocale) {
+      await this.apply(accountLocale, false);
+    }
+  }
+
   get current(): Locale {
     return this.currentLocale;
   }

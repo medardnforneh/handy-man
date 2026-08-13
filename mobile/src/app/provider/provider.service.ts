@@ -21,11 +21,20 @@ export interface MutationResult {
   queued?: boolean;
 }
 
-/** Up to two initials from a display name, for the customer avatar. */
+/**
+ * Up to two initials from a display name.
+ *
+ * A phone number has no initials — this used to take its first character and put a lone "+" in the
+ * avatar of every provider who has not set a display name, which is most of them on signup. It
+ * returns nothing instead, and the avatar falls back to its person glyph like everywhere else.
+ */
 function initialsOf(name: string): string {
+  if (/^\+?\d/.test(name.trim())) {
+    return '';
+  }
   const parts = name.trim().split(/\s+/).filter(Boolean);
   if (parts.length === 0) {
-    return '?';
+    return '';
   }
   return (parts[0][0] + (parts.length > 1 ? parts[parts.length - 1][0] : '')).toUpperCase();
 }
@@ -185,6 +194,62 @@ export class ProviderService {
     } catch {
       return null;
     }
+  }
+
+  /**
+   * Become a provider (P1-08): create the profile, list the chosen trades, and — if they work
+   * on-site — record a service area around where they are.
+   *
+   * Three separate calls because they are three separate server-side rules, and they fail
+   * separately. The profile always succeeds (doc 10: anyone may declare themselves a provider).
+   * Listing a skill needs the profile to exist first, which is why it cannot be one request. The
+   * service area needs `location_tracking` consent (P1-05), asked for here rather than assumed —
+   * and if it is refused, the profile and the skills still stand: a remote provider needs no area
+   * at all (doc 06), and an on-site one can add it later rather than lose the whole signup.
+   *
+   * Returns what actually landed, so the screen can tell the truth about the partial case instead
+   * of claiming a service area it did not get.
+   */
+  async createProfile(input: {
+    headline: string;
+    skillIds: string[];
+    priceModel: 'hourly' | 'fixed' | 'quote_only';
+    serviceRadiusM: number | null;
+  }): Promise<{ profile: boolean; skills: number; serviceArea: boolean }> {
+    const result = { profile: false, skills: 0, serviceArea: false };
+
+    await this.api.createProviderProfile({ headline: input.headline || undefined });
+    result.profile = true;
+
+    // One trade failing (a licence-gated one, say) must not cost the others.
+    for (const skillId of input.skillIds) {
+      try {
+        await this.api.addProviderSkill({ skill_id: skillId, price_model: input.priceModel });
+        result.skills += 1;
+      } catch {
+        // Keep going; the profile page shows what was actually listed.
+      }
+    }
+
+    if (input.serviceRadiusM !== null) {
+      try {
+        await this.api.recordConsent('location_tracking', true, this.locales.current);
+        const fix = await currentPosition();
+        if (fix !== null) {
+          await this.api.setServiceArea({
+            latitude: fix.latitude,
+            longitude: fix.longitude,
+            radius_m: input.serviceRadiusM,
+          });
+          result.serviceArea = true;
+        }
+      } catch {
+        // Consent refused, no GPS fix, or the write was rejected — the rest of the signup stands.
+      }
+    }
+
+    await this.fetchProfile();
+    return result;
   }
 
   /** Whether the provider is currently accepting new jobs (a soft availability switch). */

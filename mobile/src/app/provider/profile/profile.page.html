@@ -6,24 +6,49 @@
 
 <ion-content [fullscreen]="true">
   <div class="page">
-    <!-- Identity -->
+    <!-- Identity. Without a provider profile the name came out blank and the tier badge was left
+         as the only thing under a featureless avatar — the screen introduced you as "Building".
+         The signed-in person is known either way, so they are named either way. -->
     <div class="ident">
-      <div class="hm-avatar id-av accent-brand" aria-hidden="true">{{ identity().initials }}</div>
+      <div class="hm-avatar id-av accent-brand" aria-hidden="true">
+        @if (who().initials) {
+          {{ who().initials }}
+        } @else {
+          <ion-icon name="person-outline"></ion-icon>
+        }
+      </div>
       <div class="id-name">
-        <b>{{ identity().name }}</b>
+        <b>{{ who().name }}</b>
         @if (fullyVerified()) {
           <ion-icon class="verified" name="shield-checkmark" [attr.aria-label]="'discover.verified' | translate"></ion-icon>
         }
       </div>
-      @if (hasRating()) {
-        <span class="rating">
-          <ion-icon name="star" aria-hidden="true"></ion-icon>{{ identity().rating }}
-          <small class="hm-muted">{{ 'provider.rating_count' | translate:{ count: identity().ratingCount } }}</small>
-        </span>
-      } @else {
-        <span class="rating none hm-muted">{{ 'provider.building' | translate }}</span>
+      <!-- Reputation belongs to a profile. With no profile there is none to report, and the prompt
+           below already says what to do — a status line here would say it a second time. -->
+      @if (hasProfile()) {
+        @if (hasRating()) {
+          <span class="rating">
+            <ion-icon name="star" aria-hidden="true"></ion-icon>{{ identity().rating }}
+            <small class="hm-muted">{{ 'provider.rating_count' | translate:{ count: identity().ratingCount } }}</small>
+          </span>
+        } @else {
+          <span class="rating none hm-muted">{{ 'provider.building' | translate }}</span>
+        }
       }
     </div>
+
+    @if (!hasProfile()) {
+      <!-- No provider profile: verification tiers, skills and a service area are all attributes OF
+           a profile, so showing their empty shells reads as a broken screen. One prompt instead. -->
+      <app-empty-state
+        icon="hammer-outline"
+        heading="pro.setup_title"
+        body="pro.setup_body"
+        actionLabel="pro.setup_submit_short"
+        actionIcon="arrow-forward"
+        (action)="startOnboarding()"
+      ></app-empty-state>
+    } @else {
 
     <!-- Verification -->
     <div class="hm-section-head"><h2>{{ 'pro.verification' | translate }}</h2></div>
@@ -88,7 +113,10 @@
       </p>
     }
 
-    <!-- Preferences -->
+    }
+
+    <!-- Preferences. Outside the profile/no-profile split: language, theme and logging out belong
+         to whoever is holding the phone, not to a provider profile. -->
     <div class="hm-section-head"><h2>{{ 'account.language' | translate }}</h2></div>
     <ion-segment class="choice" [value]="locale()">
       @for (code of supported; track code) {

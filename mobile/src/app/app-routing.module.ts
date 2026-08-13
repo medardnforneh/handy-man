@@ -49,6 +49,14 @@ const routes: Routes = [
     loadChildren: () => import('./provider/tabs/pro-tabs.routes').then((m) => m.routes),
   },
   {
+    // Becoming a provider (P1-08). Outside the `pro` tab shell on purpose: this is the screen you
+    // use before that section means anything, and it should not open behind a tab bar advertising
+    // four other screens that are all empty until it is finished.
+    path: 'become-a-provider',
+    canActivate: [authGuard],
+    loadComponent: () => import('./provider/onboarding/onboarding.page').then((m) => m.ProviderOnboardingPage),
+  },
+  {
     // Lead detail + quote composer, pushed over the provider tabs.
     path: 'opportunity/:id',
     canActivate: [authGuard],

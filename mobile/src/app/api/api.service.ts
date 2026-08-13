@@ -354,6 +354,82 @@ export class ApiService {
     return data.data;
   }
 
+  /** The caller's consent state (P1-05) — the latest decision per purpose, keyed by purpose. */
+  async consents() {
+    const { data, error } = await api.GET('/consents');
+    if (error) {
+      throw error;
+    }
+    return data.data;
+  }
+
+  /**
+   * Grant or revoke one consent (P1-05). The locale the wording was READ IN is recorded with the
+   * decision, which is the point of the endpoint: consent to a French policy is not consent to an
+   * English one.
+   */
+  async recordConsent(purpose: 'terms' | 'privacy' | 'location_tracking' | 'id_verification' | 'marketing', granted: boolean, presentedLocale: 'fr' | 'en') {
+    const { error } = await api.POST('/consents', {
+      body: { purpose, granted, presented_locale: presentedLocale },
+      params: { header: { 'Idempotency-Key': uuid() } },
+    });
+    if (error) {
+      throw error;
+    }
+  }
+
+  /**
+   * Create (or update) the caller's provider profile — `CreateProviderProfile`, P1-08.
+   *
+   * Always allowed, by design (doc 10): anyone may declare themselves a provider; what they can
+   * then DO is gated by facts, not by an approval. This is the call that makes the provider section
+   * mean anything, and until now nothing in the app made it.
+   */
+  async createProviderProfile(body: { headline?: string; bio?: string; bio_language?: 'fr' | 'en' }) {
+    const { data, error } = await api.POST('/provider/profile', {
+      body,
+      params: { header: { 'Idempotency-Key': uuid() } },
+    });
+    if (error) {
+      throw error;
+    }
+    return data.data;
+  }
+
+  /**
+   * List a trade on the provider profile (P1-08). Requires a profile to exist — without one the
+   * server answers 409 `precondition_unmet` rather than 403, because it is a missing fact and not a
+   * refusal (P0-17).
+   */
+  async addProviderSkill(body: {
+    skill_id: string;
+    price_model: 'hourly' | 'fixed' | 'quote_only';
+    rate_minor?: number;
+    years_experience?: number;
+  }) {
+    const { error } = await api.POST('/provider/skills', {
+      body,
+      params: { header: { 'Idempotency-Key': uuid() } },
+    });
+    if (error) {
+      throw error;
+    }
+  }
+
+  /**
+   * Set the service area — a centre point and a radius (P1-08). Gated on location_tracking consent
+   * (P1-05); without it the server answers `consent_required`.
+   */
+  async setServiceArea(body: { latitude: number; longitude: number; radius_m: number }) {
+    const { error } = await api.POST('/provider/service-areas', {
+      body,
+      params: { header: { 'Idempotency-Key': uuid() } },
+    });
+    if (error) {
+      throw error;
+    }
+  }
+
   /** The provider's live incoming direct offers (P2-05/06), each with its PII-minimised job embedded. */
   async opportunities() {
     const { data, error } = await api.GET('/provider/opportunities');

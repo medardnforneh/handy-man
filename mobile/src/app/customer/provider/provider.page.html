@@ -12,7 +12,13 @@
   <div class="page">
     <!-- Hero -->
     <section class="hero hm-card">
-      <div [class]="'hm-avatar hero-av accent-' + p.accent" aria-hidden="true">{{ p.initials }}</div>
+      <div [class]="'hm-avatar hero-av accent-' + p.accent" aria-hidden="true">
+        @if (p.initials) {
+          {{ p.initials }}
+        } @else {
+          <ion-icon name="person-outline"></ion-icon>
+        }
+      </div>
 
       <!-- No name means the real profile has not landed yet (or could not be reached). Say that,
            rather than showing an empty line where a person's name belongs. -->

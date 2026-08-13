@@ -5,6 +5,7 @@ import { IonicModule, ToastController } from '@ionic/angular';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { EmptyStateComponent } from '../../core/ui/empty-state.component';
 import { MoneyPipe } from '../../customer/money.pipe';
+import { CustomerService } from '../../customer/customer.service';
 import { JobStatus } from '../../customer/customer.models';
 import { ActiveWork, Lead, ProviderStats, ProviderWallet } from '../provider.models';
 import { ProviderService } from '../provider.service';
@@ -27,12 +28,30 @@ import { ProviderService } from '../provider.service';
 })
 export class ProviderHomePage {
   private readonly provider = inject(ProviderService);
+  private readonly customers = inject(CustomerService);
   private readonly router = inject(Router);
   private readonly toasts = inject(ToastController);
   private readonly translate = inject(TranslateService);
 
   /** Who the provider is — a signal on the service, so the real profile replaces the fixture live. */
   readonly identity = this.provider.identity;
+
+  /** No party id means this user has never created a provider profile. */
+  readonly hasProfile = computed(() => this.identity().partyId !== null);
+
+  /**
+   * Name and initials for the greeting and the avatar. The provider profile's display name when
+   * there is one, otherwise the signed-in account's — the person is known either way, and a blank
+   * avatar over a blank greeting is not a state, it is a hole.
+   */
+  readonly who = computed(() => {
+    const profile = this.identity();
+    const account = this.customers.me();
+    return {
+      name: profile.name || account.name || account.phone,
+      initials: profile.initials || account.initials,
+    };
+  });
 
   readonly wallet = signal<ProviderWallet>(this.provider.getWallet());
   readonly stats = signal<ProviderStats>(this.provider.getStats());
@@ -96,6 +115,11 @@ export class ProviderHomePage {
   }
 
   /** The client book (P7-08) — history, lifetime value, and the manual re-engagement nudge. */
+  /** The one action for a user who has no provider profile yet (P1-08). */
+  startOnboarding(): void {
+    void this.router.navigate(['/become-a-provider']);
+  }
+
   openClients(): void {
     void this.router.navigate(['/clients']);
   }

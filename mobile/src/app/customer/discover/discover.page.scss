@@ -37,6 +37,9 @@ ion-toolbar {
   font-size: 0.72rem;
   margin-inline-end: var(--hm-space-md);
   text-transform: uppercase;
+
+  // A glyph until we know who is signed in — never a stand-in person's initials.
+  ion-icon { font-size: 1.05rem; }
 }
 
 .page {

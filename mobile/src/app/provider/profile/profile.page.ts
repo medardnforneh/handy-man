@@ -7,6 +7,7 @@ import { AuthService } from '../../core/auth.service';
 import { Locale, LocaleService, SUPPORTED_LOCALES } from '../../core/locale.service';
 import { ThemeChoice, ThemeService } from '../../core/theme.service';
 import { EmptyStateComponent } from '../../core/ui/empty-state.component';
+import { CustomerService } from '../../customer/customer.service';
 import { ProviderService } from '../provider.service';
 
 /**
@@ -26,10 +27,31 @@ export class ProviderProfilePage {
   private readonly locales = inject(LocaleService);
   private readonly themes = inject(ThemeService);
   private readonly auth = inject(AuthService);
+  private readonly customers = inject(CustomerService);
   private readonly router = inject(Router);
 
   /** Who the provider is — the service's signal, so the real profile replaces the fixture live. */
   readonly identity = this.provider.identity;
+
+  /** Whether this user has a provider profile at all. Null party id means they have never made one. */
+  readonly hasProfile = computed(() => this.identity().partyId !== null);
+
+  /**
+   * The name and initials to show at the top.
+   *
+   * A provider profile has a display name of its own; before there is one, the person is still
+   * known — they are signed in — so this falls back to their account name rather than to a blank
+   * avatar over the verification badge, which is what a user without a profile used to see. That
+   * is not inventing a provider: it is naming the human who is looking at the screen.
+   */
+  readonly who = computed(() => {
+    const profile = this.identity();
+    const account = this.customers.me();
+    return {
+      name: profile.name || account.name || account.phone,
+      initials: profile.initials || account.initials,
+    };
+  });
 
   readonly supported = SUPPORTED_LOCALES;
   readonly locale = signal<Locale>(this.locales.current);
@@ -60,6 +82,11 @@ export class ProviderProfilePage {
   setTheme(choice: ThemeChoice): void {
     this.theme.set(choice);
     void this.themes.set(choice);
+  }
+
+  /** Become a provider (P1-08) — the flow that has to happen before any of this section applies. */
+  startOnboarding(): void {
+    void this.router.navigate(['/become-a-provider']);
   }
 
   /** The client book (P7-08) — a periodic review surface, so it lives here rather than in the tabs. */

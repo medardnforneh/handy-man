@@ -20,7 +20,13 @@
 
     @for (chat of chats(); track chat.id) {
       <button class="chat hm-tap" type="button" [class.is-unread]="chat.unread" (click)="open(chat)">
-        <div [class]="'hm-avatar chat-av accent-' + chat.accent" aria-hidden="true">{{ chat.initials }}</div>
+        <div [class]="'hm-avatar chat-av accent-' + chat.accent" aria-hidden="true">
+          @if (chat.initials) {
+            {{ chat.initials }}
+          } @else {
+            <ion-icon name="person-outline"></ion-icon>
+          }
+        </div>
 
         <div class="body">
           <div class="line">
