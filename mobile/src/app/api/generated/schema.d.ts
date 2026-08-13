@@ -2267,6 +2267,8 @@ export interface components {
             challenge_id: string;
             /** Format: date-time */
             expires_at: string;
+            /** @description LOCAL DEVELOPMENT ONLY. The plaintext code, returned solely when the API is running in the `local` environment, where there is no SMS gateway and the code otherwise exists only in a log file. Absent in every other environment — the gate is `app()->environment('local')`, so it cannot be enabled by a config flag or a request header, and a test asserts it is missing in production. */
+            dev_code?: string;
         };
         User: {
             /** Format: uuid */

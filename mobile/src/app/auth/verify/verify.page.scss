@@ -95,6 +95,50 @@ h1 {
   }
 }
 
+// ---- Local-development code hint ---------------------------------------
+// Dashed and explicitly tagged, so it reads as scaffolding rather than as part of the product.
+// It cannot appear outside a local API (the field is absent in every other environment).
+.devcode {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  margin-top: var(--hm-space-md);
+  padding: 0.65rem var(--hm-space-md);
+  border: 1px dashed var(--hm-color-status-warning);
+  border-radius: var(--hm-radius-md);
+  background: color-mix(in srgb, var(--hm-color-status-warning) 8%, transparent);
+  color: var(--hm-color-text-primary);
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+
+  .tag {
+    flex: none;
+    padding: 0.1rem 0.4rem;
+    border-radius: var(--hm-radius-sm);
+    background: var(--hm-color-status-warning);
+    color: var(--hm-color-text-inverse);
+    font-size: 0.62rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  b {
+    font-size: 1.05rem;
+    font-weight: 800;
+    letter-spacing: 0.16em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  small {
+    margin-inline-start: auto;
+    color: var(--hm-color-text-muted);
+    font-size: 0.72rem;
+  }
+}
+
 // ---- Footer CTA --------------------------------------------------------
 ion-footer {
   background: var(--hm-color-surface-base);

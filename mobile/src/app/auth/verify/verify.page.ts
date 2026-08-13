@@ -31,6 +31,14 @@ export class VerifyPage {
   readonly cells = [0, 1, 2, 3, 4, 5];
   readonly canVerify = computed(() => this.code().length === 6);
 
+  /** Non-empty only when the API is running locally and handed the code back (see AuthService). */
+  readonly devCode = this.auth.devCode;
+
+  /** Fill the boxes from the dev hint — one tap instead of retyping six digits per test run. */
+  useDevCode(): void {
+    this.onCode(this.devCode());
+  }
+
   @ViewChild('capture') private captureRef?: ElementRef<HTMLInputElement>;
 
   constructor() {

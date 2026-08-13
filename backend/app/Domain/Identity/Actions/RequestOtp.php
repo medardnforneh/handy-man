@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Identity\Actions;
 
+use App\Domain\Identity\Otp\IssuedChallenge;
 use App\Domain\Identity\Otp\OtpSender;
 use App\Domain\Identity\OtpException;
 use App\Models\OtpChallenge;
@@ -20,7 +21,7 @@ final class RequestOtp
         private readonly OtpSender $sender,
     ) {}
 
-    public function handle(string $phoneE164, string $purpose, ?string $ip = null, ?string $deviceId = null): OtpChallenge
+    public function handle(string $phoneE164, string $purpose, ?string $ip = null, ?string $deviceId = null): IssuedChallenge
     {
         $this->enforceRateLimits($phoneE164, $ip, $deviceId);
 
@@ -36,7 +37,9 @@ final class RequestOtp
 
         $this->sender->send($phoneE164, $code, $purpose);
 
-        return $challenge;
+        // The code travels back with the challenge so the CALLER can decide who may see it. Only
+        // the local-development path ever does; see OtpController::request.
+        return new IssuedChallenge($challenge, $code);
     }
 
     private function enforceRateLimits(string $phoneE164, ?string $ip, ?string $deviceId): void

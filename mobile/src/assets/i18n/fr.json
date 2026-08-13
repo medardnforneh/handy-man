@@ -146,7 +146,9 @@
     "otp_invalid": "Ce code n’est pas correct. Réessayez.",
     "verify": "Vérifier",
     "resend": "Renvoyer le code",
-    "resend_in": "Renvoyer dans {{s}} s"
+    "resend_in": "Renvoyer dans {{s}} s",
+    "dev_code_tag": "Dev",
+    "dev_code_hint": "Toucher pour remplir"
   },
   "language": {
     "french": "Français",

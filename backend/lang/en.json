@@ -833,5 +833,7 @@
   "address.none_body": "Save one so providers can find you.",
   "address.none_body_job": "On-site work needs one — it is how the provider gets to you.",
   "jobs.no_budget": "Quote requested",
-  "jobs.no_provider": "Awaiting a provider"
+  "jobs.no_provider": "Awaiting a provider",
+  "auth.dev_code_tag": "Dev",
+  "auth.dev_code_hint": "Tap to fill"
 }

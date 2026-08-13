@@ -833,5 +833,7 @@
   "address.none_body": "Enregistrez-en une pour que les prestataires puissent vous trouver.",
   "address.none_body_job": "Le travail sur site en nécessite une — c’est ainsi que le prestataire vous rejoint.",
   "jobs.no_budget": "Devis demandé",
-  "jobs.no_provider": "En attente d’un prestataire"
+  "jobs.no_provider": "En attente d’un prestataire",
+  "auth.dev_code_tag": "Dev",
+  "auth.dev_code_hint": "Toucher pour remplir"
 }

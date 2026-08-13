@@ -25,13 +25,38 @@ function otpPost($test, string $uri, array $body)
 }
 
 it('issues a challenge without ever returning the code', function () {
+    // The suite runs as `testing`, i.e. NOT `local` — which is the point: the dev convenience below
+    // is gated on the environment, so every environment that is not a developer's own machine takes
+    // this path.
     $res = otpPost($this, '/api/v1/auth/otp/request', [
         'phone_e164' => '+237699000111', 'purpose' => 'login',
     ]);
 
     $res->assertStatus(202)->assertJsonStructure(['challenge_id', 'expires_at']);
-    expect($res->json())->not->toHaveKey('code');
+    expect($res->json())->not->toHaveKey('code')
+        ->and($res->json())->not->toHaveKey('dev_code');
     expect(OtpChallenge::where('phone_e164', '+237699000111')->count())->toBe(1);
+});
+
+/**
+ * Local development has no SMS gateway, so the code only ever existed in a log file — which makes
+ * signing in to your own machine a grep. In `local` the response carries it, and the code returned
+ * must be the one that actually verifies, not merely a plausible six digits.
+ */
+it('returns the code in local development, and it is the real one', function () {
+    app()['env'] = 'local';
+
+    $res = otpPost($this, '/api/v1/auth/otp/request', [
+        'phone_e164' => '+237699000222', 'purpose' => 'login',
+    ]);
+
+    $res->assertStatus(202);
+    $code = $res->json('dev_code');
+    expect($code)->toMatch('/^\d{6}$/');
+
+    otpPost($this, '/api/v1/auth/otp/verify', [
+        'phone_e164' => '+237699000222', 'code' => $code, 'purpose' => 'login',
+    ])->assertStatus(201);
 });
 
 it('rejects the 4th OTP request for a phone within an hour', function () {

@@ -42,6 +42,12 @@ export class AuthService {
   private readonly api = inject(ApiService);
 
   readonly authed = signal(false);
+
+  /**
+   * The code, when the API handed it back — which it only does in local development. Empty
+   * everywhere else, so the verify screen's dev hint simply does not render.
+   */
+  readonly devCode = signal('');
   private readonly ready: Promise<void>;
   private pendingPhone = '';
   /** One in-flight refresh shared by every 401 that races, so the rotating token isn't reused. */
@@ -74,7 +80,7 @@ export class AuthService {
   async requestOtp(phoneE164: string): Promise<OtpRequestResult> {
     this.pendingPhone = phoneE164;
     try {
-      const { error } = await api.POST('/auth/otp/request', {
+      const { data, error } = await api.POST('/auth/otp/request', {
         body: { phone_e164: phoneE164, purpose: 'login' },
         params: { header: { 'Idempotency-Key': uuid() } },
       });
@@ -84,6 +90,10 @@ export class AuthService {
           .find((v): v is string => typeof v === 'string' && v.trim() !== '');
         return { outcome: 'refused', detail };
       }
+      // Present ONLY when the API is running in its `local` environment, where there is no SMS
+      // gateway — so the person testing on their own machine reads the code on screen instead of
+      // grepping a log file. Any other environment omits the field entirely and this stays empty.
+      this.devCode.set(data?.dev_code ?? '');
       return { outcome: 'sent' };
     } catch {
       // Backend unreachable — the offline fixture demo still proceeds to the verify screen.

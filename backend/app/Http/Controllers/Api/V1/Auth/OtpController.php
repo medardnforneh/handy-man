@@ -21,7 +21,7 @@ final class OtpController extends Controller
 {
     public function request(RequestOtpRequest $request, RequestOtp $action): JsonResponse
     {
-        $challenge = $action->handle(
+        $issued = $action->handle(
             phoneE164: $request->string('phone_e164')->toString(),
             purpose: $request->string('purpose')->toString(),
             ip: $request->ip(),
@@ -29,10 +29,21 @@ final class OtpController extends Controller
         );
 
         // Never return the code. The client just needs to know a challenge is live.
-        return response()->json([
-            'challenge_id' => $challenge->id,
-            'expires_at' => $challenge->expires_at->toIso8601String(),
-        ], 202);
+        $payload = [
+            'challenge_id' => $issued->challenge->id,
+            'expires_at' => $issued->challenge->expires_at->toIso8601String(),
+        ];
+
+        // ...with exactly one exception: a developer running this on their own machine, where
+        // there is no SMS gateway and the code otherwise only exists in a log file. Gated on the
+        // ENVIRONMENT, not on a config flag or a header, so it cannot be switched on by accident
+        // or by a request — anything other than `local` and this field does not exist. A test
+        // asserts its absence in production.
+        if (app()->environment('local')) {
+            $payload['dev_code'] = $issued->code;
+        }
+
+        return response()->json($payload, 202);
     }
 
     public function verify(VerifyOtpRequest $request, VerifyOtp $verify, IssueAuthTokens $issue): JsonResponse

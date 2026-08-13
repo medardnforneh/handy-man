@@ -33,6 +33,17 @@
       <p class="error">{{ 'auth.otp_invalid' | translate }}</p>
     }
 
+    <!-- Local development only: the API returns the code when it is running on a developer's own
+         machine, where no SMS is sent. It is labelled as a dev aid so nobody mistakes it for
+         something a real user would ever see, and one tap fills the boxes. -->
+    @if (devCode()) {
+      <button type="button" class="devcode hm-tap" (click)="useDevCode()">
+        <span class="tag">{{ 'auth.dev_code_tag' | translate }}</span>
+        <b>{{ devCode() }}</b>
+        <small>{{ 'auth.dev_code_hint' | translate }}</small>
+      </button>
+    }
+
     <div class="resend">
       @if (resendIn() > 0) {
         <span class="hm-muted">{{ 'auth.resend_in' | translate:{ s: resendIn() } }}</span>
