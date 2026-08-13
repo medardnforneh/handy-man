@@ -274,7 +274,7 @@ founder-owned legal items in doc 05's launch checklist.
     surfaces (P4-04..07), the offline layer (P5-02) and the PWA/Android build (P5-01) have all
     landed, and native networking on device now works (CapacitorHttp).
 
-## ⚠ Open gap: 43 of 91 API operations are never called by the app
+## ⚠ Open gap: 39 of 91 API operations are never called by the app
 
 Found 2026-08-13 by a mechanical sweep of `openapi/openapi.yaml` against every `.ts` file in
 `mobile/src/app` (`operationId` → does any client file contain the literal path?). The check is
@@ -293,10 +293,10 @@ function the admin panel performs. The rest are real gaps, grouped by what they 
 
 | Group | Operations | What is impossible in the app today |
 |---|---|---|
-| Reputation | `POST /engagements/{e}/reviews` | **Nobody can leave a review.** The app renders reviews and computes shrunk ratings (P6-08/09) over a corpus it can never add to |
+| ~~Reputation~~ | ~~`POST /engagements/{e}/reviews`~~ | **Closed 2026-08-13** — the review form lives on the job detail page |
 | Safety | `/safety/panic`, `/emergency-contacts` ×3, `/blocks` ×3, `/reports` | The panic button, emergency contacts, blocking and reporting (P6-04/07) have no UI at all |
 | Verification | `/verification-documents` ×2 | The provider profile's **VERIFY button does nothing** — so no tier is ever raised, and the on-site paid-work gate can never be passed |
-| Finishing work | `/engagements/{e}/complete`, `/deliverables/{d}/review`, `/quotations/{q}/accept`, `/quotations/{q}/revise`, `/jobs/{job}/site-visits`, `/site-visits/{v}/complete` | An engagement can be started but not completed, a quote not accepted, a deliverable not reviewed |
+| Finishing work | ~~`/engagements/{e}/complete`~~ (closed), `/deliverables/{d}/review`, `/quotations/{q}/accept`, `/quotations/{q}/revise`, `/jobs/{job}/site-visits`, `/site-visits/{v}/complete` | A quote cannot be accepted and a deliverable cannot be reviewed. Marking work finished is closed |
 | Money out | `/provider/payouts`, `/provider/credits`, `/engagements/{e}/refund`, `/engagements/{e}/cash-settlements` | **Withdraw shows a success toast and requests nothing.** No refund, no cash settlement, no credit balance |
 | Money in | `/payment-intents` | Not a blocker for the deposit (P3-13 captures it server-side on `engagement.created`), but the app can initiate no payment of its own |
 | Lifecycle | `/follow-ups` ×2, `/referral-code`, `/referrals/claim`, `/providers/{party}/rebook`, `/engagements/{e}/warranty`, `/warranties/{w}/claims`, `/engagements/{e}/share`, `/engagement-shares/{s}` | Follow-ups cannot be listed or responded to, no referral code, no one-tap rebook, no warranty, no share-my-job link |
@@ -308,6 +308,33 @@ Regenerate the list any time with the sweep script pattern above; it takes secon
 found four real defects.
 
 ## What was done, most recent first
+
+- **Made the product testable locally, and wrote the guide for it** (`docs/LOCAL_TESTING.md`).
+  - `npm run dev` / `npm run dev:fresh` bring the whole stack up in the one order that works —
+    start the portable Postgres, migrate, serve the API on :8100 and the app on :4200 with ng
+    serve's DEVELOPMENT configuration. It refuses to start a second server on a taken port, because
+    the failure mode otherwise is a browser talking to yesterday's build.
+  - **Signing in no longer means grepping a log.** With `APP_ENV=local` the OTP response carries
+    `dev_code` and the verify screen shows it as a tagged dev chip that fills the boxes on tap. The
+    gate is `app()->environment('local')` — not a config flag or a header — and two tests hold it:
+    the suite runs as `testing` and asserts the key is absent, a second forces `local` and asserts
+    the code returned is the one that actually verifies.
+  - **`dev:fresh` did not work when first written**, which is worth keeping: `migrate:fresh` drops
+    tables but leaves Postgres's native enum types, so the first migration died on `type
+    "party_kind" already exists`. It wipes with `db:wipe --drop-types` now. A fully-qualified
+    seeder class name also arrives from a Windows shell with its backslashes doubled.
+  - Local OTP limits raised in `.env` (the IP limit is 10/hour, which a morning of testing
+    exhausts); production defaults in `config/otp.php` untouched.
+  - **The demo data spoke Latin**: every seeded job was "Climatiseur — autem vitae", from
+    `fake()->words(2, true)`. Titles now end in what a customer would write.
+
+- **Two more uncalled endpoints closed, and they were one loop**: an engagement could be started
+  but never finished, and finishing is what opens the review window — so reviews were unreachable
+  even in principle. The blocker was upstream of the screens: a job's embedded engagement summary
+  carried **no engagement id**, so the app could not address the thing that completing, reviewing
+  and disputing are all scoped to. Added `id`, `completed_at` and `viewer_has_reviewed` — the last
+  deliberately about the viewer alone, since a flag that flipped when the OTHER party reviewed
+  would leak what double-blind withholds (P6-08). 39 of 91 operations still uncalled.
 
 - **Nobody could save an address, so nobody could post an on-site job.** `POST /addresses` existed
   and was never called; "Add an address" on the account page had no click handler; the new-job form
