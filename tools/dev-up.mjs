@@ -83,6 +83,34 @@ if (process.argv.includes('--fresh')) {
 }
 
 // --- 3. The two servers ----------------------------------------------------
+/**
+ * Is something already listening? Starting a second server on a taken port fails with a message
+ * buried in a stack trace, and the symptom a minute later is a browser talking to whatever WAS
+ * there — quite possibly a stale build from yesterday.
+ */
+async function inUse(port) {
+  try {
+    // `localhost`, not 127.0.0.1: `ng serve` binds IPv6 by default, so probing the v4 address
+    // alone reports a busy port as free and then the real start fails with EADDRINUSE.
+    await fetch(`http://localhost:${port}/`, { signal: AbortSignal.timeout(1500) });
+    return true;
+  } catch (error) {
+    // A refused connection means free; anything else (a slow answer, a non-HTTP reply) means busy.
+    return !String(error).includes('ECONNREFUSED') && !String(error).includes('fetch failed');
+  }
+}
+
+const busy = [];
+for (const [port, what] of [[API_PORT, 'the API'], [APP_PORT, 'the app']]) {
+  if (await inUse(port)) busy.push(`  :${port} — ${what} is already being served there`);
+}
+if (busy.length > 0) {
+  console.log(`\n\x1b[33mAlready running:\x1b[0m\n${busy.join('\n')}\n`);
+  console.log('Nothing to start. Stop the existing servers first if you want a fresh pair —\n'
+    + 'and note that an old one may be serving a build from before your latest change.\n');
+  process.exit(0);
+}
+
 const children = [];
 
 function serve(name, command, args, cwd) {

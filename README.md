@@ -16,6 +16,18 @@ Each project lives in its own dedicated folder:
 
 Top level also holds `CLAUDE.md` (entry point + non-negotiable rules) and `.github/` (CI).
 
+## Running the whole thing locally
+
+```bash
+npm run dev          # Postgres + migrations + API on :8100 + app on :4200
+npm run dev:fresh    # the same, but resets the local database and reseeds the demo data
+```
+
+Then read **[`docs/LOCAL_TESTING.md`](docs/LOCAL_TESTING.md)** — how to sign in to each surface
+(the app shows the OTP code on screen in local development), who the seeded people are, and what
+to click for every feature. It also lists, honestly, the features the API can do that the app has
+no screen for yet.
+
 ## Getting started (backend)
 
 Prereqs: PHP 8.3, Composer, PostgreSQL 16 + PostGIS, Redis. See `docs/BUILD_STATE.md` for how
