@@ -22,8 +22,17 @@
         </div>
 
         <div class="row meta">
-          <span class="hm-muted">{{ job.providerName }}</span>
-          <span class="amount">{{ job.amountMinor | money }} <small>{{ 'money.currency' | translate }}</small></span>
+          <!-- An open job has no provider yet, and an empty cell here left the money pill floating
+               alone on its own line. Say what is actually happening instead. -->
+          <span class="hm-muted">{{ job.providerName || ('jobs.no_provider' | translate) }}</span>
+          <!-- Nothing agreed and no budget named is not "0 FCFA". A job you have just posted
+               without a figure would read as one worth nothing — the same mistake as showing an
+               unrated provider a bare 0 (P6-09), which this app already refuses to make. -->
+          @if (job.amountMinor > 0) {
+            <span class="amount">{{ job.amountMinor | money }} <small>{{ 'money.currency' | translate }}</small></span>
+          } @else {
+            <span class="hm-pill tone-neutral">{{ 'jobs.no_budget' | translate }}</span>
+          }
         </div>
 
         @if (job.milestonesTotal > 0) {

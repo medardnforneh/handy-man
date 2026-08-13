@@ -216,7 +216,9 @@
     "empty": "Vous n'avez pas encore de travaux. Trouvez de l'aide pour commencer.",
     "milestones": "jalons",
     "empty_title": "Aucun travail pour le moment",
-    "empty_body": "Publiez une demande et des prestataires près de chez vous vous enverront un devis."
+    "empty_body": "Publiez une demande et des prestataires près de chez vous vous enverront un devis.",
+    "no_budget": "Devis demandé",
+    "no_provider": "En attente d’un prestataire"
   },
   "status": {
     "draft": "Brouillon",

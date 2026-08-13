@@ -831,5 +831,7 @@
   "address.save_failed": "Nous n’avons pas pu enregistrer cette adresse. Veuillez réessayer.",
   "address.none_title": "Aucune adresse enregistrée",
   "address.none_body": "Enregistrez-en une pour que les prestataires puissent vous trouver.",
-  "address.none_body_job": "Le travail sur site en nécessite une — c’est ainsi que le prestataire vous rejoint."
+  "address.none_body_job": "Le travail sur site en nécessite une — c’est ainsi que le prestataire vous rejoint.",
+  "jobs.no_budget": "Devis demandé",
+  "jobs.no_provider": "En attente d’un prestataire"
 }

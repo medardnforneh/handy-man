@@ -4,9 +4,10 @@
 > are** and **how this machine is set up**. Read this first when resuming.
 
 _Last updated: 2026-08-13 (Ionic app pass: one shared empty state, disabled buttons that vanished,
-Discover density + a location chip that was never real, provider signup — which did not exist — and
-a fact cache that returned a broken object on every hit; before that the public site + seed data and
-the admin queues)_
+Discover density + a location chip that was never real, provider signup and address saving — neither
+of which existed, and without the second no on-site job could be posted at all — and a fact cache
+that returned a broken object on every hit; before that the public site + seed data and the admin
+queues)_
 
 ## Environment (this dev machine — Windows 10 Pro, non-admin)
 
@@ -250,11 +251,11 @@ founder-owned legal items in doc 05's launch checklist.
     phones. Density and the clipped category rail on Discover are fixed; rows hold their shape down to
     320px. **Judged from viewport-sized captures at 320 / 360 / 390 in both themes** against the live
     API — `ng build` green is not verification.
-  - **Dead affordances found by looking rather than by grepping.** Discover's "change location" and
-    Jobs' two surplus "+" buttons had no handler or no distinct purpose. **Still open: "Add an address"
-    on the account page has no click handler**, and the account's saved-address list falls back to
-    fixture addresses ("Domicile / Bureau") when the fetch fails — the same claim-about-the-user
-    pattern as the provider stats, on a smaller surface.
+  - **Dead affordances found by looking rather than by grepping.** Discover's "change location",
+    Jobs' two surplus "+" buttons and the account's "Add an address" all had no handler or no
+    distinct purpose. All three are resolved (the last one by building the flow behind it — see the
+    top entry). **The lesson worth keeping: a screenshot finds these and a grep does not**, because
+    the markup for a live control and a dead one is identical.
   - **"Map" on discover: DECIDED — dropped** (founder decision, 2026-08-09). This product never
     exposes a provider's service area or coordinates (P2-03; the public provider resource carries no
     location at all), so there was no map of providers to show and the link had never done anything.
@@ -270,6 +271,33 @@ founder-owned legal items in doc 05's launch checklist.
     landed, and native networking on device now works (CapacitorHttp).
 
 ## What was done, most recent first
+
+- **Nobody could save an address, so nobody could post an on-site job.** `POST /addresses` existed
+  and was never called; "Add an address" on the account page had no click handler; the new-job form
+  could only pick from a list nothing could add to. On-site and hybrid jobs require an `address_id`
+  — a DB CHECK (P2-01), not just validation — so **the app's central flow was impossible for a real
+  user**, and two fixture addresses (`a1` Domicile, `a2` Bureau, ids that exist nowhere on the
+  server) kept the picker looking populated. New `/new-address`, reachable from the account page and
+  from the job form itself with a `returnTo` so the half-written request survives. Coordinates come
+  from the device deliberately: `addresses.point` is a `geography(Point,4326)` behind a GIST index
+  and matching is an ST_DWithin against it, so a typed street with no point is an address no
+  provider can be matched to — with no geocoder and no map in this product, the honest options are
+  to ask the device or to refuse, and a refusal says what it would cost rather than storing a
+  centre-of-city guess. location_tracking consent (P1-05) is recorded right after the sentence that
+  explains it.
+  - **`me.name` fell back to the phone number AND the server seeds `display_name` with the phone**
+    for an OTP-created user, so the account header printed the same number twice and `initialsOf()`
+    was taking initials from a phone. Normalised to empty at the boundary — a phone is not a name.
+  - A job with no budget rendered **"0 FCFA"**, which reads as "worth nothing" rather than "no
+    figure named"; it says *Quote requested* now (the same rule P6-09 already applies to ratings),
+    and an unassigned job says *Awaiting a provider* instead of leaving the row half empty.
+  - **Acceptance, verified end to end in a browser with an overridden GPS fix**: a brand-new phone
+    number signs up → the job form's empty address state → save an address (consent 201, address
+    201) → back to the form → category, trade, address → `POST /jobs` 201 + `publish` 200 → the
+    Jobs tab lists **JOB-8WC62 · Fuite sous evier · Ouvert · Devis demandé**. That path did not
+    exist before this session.
+  - Note for future runs: the OTP limiter is **10/hour per IP** (P1-02), which a scripted session
+    exhausts quickly; `php artisan cache:clear` resets it in dev.
 
 - **The Ionic app, looked at screen by screen in a real browser — the last open piece of the founder
   feedback. Four visual defects, two dead affordances, one whole missing flow, and a backend bug the

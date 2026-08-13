@@ -216,7 +216,9 @@
     "empty": "You have no jobs yet. Find help to get started.",
     "milestones": "milestones",
     "empty_title": "No jobs yet",
-    "empty_body": "Post a request and providers near you will send you a quote."
+    "empty_body": "Post a request and providers near you will send you a quote.",
+    "no_budget": "Quote requested",
+    "no_provider": "Awaiting a provider"
   },
   "status": {
     "draft": "Draft",

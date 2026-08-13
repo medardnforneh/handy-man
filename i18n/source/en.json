@@ -831,5 +831,7 @@
   "address.save_failed": "We could not save this address. Please try again.",
   "address.none_title": "No saved address",
   "address.none_body": "Save one so providers can find you.",
-  "address.none_body_job": "On-site work needs one — it is how the provider gets to you."
+  "address.none_body_job": "On-site work needs one — it is how the provider gets to you.",
+  "jobs.no_budget": "Quote requested",
+  "jobs.no_provider": "Awaiting a provider"
 }
