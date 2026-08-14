@@ -4,9 +4,10 @@
 > are** and **how this machine is set up**. Read this first when resuming.
 
 _Last updated: 2026-08-14 (blocking and reporting a person — the last uncalled safety operations —
-plus a destructive action sheet that was not destructive and an aria binding that threw on every
-provider profile; before that the panic alert, quotations the customer could finally see, and a
-Withdraw button that requested nothing)_
+plus a destructive action sheet that was not destructive, an aria binding that threw on every
+provider profile, and an emergency screen that spoke English to a French account; before that the
+panic alert, quotations the customer could finally see, and a Withdraw button that requested
+nothing)_
 
 ## Environment (this dev machine — Windows 10 Pro, non-admin)
 
@@ -309,6 +310,21 @@ found four real defects.
 
 ## What was done, most recent first
 
+- **The emergency screen spoke English to a French account.** Found by cold-loading `/safety`
+  during the block/report pass: the app adopts the ACCOUNT's language in `CustomerService.loadMe()`
+  and nowhere else, so it happened in the customer section only. `/safety` is outside both shells
+  on purpose (a customer letting a stranger in and a worker walking into an unknown site need the
+  same screen), and the whole provider section is outside that one too — both showed whatever the
+  DEVICE spoke. Reached by a deep link, a push, or the route a packaged app restores on launch, and
+  worst on the one screen read in a hurry.
+  - `LocaleService.adoptAccountLocale()`, called from `AppComponent` after `init()`, so it runs for
+    every section and no shell owns it. The remembered `me` answers first — a launch with no network
+    still speaks the right language and costs no request — and only a device that has never cached
+    one asks the server. The customer section still refetches and reconciles moments later, which
+    remains what corrects a locale changed on another device.
+  - Verified both paths on `/safety`: with a cached `me`, and again after wiping the read-through
+    cache so the account had to be fetched. French either way, chrome and blocked list together.
+
 - **You could be matched with someone you never wanted to see again.** `/blocks` ×3 and `/reports`
   were uncalled (P6-07). The server has honoured a block in search, in the public directory and at
   offer creation since Phase 6 — bidirectionally — and no one could place one. Reporting had the
@@ -341,7 +357,7 @@ found four real defects.
     body verbatim, a block lands and the profile falls back to Discover, both blocked rows read as
     headlines on Safety, and unblocking drops the row and the database row with it. 27 uncalled
     operations, of 92 — down from 31 when the sweep was written.
-  - **Found, not fixed (next):** `/safety` is deliberately outside both shells, and locale
+  - **Found here, fixed in the entry above:** `/safety` is deliberately outside both shells, and locale
     reconciliation lives in `CustomerService.loadMe()`. Cold-starting onto the emergency screen —
     a deep link, a push, a restored route — renders it in English for a French account. The
     provider section has the same hole.

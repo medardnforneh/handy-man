@@ -2,6 +2,8 @@ import { Injectable, inject } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import { Preferences } from '@capacitor/preferences';
 import { ApiService } from '../api/api.service';
+import { AuthService } from './auth.service';
+import { OfflineCache } from './offline/offline-cache.service';
 
 export const SUPPORTED_LOCALES = ['fr', 'en'] as const;
 export type Locale = (typeof SUPPORTED_LOCALES)[number];
@@ -18,6 +20,8 @@ const STORAGE_KEY = 'locale';
 @Injectable({ providedIn: 'root' })
 export class LocaleService {
   private readonly api = inject(ApiService);
+  private readonly auth = inject(AuthService);
+  private readonly cache = inject(OfflineCache);
   private readonly translate = inject(TranslateService);
   private currentLocale: Locale = DEFAULT_LOCALE;
   private chosen = false;
@@ -29,6 +33,42 @@ export class LocaleService {
       await this.apply(stored, false);
     } else {
       await this.apply(this.detectDeviceLocale(), false);
+    }
+  }
+
+  /**
+   * Adopt the ACCOUNT's language at launch, in every section.
+   *
+   * {@see init()} only detects what the DEVICE speaks. The account's own locale is the considered
+   * value, and until now the only thing that reconciled the two was `CustomerService.loadMe()` —
+   * so it happened in the customer section and nowhere else. The provider section never adopted it,
+   * and neither did `/safety`, which sits outside both shells on purpose: cold-starting onto the
+   * emergency screen (a deep link, a push, a route the packaged app restored) showed a French
+   * account English instructions for the panic button.
+   *
+   * The remembered `me` answers first, so a launch with no network still speaks the right language
+   * and costs no request. Only a device that has never cached one asks the server. The customer
+   * section refetches `me` moments later either way and reconciles again, which is what corrects a
+   * locale changed on another device.
+   *
+   * Silent throughout: a language is not worth an error message, and this runs before any screen.
+   */
+  async adoptAccountLocale(): Promise<void> {
+    await this.auth.ensureReady();
+    if (!this.auth.authed()) {
+      return;
+    }
+
+    const remembered = await this.cache.peek<{ locale?: string }>('me');
+    if (remembered.value?.locale !== undefined) {
+      await this.reconcile(remembered.value.locale);
+      return;
+    }
+
+    try {
+      await this.reconcile((await this.api.me()).locale);
+    } catch {
+      // No session yet, or offline — the device language stands and the next launch tries again.
     }
   }
 
