@@ -274,7 +274,7 @@ founder-owned legal items in doc 05's launch checklist.
     surfaces (P4-04..07), the offline layer (P5-02) and the PWA/Android build (P5-01) have all
     landed, and native networking on device now works (CapacitorHttp).
 
-## ⚠ Open gap: 39 of 91 API operations are never called by the app
+## ⚠ Open gap: 37 of 91 API operations are never called by the app
 
 Found 2026-08-13 by a mechanical sweep of `openapi/openapi.yaml` against every `.ts` file in
 `mobile/src/app` (`operationId` → does any client file contain the literal path?). The check is
@@ -295,7 +295,7 @@ function the admin panel performs. The rest are real gaps, grouped by what they 
 |---|---|---|
 | ~~Reputation~~ | ~~`POST /engagements/{e}/reviews`~~ | **Closed 2026-08-13** — the review form lives on the job detail page |
 | Safety | `/safety/panic`, `/emergency-contacts` ×3, `/blocks` ×3, `/reports` | The panic button, emergency contacts, blocking and reporting (P6-04/07) have no UI at all |
-| Verification | `/verification-documents` ×2 | The provider profile's **VERIFY button does nothing** — so no tier is ever raised, and the on-site paid-work gate can never be passed |
+| ~~Verification~~ | ~~`/verification-documents` ×2~~ | **Closed 2026-08-14** — the profile's VERIFY button opens a real screen; upload → admin approval → tier rise works end to end |
 | Finishing work | ~~`/engagements/{e}/complete`~~ (closed), `/deliverables/{d}/review`, `/quotations/{q}/accept`, `/quotations/{q}/revise`, `/jobs/{job}/site-visits`, `/site-visits/{v}/complete` | A quote cannot be accepted and a deliverable cannot be reviewed. Marking work finished is closed |
 | Money out | `/provider/payouts`, `/provider/credits`, `/engagements/{e}/refund`, `/engagements/{e}/cash-settlements` | **Withdraw shows a success toast and requests nothing.** No refund, no cash settlement, no credit balance |
 | Money in | `/payment-intents` | Not a blocker for the deposit (P3-13 captures it server-side on `engagement.created`), but the app can initiate no payment of its own |
@@ -308,6 +308,25 @@ Regenerate the list any time with the sweep script pattern above; it takes secon
 found four real defects.
 
 ## What was done, most recent first
+
+- **The VERIFY button now goes somewhere, and the tier it moves is the one that gates paid work.**
+  `/verification-documents` ×2 were uncalled, which meant a provider could be told they were not
+  verified and given no way inside the product to become verified — the fact model refuses on-site
+  paid work below tier 2 (P0-17/P6-03), so this was a closed loop with no door.
+  - New screen at `/verification` (`provider/verification/`): the tier ladder saying what each rung
+    *opens* rather than what it is called, then a row per document kind carrying the status of the
+    caller's latest attempt at it, and the reviewer's own words when one was refused.
+  - The kind is sent, never a tier — `DocKind::grantsTier()` decides server-side, so mislabelling a
+    selfie as a licence buys nothing. An approved row loses its button: re-sending it can only
+    lengthen the reviewer's queue.
+  - **`id_verification` consent is recorded at the moment of upload** (P1-05), in the locale the
+    wording was read in. That purpose existed in the API and nothing had ever written it, which left
+    the consent covering the most sensitive data this product holds as the only one with no record.
+  - Not queued offline, deliberately: the write queue replays a JSON body, and a 10 MB photo has no
+    business sitting in local storage waiting for a network.
+  - Verified end to end in a browser at 390/360/1200 in both themes: send → `201`, the row flips to
+    "Being reviewed", `ReviewVerificationDocument::approve` → the profile rises to **tier 3** and the
+    screen re-renders the ladder fully lit. 37 of 91 operations still uncalled.
 
 - **Made the product testable locally, and wrote the guide for it** (`docs/LOCAL_TESTING.md`).
   - `npm run dev` / `npm run dev:fresh` bring the whole stack up in the one order that works —

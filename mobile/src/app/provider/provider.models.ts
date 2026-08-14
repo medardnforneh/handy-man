@@ -3,6 +3,7 @@
  * UI-shaped, like the customer models. Shared enums (EngagementMode, Accent, JobStatus) are reused
  * from the customer models so the two sections never drift.
  */
+import type { VerificationDocKind } from '../api/api.service';
 import { Accent, EngagementMode, JobStatus } from '../customer/customer.models';
 
 /**
@@ -199,4 +200,22 @@ export interface PipelineEntry {
   stage: PipelineStage;
   count: number;
   valueMinor: number;
+}
+
+/**
+ * One submitted verification document, as the verification screen renders it (P6-01).
+ *
+ * There is no file here and there never will be: the upload is encrypted into a bucket the app
+ * cannot read, and even the admin panel reaches it only through a signed short-TTL URL whose every
+ * use is logged (P6-02). The provider gets back the one thing they need — where their document
+ * stands, and why if it was refused.
+ */
+export interface VerificationDoc {
+  id: string;
+  kind: VerificationDocKind;
+  status: 'pending' | 'approved' | 'rejected' | 'expired';
+  /** The tier this document works toward once approved — fixed by its kind, never by the client. */
+  grantsTier: number;
+  rejectReason: string | null;
+  submittedAt: string;
 }

@@ -65,6 +65,11 @@ ion-title { font-weight: 800; letter-spacing: -0.02em; }
   &.ok ion-icon { color: var(--hm-color-status-success); }
   &.warn ion-icon { color: var(--hm-color-status-warning); }
 
+  // The affordance on the verified card — it still opens the screen, because tier 3 is above
+  // tier 2. Sized and coloured as a chevron, not as a second status glyph.
+  .chev { font-size: 1rem; color: var(--hm-color-text-muted); }
+  &.ok .chev { color: var(--hm-color-text-muted); }
+
   ion-button { --border-radius: var(--hm-radius-md); font-weight: 700; flex: none; }
 }
 

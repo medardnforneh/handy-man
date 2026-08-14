@@ -47,6 +47,20 @@ export interface JobReportInput {
 }
 
 /**
+ * The kinds of verification document (P6-01, doc 04). The kind fixes the tier the document works
+ * toward — ID front/back and a selfie build to tier 2, the licence/company papers to tier 3 — so
+ * this is not a free-text label the client gets to choose the meaning of.
+ */
+export type VerificationDocKind =
+  | 'national_id_front'
+  | 'national_id_back'
+  | 'selfie'
+  | 'trade_license'
+  | 'insurance_cert'
+  | 'rccm'
+  | 'niu';
+
+/**
  * The DI surface for real API calls — a thin, typed wrapper over the generated `openapi-fetch`
  * client. Screens keep talking to their fixture services for now; those services will delegate to
  * this one method-by-method as endpoints are wired, so the migration is incremental and no screen
@@ -483,6 +497,48 @@ export class ApiService {
     if (error) {
       throw error;
     }
+  }
+
+  /**
+   * The caller's own verification documents and where each one stands (P6-01).
+   *
+   * Storage paths are never returned — the file itself is only ever reachable through a signed
+   * short-TTL URL in the admin panel, and every staff view of one is written to the activity log
+   * (P6-02). What comes back here is the status, not the document.
+   */
+  async verificationDocuments() {
+    const { data, error } = await api.GET('/verification-documents');
+    if (error) {
+      throw error;
+    }
+    return data.data;
+  }
+
+  /**
+   * Upload an identity or licence document for human review (P6-01).
+   *
+   * Multipart, like the job report: the generated body type describes the FIELDS, and the serializer
+   * passes the FormData through untouched so fetch sets the boundary itself. The tier is derived
+   * server-side from `kind`, which is why the client sends a kind and never a tier — nobody can
+   * self-assign tier 3 by mislabelling a selfie.
+   */
+  async submitVerificationDocument(kind: VerificationDocKind, file: File | Blob, expiresAt?: string) {
+    const form = new FormData();
+    form.set('kind', kind);
+    form.set('file', file);
+    if (expiresAt) {
+      form.set('expires_at', expiresAt);
+    }
+
+    const { data, error } = await api.POST('/verification-documents', {
+      params: { header: { 'Idempotency-Key': uuid() } },
+      body: form as never,
+      bodySerializer: (body: unknown) => body as FormData,
+    });
+    if (error) {
+      throw error;
+    }
+    return data.data;
   }
 
   /**

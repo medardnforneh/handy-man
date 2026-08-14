@@ -969,6 +969,45 @@
     "pipeline_empty_title": "Nothing in the pipeline yet",
     "pipeline_empty_body": "Offers you receive, quotes you send and jobs you win will show up here as they move."
   },
+  "vdoc": {
+    "title": "Verification",
+    "lead": "Send your papers once. A person reads them — usually within a day — and your tier moves as each one is accepted.",
+    "tier_now": "You are at tier {{n}}",
+    "tier_ladder": "What each tier opens",
+    "tier1": "Phone confirmed. You can be listed and quote for work.",
+    "tier2": "Identity verified. You can accept paid work at someone’s home.",
+    "tier3": "Licensed. You can take regulated and high-risk trades.",
+    "group_identity": "Identity",
+    "group_identity_body": "The three that carry you to tier 2. Send all three.",
+    "group_trade": "Trade and company",
+    "group_trade_body": "Send whichever you hold. Any one of them is read toward tier 3.",
+    "kind": {
+      "national_id_front": "National ID — front",
+      "national_id_back": "National ID — back",
+      "selfie": "A photo of you holding your ID",
+      "trade_license": "Trade licence",
+      "insurance_cert": "Insurance certificate",
+      "rccm": "RCCM — company registration",
+      "niu": "NIU — taxpayer number"
+    },
+    "status": {
+      "none": "Not sent",
+      "pending": "Being reviewed",
+      "approved": "Accepted",
+      "rejected": "Refused",
+      "expired": "Expired"
+    },
+    "send": "Send",
+    "send_again": "Send again",
+    "sent": "Sent. A reviewer will look at it shortly.",
+    "send_failed": "That did not go through. Please try again.",
+    "too_big": "That file is over 10 MB. Take a smaller photo, or send a lighter scan.",
+    "wrong_type": "Send a photo (JPEG, PNG, WebP) or a PDF.",
+    "load_failed": "We could not load what you have already sent.",
+    "privacy": "Your documents are encrypted and held apart from everything else in the product. Staff open one only through a link that expires, and every single time they do is recorded against their name.",
+    "empty_title": "Nothing sent yet",
+    "empty_body": "Start with the front of your national ID."
+  },
   "address": {
     "title": "Add an address",
     "lead": "Saved addresses are how a provider finds you, and how we match you with people who cover your area.",

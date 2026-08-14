@@ -1,0 +1,97 @@
+<ion-header [translucent]="true" class="ion-no-border">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/pro/profile" [text]="''"></ion-back-button>
+    </ion-buttons>
+    <ion-title>{{ 'vdoc.title' | translate }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <div class="page">
+    <p class="lead hm-muted">{{ 'vdoc.lead' | translate }}</p>
+
+    <!-- The ladder, with the current rung marked. The point of the screen is a tier, so the tier is
+         the first thing on it — and each rung says what it OPENS rather than what it is called,
+         because "tier 2" means nothing to someone deciding whether to photograph their ID. -->
+    <div class="hm-section-head"><h2>{{ 'vdoc.tier_ladder' | translate }}</h2></div>
+    <ol class="ladder hm-card">
+      @for (step of steps(); track step.n) {
+        <li class="step" [class.reached]="step.reached">
+          <span class="mark" aria-hidden="true">
+            <ion-icon [name]="step.reached ? 'checkmark' : 'ellipse-outline'"></ion-icon>
+          </span>
+          <span class="what">{{ step.key | translate }}</span>
+        </li>
+      }
+      <li class="now">{{ 'vdoc.tier_now' | translate:{ n: tier() } }}</li>
+    </ol>
+
+    @if (loadFailed()) {
+      <!-- "We could not load this" and "you have sent nothing" are different sentences, and the
+           difference decides whether someone sends their ID in twice. -->
+      <p class="failed">
+        <ion-icon name="alert-circle-outline" aria-hidden="true"></ion-icon>
+        <span>{{ 'vdoc.load_failed' | translate }}</span>
+        <ion-button fill="clear" size="small" class="hm-tap" (click)="load()">
+          {{ 'common.retry' | translate }}
+        </ion-button>
+      </p>
+    }
+
+    @for (group of groups(); track group.key) {
+      <div class="hm-section-head"><h2>{{ group.title | translate }}</h2></div>
+      <p class="gnote hm-muted">{{ group.body | translate }}</p>
+
+      @for (row of group.rows; track row.kind) {
+        <div class="drow hm-card" [class.ok]="row.status === 'approved'" [class.bad]="row.status === 'rejected' || row.status === 'expired'">
+          <span class="ic" aria-hidden="true">
+            <ion-icon [name]="row.status === 'approved' ? 'checkmark-circle' : group.icon"></ion-icon>
+          </span>
+          <span class="dt">
+            <b>{{ ('vdoc.kind.' + row.kind) | translate }}</b>
+            <span class="hm-pill"
+                  [class.tone-success]="row.status === 'approved'"
+                  [class.tone-warning]="row.status === 'pending'"
+                  [class.tone-danger]="row.status === 'rejected' || row.status === 'expired'"
+                  [class.tone-neutral]="row.status === 'none'">
+              {{ ('vdoc.status.' + row.status) | translate }}
+            </span>
+          </span>
+
+          <!-- An approved document is finished: no button, because re-sending it can only lengthen
+               the reviewer's queue without changing anything the provider wants changed. -->
+          @if (row.status !== 'approved') {
+            <!-- Outline, not solid: there are seven of these and no one of them is the thing to do
+                 next. Seven filled buttons make a wall of green and say nothing about priority. -->
+            <ion-button size="small" fill="outline" class="hm-tap" [disabled]="busy() !== null" (click)="picker.click()">
+              @if (busy() === row.kind) {
+                <ion-spinner name="crescent"></ion-spinner>
+              } @else {
+                {{ (row.status === 'none' ? 'vdoc.send' : 'vdoc.send_again') | translate }}
+              }
+            </ion-button>
+            <!-- The real file input, kept reachable by assistive tech rather than `display: none`;
+                 the button in front of it is what everyone else sees. -->
+            <input #picker class="sr-only" type="file" [accept]="accept"
+                   [attr.aria-label]="('vdoc.kind.' + row.kind) | translate"
+                   (change)="pick($event, row.kind)" />
+          }
+
+          <!-- The reviewer's own words. Written by a human, so it is shown rather than mapped onto
+               a generic "please try again" that would leave the provider guessing. -->
+          @if (row.doc?.rejectReason) {
+            <span class="why">{{ row.doc?.rejectReason }}</span>
+          }
+        </div>
+      }
+    }
+
+    <!-- Said plainly, on the screen where the document is handed over, rather than buried in a
+         policy nobody opens. It is also the literal behaviour of P6-02, not a reassurance. -->
+    <p class="privacy">
+      <ion-icon name="lock-closed-outline" aria-hidden="true"></ion-icon>
+      <span>{{ 'vdoc.privacy' | translate }}</span>
+    </p>
+  </div>
+</ion-content>

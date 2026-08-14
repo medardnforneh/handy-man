@@ -121,6 +121,8 @@ in the app yet — see §4.
 | **Check in / out** | Work → a job → Check in | On-site only. Remote jobs have no check-in at all, by design |
 | Status updates | Work → a job | On the way, started, paused, completed — each narrated into the customer's chat |
 | Job report | Work → a job → Report | Summary, materials, before/after photos. EXIF is stripped server-side |
+| **Send your papers in** | Provider → **Profile** → the verification card | A row per document. Pick any image or PDF — locally nothing checks that it is really an ID |
+| **Watch a tier rise** | Send one, then Admin → Trust & safety → Verification documents → approve it | Reopen the app's verification screen: the row reads "Accepted" and the ladder lights up. Tier 2 is what lets a provider accept on-site paid work |
 | Client book | Provider → **Profile** → My business | Customers, lifetime value, pipeline, re-engagement |
 | Earnings | Provider → **Earnings** | Balance and payout history |
 
@@ -177,7 +179,6 @@ The API can do these; the app has no screen for them. This is the honest list �
 
 | Feature | Status | Where you can still see it |
 |---|---|---|
-| **Verification upload** | The profile's VERIFY button does nothing | Admin → Verification documents (seeded in three states) |
 | **Requesting a payout** | Withdraw shows a success toast and requests nothing | Admin → Payouts |
 | Accepting or revising a quote | No UI | |
 | Reviewing a deliverable | No UI | Admin → Engagements |
@@ -201,6 +202,7 @@ notification rows are created and nothing arrives on a device.
 | A screen shows demo data that isn't yours | The session expired. Access tokens last 15 minutes — sign in again |
 | The first sign-in attempt after starting does nothing | `ng serve` opens the port before it has finished its first compile, so the page loads against a half-built bundle. Reload once and it works. The same thing happens for a few seconds after any code change |
 | Blank screen or stale content right after a change | The dev server was mid-rebuild. Hard-reload |
+| A screen shows its empty state for a second or two, then fills in | Not a bug. The local API is PHP's built-in server, which answers about one request at a time at ~0.5s each, and a screen makes several. Nothing on a real server behaves this way |
 | "Something went wrong" on sign-in | Postgres is not running. `npm run dev` starts it |
 | Every label shows as `some.key.name` | The translations did not build — `npm run i18n:build` |
 | Too many code requests | Local limits are already raised in `backend/.env`; if you still hit one, `php artisan cache:clear` from `backend/` |

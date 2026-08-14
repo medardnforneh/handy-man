@@ -969,6 +969,45 @@
     "pipeline_empty_title": "Rien dans le pipeline pour l’instant",
     "pipeline_empty_body": "Les offres reçues, les devis envoyés et les missions gagnées apparaîtront ici au fil de leur avancement."
   },
+  "vdoc": {
+    "title": "Vérification",
+    "lead": "Envoyez vos pièces une seule fois. Une personne les examine — en général sous 24 h — et votre niveau monte à mesure qu’elles sont acceptées.",
+    "tier_now": "Vous êtes au niveau {{n}}",
+    "tier_ladder": "Ce que chaque niveau ouvre",
+    "tier1": "Téléphone confirmé. Vous pouvez être référencé et proposer des devis.",
+    "tier2": "Identité vérifiée. Vous pouvez accepter du travail rémunéré au domicile d’un client.",
+    "tier3": "Agréé. Vous pouvez prendre les métiers réglementés et à risque.",
+    "group_identity": "Identité",
+    "group_identity_body": "Les trois pièces qui mènent au niveau 2. Envoyez-les toutes les trois.",
+    "group_trade": "Métier et entreprise",
+    "group_trade_body": "Envoyez celles que vous détenez. Chacune compte pour le niveau 3.",
+    "kind": {
+      "national_id_front": "CNI — recto",
+      "national_id_back": "CNI — verso",
+      "selfie": "Une photo de vous tenant votre CNI",
+      "trade_license": "Licence professionnelle",
+      "insurance_cert": "Attestation d’assurance",
+      "rccm": "RCCM — registre du commerce",
+      "niu": "NIU — numéro d’identifiant unique"
+    },
+    "status": {
+      "none": "Non envoyée",
+      "pending": "En cours d’examen",
+      "approved": "Acceptée",
+      "rejected": "Refusée",
+      "expired": "Expirée"
+    },
+    "send": "Envoyer",
+    "send_again": "Renvoyer",
+    "sent": "Envoyée. Un examinateur la traitera sous peu.",
+    "send_failed": "L’envoi n’a pas abouti. Veuillez réessayer.",
+    "too_big": "Ce fichier dépasse 10 Mo. Reprenez une photo plus légère, ou envoyez un scan compressé.",
+    "wrong_type": "Envoyez une photo (JPEG, PNG, WebP) ou un PDF.",
+    "load_failed": "Nous n’avons pas pu charger ce que vous avez déjà envoyé.",
+    "privacy": "Vos documents sont chiffrés et conservés à l’écart du reste du produit. Le personnel ne les ouvre que par un lien qui expire, et chaque ouverture est enregistrée à son nom.",
+    "empty_title": "Rien d’envoyé pour l’instant",
+    "empty_body": "Commencez par le recto de votre CNI."
+  },
   "address": {
     "title": "Ajouter une adresse",
     "lead": "Vos adresses enregistrées permettent au prestataire de vous trouver, et de vous mettre en relation avec ceux qui couvrent votre zone.",

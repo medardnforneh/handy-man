@@ -1,5 +1,5 @@
 import { Injectable, inject, signal } from '@angular/core';
-import { ApiService } from '../api/api.service';
+import { ApiService, VerificationDocKind } from '../api/api.service';
 import { Accent } from '../customer/customer.models';
 import { currentPosition, GeoFix } from '../core/geolocation';
 import { LocaleService } from '../core/locale.service';
@@ -7,7 +7,8 @@ import { OfflineCache } from '../core/offline/offline-cache.service';
 import { WriteQueue, WriteSpec } from '../core/offline/write-queue.service';
 import {
   ActiveWork, Lead, Payout, PayoutStatus, PipelineEntry, PipelineStage, ProviderClient,
-  ProviderIdentity, ProviderStats, QuoteDraft, ReportDraft, WorkDetail, WorkStatus, ProviderWallet,
+  ProviderIdentity, ProviderStats, QuoteDraft, ReportDraft, VerificationDoc, WorkDetail, WorkStatus,
+  ProviderWallet,
 } from './provider.models';
 
 /** The outcome of one execution mutation: accepted, or refused with the server's own explanation. */
@@ -229,6 +230,52 @@ export class ProviderService {
 
     await this.fetchProfile();
     return result;
+  }
+
+  // --- Verification (P6-01) -----------------------------------------------------------------------
+
+  /**
+   * The caller's verification documents, newest first. Null on failure, which the screen renders as
+   * "we could not load this" rather than as "you have submitted nothing" — the difference matters
+   * when the answer decides whether someone uploads their ID a second time.
+   */
+  async fetchVerificationDocuments(): Promise<VerificationDoc[] | null> {
+    try {
+      const rows = await this.api.verificationDocuments();
+      return rows.map((d) => ({
+        id: d.id,
+        kind: d.kind,
+        status: d.status,
+        grantsTier: d.grants_tier,
+        rejectReason: d.reject_reason ?? null,
+        submittedAt: d.created_at,
+      }));
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Upload one verification document (P6-01).
+   *
+   * The `id_verification` consent is recorded first, in the locale the wording was read in (P1-05).
+   * That purpose existed in the API and nothing had ever written it, which left the one consent
+   * covering biometric and identity data — the most sensitive thing this product holds — as the
+   * only one with no record of ever having been given.
+   *
+   * Not queued offline, deliberately: the write queue replays a JSON body, and a 10 MB photo is not
+   * something to hold in local storage waiting for a network. An upload that fails is retried by
+   * tapping again, with the file still in hand.
+   */
+  async submitVerificationDocument(kind: VerificationDocKind, file: File): Promise<MutationResult> {
+    try {
+      await this.api.recordConsent('id_verification', true, this.locales.current);
+    } catch {
+      // The consent record is ours to keep, not a gate the user should be stopped by: they have
+      // chosen the file and tapped upload, which is the decision itself.
+    }
+
+    return this.attempt(() => this.api.submitVerificationDocument(kind, file));
   }
 
   /** Whether the provider is currently accepting new jobs (a soft availability switch). */

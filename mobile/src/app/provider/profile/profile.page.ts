@@ -89,6 +89,15 @@ export class ProviderProfilePage {
     void this.router.navigate(['/become-a-provider']);
   }
 
+  /**
+   * Sending verification papers in (P6-01) — what this screen's "Verify" button has always claimed
+   * to do. It was an inert button until now, on the one gate that decides whether a provider can be
+   * paid for work at a customer's home.
+   */
+  openVerification(): void {
+    void this.router.navigate(['/verification']);
+  }
+
   /** The client book (P7-08) — a periodic review surface, so it lives here rather than in the tabs. */
   openClients(): void {
     void this.router.navigate(['/clients']);

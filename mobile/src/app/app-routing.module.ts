@@ -64,6 +64,14 @@ const routes: Routes = [
     loadComponent: () => import('./provider/onboarding/onboarding.page').then((m) => m.ProviderOnboardingPage),
   },
   {
+    // Sending identity/trade papers in for review (P6-01), pushed over the provider tabs. This is
+    // what the profile's "Verify" button had always promised and never opened — and without it the
+    // tier-2 gate on on-site paid work could be hit but never cleared from inside the product.
+    path: 'verification',
+    canActivate: [authGuard],
+    loadComponent: () => import('./provider/verification/verification.page').then((m) => m.ProviderVerificationPage),
+  },
+  {
     // Lead detail + quote composer, pushed over the provider tabs.
     path: 'opportunity/:id',
     canActivate: [authGuard],

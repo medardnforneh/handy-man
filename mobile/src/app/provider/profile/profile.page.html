@@ -52,13 +52,17 @@
 
     <!-- Verification -->
     <div class="hm-section-head"><h2>{{ 'pro.verification' | translate }}</h2></div>
+    <!-- Verified or not, this opens the same screen: tier 2 is not the end of the ladder, and a
+         provider who has cleared it may still hold a licence that takes them to tier 3. -->
     @if (fullyVerified()) {
-      <div class="verif hm-card ok">
+      <div class="verif hm-card ok hm-tap" role="button" tabindex="0"
+           (click)="openVerification()" (keyup.enter)="openVerification()">
         <ion-icon name="shield-checkmark" aria-hidden="true"></ion-icon>
         <div class="v-text">
           <b>{{ 'pro.verified_title' | translate }}</b>
           <small class="hm-muted">{{ 'pro.tier' | translate:{ n: identity().verificationTier } }}</small>
         </div>
+        <ion-icon class="chev" name="chevron-forward" aria-hidden="true"></ion-icon>
       </div>
     } @else {
       <div class="verif hm-card warn">
@@ -67,7 +71,9 @@
           <b>{{ 'pro.verify_title' | translate }}</b>
           <small class="hm-muted">{{ 'pro.verify_body' | translate }}</small>
         </div>
-        <ion-button size="small" class="hm-tap">{{ 'pro.verify_cta' | translate }}</ion-button>
+        <ion-button size="small" class="hm-tap" (click)="openVerification()">
+          {{ 'pro.verify_cta' | translate }}
+        </ion-button>
       </div>
     }
 

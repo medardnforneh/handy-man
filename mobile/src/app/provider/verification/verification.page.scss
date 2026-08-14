@@ -1,0 +1,182 @@
+// Shared primitives load once globally — see angular.json styles.
+// SEMANTIC TOKENS ONLY — never a literal colour.
+
+ion-toolbar {
+  --background: var(--hm-color-surface-base);
+  --border-width: 0;
+}
+
+ion-title {
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.page {
+  padding: 0 var(--hm-space-md) var(--hm-space-xl);
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.lead {
+  margin: var(--hm-space-sm) 0 0;
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+// The ladder. A reached rung is filled and full-contrast; an unreached one keeps its outline and
+// stays muted, so the current position reads at a glance without a second colour meaning anything.
+.ladder {
+  list-style: none;
+  margin: 0;
+  padding: var(--hm-space-md);
+
+  .step {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--hm-space-sm);
+    font-size: 0.85rem;
+    line-height: 1.4;
+    color: var(--hm-color-text-muted);
+
+    + .step { margin-top: var(--hm-space-sm); }
+
+    .mark {
+      display: grid;
+      place-items: center;
+      flex: none;
+      width: 22px;
+      height: 22px;
+      border-radius: 999px;
+      background: var(--hm-color-surface-sunken);
+      color: var(--hm-color-text-muted);
+      font-size: 0.75rem;
+    }
+
+    .what { flex: 1; min-width: 0; }
+
+    &.reached {
+      color: var(--hm-color-text-primary);
+
+      .mark {
+        background: color-mix(in srgb, var(--hm-color-status-success) 16%, transparent);
+        color: var(--hm-color-status-success);
+      }
+    }
+  }
+
+  .now {
+    margin-top: var(--hm-space-md);
+    padding-top: var(--hm-space-sm);
+    border-top: 1px solid var(--hm-color-border-subtle);
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--hm-color-text-muted);
+  }
+}
+
+.failed {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: var(--hm-space-sm) 0 0;
+  font-size: 0.8rem;
+  line-height: 1.4;
+  color: var(--hm-color-status-danger);
+
+  ion-icon { flex: none; font-size: 1rem; }
+  span { flex: 1; min-width: 0; }
+  ion-button { flex: none; --color: var(--hm-color-status-danger); font-weight: 700; }
+}
+
+.gnote {
+  margin: calc(var(--hm-space-xs) * -1) 0 var(--hm-space-sm);
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+
+// One document. Flex rather than grid so the refusal reason can take a full row of its own by
+// claiming 100% width — it is absent on almost every row and should cost nothing when it is.
+.drow {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--hm-space-sm);
+  padding: var(--hm-space-md);
+  margin-bottom: var(--hm-space-sm);
+
+  &.ok {
+    border-color: color-mix(in srgb, var(--hm-color-status-success) 40%, transparent);
+    background: color-mix(in srgb, var(--hm-color-status-success) 7%, var(--hm-color-surface-raised));
+  }
+
+  &.bad {
+    border-color: color-mix(in srgb, var(--hm-color-status-danger) 40%, transparent);
+  }
+
+  .ic {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 38px;
+    height: 38px;
+    border-radius: var(--hm-radius-md);
+    background: color-mix(in srgb, var(--hm-color-brand-primary) 12%, transparent);
+    color: var(--hm-color-brand-primary);
+    font-size: 1.1rem;
+  }
+
+  &.ok .ic {
+    background: color-mix(in srgb, var(--hm-color-status-success) 14%, transparent);
+    color: var(--hm-color-status-success);
+  }
+
+  .dt {
+    flex: 1;
+    min-width: 0;
+
+    b {
+      display: block;
+      font-size: 0.9rem;
+      line-height: 1.3;
+    }
+
+    .hm-pill { margin-top: 0.3rem; }
+  }
+
+  ion-button {
+    flex: none;
+    --border-radius: var(--hm-radius-md);
+    font-weight: 700;
+  }
+
+  ion-spinner { width: 18px; height: 18px; }
+
+  .why {
+    flex-basis: 100%;
+    padding-top: var(--hm-space-sm);
+    border-top: 1px solid var(--hm-color-border-subtle);
+    font-size: 0.78rem;
+    line-height: 1.4;
+    color: var(--hm-color-status-danger);
+  }
+}
+
+.privacy {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin: var(--hm-space-lg) 0 0;
+  font-size: 0.76rem;
+  line-height: 1.5;
+  color: var(--hm-color-text-muted);
+
+  ion-icon { flex: none; margin-top: 0.15rem; font-size: 0.95rem; }
+  span { flex: 1; min-width: 0; }
+}
+
+// Narrow phones: the send button drops to its own full-width row rather than squeezing the
+// document's name to two words and an ellipsis.
+@media (max-width: 380px) {
+  .drow ion-button { width: 100%; }
+}
