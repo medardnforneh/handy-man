@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Resources\Api\V1;
 
+use App\Domain\Money\GeneratedMilestone;
 use App\Models\Engagement;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -44,9 +45,13 @@ final class EngagementResource extends JsonResource
                 'id' => $m->id,
                 'position' => $m->position,
                 'title' => $m->title,
+                'title_key' => GeneratedMilestone::keyFor($m->title),
                 'amount_minor' => $m->amount_minor,
                 'status' => $m->status->value,
-            ])),
+            // `->all()`, like JobResource: a Collection's value type is invariant, so returning one
+            // whose element shape is precisely typed (title_key is `string|null`, not `mixed`)
+            // fails to match itself. The wire format is identical either way.
+            ])->all()),
         ];
     }
 }

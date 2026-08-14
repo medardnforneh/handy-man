@@ -131,6 +131,40 @@ export interface JobDetail {
   reviewed: boolean;
 }
 
+/** One priced line of a received quotation, as the customer reads it. */
+export interface QuoteLine {
+  label: string;
+  kind: 'labour' | 'material' | 'travel' | 'other';
+  quantity: number;
+  unitPriceMinor: number;
+}
+
+/**
+ * A quotation the customer has received on their job (P2.5-01).
+ *
+ * Pre-engagement the provider is a headline and a badge, never a name (P2-03) — which is why this
+ * carries `providerHeadline` rather than a person. `expired` is computed here rather than trusted
+ * from a status: a quote can lapse while the screen is open, and offering "Accept" on a quote the
+ * server will refuse is worse than saying it has run out.
+ */
+export interface JobQuote {
+  id: string;
+  version: number;
+  status: 'draft' | 'submitted' | 'accepted' | 'rejected' | 'expired' | 'withdrawn' | 'superseded';
+  providerPartyId: string;
+  providerHeadline: string;
+  providerVerified: boolean;
+  providerRating: number | null;
+  providerRatingCount: number;
+  totalMinor: number;
+  depositMinor: number;
+  balanceMinor: number;
+  notes: string | null;
+  validUntil: string;
+  expired: boolean;
+  lines: QuoteLine[];
+}
+
 /** What the "post a request" form collects — mirrors CreateJob (doc 06: address only off-remote). */
 export interface NewJobInput {
   title: string;

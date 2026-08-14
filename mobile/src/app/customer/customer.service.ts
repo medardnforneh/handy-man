@@ -1,12 +1,13 @@
 import { Injectable, inject, signal } from '@angular/core';
+import { TranslateService } from '@ngx-translate/core';
 import { ApiService } from '../api/api.service';
 import { LocaleService } from '../core/locale.service';
 import { OfflineCache } from '../core/offline/offline-cache.service';
 import { WriteOutcome, WriteQueue } from '../core/offline/write-queue.service';
 import {
-  Accent, Category, ChatSummary, EngagementMode, JobDetail, JobStatus, JobSummary, MilestoneStatus,
-  NewJobInput, Provider, ProviderProfile, ProviderReview, SavedAddress, WorkspaceMessage,
-  WorkspaceThread,
+  Accent, Category, ChatSummary, EngagementMode, JobDetail, JobQuote, JobStatus, JobSummary,
+  MilestoneStatus, NewJobInput, Provider, ProviderProfile, ProviderReview, SavedAddress,
+  WorkspaceMessage, WorkspaceThread,
 } from './customer.models';
 
 /**
@@ -203,6 +204,8 @@ const CATEGORY_ICONS: Record<string, string> = {
 export class CustomerService {
   private readonly api = inject(ApiService);
   private readonly locales = inject(LocaleService);
+  /** For the few labels the SERVER names as a key and the client has to say in words. */
+  private readonly translate = inject(TranslateService);
   private readonly queue = inject(WriteQueue);
   private readonly cache = inject(OfflineCache);
 
@@ -658,7 +661,12 @@ export class CustomerService {
     try {
       const eng = j.engagement ?? null;
       const milestones = (eng?.milestones ?? []).map((m) => ({
-        id: m.id, title: m.title, amountMinor: m.amount_minor, status: mapMilestoneStatus(m.status),
+        id: m.id,
+        // A platform-generated title arrives with a key and is said in the reader's language; a
+        // title a person wrote arrives without one and is shown exactly as they wrote it.
+        title: m.title_key ? this.translate.instant(m.title_key) : m.title,
+        amountMinor: m.amount_minor,
+        status: mapMilestoneStatus(m.status),
       }));
       const released = milestones.filter((m) => m.status === 'paid').reduce((s, m) => s + m.amountMinor, 0);
       const agreed = eng?.agreed_amount_minor ?? j.budget?.amount_minor ?? 0;
@@ -705,6 +713,79 @@ export class CustomerService {
       return true;
     } catch {
       return false;
+    }
+  }
+
+  /**
+   * The quotations received on a job (P2.5-01). Null when the read fails — the section is then
+   * absent rather than empty, because "nobody has quoted" is a different thing to say.
+   *
+   * Only `submitted` quotes are offered for acceptance. The server sends the others (superseded,
+   * rejected, an accepted one) and they are dropped here: a superseded quote is a price that no
+   * longer stands, and showing it beside the live one invites accepting the wrong number.
+   */
+  async fetchQuotes(jobId: string): Promise<JobQuote[] | null> {
+    try {
+      const rows = await this.api.jobQuotations(jobId);
+      const now = Date.now();
+
+      return rows
+        .filter((q) => q.status === 'submitted')
+        .map((q): JobQuote => {
+          const total = q.subtotal.amount_minor;
+          const deposit = q.deposit.amount_minor;
+
+          return {
+            id: q.id,
+            version: q.version,
+            status: q.status,
+            providerPartyId: q.provider_party_id,
+            providerHeadline: q.provider?.headline ?? '',
+            providerVerified: (q.provider?.verification_tier ?? 0) >= 2,
+            providerRating: q.provider?.rating_avg === null || q.provider?.rating_avg === undefined
+              ? null
+              : Number(q.provider.rating_avg),
+            providerRatingCount: q.provider?.rating_count ?? 0,
+            totalMinor: total,
+            depositMinor: deposit,
+            balanceMinor: Math.max(0, total - deposit),
+            notes: q.notes ?? null,
+            validUntil: q.valid_until,
+            expired: new Date(q.valid_until).getTime() <= now,
+            lines: (q.lines ?? []).map((l) => ({
+              label: l.label,
+              kind: l.kind,
+              quantity: Number(l.quantity),
+              unitPriceMinor: l.unit_price_minor,
+            })),
+          };
+        });
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Accept a quotation (P2.5-05) — the engagement forms, the milestone plan is generated and the
+   * deposit is captured into escrow.
+   *
+   * Never queued offline. This one spends the customer's money and creates a commitment to a
+   * specific provider at a specific price; a request replayed hours later, against a quote that may
+   * have expired or been superseded in the meantime, is not the thing they agreed to. It returns
+   * the server's own words on refusal, because a 409 here has a real reason — the quote lapsed,
+   * or someone else's quote already formed the engagement — and "something went wrong" would hide
+   * the one fact the customer needs.
+   */
+  async acceptQuote(quotationId: string): Promise<{ ok: boolean; detail?: string }> {
+    try {
+      await this.api.acceptQuotation(quotationId);
+      return { ok: true };
+    } catch (e) {
+      const problem = e as { detail?: unknown; title?: unknown };
+      const detail = [problem.detail, problem.title]
+        .find((v): v is string => typeof v === 'string' && v.trim() !== '');
+
+      return { ok: false, detail };
     }
   }
 

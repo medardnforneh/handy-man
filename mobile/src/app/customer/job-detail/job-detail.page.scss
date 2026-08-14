@@ -212,3 +212,112 @@ ion-footer {
 
   ion-icon { color: var(--hm-color-status-success); font-size: 1.05rem; }
 }
+
+// ---- Quotes received ---------------------------------------------------
+// The only place a quote can appear: it arrives before any engagement, so there is no chat thread
+// to carry it. Each card has to answer three questions at a glance — who, how much, and what has
+// to be paid now — before it earns the right to ask for a commitment.
+.qnote {
+  margin: calc(var(--hm-space-xs) * -1) 0 var(--hm-space-sm);
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+
+.quote {
+  padding: var(--hm-space-md);
+  margin-bottom: var(--hm-space-sm);
+
+  // Run out: readable, but plainly no longer on offer.
+  &.spent {
+    border-color: var(--hm-color-border-subtle);
+    opacity: 0.75;
+  }
+
+  .q-top {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--hm-space-sm);
+  }
+
+  .q-who {
+    flex: 1;
+    min-width: 0;
+
+    b { display: block; font-size: 0.95rem; line-height: 1.3; }
+    small { display: block; font-size: 0.75rem; margin-top: 0.15rem; }
+  }
+
+  .q-badge {
+    flex: none;
+    font-size: 1.1rem;
+    color: var(--hm-color-brand-primary);
+  }
+
+  .q-lines {
+    list-style: none;
+    margin: var(--hm-space-sm) 0 0;
+    padding: var(--hm-space-sm) 0 0;
+    border-top: 1px solid var(--hm-color-border-subtle);
+
+    li {
+      display: flex;
+      align-items: baseline;
+      gap: var(--hm-space-sm);
+      font-size: 0.8rem;
+
+      + li { margin-top: 0.3rem; }
+    }
+
+    .q-label { flex: 1; min-width: 0; color: var(--hm-color-text-muted); }
+    .q-amt { flex: none; font-variant-numeric: tabular-nums; }
+  }
+
+  .q-money {
+    margin-top: var(--hm-space-sm);
+    padding-top: var(--hm-space-sm);
+    border-top: 1px solid var(--hm-color-border-subtle);
+  }
+
+  .q-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--hm-space-sm);
+    font-size: 0.85rem;
+
+    + .q-row { margin-top: 0.25rem; }
+
+    small { color: var(--hm-color-text-muted); font-weight: 600; font-size: 0.7rem; margin-inline-start: 0.15rem; }
+
+    &.big {
+      font-size: 1.05rem;
+      font-weight: 800;
+
+      .val { font-variant-numeric: tabular-nums; }
+    }
+  }
+
+  .q-notes {
+    margin: var(--hm-space-sm) 0 0;
+    font-size: 0.8rem;
+    line-height: 1.45;
+    color: var(--hm-color-text-muted);
+  }
+
+  .q-expired {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin: var(--hm-space-md) 0 0;
+    font-size: 0.78rem;
+    color: var(--hm-color-status-warning);
+
+    ion-icon { flex: none; font-size: 1rem; }
+  }
+
+  .q-accept {
+    margin-top: var(--hm-space-md);
+    --border-radius: var(--hm-radius-md);
+    font-weight: 700;
+  }
+}

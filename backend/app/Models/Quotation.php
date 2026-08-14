@@ -83,6 +83,20 @@ final class Quotation extends Model
     }
 
     /**
+     * The quoting provider's PROFILE, joined on the party rather than a foreign key of its own.
+     *
+     * A customer reading their quotes needs to know who is offering — but pre-engagement that is
+     * the public headline and badge, never a name (P2-03), which is exactly what the profile
+     * carries and `PublicProviderResource` is built to render.
+     *
+     * @return BelongsTo<ProviderProfile, $this>
+     */
+    public function providerProfile(): BelongsTo
+    {
+        return $this->belongsTo(ProviderProfile::class, 'provider_party_id', 'party_id');
+    }
+
+    /**
      * @return BelongsTo<Quotation, $this>
      */
     public function supersedes(): BelongsTo

@@ -274,7 +274,7 @@ founder-owned legal items in doc 05's launch checklist.
     surfaces (P4-04..07), the offline layer (P5-02) and the PWA/Android build (P5-01) have all
     landed, and native networking on device now works (CapacitorHttp).
 
-## ⚠ Open gap: 36 of 91 API operations are never called by the app
+## ⚠ Open gap: 35 of 92 API operations are never called by the app
 
 Found 2026-08-13 by a mechanical sweep of `openapi/openapi.yaml` against every `.ts` file in
 `mobile/src/app` (`operationId` → does any client file contain the literal path?). The check is
@@ -297,7 +297,7 @@ function the admin panel performs, and `GET /provider/credits`, whose one number
 | ~~Reputation~~ | ~~`POST /engagements/{e}/reviews`~~ | **Closed 2026-08-13** — the review form lives on the job detail page |
 | Safety | `/safety/panic`, `/emergency-contacts` ×3, `/blocks` ×3, `/reports` | The panic button, emergency contacts, blocking and reporting (P6-04/07) have no UI at all |
 | ~~Verification~~ | ~~`/verification-documents` ×2~~ | **Closed 2026-08-14** — the profile's VERIFY button opens a real screen; upload → admin approval → tier rise works end to end |
-| Finishing work | ~~`/engagements/{e}/complete`~~ (closed), `/deliverables/{d}/review`, `/quotations/{q}/accept`, `/quotations/{q}/revise`, `/jobs/{job}/site-visits`, `/site-visits/{v}/complete` | A quote cannot be accepted and a deliverable cannot be reviewed. Marking work finished is closed |
+| Finishing work | ~~`/engagements/{e}/complete`~~, ~~`/quotations/{q}/accept`~~ (both closed), `/deliverables/{d}/review`, `/quotations/{q}/revise`, `/jobs/{job}/site-visits`, `/site-visits/{v}/complete` | **A quote can be accepted now** (2026-08-14). A deliverable still cannot be reviewed, and a provider cannot revise a submitted quote from the app |
 | Money out | ~~`/provider/payouts`~~, ~~`/provider/credits`~~, `/engagements/{e}/refund`, `/engagements/{e}/cash-settlements` | **Closed 2026-08-14** — Withdraw posts a real payout, and lead credits ride along in the earnings payload. No refund and no cash settlement yet |
 | Money in | `/payment-intents` | Not a blocker for the deposit (P3-13 captures it server-side on `engagement.created`), but the app can initiate no payment of its own |
 | Lifecycle | `/follow-ups` ×2, `/referral-code`, `/referrals/claim`, `/providers/{party}/rebook`, `/engagements/{e}/warranty`, `/warranties/{w}/claims`, `/engagements/{e}/share`, `/engagement-shares/{s}` | Follow-ups cannot be listed or responded to, no referral code, no one-tap rebook, no warranty, no share-my-job link |
@@ -309,6 +309,42 @@ Regenerate the list any time with the sweep script pattern above; it takes secon
 found four real defects.
 
 ## What was done, most recent first
+
+- **A provider could price a job and nobody could see it.** The hole in the middle of the
+  marketplace: `POST /quotations/{q}/accept` was uncalled, and the reason turned out to be upstream
+  of the app — **there was no way to READ a quotation at all.** A quote arrives before any
+  engagement, so there is no conversation for the server to narrate it into either. It existed in
+  the database and appeared nowhere.
+  - New endpoint **`GET /jobs/{job}/quotations`** (spec, controller, resource, 5 tests): the job's
+    customer sees every SUBMITTED quote — a draft is the provider's private working copy and is
+    never disclosed — each with its lines and the quoting provider as a pre-engagement viewer may
+    see them (headline and badge, never a name, P2-03). A provider sees only their own, so the field
+    cannot be read off the endpoint. A stranger gets 403, not an empty list: "no quotes" and "not
+    your job" are different answers.
+  - The customer's job page now carries a **Quotes received** section — lines, total, deposit,
+    balance, the provider's own note — and accepting confirms first with both figures said out loud.
+    It is the one action there that commits to a price and a person and cannot be undone from that
+    screen. A refusal shows the server's own words: a 409 means the quote lapsed or another one
+    already formed the engagement, which is the single fact the customer needs.
+  - The workspace's quote card had **two buttons wired to nothing** — "Accept & pay" and a "Counter"
+    the product has no endpoint for. Replaced with one that opens the job overview, where every
+    quote can be compared and the money is stated before it moves.
+  - **Milestone titles were English strings in the database**, so a French customer accepted a quote
+    and got "Deposit" and "Balance" back on their money screen. `GeneratedMilestone` now ties the
+    generator and the resource together: the server emits a `title_key` for a title IT generated and
+    null for one a person wrote, and the client says the former in the reader's language and shows
+    the latter exactly as written (rule #11).
+  - **`DemoCoverageSeeder` now seeds live quotes**, two on one job and one on another, at different
+    prices with different deposit structures — the demo had no job in the one state the marketplace
+    turns on, a customer holding a price and deciding. Quotes come from a provider who actually
+    offers that trade where one exists.
+  - **The suite had a security test reading the developer's `.env`.** Local OTP limits were raised
+    to a thousand so a morning of clicking is not spent locked out, and `phpunit.xml` did not pin
+    them — so "rejects the 4th OTP request for a phone within an hour" quietly stopped testing
+    anything. The shipped limits are pinned in `phpunit.xml` now.
+  - Verified end to end in a browser: two quotes render and compare at 390/360 in both themes,
+    accept → 201, the engagement forms, escrow shows the full agreed amount, and the milestone plan
+    comes back as "Acompte / Solde". 36 → 35 uncalled operations, of 92.
 
 - **Withdraw showed a success toast and requested nothing.** The most dishonest thing a money
   screen can do, and invisible from inside the app: the payout history beneath it was fixture data

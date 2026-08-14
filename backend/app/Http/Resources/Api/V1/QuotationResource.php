@@ -34,6 +34,14 @@ final class QuotationResource extends JsonResource
             'valid_until' => $this->valid_until->toIso8601String(),
             'submitted_at' => $this->submitted_at?->toIso8601String(),
             'responded_at' => $this->responded_at?->toIso8601String(),
+            // Who is offering, as a pre-engagement viewer may see them: headline, badge, shrunk
+            // rating — never a name (P2-03). Only present when the caller asked for it.
+            'provider' => $this->whenLoaded(
+                'providerProfile',
+                fn () => $this->providerProfile === null
+                    ? null
+                    : PublicProviderResource::make($this->providerProfile)->toArray($request),
+            ),
             'lines' => $this->whenLoaded('lines', fn () => $this->lines->map(fn ($line) => [
                 'position' => $line->position,
                 'kind' => $line->kind,

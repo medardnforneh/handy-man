@@ -267,6 +267,7 @@
     "on_completion": "À la livraison",
     "accept_pay": "Accepter et payer l'acompte",
     "counter": "Contre-proposer",
+    "see_quote": "Voir le devis",
     "quote_accepted": "Vous avez accepté le devis · séquestre financé",
     "on_the_way": "Le prestataire est en route",
     "arrived": "Le prestataire est arrivé",
@@ -756,7 +757,12 @@
     "pending": "En attente",
     "in_progress": "En cours",
     "submitted": "Soumis",
-    "paid": "Payé"
+    "paid": "Payé",
+    "title": {
+      "deposit": "Acompte",
+      "balance": "Solde",
+      "full_payment": "Paiement intégral"
+    }
   },
   "pro": {
     "title": "Prestataire",
@@ -968,6 +974,21 @@
     "pipeline_note": "Les nombres et les montants proviennent de vos propres offres, devis et missions. Rien ici n’est une prévision.",
     "pipeline_empty_title": "Rien dans le pipeline pour l’instant",
     "pipeline_empty_body": "Les offres reçues, les devis envoyés et les missions gagnées apparaîtront ici au fil de leur avancement."
+  },
+  "quote": {
+    "received": "Devis reçus",
+    "received_body": "En accepter un lance le travail avec ce prestataire. Rien d’autre ne change sur cette demande tant que vous ne l’avez pas fait.",
+    "version": "Version {{n}}",
+    "total": "Total",
+    "deposit": "Acompte maintenant",
+    "balance": "À la livraison",
+    "expired": "Ce devis a expiré. Demandez-en un nouveau dans la discussion.",
+    "accept": "Accepter ce devis",
+    "confirm_title": "Accepter ce devis ?",
+    "confirm_body": "{{total}} {{currency}} au total. {{deposit}} {{currency}} sont placés sous séquestre dès maintenant et libérés au prestataire à mesure que le travail avance.",
+    "confirm_yes": "Accepter et démarrer",
+    "accepted": "C’est convenu. Le travail est lancé.",
+    "accept_failed": "Ce devis n’a pas pu être accepté."
   },
   "wd": {
     "title": "Retrait",

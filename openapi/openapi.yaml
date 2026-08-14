@@ -1714,6 +1714,22 @@ paths:
         "404": { $ref: "#/components/responses/Problem" }
 
   /jobs/{job}/quotations:
+    get:
+      tags: [Platform]
+      operationId: listJobQuotations
+      summary: The quotations on a job
+      description: >
+        The job's customer sees every SUBMITTED quotation (a draft is the provider's private working
+        copy and is never disclosed), each with its lines and the quoting provider as a
+        pre-engagement viewer may see them — headline and badge, never a name. A provider sees only
+        their own quotations on this job. Anyone else gets 403, because "no quotes" and "not your
+        job" are different answers.
+      parameters:
+        - { name: job, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        "200": { description: The quotations, content: { application/json: { schema: { type: object, required: [data], properties: { data: { type: array, items: { $ref: "#/components/schemas/Quotation" } } } } } } }
+        "401": { $ref: "#/components/responses/Problem" }
+        "403": { $ref: "#/components/responses/Problem" }
     post:
       tags: [Platform]
       operationId: submitQuotation
@@ -2313,6 +2329,7 @@ components:
         id: { type: string, format: uuid }
         position: { type: integer }
         title: { type: string }
+        title_key: { type: [string, "null"], description: "i18n key when the platform generated this title; null when a person wrote it." }
         amount_minor: { type: integer }
         status: { type: string, enum: [pending, in_progress, submitted, approved, rejected, paid] }
 
@@ -2622,6 +2639,11 @@ components:
         lines:
           type: array
           items: { $ref: "#/components/schemas/QuotationLine" }
+        provider:
+          description: The quoting provider as a pre-engagement viewer may see them. Present on the job's quotation list.
+          oneOf:
+            - $ref: "#/components/schemas/PublicProvider"
+            - type: "null"
 
     QuotationLine:
       type: object
@@ -2713,6 +2735,7 @@ components:
                     properties:
                       id: { type: string, format: uuid }
                       title: { type: string }
+                      title_key: { type: [string, "null"], description: "i18n key when the platform generated this title; null when a person wrote it." }
                       amount_minor: { type: integer }
                       status: { type: string, enum: [pending, in_progress, submitted, approved, rejected, paid] }
         published_at: { type: [string, "null"], format: date-time }

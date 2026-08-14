@@ -31,7 +31,81 @@
       </button>
     }
 
-    <!-- Money -->
+    <!-- Quotes received. A quote arrives before any engagement, so there is no chat thread to carry
+         it — this is the only place it can appear, and until it did the whole quote path dead-ended
+         with a provider having priced a job nobody could accept. -->
+    @if (liveQuotes().length > 0) {
+      <div class="hm-section-head"><h2>{{ 'quote.received' | translate }}</h2></div>
+      <p class="qnote hm-muted">{{ 'quote.received_body' | translate }}</p>
+
+      @for (q of liveQuotes(); track q.id) {
+        <div class="quote hm-card" [class.spent]="q.expired">
+          <div class="q-top">
+            <div class="q-who">
+              <b>{{ q.providerHeadline }}</b>
+              <small class="hm-muted">
+                {{ 'quote.version' | translate:{ n: q.version } }}
+                @if (q.providerRating !== null) {
+                  · {{ q.providerRating }} ({{ q.providerRatingCount }})
+                }
+              </small>
+            </div>
+            @if (q.providerVerified) {
+              <ion-icon class="q-badge" name="shield-checkmark"
+                        [attr.aria-label]="'discover.verified' | translate"></ion-icon>
+            }
+          </div>
+
+          @if (q.lines.length > 0) {
+            <ul class="q-lines">
+              @for (l of q.lines; track l.label) {
+                <li>
+                  <span class="q-label">{{ l.label }}</span>
+                  <span class="q-amt">{{ l.quantity * l.unitPriceMinor | money }}</span>
+                </li>
+              }
+            </ul>
+          }
+
+          <div class="q-money">
+            <div class="q-row big">
+              <span>{{ 'quote.total' | translate }}</span>
+              <span class="val">{{ q.totalMinor | money }} <small>{{ 'money.currency' | translate }}</small></span>
+            </div>
+            <div class="q-row">
+              <span class="hm-muted">{{ 'quote.deposit' | translate }}</span>
+              <span>{{ q.depositMinor | money }} <small>{{ 'money.currency' | translate }}</small></span>
+            </div>
+            <div class="q-row">
+              <span class="hm-muted">{{ 'quote.balance' | translate }}</span>
+              <span>{{ q.balanceMinor | money }} <small>{{ 'money.currency' | translate }}</small></span>
+            </div>
+          </div>
+
+          @if (q.notes) {
+            <p class="q-notes">{{ q.notes }}</p>
+          }
+
+          <!-- An expired quote keeps its numbers and loses its button: the price is a fact worth
+               reading, and offering to accept something the server will refuse is worse than
+               saying plainly that it has run out. -->
+          @if (q.expired) {
+            <p class="q-expired">
+              <ion-icon name="time-outline" aria-hidden="true"></ion-icon>
+              {{ 'quote.expired' | translate }}
+            </p>
+          } @else {
+            <ion-button expand="block" class="q-accept hm-tap" [disabled]="busy()" (click)="accept(q)">
+              {{ 'quote.accept' | translate }}
+            </ion-button>
+          }
+        </div>
+      }
+    }
+
+    <!-- Money. Only once something has actually been agreed: on a job still collecting quotes,
+         "Agreed 0 · In escrow 0 · Released 0" is three zeros pretending to be a statement. -->
+    @if (job().engagementId !== null) {
     <div class="money hm-card">
       <div class="mrow big">
         <span class="hm-muted">{{ 'jobdetail.agreed' | translate }}</span>
@@ -46,6 +120,7 @@
         <span>{{ job().releasedMinor | money }} <small>{{ 'money.currency' | translate }}</small></span>
       </div>
     </div>
+    }
 
     <!-- Milestones -->
     @if (job().milestones.length > 0) {

@@ -259,6 +259,9 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
         Route::post('/offers/{offer}/accept', [OfferController::class, 'accept'])->name('offers.accept');
 
         // Quotations (P2.5-01). A provider submits a priced quote; revision is a new version.
+        // The READ is what lets a customer see a quote at all: it arrives before any engagement, so
+        // there is no conversation to narrate it into and the job is the only place it can surface.
+        Route::get('/jobs/{job}/quotations', [QuotationController::class, 'index'])->name('jobs.quotations.index');
         Route::post('/jobs/{job}/quotations', [QuotationController::class, 'store'])->name('jobs.quotations.store');
         Route::post('/quotations/{quotation}/revise', [QuotationController::class, 'revise'])->name('quotations.revise');
         // Customer accepts a quotation → engagement + milestones (P2.5-05).

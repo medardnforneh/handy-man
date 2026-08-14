@@ -25,6 +25,50 @@ use Illuminate\Http\Request;
  */
 final class QuotationController extends Controller
 {
+    /**
+     * The quotations on a job, as the viewer is entitled to see them (P2.5-01).
+     *
+     * This read did not exist, and its absence was the hole in the middle of the marketplace: a
+     * provider could submit a priced quote and the customer had no way to see it, let alone accept
+     * it. A quote arrives BEFORE any engagement, so there is no conversation to narrate it into
+     * either — the job is the only place it can appear.
+     *
+     * Who sees what: the job's customer sees every quote that has actually been submitted (a draft
+     * is the provider's private working copy and is never disclosed); a provider sees their own
+     * quotes on this job and nobody else's, so the field cannot be read off the endpoint. Anyone
+     * else gets a 403 rather than an empty list, because "no quotes" and "not your job" are
+     * different answers.
+     */
+    public function index(Request $request, Job $job): JsonResponse
+    {
+        /** @var User $user */
+        $user = $request->user();
+
+        $isCustomer = $job->customer_party_id === $user->party_id;
+        abort_unless($isCustomer || $this->hasQuoted($job, $user), 403);
+
+        $quotations = Quotation::query()
+            ->where('job_id', $job->id)
+            ->when($isCustomer,
+                fn ($q) => $q->where('status', '!=', QuoteStatus::Draft->value),
+                fn ($q) => $q->where('provider_party_id', $user->party_id),
+            )
+            ->with(['lines', 'providerProfile.skills.skill'])
+            ->orderByDesc('version')
+            ->orderByDesc('created_at')
+            ->get();
+
+        return QuotationResource::collection($quotations)->response();
+    }
+
+    private function hasQuoted(Job $job, User $user): bool
+    {
+        return Quotation::query()
+            ->where('job_id', $job->id)
+            ->where('provider_party_id', $user->party_id)
+            ->exists();
+    }
+
     public function store(SubmitQuotationRequest $request, Job $job, SubmitQuotation $action): JsonResponse
     {
         /** @var User $user */

@@ -500,6 +500,42 @@ export class ApiService {
   }
 
   /**
+   * The quotations on a job (P2.5-01) — every submitted one for the customer, their own for a
+   * provider.
+   *
+   * A quote arrives BEFORE any engagement, so there is no conversation for the server to narrate it
+   * into; the job is the only place it can surface. Until this existed a provider could price a job
+   * and the customer had no way to see it, which made the whole quote path a dead end.
+   */
+  async jobQuotations(jobId: string) {
+    const { data, error } = await api.GET('/jobs/{job}/quotations', {
+      params: { path: { job: jobId } },
+    });
+    if (error) {
+      throw error;
+    }
+    return data.data;
+  }
+
+  /**
+   * Accept a quotation (P2.5-05) — the customer's side of the quote path.
+   *
+   * This is the moment the marketplace converts: it forms the engagement, generates the milestone
+   * plan and captures the deposit into escrow. Exactly one engagement forms per job even under a
+   * double tap, and a quote that has expired or been superseded comes back 409 rather than
+   * quietly succeeding.
+   */
+  async acceptQuotation(quotationId: string) {
+    const { data, error } = await api.POST('/quotations/{quotation}/accept', {
+      params: { path: { quotation: quotationId }, header: { 'Idempotency-Key': uuid() } },
+    });
+    if (error) {
+      throw error;
+    }
+    return data.data;
+  }
+
+  /**
    * Request a payout of the payable balance to a mobile-money wallet (P3-08).
    *
    * The pending payout RESERVES the funds; the ledger posts only when the gateway confirms, so a

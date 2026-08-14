@@ -110,9 +110,15 @@
                   </div>
                 </div>
 
+                <!-- One action, and it goes where the decision is actually made: the job overview
+                     holds every quote received, with the deposit stated and a confirmation before
+                     any money moves. These were two buttons wired to nothing — a "Counter" the
+                     product has no endpoint for (you negotiate in this thread, and the composer is
+                     right below) and an "Accept & pay" that accepted nothing. -->
                 <div class="acts">
-                  <ion-button class="hm-tap" fill="outline" expand="block">{{ 'workspace.counter' | translate }}</ion-button>
-                  <ion-button class="hm-tap" expand="block">{{ 'workspace.accept_pay' | translate }}</ion-button>
+                  <ion-button class="hm-tap" expand="block" (click)="openJob()">
+                    {{ 'workspace.see_quote' | translate }}
+                  </ion-button>
                 </div>
               </div>
             </div>

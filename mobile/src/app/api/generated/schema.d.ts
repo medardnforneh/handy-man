@@ -1277,7 +1277,11 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /**
+         * The quotations on a job
+         * @description The job's customer sees every SUBMITTED quotation (a draft is the provider's private working copy and is never disclosed), each with its lines and the quoting provider as a pre-engagement viewer may see them — headline and badge, never a name. A provider sees only their own quotations on this job. Anyone else gets 403, because "no quotes" and "not your job" are different answers.
+         */
+        get: operations["listJobQuotations"];
         put?: never;
         /**
          * Submit a priced quotation for a job (provider)
@@ -1783,6 +1787,8 @@ export interface components {
             id: string;
             position: number;
             title: string;
+            /** @description i18n key when the platform generated this title; null when a person wrote it. */
+            title_key?: string | null;
             amount_minor: number;
             /** @enum {string} */
             status: "pending" | "in_progress" | "submitted" | "approved" | "rejected" | "paid";
@@ -2116,6 +2122,8 @@ export interface components {
             /** Format: date-time */
             responded_at?: string | null;
             lines?: components["schemas"]["QuotationLine"][];
+            /** @description The quoting provider as a pre-engagement viewer may see them. Present on the job's quotation list. */
+            provider?: components["schemas"]["PublicProvider"] | null;
         };
         QuotationLine: {
             position: number;
@@ -2195,6 +2203,8 @@ export interface components {
                     /** Format: uuid */
                     id: string;
                     title: string;
+                    /** @description i18n key when the platform generated this title; null when a person wrote it. */
+                    title_key?: string | null;
                     amount_minor: number;
                     /** @enum {string} */
                     status: "pending" | "in_progress" | "submitted" | "approved" | "rejected" | "paid";
@@ -4740,6 +4750,32 @@ export interface operations {
             401: components["responses"]["Problem"];
             403: components["responses"]["Problem"];
             404: components["responses"]["Problem"];
+        };
+    };
+    listJobQuotations: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                job: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The quotations */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["Quotation"][];
+                    };
+                };
+            };
+            401: components["responses"]["Problem"];
+            403: components["responses"]["Problem"];
         };
     };
     submitQuotation: {

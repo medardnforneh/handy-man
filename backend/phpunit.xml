@@ -38,6 +38,16 @@
         <env name="DB_USERNAME" value="postgres"/>
         <env name="DB_PASSWORD" value=""/>
         <env name="DB_URL" value=""/>
+        <!-- Pinned to the PRODUCTION defaults, because the OTP limits are a security control and
+             the suite must test the shipped numbers. Local `.env` raises them to a thousand so a
+             morning of clicking through the app is not spent locked out — which silently turned
+             "rejects the 4th OTP request" into a test of the developer's own env file, and it
+             stopped failing when it should have. -->
+        <env name="OTP_MAX_PER_PHONE_PER_HOUR" value="3"/>
+        <env name="OTP_MAX_PER_IP_PER_HOUR" value="10"/>
+        <env name="OTP_MAX_PER_DEVICE_PER_HOUR" value="5"/>
+        <env name="OTP_MAX_VERIFY_ATTEMPTS" value="5"/>
+        <env name="OTP_TTL_MINUTES" value="5"/>
         <env name="MAIL_MAILER" value="array"/>
         <env name="QUEUE_CONNECTION" value="sync"/>
         <env name="SESSION_DRIVER" value="array"/>

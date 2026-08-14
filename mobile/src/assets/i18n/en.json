@@ -267,6 +267,7 @@
     "on_completion": "On completion",
     "accept_pay": "Accept & pay deposit",
     "counter": "Counter",
+    "see_quote": "See the quote",
     "quote_accepted": "You accepted the quote · escrow funded",
     "on_the_way": "Provider is on the way",
     "arrived": "Provider arrived",
@@ -756,7 +757,12 @@
     "pending": "Pending",
     "in_progress": "In progress",
     "submitted": "Submitted",
-    "paid": "Paid"
+    "paid": "Paid",
+    "title": {
+      "deposit": "Deposit",
+      "balance": "Balance",
+      "full_payment": "Full payment"
+    }
   },
   "pro": {
     "title": "Provider",
@@ -968,6 +974,21 @@
     "pipeline_note": "Counts and amounts come from your own offers, quotes and jobs. Nothing here is a forecast.",
     "pipeline_empty_title": "Nothing in the pipeline yet",
     "pipeline_empty_body": "Offers you receive, quotes you send and jobs you win will show up here as they move."
+  },
+  "quote": {
+    "received": "Quotes received",
+    "received_body": "Accepting one starts the work with that provider. Nothing else on this job is affected until you do.",
+    "version": "Version {{n}}",
+    "total": "Total",
+    "deposit": "Deposit now",
+    "balance": "On completion",
+    "expired": "This quote has run out. Ask for a new one in the chat.",
+    "accept": "Accept this quote",
+    "confirm_title": "Accept this quote?",
+    "confirm_body": "{{total}} {{currency}} in total. {{deposit}} {{currency}} goes into escrow now and is released to the provider as the work is done.",
+    "confirm_yes": "Accept and start",
+    "accepted": "Agreed. The work is under way.",
+    "accept_failed": "That quote could not be accepted."
   },
   "wd": {
     "title": "Withdraw",

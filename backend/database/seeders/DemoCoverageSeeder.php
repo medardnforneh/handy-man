@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
+use App\Domain\Jobs\JobStatus;
 use App\Domain\Safety\SafetyAlertKind;
 use App\Models\Assignment;
 use App\Models\Block;
@@ -22,6 +23,8 @@ use App\Models\JobOffer;
 use App\Models\JobReport;
 use App\Models\ProviderProfile;
 use App\Models\ProviderSkill;
+use App\Models\Quotation;
+use App\Models\QuotationLine;
 use App\Models\Referral;
 use App\Models\ReferralCode;
 use App\Models\Report;
@@ -73,6 +76,7 @@ final class DemoCoverageSeeder extends Seeder
         }
 
         $this->supply();
+        $this->quotes($providers);
         $this->identity($providers, $customers, $admin);
         $this->trustAndSafety($providers, $customers, $admin);
         $this->reputation($providers, $customers);
@@ -81,6 +85,99 @@ final class DemoCoverageSeeder extends Seeder
         $this->lifecycle($providers, $customers);
 
         $this->command->info('Coverage data seeded — every admin queue and app screen now has rows.');
+    }
+
+    /**
+     * Live quotations sitting on the open jobs, waiting to be accepted.
+     *
+     * Without these the demo had no job in the one state the marketplace actually turns on: a
+     * customer holding a price and deciding. Every seeded engagement was already accepted, so the
+     * "Quotes received" section — and the accept path behind it — was unreachable in the demo data
+     * even after it existed in the product.
+     *
+     * Two providers quote the FIRST open job, deliberately: one quote is a decision, two is a
+     * comparison, and the screen has to hold both without either looking like the default.
+     *
+     * @param  Collection<int, User>  $providers
+     */
+    private function quotes(Collection $providers): void
+    {
+        if (Quotation::query()->where('status', 'submitted')->whereDoesntHave('job.engagement')->exists()) {
+            return;
+        }
+
+        $open = Job::query()
+            ->whereIn('status', [JobStatus::Open, JobStatus::Offered])
+            ->whereDoesntHave('engagement')
+            ->orderBy('created_at')
+            ->take(2)
+            ->get();
+
+        $plans = [
+            [
+                'deposit' => 60_000,
+                'notes' => 'Déplacement inclus. Intervention sous 48 h, garantie 3 mois sur la main-d’œuvre.',
+                'lines' => [
+                    ['labour', 'Pose et raccordement', 180_000],
+                    ['material', 'Kit de fixation et tuyauterie', 45_000],
+                    ['travel', 'Déplacement', 15_000],
+                ],
+            ],
+            [
+                'deposit' => 0,
+                'notes' => 'Sans acompte. Paiement à la fin, après votre validation.',
+                // Dearer than the first, and no deposit — the trade-off a customer is actually
+                // being asked to weigh. Two quotes at the same price would compare nothing.
+                'lines' => [
+                    ['labour', 'Main-d’œuvre forfaitaire', 235_000],
+                    ['material', 'Fournitures', 30_000],
+                ],
+            ],
+        ];
+
+        foreach ($open as $index => $job) {
+            // The first job gets both quotes; the second gets one, so the list renders in both shapes.
+            $count = $index === 0 ? 2 : 1;
+
+            // Quote from someone who actually does this trade where we can. A climatisation
+            // specialist quoting a graphic-design job is the kind of detail that makes a demo read
+            // as generated rather than real.
+            $matching = ProviderSkill::query()
+                ->where('skill_id', $job->skill_id)
+                ->pluck('provider_party_id')
+                ->all();
+            $qualified = $providers->whereIn('party_id', $matching)->values();
+            $pool = $qualified->count() >= $count ? $qualified : $providers;
+
+            foreach (range(0, $count - 1) as $n) {
+                $plan = $plans[$n % count($plans)];
+                $provider = $pool[($index + $n) % $pool->count()];
+
+                $quote = Quotation::factory()->submitted()->create([
+                    'job_id' => $job->id,
+                    'provider_party_id' => $provider->party_id,
+                    'subtotal_minor' => array_sum(array_column($plan['lines'], 2)),
+                    'deposit_minor' => $plan['deposit'],
+                    'notes' => $plan['notes'],
+                    'valid_until' => now()->addDays(5 + $n),
+                ]);
+
+                // Lines are frozen once a quote is submitted (a DB trigger, doc 06), so they are
+                // written while it is still a draft and the status is set afterwards.
+                $quote->forceFill(['status' => 'draft'])->saveQuietly();
+                foreach ($plan['lines'] as $position => [$kind, $label, $price]) {
+                    QuotationLine::query()->create([
+                        'quotation_id' => $quote->id,
+                        'position' => $position,
+                        'kind' => $kind,
+                        'label' => $label,
+                        'quantity' => '1',
+                        'unit_price_minor' => $price,
+                    ]);
+                }
+                $quote->forceFill(['status' => 'submitted'])->saveQuietly();
+            }
+        }
     }
 
     /** Consents, devices, emergency contacts and the verification queue. */

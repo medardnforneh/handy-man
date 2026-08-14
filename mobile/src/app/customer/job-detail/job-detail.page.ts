@@ -1,10 +1,10 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { IonicModule, ToastController } from '@ionic/angular';
+import { AlertController, IonicModule, ToastController } from '@ionic/angular';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { OfflineStripComponent } from '../../core/offline/offline-strip.component';
-import { JobDetail, JobStatus, MilestoneStatus } from '../customer.models';
+import { JobDetail, JobQuote, JobStatus, MilestoneStatus } from '../customer.models';
 import { CustomerService } from '../customer.service';
 import { MoneyPipe } from '../money.pipe';
 
@@ -25,7 +25,10 @@ export class JobDetailPage {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly toasts = inject(ToastController);
+  private readonly alerts = inject(AlertController);
   private readonly translate = inject(TranslateService);
+  /** Plain class, no DI: the confirmation needs the same grouped figures the card shows. */
+  private readonly money = new MoneyPipe();
 
   private readonly id = this.route.snapshot.paramMap.get('id') ?? '';
   readonly job = signal<JobDetail>(this.customers.jobDetail(this.id));
@@ -51,6 +54,15 @@ export class JobDetailPage {
     return job.engagementId !== null && job.completedAt !== null && !job.reviewed;
   });
 
+  /**
+   * Quotes received on this job. Null until read; the section is absent rather than empty in that
+   * case, because "nobody has quoted yet" is a claim we should only make when we know it.
+   */
+  readonly quotes = signal<JobQuote[] | null>(null);
+
+  /** What is actually acceptable — an engagement already exists once one has been accepted. */
+  readonly liveQuotes = computed(() => (this.job().engagementId === null ? this.quotes() ?? [] : []));
+
   constructor() {
     // Show the fixture instantly, then swap in the real job (GET /jobs/{id}) if reachable.
     void this.customers.fetchJobDetail(this.id).then((real) => {
@@ -58,6 +70,63 @@ export class JobDetailPage {
         this.job.set(real);
       }
     });
+    void this.loadQuotes();
+  }
+
+  private async loadQuotes(): Promise<void> {
+    this.quotes.set(await this.customers.fetchQuotes(this.id));
+  }
+
+  /**
+   * Accept a quote — the engagement forms, the milestone plan is generated and the deposit is
+   * captured into escrow (P2.5-05).
+   *
+   * Confirmed first, with the two numbers that matter said out loud. This is the one action on this
+   * screen that commits the customer to a price and a person, and it cannot be taken back from
+   * here; a mis-tap on a card in a list is exactly how that happens.
+   */
+  async accept(quote: JobQuote): Promise<void> {
+    if (this.busy() || quote.expired) {
+      return;
+    }
+
+    const confirmed = await this.confirm(quote);
+    if (!confirmed) {
+      return;
+    }
+
+    this.busy.set(true);
+    const result = await this.customers.acceptQuote(quote.id);
+    await this.refresh();
+    await this.loadQuotes();
+    this.busy.set(false);
+
+    if (result.ok) {
+      await this.toast('quote.accepted', 'success');
+      return;
+    }
+    // The server's own words: a refusal here means the quote lapsed, or another one already formed
+    // the engagement — the single fact the customer needs, which "something went wrong" would hide.
+    await this.toast(result.detail ?? this.translate.instant('quote.accept_failed'), 'danger', true);
+  }
+
+  private async confirm(quote: JobQuote): Promise<boolean> {
+    const alert = await this.alerts.create({
+      header: this.translate.instant('quote.confirm_title'),
+      message: this.translate.instant('quote.confirm_body', {
+        total: this.money.transform(quote.totalMinor),
+        deposit: this.money.transform(quote.depositMinor),
+        currency: this.translate.instant('money.currency'),
+      }),
+      buttons: [
+        { text: this.translate.instant('common.cancel'), role: 'cancel' },
+        { text: this.translate.instant('quote.confirm_yes'), role: 'confirm' },
+      ],
+    });
+    await alert.present();
+    const { role } = await alert.onDidDismiss();
+
+    return role === 'confirm';
   }
 
   tone(status: JobStatus): string {
@@ -149,9 +218,11 @@ export class JobDetailPage {
     }
   }
 
-  private async toast(key: string, color: 'success' | 'danger'): Promise<void> {
+  private async toast(key: string, color: 'success' | 'danger', raw = false): Promise<void> {
     const toast = await this.toasts.create({
-      message: this.translate.instant(key),
+      // `raw` is for a message the SERVER wrote — it is already a sentence in the reader's
+      // language, and running it through the translator would only fail to find a key.
+      message: raw ? key : this.translate.instant(key),
       duration: color === 'success' ? 3000 : 4000,
       position: 'top',
       color,

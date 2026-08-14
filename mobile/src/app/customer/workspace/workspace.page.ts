@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, effect, inject, signal } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { TranslatePipe } from '@ngx-translate/core';
 import { OfflineStripComponent } from '../../core/offline/offline-strip.component';
@@ -36,6 +36,7 @@ export class WorkspacePage implements OnDestroy {
   private readonly recorder = inject(VoiceRecorderService);
   private readonly queue = inject(WriteQueue);
   private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
 
   private readonly jobId = this.route.snapshot.paramMap.get('id') ?? '';
 
@@ -367,5 +368,16 @@ export class WorkspacePage implements OnDestroy {
       default:
         return 'tone-info';
     }
+  }
+
+  /**
+   * The job overview, where quotes are read and accepted.
+   *
+   * The quote card in this thread used to carry its own "Accept & pay" and "Counter" buttons, both
+   * wired to nothing. Accepting spends money and commits to a provider — it belongs on the screen
+   * that can show every quote received side by side and confirm the figures first.
+   */
+  openJob(): void {
+    void this.router.navigate(['/job', this.jobId]);
   }
 }

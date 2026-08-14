@@ -7,6 +7,7 @@ namespace App\Domain\Quotations\Actions;
 use App\Domain\Engagements\LeadAssigner;
 use App\Domain\Jobs\JobStateMachine;
 use App\Domain\Jobs\JobStatus;
+use App\Domain\Money\GeneratedMilestone;
 use App\Domain\Quotations\QuotationStateMachine;
 use App\Domain\Quotations\QuoteNotAcceptable;
 use App\Domain\Quotations\QuoteStatus;
@@ -131,11 +132,11 @@ final class AcceptQuotation
     {
         if ($deposit > 0 && $deposit < $total) {
             return [
-                ['position' => 0, 'title' => 'Deposit', 'amount_minor' => $deposit],
-                ['position' => 1, 'title' => 'Balance', 'amount_minor' => $total - $deposit],
+                ['position' => 0, 'title' => GeneratedMilestone::Deposit->value, 'amount_minor' => $deposit],
+                ['position' => 1, 'title' => GeneratedMilestone::Balance->value, 'amount_minor' => $total - $deposit],
             ];
         }
 
-        return [['position' => 0, 'title' => 'Full payment', 'amount_minor' => $total]];
+        return [['position' => 0, 'title' => GeneratedMilestone::FullPayment->value, 'amount_minor' => $total]];
     }
 }

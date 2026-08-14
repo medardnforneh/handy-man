@@ -107,6 +107,7 @@ in the app yet — see §4.
 | **Post a request** | App → **Jobs** → the **+** (or the button in the empty state, if you have no jobs) | Title, category, trade, on-site/remote, address, budget |
 | **Save an address** | During the request, or Account → **Add an address** | Needs a location fix — the browser will ask. Without a real point the address can never be matched to a provider, so it will not save |
 | Job list and detail | App → **Jobs** | Status, money, milestone progress |
+| **Read and accept a quote** | Jobs → an open job with quotes (sign in as `620000001`) | Two quotes at different prices, one with a deposit and one without. Accepting confirms the figures, forms the engagement, funds escrow and generates the milestone plan |
 | Matched providers | A job → **See providers** | Skill + coverage matched (on-site), whole pool (remote) |
 
 ### Doing the work (provider)
@@ -180,7 +181,7 @@ The API can do these; the app has no screen for them. This is the honest list �
 
 | Feature | Status | Where you can still see it |
 |---|---|---|
-| Accepting or revising a quote | No UI | |
+| Revising a quote (provider side) | No UI — a provider cannot re-price a submitted quote from the app | Admin → Engagements |
 | Reviewing a deliverable | No UI | Admin → Engagements |
 | Panic button, emergency contacts | No UI | Admin → Safety alerts (seeded) |
 | Blocking and reporting a person | No UI | Admin → Reports (seeded) |

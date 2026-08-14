@@ -6,6 +6,7 @@ namespace App\Http\Resources\Api\V1;
 
 use App\Domain\Engagements\MilestoneStatus;
 use App\Domain\Jobs\EngagementModePolicy;
+use App\Domain\Money\GeneratedMilestone;
 use App\Models\Engagement;
 use App\Models\Job;
 use App\Models\Review;
@@ -114,6 +115,9 @@ final class JobResource extends JsonResource
             'milestones' => $milestones->map(fn ($m) => [
                 'id' => $m->id,
                 'title' => $m->title,
+                // Null for a title a person wrote; a key for one the platform generated, so the
+                // client can say "Acompte" rather than echoing our English back at a French reader.
+                'title_key' => GeneratedMilestone::keyFor($m->title),
                 'amount_minor' => $m->amount_minor,
                 'status' => $m->status->value,
             ])->all(),
