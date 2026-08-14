@@ -520,6 +520,60 @@ export class ApiService {
     return data.data;
   }
 
+  /** Who the caller has blocked (P6-07), newest first, each labelled well enough to recognise. */
+  async blocks() {
+    const { data, error } = await api.GET('/blocks');
+    if (error) {
+      throw error;
+    }
+    return data.data;
+  }
+
+  /**
+   * Block a party (P6-07). Honoured in search, dispatch ranking and offer creation — and
+   * BIDIRECTIONALLY, so the two are never matched again in either direction.
+   */
+  async blockParty(partyId: string) {
+    const { data, error } = await api.POST('/blocks', {
+      body: { blocked_party_id: partyId },
+      params: { header: { 'Idempotency-Key': uuid() } },
+    });
+    if (error) {
+      throw error;
+    }
+    return data.data;
+  }
+
+  /** Lift a block the caller placed (P6-07). */
+  async unblockParty(partyId: string) {
+    const { error } = await api.DELETE('/blocks/{party}', {
+      params: { path: { party: partyId }, header: { 'Idempotency-Key': uuid() } },
+    });
+    if (error) {
+      throw error;
+    }
+  }
+
+  /**
+   * Report a party (P6-07). Queues a HUMAN review and never auto-penalises anyone — which is why
+   * the app can promise a person will read it rather than implying an instant consequence.
+   */
+  async fileReport(body: {
+    subject_party_id: string;
+    category: 'fraud' | 'no_show' | 'harassment' | 'safety' | 'spam' | 'off_platform' | 'other';
+    body: string;
+    job_id?: string | null;
+  }) {
+    const { data, error } = await api.POST('/reports', {
+      body,
+      params: { header: { 'Idempotency-Key': uuid() } },
+    });
+    if (error) {
+      throw error;
+    }
+    return data.data;
+  }
+
   /** The caller's emergency contacts (P6-04) — who a panic alert reaches. */
   async emergencyContacts() {
     const { data, error } = await api.GET('/emergency-contacts');

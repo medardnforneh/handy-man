@@ -4,6 +4,15 @@
       <ion-back-button defaultHref="/tabs/discover" [text]="''"></ion-back-button>
     </ion-buttons>
     <ion-title>{{ provider().name }}</ion-title>
+    <!-- Reporting and blocking live behind the overflow, not on the page: they should be findable
+         without being suggested, since most people looking at a profile are deciding whether to
+         hire, not whether to complain. -->
+    <ion-buttons slot="end">
+      <ion-button class="hm-tap" (click)="openActions()">
+        <ion-icon slot="icon-only" name="ellipsis-horizontal" aria-hidden="true"></ion-icon>
+        <span class="sr-only">{{ 'safety.more' | translate }}</span>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
@@ -149,3 +158,66 @@
     </ion-button>
   </div>
 </ion-footer>
+
+<!-- Reporting someone (P6-07). A category and their own words: the category routes it, the words
+     are what a person on the team actually reads. -->
+<ion-modal [isOpen]="reportOpen()" (didDismiss)="closeReport()">
+  <ng-template>
+    <ion-header class="ion-no-border">
+      <ion-toolbar>
+        <ion-buttons slot="start">
+          <ion-button (click)="closeReport()">{{ 'common.cancel' | translate }}</ion-button>
+        </ion-buttons>
+        <ion-title>{{ 'report.title' | translate }}</ion-title>
+      </ion-toolbar>
+    </ion-header>
+
+    <ion-content>
+      <div class="sheet">
+        <span class="flabel">{{ 'report.category' | translate }}</span>
+        <div class="cats">
+          @for (c of categories; track c) {
+            <button
+              type="button"
+              class="cat hm-tap"
+              [class.on]="category() === c"
+              (click)="category.set(c)"
+            >{{ ('report.cat.' + c) | translate }}</button>
+          }
+        </div>
+
+        <label class="field">
+          <span class="flabel">{{ 'report.body_label' | translate }}</span>
+          <textarea
+            class="ftext"
+            rows="5"
+            [ngModel]="reportBody()"
+            (ngModelChange)="reportBody.set($event)"
+            [placeholder]="'report.body_ph' | translate"
+            maxlength="5000"
+          ></textarea>
+        </label>
+        @if (reportBodyMissing()) {
+          <p class="err">{{ 'report.body_required' | translate }}</p>
+        }
+
+        <p class="note">
+          <ion-icon name="information-circle-outline" aria-hidden="true"></ion-icon>
+          <span>{{ 'report.note' | translate }}</span>
+        </p>
+      </div>
+    </ion-content>
+
+    <ion-footer class="ion-no-border">
+      <div class="cta">
+        <ion-button expand="block" class="hm-tap" [disabled]="reporting()" (click)="sendReport()">
+          @if (reporting()) {
+            <ion-spinner name="crescent"></ion-spinner>
+          } @else {
+            {{ 'report.send' | translate }}
+          }
+        </ion-button>
+      </div>
+    </ion-footer>
+  </ng-template>
+</ion-modal>

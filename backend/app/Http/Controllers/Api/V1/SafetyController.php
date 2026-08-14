@@ -31,7 +31,12 @@ final class SafetyController extends Controller
 {
     public function blocks(Request $request): JsonResponse
     {
-        $blocks = Block::query()->where('party_id', $this->user($request)->party_id)->get();
+        $blocks = Block::query()
+            ->where('party_id', $this->user($request)->party_id)
+            // Eager-loaded so the list can be labelled — see BlockResource.
+            ->with('blockedParty.providerProfile')
+            ->latest('created_at')
+            ->get();
 
         return BlockResource::collection($blocks)->response();
     }

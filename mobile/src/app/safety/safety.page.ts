@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { IonicModule, ToastController } from '@ionic/angular';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { EmptyStateComponent } from '../core/ui/empty-state.component';
-import { EmergencyContact, SafetyService } from '../core/safety.service';
+import { BlockedParty, EmergencyContact, SafetyService } from '../core/safety.service';
 
 /** How long the panic button must be held. Long enough not to fire in a pocket, short enough to
  *  be over before you have thought about it. */
@@ -36,6 +36,9 @@ export class SafetyPage {
   readonly contacts = signal<EmergencyContact[] | null>(null);
   readonly loadFailed = signal(false);
 
+  /** Who this person has blocked (P6-07). The only place a block can be lifted. */
+  readonly blocked = signal<BlockedParty[]>([]);
+
   /** 0 → 1 while the button is held. Drives the ring, so the wait is visible rather than guessed. */
   readonly holdProgress = signal(0);
   /** The comparison lives here, not in the template: `>` inside an attribute also ends a tag to
@@ -65,6 +68,19 @@ export class SafetyPage {
     const rows = await this.safety.contacts();
     this.loadFailed.set(rows === null);
     this.contacts.set(rows);
+    this.blocked.set((await this.safety.blocks()) ?? []);
+  }
+
+  /**
+   * Lift a block. Not confirmed: unblocking is the reversible direction — it only makes matching
+   * possible again, and the same person can be blocked once more in two taps.
+   */
+  async unblock(party: BlockedParty): Promise<void> {
+    const ok = await this.safety.unblock(party.partyId);
+    if (ok) {
+      this.blocked.update((rows) => rows.filter((r) => r.partyId !== party.partyId));
+    }
+    await this.say(ok ? 'block.unblocked' : 'errors.generic', ok);
   }
 
   // --- the panic button ---------------------------------------------------------------------------

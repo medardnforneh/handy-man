@@ -1000,7 +1000,41 @@
     "contact_added": "Contact ajouté.",
     "contact_removed": "Contact retiré.",
     "contact_failed": "Ce contact n’a pas pu être enregistré.",
-    "contact_note": "Ils ne sont contactés que si vous donnez l’alerte. Nous ne leur écrivons jamais autrement, et ils ne voient rien de vos interventions."
+    "contact_note": "Ils ne sont contactés que si vous donnez l’alerte. Nous ne leur écrivons jamais autrement, et ils ne voient rien de vos interventions.",
+    "more": "Plus"
+  },
+  "report": {
+    "title": "Signaler ce prestataire",
+    "category": "De quoi s’agit-il ?",
+    "cat": {
+      "no_show": "Ne s’est pas présenté",
+      "fraud": "Fraude",
+      "harassment": "Harcèlement",
+      "safety": "Danger",
+      "off_platform": "A demandé de sortir de HandyMan",
+      "spam": "Spam",
+      "other": "Autre chose"
+    },
+    "body_label": "Que s’est-il passé ?",
+    "body_ph": "Racontez ce qui s’est passé, avec le plus de détails possible.",
+    "body_required": "Racontez ce qui s’est passé.",
+    "note": "Une personne de notre équipe lit chaque signalement. Personne n’est sanctionné automatiquement, et nous ne disons jamais à l’autre personne qui l’a signalée.",
+    "send": "Envoyer le signalement",
+    "sent": "Signalement envoyé. Une personne de notre équipe le lira.",
+    "failed": "Le signalement n’a pas pu être envoyé. Veuillez réessayer."
+  },
+  "block": {
+    "action": "Bloquer ce prestataire",
+    "confirm_title": "Bloquer {{name}} ?",
+    "confirm_body": "Vous ne serez plus mis en relation — ni dans la recherche, ni dans une suggestion, ni dans une offre. Vous pouvez annuler cela depuis Sécurité.",
+    "confirm_yes": "Bloquer",
+    "done": "Bloqué. Vous ne serez plus mis en relation.",
+    "failed": "L’opération a échoué. Veuillez réessayer.",
+    "blocked": "Bloqués",
+    "blocked_body": "Vous n’êtes jamais mis en relation avec ces personnes, dans aucun sens.",
+    "unblock": "Débloquer",
+    "unblocked": "Débloqué.",
+    "unknown": "Une personne que vous avez bloquée"
   },
   "quote": {
     "received": "Devis reçus",

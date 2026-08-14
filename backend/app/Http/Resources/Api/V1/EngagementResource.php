@@ -48,9 +48,9 @@ final class EngagementResource extends JsonResource
                 'title_key' => GeneratedMilestone::keyFor($m->title),
                 'amount_minor' => $m->amount_minor,
                 'status' => $m->status->value,
-            // `->all()`, like JobResource: a Collection's value type is invariant, so returning one
-            // whose element shape is precisely typed (title_key is `string|null`, not `mixed`)
-            // fails to match itself. The wire format is identical either way.
+                // `->all()`, like JobResource: a Collection's value type is invariant, so returning one
+                // whose element shape is precisely typed (title_key is `string|null`, not `mixed`)
+                // fails to match itself. The wire format is identical either way.
             ])->all()),
         ];
     }

@@ -1000,7 +1000,41 @@
     "contact_added": "Contact added.",
     "contact_removed": "Contact removed.",
     "contact_failed": "That contact could not be saved.",
-    "contact_note": "They are only contacted if you raise an alert. We never message them otherwise, and they cannot see anything about your jobs."
+    "contact_note": "They are only contacted if you raise an alert. We never message them otherwise, and they cannot see anything about your jobs.",
+    "more": "More"
+  },
+  "report": {
+    "title": "Report this provider",
+    "category": "What is this about?",
+    "cat": {
+      "no_show": "Did not turn up",
+      "fraud": "Fraud",
+      "harassment": "Harassment",
+      "safety": "Unsafe",
+      "off_platform": "Asked to go off HandyMan",
+      "spam": "Spam",
+      "other": "Something else"
+    },
+    "body_label": "What happened?",
+    "body_ph": "Tell us what happened, with as much detail as you can.",
+    "body_required": "Tell us what happened.",
+    "note": "Someone on our team reads every report. Nobody is penalised automatically, and we never tell the other person who reported them.",
+    "send": "Send the report",
+    "sent": "Report sent. Someone on our team will read it.",
+    "failed": "The report could not be sent. Please try again."
+  },
+  "block": {
+    "action": "Block this provider",
+    "confirm_title": "Block {{name}}?",
+    "confirm_body": "You will not be matched with each other again — not in search, not in a suggestion, not in an offer. You can undo this from Safety.",
+    "confirm_yes": "Block",
+    "done": "Blocked. You will not be matched again.",
+    "failed": "That could not be done. Please try again.",
+    "blocked": "Blocked",
+    "blocked_body": "You are never matched with these people, in either direction.",
+    "unblock": "Unblock",
+    "unblocked": "Unblocked.",
+    "unknown": "Someone you blocked"
   },
   "quote": {
     "received": "Quotes received",

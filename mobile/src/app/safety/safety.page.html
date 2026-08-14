@@ -85,6 +85,25 @@
         ></app-empty-state>
       }
     }
+
+    <!-- Blocked people. Only listed once there is one: a heading over "nobody is blocked" is a
+         section about nothing, on a screen someone may be reading in a hurry. -->
+    @if (blocked().length) {
+      <div class="hm-section-head"><h2>{{ 'block.blocked' | translate }}</h2></div>
+      <p class="gnote hm-muted">{{ 'block.blocked_body' | translate }}</p>
+
+      @for (b of blocked(); track b.partyId) {
+        <div class="crow hm-card">
+          <span class="cav blk" aria-hidden="true"><ion-icon name="ban-outline"></ion-icon></span>
+          <span class="ctext">
+            <b>{{ b.label || ('block.unknown' | translate) }}</b>
+          </span>
+          <ion-button fill="clear" size="small" class="hm-tap" (click)="unblock(b)">
+            {{ 'block.unblock' | translate }}
+          </ion-button>
+        </div>
+      }
+    }
   </div>
 </ion-content>
 

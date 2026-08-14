@@ -3,11 +3,10 @@
 > Living tracker for the build. Updated as work progresses. Source of truth for **where we
 > are** and **how this machine is set up**. Read this first when resuming.
 
-_Last updated: 2026-08-13 (Ionic app pass: one shared empty state, disabled buttons that vanished,
-Discover density + a location chip that was never real, provider signup and address saving — neither
-of which existed, and without the second no on-site job could be posted at all — and a fact cache
-that returned a broken object on every hit; before that the public site + seed data and the admin
-queues)_
+_Last updated: 2026-08-14 (blocking and reporting a person — the last uncalled safety operations —
+plus a destructive action sheet that was not destructive and an aria binding that threw on every
+provider profile; before that the panic alert, quotations the customer could finally see, and a
+Withdraw button that requested nothing)_
 
 ## Environment (this dev machine — Windows 10 Pro, non-admin)
 
@@ -274,7 +273,7 @@ founder-owned legal items in doc 05's launch checklist.
     surfaces (P4-04..07), the offline layer (P5-02) and the PWA/Android build (P5-01) have all
     landed, and native networking on device now works (CapacitorHttp).
 
-## ⚠ Open gap: 31 of 92 API operations are never called by the app
+## ⚠ Open gap: 27 of 92 API operations are never called by the app
 
 Found 2026-08-13 by a mechanical sweep of `openapi/openapi.yaml` against every `.ts` file in
 `mobile/src/app` (`operationId` → does any client file contain the literal path?). The check is
@@ -295,7 +294,7 @@ function the admin panel performs, and `GET /provider/credits`, whose one number
 | Group | Operations | What is impossible in the app today |
 |---|---|---|
 | ~~Reputation~~ | ~~`POST /engagements/{e}/reviews`~~ | **Closed 2026-08-13** — the review form lives on the job detail page |
-| Safety | ~~`/safety/panic`~~, ~~`/emergency-contacts` ×3~~ (closed 2026-08-14), `/blocks` ×3, `/reports` | **The panic alert and its contacts have a screen now.** Blocking and reporting a person (P6-07) still have no UI |
+| ~~Safety~~ | ~~`/safety/panic`~~, ~~`/emergency-contacts` ×3~~, ~~`/blocks` ×3~~, ~~`/reports`~~ | **Closed 2026-08-14** — the alarm, its contacts, and blocking/reporting a person (P6-07) all have UI |
 | ~~Verification~~ | ~~`/verification-documents` ×2~~ | **Closed 2026-08-14** — the profile's VERIFY button opens a real screen; upload → admin approval → tier rise works end to end |
 | Finishing work | ~~`/engagements/{e}/complete`~~, ~~`/quotations/{q}/accept`~~ (both closed), `/deliverables/{d}/review`, `/quotations/{q}/revise`, `/jobs/{job}/site-visits`, `/site-visits/{v}/complete` | **A quote can be accepted now** (2026-08-14). A deliverable still cannot be reviewed, and a provider cannot revise a submitted quote from the app |
 | Money out | ~~`/provider/payouts`~~, ~~`/provider/credits`~~, `/engagements/{e}/refund`, `/engagements/{e}/cash-settlements` | **Closed 2026-08-14** — Withdraw posts a real payout, and lead credits ride along in the earnings payload. No refund and no cash settlement yet |
@@ -309,6 +308,43 @@ Regenerate the list any time with the sweep script pattern above; it takes secon
 found four real defects.
 
 ## What was done, most recent first
+
+- **You could be matched with someone you never wanted to see again.** `/blocks` ×3 and `/reports`
+  were uncalled (P6-07). The server has honoured a block in search, in the public directory and at
+  offer creation since Phase 6 — bidirectionally — and no one could place one. Reporting had the
+  same shape: a `reports` table an admin queue reads, that nothing could write to.
+  - Both live behind an **overflow on the provider profile**, not on the page. Almost everyone
+    looking at a profile is deciding whether to hire; the two people who need this need to find it,
+    not to be offered it.
+  - **Reporting** is a category and their own words. The seven categories are chips rather than a
+    select — one of them is `off_platform`, which is the thing the marketplace most needs told, and
+    a dropdown hides what the platform will act on. The note under it promises exactly what the
+    server does: a person reads it, nobody is penalised automatically, and the reported party is
+    never told who reported them.
+  - **Blocking** confirms first and the dialog says what it costs — never matched again, in either
+    direction — and that Safety can undo it. A boundary nobody can find their way back out of is one
+    people are afraid to use. On success it leaves the profile: a page you have just blocked, with a
+    "request a quote" button the server would now refuse, is not one to be left sitting on.
+  - Lifting a block is **not** confirmed. Unblocking is the reversible direction, and the same
+    person can be blocked again in two taps.
+  - **`GET /blocks` returned bare UUIDs.** "Unblock this id" is not a decision a person can make, so
+    the row now carries `blocked_label` — the provider headline where there is one, the display name
+    otherwise, and never more than that (P2-03). Eager-loaded, newest first; 3 tests.
+  - Three defects found by rendering it. **`role: 'destructive'` does nothing on Material** — Ionic
+    ships that colour for iOS only — so "Block" read exactly like "Report" and "Cancel", three
+    identical dark lines, one of which cuts a person off; it wears the danger token now (in
+    `ui.scss`, beside the disabled-button rule, which is the same class of Ionic defect). The
+    overflow's `[attr.aria-label]` on an `ion-button` threw `onAriaChanged` on **every** visit to
+    the profile — the exact trap `.sr-only` was written for, now using it. And the report sheet
+    shared the page's `sending` flag with the offer button; it has its own.
+  - Verified end to end against the live API in French: a report lands as `fraud`/`open` with the
+    body verbatim, a block lands and the profile falls back to Discover, both blocked rows read as
+    headlines on Safety, and unblocking drops the row and the database row with it. 27 uncalled
+    operations, of 92 — down from 31 when the sweep was written.
+  - **Found, not fixed (next):** `/safety` is deliberately outside both shells, and locale
+    reconciliation lives in `CustomerService.loadMe()`. Cold-starting onto the emergency screen —
+    a deep link, a push, a restored route — renders it in English for a French account. The
+    provider section has the same hole.
 
 - **The alarm was reachable only through the API.** `POST /safety/panic` and all three
   `/emergency-contacts` operations were uncalled — on the one feature where that gap matters most,

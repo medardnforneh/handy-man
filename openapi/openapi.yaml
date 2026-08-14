@@ -2591,6 +2591,7 @@ components:
       properties:
         party_id: { type: string, format: uuid }
         blocked_party_id: { type: string, format: uuid }
+        blocked_label: { type: [string, "null"], description: "Provider headline where there is one, display name otherwise — enough to recognise who was blocked, never more." }
         created_at: { type: string, format: date-time }
 
     Report:

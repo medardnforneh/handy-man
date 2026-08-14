@@ -2061,6 +2061,8 @@ export interface components {
             party_id: string;
             /** Format: uuid */
             blocked_party_id: string;
+            /** @description Provider headline where there is one, display name otherwise — enough to recognise who was blocked, never more. */
+            blocked_label?: string | null;
             /** Format: date-time */
             created_at: string;
         };

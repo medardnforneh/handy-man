@@ -225,3 +225,80 @@ ion-footer {
     margin: 0;
   }
 }
+
+// ---- Report sheet ------------------------------------------------------
+.sheet {
+  padding: var(--hm-space-md) var(--hm-space-md) var(--hm-space-xl);
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.flabel {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--hm-color-text-muted);
+}
+
+// Chips rather than a select: seven reasons is a list you read, and one of them is the point of
+// the whole screen — burying them behind a dropdown hides what the platform will act on.
+.cats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: var(--hm-space-md);
+}
+
+.cat {
+  padding: 0.4rem 0.75rem;
+  border: 1.5px solid var(--hm-color-border-subtle);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--hm-color-text-primary);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+
+  &.on {
+    border-color: var(--hm-color-brand-primary);
+    background: color-mix(in srgb, var(--hm-color-brand-primary) 12%, transparent);
+    color: var(--hm-color-brand-primary);
+  }
+}
+
+.field { display: block; margin-bottom: var(--hm-space-md); }
+
+.ftext {
+  width: 100%;
+  padding: 0.7rem 0.8rem;
+  background: var(--hm-color-surface-raised);
+  border: 1.5px solid var(--hm-color-border-subtle);
+  border-radius: var(--hm-radius-md);
+  color: var(--hm-color-text-primary);
+  font-family: inherit;
+  font-size: 0.95rem;
+  line-height: 1.45;
+  resize: vertical;
+
+  &:focus { outline: none; border-color: var(--hm-color-brand-primary); }
+}
+
+.err {
+  margin: calc(var(--hm-space-md) * -1 + 0.1rem) 0 var(--hm-space-md);
+  font-size: 0.76rem;
+  color: var(--hm-color-status-danger);
+}
+
+.note {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin: var(--hm-space-lg) 0 0;
+  font-size: 0.76rem;
+  line-height: 1.5;
+  color: var(--hm-color-text-muted);
+
+  ion-icon { flex: none; margin-top: 0.15rem; font-size: 0.95rem; }
+  span { flex: 1; min-width: 0; }
+}

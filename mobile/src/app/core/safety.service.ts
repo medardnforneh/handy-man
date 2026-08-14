@@ -17,8 +17,19 @@ export interface PanicResult {
   detail?: string;
 }
 
+/** Someone the caller has blocked, with enough of a label to recognise them by. */
+export interface BlockedParty {
+  partyId: string;
+  label: string;
+}
+
+/** The reasons a report can be filed under (P6-07). `off_platform` is first-class, not "other". */
+export type ReportCategory =
+  | 'fraud' | 'no_show' | 'harassment' | 'safety' | 'spam' | 'off_platform' | 'other';
+
 /**
- * Safety (P6-04): the panic alert and the people it reaches.
+ * Safety (P6-04, P6-07): the panic alert, the people it reaches, and the boundaries you can put
+ * between yourself and someone else.
  *
  * This belongs to the person rather than to either role — a customer letting a stranger into their
  * home and a worker walking into an unknown site need exactly the same thing — so it sits in core
@@ -52,6 +63,60 @@ export class SafetyService {
   async removeContact(id: string): Promise<boolean> {
     try {
       await this.api.removeEmergencyContact(id);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  // --- blocks and reports (P6-07) -----------------------------------------------------------------
+
+  async blocks(): Promise<BlockedParty[] | null> {
+    try {
+      const rows = await this.api.blocks();
+      return rows.map((b) => ({
+        partyId: b.blocked_party_id,
+        // A label the server could not resolve is still a real block, so it is listed either way.
+        label: b.blocked_label ?? '',
+      }));
+    } catch {
+      return null;
+    }
+  }
+
+  async block(partyId: string): Promise<boolean> {
+    try {
+      await this.api.blockParty(partyId);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  async unblock(partyId: string): Promise<boolean> {
+    try {
+      await this.api.unblockParty(partyId);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * File a report about someone (P6-07).
+   *
+   * It queues a human review and never penalises anyone automatically, which is exactly what the
+   * UI should say: a promise that somebody will read it, not a threat of an instant consequence
+   * the platform does not actually deliver.
+   */
+  async report(subjectPartyId: string, category: ReportCategory, body: string, jobId?: string): Promise<boolean> {
+    try {
+      await this.api.fileReport({
+        subject_party_id: subjectPartyId,
+        category,
+        body: body.trim(),
+        job_id: jobId ?? null,
+      });
       return true;
     } catch {
       return false;

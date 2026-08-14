@@ -167,6 +167,22 @@ ion-button.button-solid.button-disabled {
 }
 
 // ---------------------------------------------------------------------------
+// Destructive action-sheet items.
+//
+// `role: 'destructive'` colours the item red on iOS and does NOTHING on Material — Ionic ships no
+// rule for it in md mode. Rendered on Android, "Block this provider" therefore read exactly like
+// "Report" and "Cancel" above and below it: three identical lines of dark text, one of which cuts
+// a person off. The role stays for the semantics; this gives it the colour it is already promising.
+// ---------------------------------------------------------------------------
+.action-sheet-button.action-sheet-destructive {
+  color: var(--hm-color-status-danger);
+
+  ion-icon {
+    color: inherit;
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Structured-message cards — the chat IS the state machine (doc 06). These are
 // SERVER-narrated (rule #11) and shared by the customer and provider workspaces.
 // ---------------------------------------------------------------------------
