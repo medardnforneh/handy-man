@@ -160,6 +160,29 @@ export class ApiService {
     return data.data;
   }
 
+  /** Everything the platform holds about the caller — the right of access (DSAR, P1-10). */
+  async dataExport() {
+    const { data, error } = await api.GET('/me/data-export');
+    if (error) {
+      throw error;
+    }
+    return data.data;
+  }
+
+  /**
+   * The right to erasure (P1-10). Crypto-shred: the party row and its id survive so the ledger's
+   * foreign keys do, the data key is destroyed, and the human becomes unidentifiable. Irreversible
+   * — there is no undo endpoint because there is no undo.
+   */
+  async eraseAccount() {
+    const { error } = await api.DELETE('/me', {
+      params: { header: { 'Idempotency-Key': uuid() } },
+    });
+    if (error) {
+      throw error;
+    }
+  }
+
   /**
    * Post a voice note (P4-05) — multipart audio, stored as a first-class `voice` message. An empty
    * recording comes back 422 `empty-upload` rather than failing at the database.

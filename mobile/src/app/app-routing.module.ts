@@ -72,6 +72,14 @@ const routes: Routes = [
     loadComponent: () => import('./safety/safety.page').then((m) => m.SafetyPage),
   },
   {
+    // The data-subject rights (P1-10): see everything held about you, and have it destroyed.
+    // Outside both shells for the same reason as safety — a provider has exactly the same rights
+    // as a customer, and putting this under the customer tabs would make it a customer feature.
+    path: 'privacy',
+    canActivate: [authGuard],
+    loadComponent: () => import('./privacy/privacy.page').then((m) => m.PrivacyPage),
+  },
+  {
     // Sending identity/trade papers in for review (P6-01), pushed over the provider tabs. This is
     // what the profile's "Verify" button had always promised and never opened — and without it the
     // tier-2 gate on on-site paid work could be hit but never cleared from inside the product.

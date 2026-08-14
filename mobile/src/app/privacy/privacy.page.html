@@ -1,0 +1,79 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/tabs/account" [text]="''"></ion-back-button>
+    </ion-buttons>
+    <ion-title>{{ 'rights.title' | translate }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div class="wrap">
+    <p class="intro">{{ 'rights.intro' | translate }}</p>
+
+    <!-- The export is shown, not hidden behind a download. Seeing what is held about you IS the
+         right of access; saving a copy is the portability half and lives under it. -->
+    <div class="hm-section-head"><h2>{{ 'rights.held' | translate }}</h2></div>
+
+    @if (sections() === null) {
+      @if (loadFailed()) {
+        <p class="hm-empty">{{ 'rights.load_failed' | translate }}</p>
+      } @else {
+        <div class="loading">
+          <ion-spinner name="crescent"></ion-spinner>
+          <span class="sr-only">{{ 'common.loading' | translate }}</span>
+        </div>
+      }
+    } @else {
+      @for (s of sections(); track s.key) {
+        <div class="sec hm-card">
+          <h3>{{ s.title }}</h3>
+          @if (s.empty) {
+            <p class="cnt">{{ 'rights.none' | translate }}</p>
+          } @else if (s.count !== null) {
+            <!-- Repeated records are counted here and spelled out in the saved copy: a list of
+                 every device you have ever signed in on is noise on a phone screen and is exactly
+                 what the file is for. -->
+            <p class="cnt">
+              {{ (s.count === 1 ? 'rights.records_one' : 'rights.records_other') | translate:{ count: s.count } }}
+            </p>
+          } @else {
+            <dl>
+              @for (r of s.rows; track r.label) {
+                <div class="row">
+                  <dt>{{ r.label }}</dt>
+                  <dd>{{ r.value }}</dd>
+                </div>
+              }
+            </dl>
+          }
+        </div>
+      }
+
+      <ion-button expand="block" fill="outline" class="hm-tap save" [disabled]="delivering()" (click)="save()">
+        @if (delivering()) {
+          <ion-spinner name="crescent"></ion-spinner>
+        } @else {
+          <ion-icon slot="start" name="download-outline" aria-hidden="true"></ion-icon>
+          {{ 'rights.save' | translate }}
+        }
+      </ion-button>
+    }
+
+    <!-- Erasure last, and visibly apart from everything above it. -->
+    <div class="hm-section-head"><h2>{{ 'rights.erase_heading' | translate }}</h2></div>
+
+    <div class="danger hm-card">
+      <p>{{ 'rights.erase_body' | translate }}</p>
+      <p class="keeps">{{ 'rights.erase_keeps' | translate }}</p>
+
+      <ion-button expand="block" color="danger" class="hm-tap" [disabled]="erasing()" (click)="erase()">
+        @if (erasing()) {
+          <ion-spinner name="crescent"></ion-spinner>
+        } @else {
+          {{ 'rights.erase_action' | translate }}
+        }
+      </ion-button>
+    </div>
+  </div>
+</ion-content>

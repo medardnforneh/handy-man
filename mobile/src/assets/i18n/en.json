@@ -1003,6 +1003,57 @@
     "contact_note": "They are only contacted if you raise an alert. We never message them otherwise, and they cannot see anything about your jobs.",
     "more": "More"
   },
+  "rights": {
+    "title": "Your data",
+    "account_hint": "See everything we hold, or delete your account",
+    "intro": "This is everything HandyMan holds about you. You can keep a copy, and you can have it all destroyed.",
+    "held": "What we hold",
+    "load_failed": "We could not load your data just now. Please try again.",
+    "none": "We hold nothing here.",
+    "records_one": "{{count}} record — it is in the saved copy in full",
+    "records_other": "{{count}} records — they are in the saved copy in full",
+    "save": "Save a copy",
+    "saved": "Saved.",
+    "copied": "Copied. Paste it wherever you want to keep it.",
+    "save_failed": "That could not be saved. Please try again.",
+    "s": {
+      "identity": "You",
+      "addresses": "Addresses",
+      "consents": "Consents",
+      "devices": "Devices",
+      "provider_profile": "Provider profile"
+    },
+    "f": {
+      "display_name": "Name",
+      "phone_e164": "Phone",
+      "email": "Email",
+      "locale": "App language",
+      "comms_locale": "Language we write to you in",
+      "status": "Status",
+      "created_at": "Joined",
+      "headline": "Headline",
+      "bio": "About",
+      "verification_tier": "Verification level",
+      "jobs_completed": "Jobs completed"
+    },
+    "v": {
+      "fr": "French",
+      "en": "English",
+      "active": "Active",
+      "closed": "Closed"
+    },
+    "erase_heading": "Delete your account",
+    "erase_body": "This destroys the key your personal data is encrypted with. Your name, phone number, addresses and profile become unreadable to us and to everyone else, and you are signed out for good. It cannot be undone.",
+    "erase_keeps": "The financial record of jobs you paid for or were paid for stays, because the law requires it — but it no longer says who you are.",
+    "erase_action": "Delete my account",
+    "erase_title": "Delete your account?",
+    "erase_word": "DELETE",
+    "erase_confirm": "Type {{word}} to confirm. There is no way back from this.",
+    "erase_yes": "Delete",
+    "erase_mismatch": "That did not match, so nothing was deleted.",
+    "erase_failed": "Your account could not be deleted. Please try again.",
+    "erased": "Your account and personal data have been deleted."
+  },
   "report": {
     "title": "Report this provider",
     "category": "What is this about?",

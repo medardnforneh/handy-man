@@ -106,6 +106,11 @@ export class ProviderProfilePage {
     void this.router.navigate(['/safety']);
   }
 
+  /** The same data rights the customer section offers (P1-10) — they belong to the person. */
+  openPrivacy(): void {
+    void this.router.navigate(['/privacy']);
+  }
+
   /** The client book (P7-08) — a periodic review surface, so it lives here rather than in the tabs. */
   openClients(): void {
     void this.router.navigate(['/clients']);

@@ -3,11 +3,10 @@
 > Living tracker for the build. Updated as work progresses. Source of truth for **where we
 > are** and **how this machine is set up**. Read this first when resuming.
 
-_Last updated: 2026-08-14 (blocking and reporting a person — the last uncalled safety operations —
-plus a destructive action sheet that was not destructive, an aria binding that threw on every
-provider profile, and an emergency screen that spoke English to a French account; before that the
-panic alert, quotations the customer could finally see, and a Withdraw button that requested
-nothing)_
+_Last updated: 2026-08-14 (erasure and data export, the one uncalled pair that was a legal
+obligation; blocking and reporting a person, the last uncalled safety operations; a destructive
+action sheet that was not destructive, an aria binding that threw on every provider profile, and an
+emergency screen that spoke English to a French account)_
 
 ## Environment (this dev machine — Windows 10 Pro, non-admin)
 
@@ -274,7 +273,7 @@ founder-owned legal items in doc 05's launch checklist.
     surfaces (P4-04..07), the offline layer (P5-02) and the PWA/Android build (P5-01) have all
     landed, and native networking on device now works (CapacitorHttp).
 
-## ⚠ Open gap: 27 of 92 API operations are never called by the app
+## ⚠ Open gap: 25 of 92 API operations are never called by the app
 
 Found 2026-08-13 by a mechanical sweep of `openapi/openapi.yaml` against every `.ts` file in
 `mobile/src/app` (`operationId` → does any client file contain the literal path?). The check is
@@ -301,7 +300,7 @@ function the admin panel performs, and `GET /provider/credits`, whose one number
 | Money out | ~~`/provider/payouts`~~, ~~`/provider/credits`~~, `/engagements/{e}/refund`, `/engagements/{e}/cash-settlements` | **Closed 2026-08-14** — Withdraw posts a real payout, and lead credits ride along in the earnings payload. No refund and no cash settlement yet |
 | Money in | `/payment-intents` | Not a blocker for the deposit (P3-13 captures it server-side on `engagement.created`), but the app can initiate no payment of its own |
 | Lifecycle | `/follow-ups` ×2, `/referral-code`, `/referrals/claim`, `/providers/{party}/rebook`, `/engagements/{e}/warranty`, `/warranties/{w}/claims`, `/engagements/{e}/share`, `/engagement-shares/{s}` | Follow-ups cannot be listed or responded to, no referral code, no one-tap rebook, no warranty, no share-my-job link |
-| Rights | `DELETE /me`, `GET /me/data-export` | Erasure and data export (P1-10) are unreachable — a compliance surface, not a nice-to-have |
+| ~~Rights~~ | ~~`DELETE /me`~~, ~~`GET /me/data-export`~~ | **Closed 2026-08-14** — `/privacy` shows everything held, saves a copy, and erases the account |
 | Media | `GET /media/{media}` | The media access rail is not consumed |
 | Disputes | `GET /disputes`, `POST /engagements/{e}/disputes` | A dispute can only be raised by staff, not by the party in it |
 
@@ -309,6 +308,47 @@ Regenerate the list any time with the sweep script pattern above; it takes secon
 found four real defects.
 
 ## What was done, most recent first
+
+- **Erasure and data export were unreachable — the one uncalled pair that is a legal obligation.**
+  `DELETE /me` and `GET /me/data-export` (P1-10) have existed since Phase 1, with tests, and no
+  screen led to either. A right nobody can exercise is not a right.
+  - New screen at `/privacy`, outside both shells like `/safety` and linked from the customer
+    account page and the provider profile: a provider has exactly the same rights as a customer,
+    and putting this under the customer tabs would have made it a customer feature.
+  - **The export is shown, not hidden behind a download.** Seeing what is held about you IS the
+    right of access; the file is the portability half and sits under it. Sections are rendered from
+    whatever the server sends — repeated records (addresses, consents, devices) are counted on
+    screen and spelled out in full in the saved copy, because a list of every device you ever
+    signed in on is noise on a phone and is exactly what a file is for.
+  - Field and section names are translated with a **fallback to the server's own key**, so a field
+    added to the export later shows up as `some_new_field` rather than being dropped or printed as
+    `rights.f.some_new_field`. An export that quietly omits a field is not an export.
+  - **Saving works differently in the two places and says which one it did.** A browser saves from
+    an object URL; a Capacitor WebView silently swallows that same click, and saving to the device
+    filesystem needs a native plugin the app does not carry. Native copies to the clipboard instead
+    and the toast names the action — "Saved" vs "Copied" — rather than claiming a file that is not
+    there.
+  - **Erasure is confirmed by typing the word, not tapping a button** — the panic button is held
+    rather than tapped for the same reason pointed the other way. The copy says what is destroyed,
+    that the financial record survives without saying who you are, and that there is no way back.
+    On success the session is cleared locally (the server already deleted every token with the rest
+    of the PII) and the app returns to Welcome.
+  - Three defects found by rendering it: an absent provider profile printed **"PROVIDER_PROFILE /
+    null"** (empty sections now say so out loud — "we hold none of this" and "we did not show you
+    this" are very different answers on this screen); the language fields showed the stored codes
+    **`fr` and `active`** rather than words; and every label resolved in TypeScript **froze in the
+    language that was current when the page was built**, so on a cold load the chrome came up
+    French and every row under it stayed English. Rebuilt on `onLangChange` — the first screen here
+    that renders server-supplied field names, so the first that needed it.
+  - Verified against the live API in French: the export renders for a populated account and for a
+    brand-new one (empty sections and the singular both correct), the save produces
+    `handyman-data-<date>.json` from a blob, and erasure through the app's own service leaves the
+    user `closed`, the email null, the party tombstoned and the data key destroyed. 27 → 25
+    uncalled operations, of 92. Backend 470 tests green.
+  - **Found, not fixed:** `ErasePartyData` writes the display name `'Utilisateur supprimé'` — a
+    French string in the database, shown to English readers too. Same class as the milestone titles
+    (rule #11), but `display_name` is read by many resources, so the `title_key` treatment is its
+    own task rather than a rider on this one.
 
 - **The emergency screen spoke English to a French account.** Found by cold-loading `/safety`
   during the block/report pass: the app adopts the ACCOUNT's language in `CustomerService.loadMe()`

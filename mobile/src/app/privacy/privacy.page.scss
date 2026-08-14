@@ -1,0 +1,96 @@
+// Shared primitives load once globally — see angular.json styles.
+// SEMANTIC TOKENS ONLY — never a literal colour.
+
+ion-toolbar {
+  --background: var(--hm-color-surface-base);
+  --border-width: 0;
+}
+
+ion-title { font-weight: 800; letter-spacing: -0.02em; }
+
+.wrap {
+  padding: 0 var(--hm-space-md) var(--hm-space-xl);
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.intro {
+  margin: var(--hm-space-sm) 0 0;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--hm-color-text-muted);
+}
+
+.loading {
+  display: grid;
+  place-items: center;
+  padding: var(--hm-space-lg) 0;
+}
+
+// ---- What is held ------------------------------------------------------
+.sec {
+  padding: var(--hm-space-md);
+  margin-bottom: var(--hm-space-sm);
+
+  h3 {
+    margin: 0 0 0.6rem;
+    font-size: 0.95rem;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+  }
+}
+
+.cnt {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--hm-color-text-muted);
+}
+
+dl { margin: 0; }
+
+// Label above value rather than beside it: a phone number, an ISO timestamp and a display name are
+// all different widths, and a two-column grid makes the longest one decide for the rest.
+.row {
+  padding: 0.45rem 0;
+  border-top: 1px solid var(--hm-color-border-subtle);
+
+  &:first-child { border-top: 0; padding-top: 0; }
+
+  dt {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--hm-color-text-muted);
+  }
+
+  dd {
+    margin: 0.1rem 0 0;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+  }
+}
+
+.save { margin-top: var(--hm-space-md); }
+
+// ---- Erasure -----------------------------------------------------------
+// Tinted and outlined in the danger colour so the section reads as a different kind of thing from
+// the cards above it before a word of it is read.
+.danger {
+  padding: var(--hm-space-md);
+  border: 1.5px solid color-mix(in srgb, var(--hm-color-status-danger) 35%, transparent);
+  background: color-mix(in srgb, var(--hm-color-status-danger) 6%, var(--hm-color-surface-raised));
+
+  p {
+    margin: 0 0 0.6rem;
+    font-size: 0.88rem;
+    line-height: 1.5;
+  }
+
+  .keeps {
+    margin-bottom: var(--hm-space-md);
+    font-size: 0.8rem;
+    color: var(--hm-color-text-muted);
+  }
+}

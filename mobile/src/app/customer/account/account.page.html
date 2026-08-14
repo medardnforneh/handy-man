@@ -107,6 +107,13 @@
           <p class="hm-muted">{{ 'safety.account_hint' | translate }}</p>
         </ion-label>
       </ion-item>
+      <ion-item button="true" detail="true" class="hm-tap" (click)="openPrivacy()">
+        <ion-icon slot="start" name="lock-closed-outline" aria-hidden="true"></ion-icon>
+        <ion-label>
+          <b>{{ 'rights.title' | translate }}</b>
+          <p class="hm-muted">{{ 'rights.account_hint' | translate }}</p>
+        </ion-label>
+      </ion-item>
     </ion-list>
 
     <ion-list class="signout hm-card" lines="none">

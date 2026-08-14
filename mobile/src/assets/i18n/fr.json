@@ -1003,6 +1003,57 @@
     "contact_note": "Ils ne sont contactés que si vous donnez l’alerte. Nous ne leur écrivons jamais autrement, et ils ne voient rien de vos interventions.",
     "more": "Plus"
   },
+  "rights": {
+    "title": "Vos données",
+    "account_hint": "Voir tout ce que nous détenons, ou supprimer votre compte",
+    "intro": "Voici tout ce que HandyMan détient sur vous. Vous pouvez en garder une copie, et vous pouvez tout faire détruire.",
+    "held": "Ce que nous détenons",
+    "load_failed": "Nous n’avons pas pu charger vos données pour l’instant. Veuillez réessayer.",
+    "none": "Nous ne détenons rien ici.",
+    "records_one": "{{count}} enregistrement — il figure en entier dans la copie enregistrée",
+    "records_other": "{{count}} enregistrements — ils figurent en entier dans la copie enregistrée",
+    "save": "Enregistrer une copie",
+    "saved": "Enregistré.",
+    "copied": "Copié. Collez-le où vous voulez le conserver.",
+    "save_failed": "L’enregistrement a échoué. Veuillez réessayer.",
+    "s": {
+      "identity": "Vous",
+      "addresses": "Adresses",
+      "consents": "Consentements",
+      "devices": "Appareils",
+      "provider_profile": "Profil prestataire"
+    },
+    "f": {
+      "display_name": "Nom",
+      "phone_e164": "Téléphone",
+      "email": "E-mail",
+      "locale": "Langue de l’application",
+      "comms_locale": "Langue dans laquelle nous vous écrivons",
+      "status": "Statut",
+      "created_at": "Inscription",
+      "headline": "Titre",
+      "bio": "À propos",
+      "verification_tier": "Niveau de vérification",
+      "jobs_completed": "Interventions terminées"
+    },
+    "v": {
+      "fr": "Français",
+      "en": "Anglais",
+      "active": "Actif",
+      "closed": "Clôturé"
+    },
+    "erase_heading": "Supprimer votre compte",
+    "erase_body": "Cela détruit la clé qui chiffre vos données personnelles. Votre nom, votre numéro, vos adresses et votre profil deviennent illisibles, pour nous comme pour tout le monde, et vous êtes déconnecté définitivement. C’est irréversible.",
+    "erase_keeps": "Le registre financier des interventions que vous avez payées ou pour lesquelles vous avez été payé demeure, parce que la loi l’exige — mais il ne dit plus qui vous êtes.",
+    "erase_action": "Supprimer mon compte",
+    "erase_title": "Supprimer votre compte ?",
+    "erase_word": "SUPPRIMER",
+    "erase_confirm": "Tapez {{word}} pour confirmer. Il n’y a aucun retour en arrière.",
+    "erase_yes": "Supprimer",
+    "erase_mismatch": "Cela ne correspond pas, rien n’a été supprimé.",
+    "erase_failed": "Votre compte n’a pas pu être supprimé. Veuillez réessayer.",
+    "erased": "Votre compte et vos données personnelles ont été supprimés."
+  },
   "report": {
     "title": "Signaler ce prestataire",
     "category": "De quoi s’agit-il ?",

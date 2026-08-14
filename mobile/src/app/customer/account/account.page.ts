@@ -62,6 +62,10 @@ export class AccountPage {
     void this.router.navigate(['/safety']);
   }
 
+  openPrivacy(): void {
+    void this.router.navigate(['/privacy']);
+  }
+
   async offerServices(): Promise<void> {
     const profile = await this.providers.fetchProfile();
     void this.router.navigate([profile === null ? '/become-a-provider' : '/pro']);
