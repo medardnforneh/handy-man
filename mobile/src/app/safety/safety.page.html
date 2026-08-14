@@ -1,0 +1,141 @@
+<ion-header [translucent]="true" class="ion-no-border">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/tabs/account" [text]="''"></ion-back-button>
+    </ion-buttons>
+    <ion-title>{{ 'safety.title' | translate }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <div class="page">
+    <p class="lead hm-muted">{{ 'safety.lead' | translate }}</p>
+
+    <!-- Held, not tapped: nothing fires from a pocket, and there is no dialog to read and dismiss
+         between deciding and being heard. -->
+    <div class="panic">
+      <button
+        type="button"
+        class="pbtn hm-tap"
+        [class.armed]="armed()"
+        [disabled]="raising()"
+        [style.--hold]="holdProgress()"
+        (pointerdown)="startHold()"
+        (pointerup)="cancelHold()"
+        (pointerleave)="cancelHold()"
+        (pointercancel)="cancelHold()"
+      >
+        @if (raising()) {
+          <ion-spinner name="crescent"></ion-spinner>
+        } @else {
+          <ion-icon name="warning" aria-hidden="true"></ion-icon>
+          <span class="plabel">{{ 'safety.panic' | translate }}</span>
+        }
+      </button>
+      <p class="phint hm-muted">{{ 'safety.panic_hint' | translate }}</p>
+    </div>
+
+    @if (raised()) {
+      <!-- Said on the screen, not only in a toast that has since gone: someone who raised an alarm
+           should be able to look down and see that it went. -->
+      <p class="pdone">
+        <ion-icon name="checkmark-circle" aria-hidden="true"></ion-icon>
+        <span>{{ 'safety.raised_note' | translate }}</span>
+      </p>
+    }
+
+    <div class="hm-section-head">
+      <h2>{{ 'safety.contacts' | translate }}</h2>
+      <ion-button fill="clear" size="small" class="hm-tap" (click)="openSheet()">
+        {{ 'safety.add_contact' | translate }}
+      </ion-button>
+    </div>
+    <p class="gnote hm-muted">{{ 'safety.contacts_body' | translate }}</p>
+
+    @if (loadFailed()) {
+      <p class="failed">
+        <ion-icon name="alert-circle-outline" aria-hidden="true"></ion-icon>
+        <span>{{ 'safety.contacts_load_failed' | translate }}</span>
+        <ion-button fill="clear" size="small" class="hm-tap" (click)="load()">
+          {{ 'common.retry' | translate }}
+        </ion-button>
+      </p>
+    } @else {
+      @for (c of contacts() ?? []; track c.id) {
+        <div class="crow hm-card">
+          <span class="cav" aria-hidden="true"><ion-icon name="person-outline"></ion-icon></span>
+          <span class="ctext">
+            <b>{{ c.name }}</b>
+            <small class="hm-muted">{{ c.phone }}</small>
+          </span>
+          <ion-button fill="clear" size="small" class="crm hm-tap" (click)="remove(c)"
+                      [attr.aria-label]="'safety.remove_contact' | translate">
+            <ion-icon slot="icon-only" name="close"></ion-icon>
+          </ion-button>
+        </div>
+      } @empty {
+        <!-- No action on this one: "Add a contact" is already in the section header directly
+             above, and two of the same button within an inch of each other squeezes the sentence
+             that explains why you would press either. -->
+        <app-empty-state
+          inline="true"
+          icon="people-outline"
+          heading="safety.no_contacts"
+          body="safety.no_contacts_body"
+        ></app-empty-state>
+      }
+    }
+  </div>
+</ion-content>
+
+<ion-modal [isOpen]="sheetOpen()" (didDismiss)="closeSheet()">
+  <ng-template>
+    <ion-header class="ion-no-border">
+      <ion-toolbar>
+        <ion-buttons slot="start">
+          <ion-button (click)="closeSheet()">{{ 'common.cancel' | translate }}</ion-button>
+        </ion-buttons>
+        <ion-title>{{ 'safety.add_contact' | translate }}</ion-title>
+      </ion-toolbar>
+    </ion-header>
+
+    <ion-content>
+      <div class="sheet">
+        <label class="field">
+          <span class="flabel">{{ 'safety.contact_name' | translate }}</span>
+          <input class="finput" [ngModel]="name()" (ngModelChange)="name.set($event)" maxlength="60" />
+        </label>
+        @if (nameMissing()) {
+          <p class="err">{{ 'safety.contact_name_required' | translate }}</p>
+        }
+
+        <label class="field">
+          <span class="flabel">{{ 'safety.contact_phone' | translate }}</span>
+          <input class="finput" type="tel" inputmode="tel"
+                 [ngModel]="phone()" (ngModelChange)="phone.set($event)" maxlength="16" />
+          <small class="hm-muted fhelp">{{ 'safety.contact_phone_hint' | translate }}</small>
+        </label>
+        @if (phoneInvalid()) {
+          <p class="err">{{ 'safety.contact_phone_invalid' | translate }}</p>
+        }
+
+        <p class="note">
+          <ion-icon name="information-circle-outline" aria-hidden="true"></ion-icon>
+          <span>{{ 'safety.contact_note' | translate }}</span>
+        </p>
+      </div>
+    </ion-content>
+
+    <ion-footer class="ion-no-border">
+      <div class="cta">
+        <ion-button expand="block" class="hm-tap" [disabled]="saving()" (click)="save()">
+          @if (saving()) {
+            <ion-spinner name="crescent"></ion-spinner>
+          } @else {
+            {{ 'common.save' | translate }}
+          }
+        </ion-button>
+      </div>
+    </ion-footer>
+  </ng-template>
+</ion-modal>

@@ -274,7 +274,7 @@ founder-owned legal items in doc 05's launch checklist.
     surfaces (P4-04..07), the offline layer (P5-02) and the PWA/Android build (P5-01) have all
     landed, and native networking on device now works (CapacitorHttp).
 
-## ⚠ Open gap: 35 of 92 API operations are never called by the app
+## ⚠ Open gap: 31 of 92 API operations are never called by the app
 
 Found 2026-08-13 by a mechanical sweep of `openapi/openapi.yaml` against every `.ts` file in
 `mobile/src/app` (`operationId` → does any client file contain the literal path?). The check is
@@ -295,7 +295,7 @@ function the admin panel performs, and `GET /provider/credits`, whose one number
 | Group | Operations | What is impossible in the app today |
 |---|---|---|
 | ~~Reputation~~ | ~~`POST /engagements/{e}/reviews`~~ | **Closed 2026-08-13** — the review form lives on the job detail page |
-| Safety | `/safety/panic`, `/emergency-contacts` ×3, `/blocks` ×3, `/reports` | The panic button, emergency contacts, blocking and reporting (P6-04/07) have no UI at all |
+| Safety | ~~`/safety/panic`~~, ~~`/emergency-contacts` ×3~~ (closed 2026-08-14), `/blocks` ×3, `/reports` | **The panic alert and its contacts have a screen now.** Blocking and reporting a person (P6-07) still have no UI |
 | ~~Verification~~ | ~~`/verification-documents` ×2~~ | **Closed 2026-08-14** — the profile's VERIFY button opens a real screen; upload → admin approval → tier rise works end to end |
 | Finishing work | ~~`/engagements/{e}/complete`~~, ~~`/quotations/{q}/accept`~~ (both closed), `/deliverables/{d}/review`, `/quotations/{q}/revise`, `/jobs/{job}/site-visits`, `/site-visits/{v}/complete` | **A quote can be accepted now** (2026-08-14). A deliverable still cannot be reviewed, and a provider cannot revise a submitted quote from the app |
 | Money out | ~~`/provider/payouts`~~, ~~`/provider/credits`~~, `/engagements/{e}/refund`, `/engagements/{e}/cash-settlements` | **Closed 2026-08-14** — Withdraw posts a real payout, and lead credits ride along in the earnings payload. No refund and no cash settlement yet |
@@ -309,6 +309,27 @@ Regenerate the list any time with the sweep script pattern above; it takes secon
 found four real defects.
 
 ## What was done, most recent first
+
+- **The alarm was reachable only through the API.** `POST /safety/panic` and all three
+  `/emergency-contacts` operations were uncalled — on the one feature where that gap matters most,
+  in a product whose whole premise is strangers entering each other's homes.
+  - New screen at `/safety`, linked from the customer account page and the provider profile, and
+    deliberately outside both shells: the person letting someone in and the worker walking into an
+    unknown site need the same thing, and it belongs to neither role.
+  - **Held, not tapped, and not confirmed.** A confirmation dialog in an emergency is one more
+    thing to read and dismiss with shaking hands; a bare tap fires from a pocket and wakes staff.
+    A 1.5-second hold answers both, with a progress ring so the wait is visible and lifting early
+    visibly undoes it. Verified: a 400 ms press raises nothing, a full hold raises a `201`.
+  - The location attempt is bounded at four seconds and never blocks the alert. A late alert is the
+    failure mode that matters, so it goes without a fix and says which of the two happened.
+  - Nothing here is queued offline. An alert that arrives when the network returns is not a safety
+    feature, and the copy says plainly that it did not send rather than implying it will.
+  - Emergency contacts: list, add (E.164 validated client-side so a typo is a sentence rather than
+    a 422), remove. The screen states what those numbers are for and that nobody else on the
+    platform can see them.
+  - Two things caught by rendering it: the button's label ran out of both sides of the circle at
+    every width, and the empty state carried a second "Add a contact" button an inch below the
+    first, squeezing the sentence that explains why you would press either.
 
 - **A provider could price a job and nobody could see it.** The hole in the middle of the
   marketplace: `POST /quotations/{q}/accept` was uncalled, and the reason turned out to be upstream

@@ -57,6 +57,11 @@ export class AccountPage {
    * who does not wants the signup — landing them on a dashboard of zeroes with no way out of it is
    * what this row used to do for every customer who tapped it.
    */
+  /** The panic alert and the contacts it reaches (P6-04). */
+  openSafety(): void {
+    void this.router.navigate(['/safety']);
+  }
+
   async offerServices(): Promise<void> {
     const profile = await this.providers.fetchProfile();
     void this.router.navigate([profile === null ? '/become-a-provider' : '/pro']);

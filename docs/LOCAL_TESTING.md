@@ -154,6 +154,8 @@ in the app yet — see §4.
 
 | Feature | Where | Try this |
 |---|---|---|
+| **The panic alert** | App → Account (or Provider → Profile) → **Safety** | **Hold** the red button for a second and a half — a tap does nothing on purpose. It raises a real alert: watch it appear in Admin → Safety alerts. Locally there is no SMS gateway, so the contacts are not actually texted |
+| **Emergency contacts** | The same screen | Add one with its country code, remove it. These are who a panic alert reaches |
 | Verification queue | Admin → **Trust & safety → Verification documents** | Approve one and watch the provider's tier rise. Every document *view* is written to the activity log |
 | Reports | Admin → **Trust & safety → Reports** | Seeded open reports; resolve or dismiss one |
 | Disputes | Admin → **Trust & safety → Disputes** | Adjudicate — a money-moving decision posts a balanced adjustment stamped with your name |
@@ -183,7 +185,6 @@ The API can do these; the app has no screen for them. This is the honest list �
 |---|---|---|
 | Revising a quote (provider side) | No UI — a provider cannot re-price a submitted quote from the app | Admin → Engagements |
 | Reviewing a deliverable | No UI | Admin → Engagements |
-| Panic button, emergency contacts | No UI | Admin → Safety alerts (seeded) |
 | Blocking and reporting a person | No UI | Admin → Reports (seeded) |
 | Warranties and claims | No UI | Seeded warranty + claim, with the remedy job it spawned |
 | Share-my-job link | No UI | Seeded shares; open `/s/{token}` |

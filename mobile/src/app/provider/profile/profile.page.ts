@@ -98,6 +98,14 @@ export class ProviderProfilePage {
     void this.router.navigate(['/verification']);
   }
 
+  /**
+   * Safety (P6-04). Reachable from the provider section too, and not as an afterthought: the
+   * person walking into an unknown site is at least as exposed as the one who called them.
+   */
+  openSafety(): void {
+    void this.router.navigate(['/safety']);
+  }
+
   /** The client book (P7-08) — a periodic review surface, so it lives here rather than in the tabs. */
   openClients(): void {
     void this.router.navigate(['/clients']);

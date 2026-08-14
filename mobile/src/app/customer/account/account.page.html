@@ -97,6 +97,18 @@
       </ion-item>
     </ion-list>
 
+    <!-- Safety sits above the sign-out, on its own, because it is the one row here that somebody
+         may need to find in a hurry rather than browse to. -->
+    <ion-list class="hm-card" lines="full">
+      <ion-item button="true" detail="true" class="hm-tap" (click)="openSafety()">
+        <ion-icon slot="start" name="shield-outline" aria-hidden="true"></ion-icon>
+        <ion-label>
+          <b>{{ 'safety.title' | translate }}</b>
+          <p class="hm-muted">{{ 'safety.account_hint' | translate }}</p>
+        </ion-label>
+      </ion-item>
+    </ion-list>
+
     <ion-list class="signout hm-card" lines="none">
       <ion-item button="true" detail="false" class="hm-tap" (click)="logout()">
         <ion-icon slot="start" name="log-out-outline" aria-hidden="true"></ion-icon>

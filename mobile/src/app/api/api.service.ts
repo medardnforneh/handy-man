@@ -500,6 +500,58 @@ export class ApiService {
   }
 
   /**
+   * Raise a panic alert (P6-04).
+   *
+   * Everything that follows happens server-side — the emergency contacts are texted and staff are
+   * alerted — precisely so it still works with the app backgrounded, or if the phone is taken. The
+   * client's whole job is to make the call and say whether it landed.
+   *
+   * Coordinates are optional and travel together: a fix that never arrived is worse than none if it
+   * sends someone to the wrong place, and waiting for one would delay the alert.
+   */
+  async raisePanic(body: { latitude?: number; longitude?: number; note?: string | null; assignment_id?: string | null }) {
+    const { data, error } = await api.POST('/safety/panic', {
+      body,
+      params: { header: { 'Idempotency-Key': uuid() } },
+    });
+    if (error) {
+      throw error;
+    }
+    return data.data;
+  }
+
+  /** The caller's emergency contacts (P6-04) — who a panic alert reaches. */
+  async emergencyContacts() {
+    const { data, error } = await api.GET('/emergency-contacts');
+    if (error) {
+      throw error;
+    }
+    return data.data;
+  }
+
+  /** Add an emergency contact (P6-04). */
+  async addEmergencyContact(name: string, phoneE164: string) {
+    const { data, error } = await api.POST('/emergency-contacts', {
+      body: { name, phone_e164: phoneE164 },
+      params: { header: { 'Idempotency-Key': uuid() } },
+    });
+    if (error) {
+      throw error;
+    }
+    return data.data;
+  }
+
+  /** Remove an emergency contact (P6-04). */
+  async removeEmergencyContact(contactId: string) {
+    const { error } = await api.DELETE('/emergency-contacts/{contact}', {
+      params: { path: { contact: contactId }, header: { 'Idempotency-Key': uuid() } },
+    });
+    if (error) {
+      throw error;
+    }
+  }
+
+  /**
    * The quotations on a job (P2.5-01) — every submitted one for the customer, their own for a
    * provider.
    *

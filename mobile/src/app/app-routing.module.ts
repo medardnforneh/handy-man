@@ -64,6 +64,14 @@ const routes: Routes = [
     loadComponent: () => import('./provider/onboarding/onboarding.page').then((m) => m.ProviderOnboardingPage),
   },
   {
+    // Safety (P6-04): the panic alert and the contacts it reaches. Deliberately outside both the
+    // customer and provider shells — a person letting a stranger into their home and a worker
+    // walking into an unknown site need the same screen, and it belongs to neither role.
+    path: 'safety',
+    canActivate: [authGuard],
+    loadComponent: () => import('./safety/safety.page').then((m) => m.SafetyPage),
+  },
+  {
     // Sending identity/trade papers in for review (P6-01), pushed over the provider tabs. This is
     // what the profile's "Verify" button had always promised and never opened — and without it the
     // tier-2 gate on on-site paid work could be hit but never cleared from inside the product.
