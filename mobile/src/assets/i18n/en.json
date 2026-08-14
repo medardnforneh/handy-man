@@ -762,7 +762,7 @@
     "title": "Provider",
     "greeting": "Welcome back",
     "available": "Available to withdraw",
-    "payout_pending": "{{amount}} payout in progress",
+    "payout_pending": "{{amount}} {{currency}} payout in progress",
     "withdraw": "Withdraw",
     "active_jobs": "Active",
     "rating": "Rating",
@@ -968,6 +968,22 @@
     "pipeline_note": "Counts and amounts come from your own offers, quotes and jobs. Nothing here is a forecast.",
     "pipeline_empty_title": "Nothing in the pipeline yet",
     "pipeline_empty_body": "Offers you receive, quotes you send and jobs you win will show up here as they move."
+  },
+  "wd": {
+    "title": "Withdraw",
+    "amount": "How much",
+    "amount_all": "All of it",
+    "amount_available": "You have {{amount}} FCFA available.",
+    "amount_required": "Enter an amount.",
+    "amount_too_big": "That is more than you have available.",
+    "msisdn": "Mobile-money number",
+    "msisdn_hint": "Where the money lands. Change it if your wallet is on another number.",
+    "msisdn_required": "Enter the number the money should go to.",
+    "confirm": "Request the payout",
+    "note": "The money is reserved the moment you ask. It sits below as pending until the operator confirms it — only then does it leave the platform’s books.",
+    "failed": "The payout could not be requested. Please try again.",
+    "credits": "Lead credits",
+    "credits_hint": "For buying opportunities. Not part of your balance."
   },
   "vdoc": {
     "title": "Verification",

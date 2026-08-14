@@ -274,7 +274,7 @@ founder-owned legal items in doc 05's launch checklist.
     surfaces (P4-04..07), the offline layer (P5-02) and the PWA/Android build (P5-01) have all
     landed, and native networking on device now works (CapacitorHttp).
 
-## ⚠ Open gap: 37 of 91 API operations are never called by the app
+## ⚠ Open gap: 36 of 91 API operations are never called by the app
 
 Found 2026-08-13 by a mechanical sweep of `openapi/openapi.yaml` against every `.ts` file in
 `mobile/src/app` (`operationId` → does any client file contain the literal path?). The check is
@@ -287,9 +287,10 @@ what *calls* a thing, not what declares it — but at a scale the earlier audits
 because they audited hedged status markers rather than reachability.
 
 Closed since the sweep: `POST /devices` and `POST /auth/logout` (see the entry below — both were
-unsafe, not merely absent). **Correctly absent** (4): the payment webhook (gateway → server), the
-two `/notes` reference-slice operations (P0-05), and worker assignment, which is an org-dispatcher
-function the admin panel performs. The rest are real gaps, grouped by what they cost:
+unsafe, not merely absent). **Correctly absent** (5): the payment webhook (gateway → server), the
+two `/notes` reference-slice operations (P0-05), worker assignment, which is an org-dispatcher
+function the admin panel performs, and `GET /provider/credits`, whose one number is already in the
+`/provider/earnings` payload the only screen that shows it already fetches. The rest are real gaps, grouped by what they cost:
 
 | Group | Operations | What is impossible in the app today |
 |---|---|---|
@@ -297,7 +298,7 @@ function the admin panel performs. The rest are real gaps, grouped by what they 
 | Safety | `/safety/panic`, `/emergency-contacts` ×3, `/blocks` ×3, `/reports` | The panic button, emergency contacts, blocking and reporting (P6-04/07) have no UI at all |
 | ~~Verification~~ | ~~`/verification-documents` ×2~~ | **Closed 2026-08-14** — the profile's VERIFY button opens a real screen; upload → admin approval → tier rise works end to end |
 | Finishing work | ~~`/engagements/{e}/complete`~~ (closed), `/deliverables/{d}/review`, `/quotations/{q}/accept`, `/quotations/{q}/revise`, `/jobs/{job}/site-visits`, `/site-visits/{v}/complete` | A quote cannot be accepted and a deliverable cannot be reviewed. Marking work finished is closed |
-| Money out | `/provider/payouts`, `/provider/credits`, `/engagements/{e}/refund`, `/engagements/{e}/cash-settlements` | **Withdraw shows a success toast and requests nothing.** No refund, no cash settlement, no credit balance |
+| Money out | ~~`/provider/payouts`~~, ~~`/provider/credits`~~, `/engagements/{e}/refund`, `/engagements/{e}/cash-settlements` | **Closed 2026-08-14** — Withdraw posts a real payout, and lead credits ride along in the earnings payload. No refund and no cash settlement yet |
 | Money in | `/payment-intents` | Not a blocker for the deposit (P3-13 captures it server-side on `engagement.created`), but the app can initiate no payment of its own |
 | Lifecycle | `/follow-ups` ×2, `/referral-code`, `/referrals/claim`, `/providers/{party}/rebook`, `/engagements/{e}/warranty`, `/warranties/{w}/claims`, `/engagements/{e}/share`, `/engagement-shares/{s}` | Follow-ups cannot be listed or responded to, no referral code, no one-tap rebook, no warranty, no share-my-job link |
 | Rights | `DELETE /me`, `GET /me/data-export` | Erasure and data export (P1-10) are unreachable — a compliance surface, not a nice-to-have |
@@ -308,6 +309,28 @@ Regenerate the list any time with the sweep script pattern above; it takes secon
 found four real defects.
 
 ## What was done, most recent first
+
+- **Withdraw showed a success toast and requested nothing.** The most dishonest thing a money
+  screen can do, and invisible from inside the app: the payout history beneath it was fixture data
+  that already looked populated, so nothing about the screen suggested the button was inert.
+  - It opens a sheet now and posts `POST /provider/payouts`: how much (prefilled with the whole
+    balance, with an "all of it" shortcut) and the wallet it lands in (prefilled with the account's
+    own number, editable — paying out to a different number is legitimate and doing it silently is
+    not). The sheet says what the request actually does before it is made: the money is reserved
+    immediately, and only leaves the platform's books when the operator confirms.
+  - Not queued offline, deliberately: a payout is a claim on a balance only the server knows, and
+    replaying one hours later against a balance that has moved is how a provider ends up with two
+    requests they made once. The idempotency key protects a retry, not a stale request.
+  - `GET /provider/credits` is now marked correctly-absent rather than closed: `/provider/earnings`
+    already carries `lead_credits`, and the earnings screen is the only place it is shown. The lead
+    credit balance is displayed from that payload instead of a second round trip.
+  - Two copy defects found by rendering it: `pro.payout_pending` interpolated the amount and the
+    template appended the currency AFTER the whole sentence — "Retrait de 25 000 en cours FCFA" in
+    both languages; and payout dates used a bare `toLocaleDateString()`, which takes the BROWSER's
+    locale and printed "8/14/2026" in a French list. The currency is a parameter now, and dates
+    follow the app's chosen language.
+  - Verified against the live API: 201, the balance drops by the amount, the reserved figure rises
+    by it, and the new payout appears in the history as pending. 37 → 36 uncalled operations.
 
 - **The VERIFY button now goes somewhere, and the tier it moves is the one that gates paid work.**
   `/verification-documents` ×2 were uncalled, which meant a provider could be told they were not

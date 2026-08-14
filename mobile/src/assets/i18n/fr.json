@@ -762,7 +762,7 @@
     "title": "Prestataire",
     "greeting": "Bon retour",
     "available": "Disponible au retrait",
-    "payout_pending": "Retrait de {{amount}} en cours",
+    "payout_pending": "Retrait de {{amount}} {{currency}} en cours",
     "withdraw": "Retirer",
     "active_jobs": "En cours",
     "rating": "Note",
@@ -968,6 +968,22 @@
     "pipeline_note": "Les nombres et les montants proviennent de vos propres offres, devis et missions. Rien ici n’est une prévision.",
     "pipeline_empty_title": "Rien dans le pipeline pour l’instant",
     "pipeline_empty_body": "Les offres reçues, les devis envoyés et les missions gagnées apparaîtront ici au fil de leur avancement."
+  },
+  "wd": {
+    "title": "Retrait",
+    "amount": "Quel montant",
+    "amount_all": "Tout",
+    "amount_available": "Vous avez {{amount}} FCFA disponibles.",
+    "amount_required": "Saisissez un montant.",
+    "amount_too_big": "C’est plus que votre solde disponible.",
+    "msisdn": "Numéro mobile money",
+    "msisdn_hint": "Là où l’argent arrive. Modifiez-le si votre portefeuille est sur un autre numéro.",
+    "msisdn_required": "Saisissez le numéro qui doit recevoir l’argent.",
+    "confirm": "Demander le retrait",
+    "note": "L’argent est réservé dès la demande. Il apparaît ci-dessous comme en attente jusqu’à confirmation de l’opérateur — ce n’est qu’alors qu’il quitte les comptes de la plateforme.",
+    "failed": "Le retrait n’a pas pu être demandé. Veuillez réessayer.",
+    "credits": "Crédits de mise en relation",
+    "credits_hint": "Pour acheter des opportunités. Hors solde."
   },
   "vdoc": {
     "title": "Vérification",

@@ -500,6 +500,29 @@ export class ApiService {
   }
 
   /**
+   * Request a payout of the payable balance to a mobile-money wallet (P3-08).
+   *
+   * The pending payout RESERVES the funds; the ledger posts only when the gateway confirms, so a
+   * request is a claim on the balance rather than a movement of it. Asking for more than the
+   * unreserved balance is a 422 — which the caller shows in the server's own words, because
+   * "insufficient" here has a precise meaning the client cannot restate.
+   */
+  async requestPayout(amountMinor: number, msisdn: string) {
+    const { data, error } = await api.POST('/provider/payouts', {
+      body: { amount_minor: amountMinor, msisdn },
+      params: { header: { 'Idempotency-Key': uuid() } },
+    });
+    if (error) {
+      throw error;
+    }
+    return data.data;
+  }
+
+  // GET /provider/credits is deliberately NOT called: /provider/earnings already returns
+  // `lead_credits` in the same payload, and the earnings screen is the only place the balance is
+  // shown. A second round trip for a number we already hold would be slower and no more true.
+
+  /**
    * The caller's own verification documents and where each one stands (P6-01).
    *
    * Storage paths are never returned — the file itself is only ever reachable through a signed

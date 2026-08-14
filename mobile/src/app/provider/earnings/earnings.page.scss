@@ -49,6 +49,125 @@ ion-title { font-weight: 800; letter-spacing: -0.02em; }
   }
 }
 
+// ---- Lead credits ------------------------------------------------------
+// A different pot from earnings, so it is a plain card rather than a second brand-coloured block
+// competing with the wallet above it.
+.credits {
+  display: flex;
+  // Top-aligned: the hint wraps on a narrow phone, and centring left the icon and the amount
+  // floating against the middle of a three-line block.
+  align-items: flex-start;
+  gap: var(--hm-space-sm);
+  padding: var(--hm-space-md);
+  margin-bottom: var(--hm-space-md);
+
+  > ion-icon { flex: none; margin-top: 0.1rem; font-size: 1.4rem; color: var(--hm-color-brand-primary); }
+
+  .c-text {
+    flex: 1;
+    min-width: 0;
+
+    b { display: block; font-size: 0.9rem; }
+    small { display: block; font-size: 0.74rem; line-height: 1.35; margin-top: 0.1rem; }
+  }
+
+  .c-amount {
+    flex: none;
+    font-size: 1rem;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+
+    small { color: var(--hm-color-text-muted); font-weight: 600; font-size: 0.7rem; margin-inline-start: 0.15rem; }
+  }
+}
+
+// ---- The withdraw sheet ------------------------------------------------
+.sheet {
+  padding: var(--hm-space-md) var(--hm-space-md) var(--hm-space-xl);
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.field {
+  display: block;
+  margin-bottom: var(--hm-space-md);
+}
+
+.flabel {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--hm-color-text-muted);
+}
+
+.finput {
+  width: 100%;
+  padding: 0.7rem 0.8rem;
+  background: var(--hm-color-surface-raised);
+  border: 1.5px solid var(--hm-color-border-subtle);
+  border-radius: var(--hm-radius-md);
+  color: var(--hm-color-text-primary);
+  font-size: 1rem;
+  font-variant-numeric: tabular-nums;
+
+  &:focus {
+    outline: none;
+    border-color: var(--hm-color-brand-primary);
+  }
+}
+
+// "All of it" sits beside the amount rather than under it: it is a shortcut for the field, not a
+// separate decision.
+.amount-row {
+  display: flex;
+  align-items: center;
+  gap: var(--hm-space-sm);
+
+  .finput { flex: 1; min-width: 0; }
+  ion-button { flex: none; --border-radius: var(--hm-radius-md); font-weight: 700; }
+}
+
+.fhelp {
+  display: block;
+  margin-top: 0.3rem;
+  font-size: 0.74rem;
+  line-height: 1.35;
+}
+
+.err {
+  margin: calc(var(--hm-space-md) * -1 + 0.1rem) 0 var(--hm-space-md);
+  font-size: 0.76rem;
+  color: var(--hm-color-status-danger);
+}
+
+.note {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin: var(--hm-space-lg) 0 0;
+  font-size: 0.76rem;
+  line-height: 1.5;
+  color: var(--hm-color-text-muted);
+
+  ion-icon { flex: none; margin-top: 0.15rem; font-size: 0.95rem; }
+  span { flex: 1; min-width: 0; }
+}
+
+ion-footer {
+  background: var(--hm-color-surface-base);
+
+  .cta {
+    padding: var(--hm-space-sm) var(--hm-space-md);
+    max-width: 720px;
+    margin: 0 auto;
+    border-top: 1px solid var(--hm-color-border-subtle);
+  }
+
+  ion-button { --border-radius: var(--hm-radius-md); font-weight: 700; margin: 0; }
+  ion-spinner { width: 20px; height: 20px; }
+}
+
 // ---- Payout rows -------------------------------------------------------
 .payout {
   display: flex;

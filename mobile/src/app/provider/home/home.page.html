@@ -48,7 +48,7 @@
       <span class="wl">{{ 'pro.available' | translate }}</span>
       <div class="bal">{{ wallet().availableMinor | money }} <small>{{ 'money.currency' | translate }}</small></div>
       @if (wallet().pendingPayoutMinor > 0) {
-        <span class="pending">{{ 'pro.payout_pending' | translate:{ amount: (wallet().pendingPayoutMinor | money) } }} {{ 'money.currency' | translate }}</span>
+        <span class="pending">{{ 'pro.payout_pending' | translate:{ amount: (wallet().pendingPayoutMinor | money), currency: ('money.currency' | translate) } }}</span>
       }
       <!-- Disabled at zero rather than left tappable-then-refused: a primary button that only ever
            produces an error toast reads as a broken app, not as a rule. -->

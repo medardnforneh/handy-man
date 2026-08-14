@@ -124,7 +124,8 @@ in the app yet — see §4.
 | **Send your papers in** | Provider → **Profile** → the verification card | A row per document. Pick any image or PDF — locally nothing checks that it is really an ID |
 | **Watch a tier rise** | Send one, then Admin → Trust & safety → Verification documents → approve it | Reopen the app's verification screen: the row reads "Accepted" and the ladder lights up. Tier 2 is what lets a provider accept on-site paid work |
 | Client book | Provider → **Profile** → My business | Customers, lifetime value, pipeline, re-engagement |
-| Earnings | Provider → **Earnings** | Balance and payout history |
+| Earnings | Provider → **Earnings** | Balance, lead credits and payout history |
+| **Withdraw** | Earnings → **Withdraw** | Ask for part or all of the balance. Watch the available figure drop, the reserved figure appear, and the payout land in the history as pending. Admin → Money → Payouts is the same row from the other side |
 
 ### The engagement workspace
 
@@ -179,7 +180,6 @@ The API can do these; the app has no screen for them. This is the honest list �
 
 | Feature | Status | Where you can still see it |
 |---|---|---|
-| **Requesting a payout** | Withdraw shows a success toast and requests nothing | Admin → Payouts |
 | Accepting or revising a quote | No UI | |
 | Reviewing a deliverable | No UI | Admin → Engagements |
 | Panic button, emergency contacts | No UI | Admin → Safety alerts (seeded) |

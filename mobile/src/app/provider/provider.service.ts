@@ -339,10 +339,13 @@ export class ProviderService {
 
   /**
    * The real earnings summary (GET /provider/earnings) — the withdrawable payable balance (net of
-   * reserved payouts), the reserved amount, and the payout history. Returns null when there's no
-   * session / offline, so the caller keeps the demo wallet + payouts.
+   * reserved payouts), the reserved amount, the prepaid lead credits and the payout history.
+   * Returns null when there's no session / offline, so the caller keeps the demo wallet + payouts.
+   *
+   * The lead-credit balance rides along here rather than through `GET /provider/credits`: it is in
+   * this payload already, and the earnings screen is the only place it is shown.
    */
-  async fetchEarnings(): Promise<{ wallet: ProviderWallet; payouts: Payout[] } | null> {
+  async fetchEarnings(): Promise<{ wallet: ProviderWallet; payouts: Payout[]; leadCreditsMinor: number } | null> {
     try {
       const e = await this.api.earnings();
       const wallet: ProviderWallet = {
@@ -355,12 +358,46 @@ export class ProviderService {
         reference: (p.external_ref ?? p.id).slice(0, 12).toUpperCase(),
         amountMinor: p.amount.amount_minor,
         status: mapPayoutStatus(p.status),
-        date: new Date(p.requested_at).toLocaleDateString(),
+        date: this.shortDate(p.requested_at),
       }));
-      return { wallet, payouts };
+      return { wallet, payouts, leadCreditsMinor: e.lead_credits.amount_minor };
     } catch {
       return null;
     }
+  }
+
+  /**
+   * Ask for a payout (P3-08).
+   *
+   * Not queued offline: a payout is a claim on a balance the server alone knows, and replaying one
+   * from a queue hours later — against a balance that has since moved — is how a provider ends up
+   * with two requests they only made once. The idempotency key protects a retry of the SAME
+   * request; it cannot make a stale one safe.
+   *
+   * `msisdn` is the wallet the money lands in. It defaults to the account's own number in the UI,
+   * but it is sent explicitly rather than inferred server-side, because paying to a different
+   * number is a legitimate thing to do and doing it silently is not.
+   */
+  async requestPayout(amountMinor: number, msisdn: string): Promise<MutationResult> {
+    return this.attempt(() => this.api.requestPayout(amountMinor, msisdn));
+  }
+
+  /**
+   * "14 août", or "14 août 2025" once the year stops being obvious.
+   *
+   * A bare `toLocaleDateString()` takes the BROWSER's locale, which put "8/14/2026" in the middle
+   * of an otherwise French payout list — the app's language is a choice the user made, and the
+   * host's regional settings have no business overriding it.
+   */
+  private shortDate(iso: string): string {
+    const when = new Date(iso);
+    const thisYear = when.getFullYear() === new Date().getFullYear();
+
+    return when.toLocaleDateString(this.locales.current, {
+      day: 'numeric',
+      month: 'short',
+      ...(thisYear ? {} : { year: 'numeric' }),
+    });
   }
 
   getStats(): ProviderStats {
