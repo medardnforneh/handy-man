@@ -72,6 +72,13 @@
 // quiet enough not to compete with the sections that DO have something in them.
 .es.inline {
   flex-direction: row;
+  // Wrap rather than squeeze. The button keeps its natural width and the text is allowed to shrink
+  // to about 12rem; below that the button drops to its own line. This is decided by the space the
+  // component actually has, not by the viewport — the same inline state sits inside cards of very
+  // different widths, so a breakpoint was always measuring the wrong box (and the one that was here
+  // fired below 380px, which left 390px — the commonest phone width there is — squeezing the text
+  // to two words a line and pushing the button out through the side of its card).
+  flex-wrap: wrap;
   align-items: center;
   justify-content: flex-start;
   gap: 0.7rem;
@@ -81,6 +88,7 @@
   border-radius: var(--hm-radius-lg);
 
   .txt {
+    flex: 1 1 12rem;
     align-items: flex-start;
     gap: 0.15rem;
   }
@@ -100,15 +108,5 @@
   .cta {
     margin: 0 0 0 auto;
     flex: none;
-  }
-}
-
-// Narrow phones: let an inline state stack rather than squeeze its text to two words a line.
-@media (max-width: 380px) {
-  .es.inline {
-    flex-direction: column;
-    align-items: flex-start;
-
-    .cta { margin: 0.35rem 0 0; }
   }
 }

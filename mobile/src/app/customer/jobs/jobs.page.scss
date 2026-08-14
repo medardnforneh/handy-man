@@ -42,14 +42,20 @@ ion-title {
 
   b {
     display: block;
-    font-size: 0.9rem;
+    font-size: 0.95rem;
+    line-height: 1.3;
     letter-spacing: -0.01em;
   }
 
-  .title {
+  // Tabular figures and a wider track: this is a code to be read out character by character, and
+  // spacing it apart from the title is what stops it reading as part of the sentence above it.
+  .code {
     display: block;
+    margin-top: 0.1rem;
     color: var(--hm-color-text-muted);
-    font-size: 0.78rem;
+    font-size: 0.72rem;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.04em;
   }
 }
 

@@ -236,6 +236,11 @@ export class CustomerService {
     void this.loadCategories();
     void this.loadJobs();
     void this.loadAddresses();
+
+    // Whoever moves the language — the user picking one, or the account's own being adopted at
+    // launch — the trade names have to follow it. This service outlives every screen, so the
+    // subscription is deliberately never torn down.
+    this.translate.onLangChange.subscribe(() => void this.loadCategories());
   }
 
   /**
@@ -331,14 +336,13 @@ export class CustomerService {
       this.me.set({ id: u.id, name, initials: initialsOf(name), phone: u.phone_e164 });
       // This is the first moment the app learns what language the ACCOUNT is in, which is what
       // the server renders bilingual payloads in (P1-05b). See LocaleService::reconcile.
-      const was = this.locales.current;
+      //
+      // The taxonomy refetch is NOT keyed off a before/after comparison here. It used to be, and it
+      // broke the moment the account's language began to be adopted at launch as well: whichever of
+      // the two got there first, the other saw no change and skipped the refetch, leaving an English
+      // category rail — the most visible bilingual payload in the app — above French chrome. The
+      // language is now watched directly, so it does not matter who moves it.
       await this.locales.reconcile(u.locale);
-      if (this.locales.current !== was) {
-        // The taxonomy was already requested in the previous language — its labels are the most
-        // visible bilingual payload in the app (the whole Discover rail), so fetch it again rather
-        // than leave an English category list above French chrome until the next launch.
-        await this.loadCategories();
-      }
     }
   }
 

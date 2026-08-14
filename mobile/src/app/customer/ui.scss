@@ -2,10 +2,16 @@
 // SEMANTIC TOKENS ONLY — never a literal colour (doc 08; enforced by `npm run lint:colors`).
 // Tinted surfaces use color-mix() against a token so light/dark both stay correct.
 
+// A raised surface should look raised. The token set has carried a shadow scale from the start and
+// the cards used a hairline border alone — and `surface.raised` sits barely a step above
+// `surface.base` in light mode, so that hairline was doing all the work and every screen read as
+// flat boxes drawn on flat paper. The border stays for dark mode, where a shadow has nothing to
+// fall on.
 .hm-card {
   background: var(--hm-color-surface-raised);
   border: 1px solid var(--hm-color-border-subtle);
   border-radius: var(--hm-radius-lg);
+  box-shadow: var(--hm-shadow-sm);
 }
 
 .hm-muted { color: var(--hm-color-text-muted); }
@@ -164,6 +170,75 @@ ion-button.button-solid.button-disabled {
   --border-width: 1px;
   --border-style: solid;
   --border-color: color-mix(in srgb, var(--hm-color-brand-onPrimary) 40%, transparent);
+}
+
+// ---------------------------------------------------------------------------
+// Material defaults, restyled.
+//
+// Each rule below overrides a Material default that makes a considered product look like an
+// untouched framework demo. They live here because every screen inherits them and no screen should
+// have to restate them.
+// ---------------------------------------------------------------------------
+
+// Material UPPERCASES every button label. "Send code" becomes "SEND CODE", "Quote" becomes "QUOTE",
+// and a screen with three of them reads as a set of warnings rather than a set of choices — it also
+// destroys the word shapes people read by. Sentence case, with weight carrying the emphasis.
+ion-button,
+ion-segment-button,
+ion-back-button,
+.alert-button {
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+ion-button {
+  font-weight: 700;
+  --border-radius: var(--hm-radius-md);
+}
+
+// The solid button is the loudest thing on most screens; give it the depth to earn that.
+ion-button.button-solid {
+  --box-shadow: var(--hm-shadow-sm);
+}
+
+// Segments. Material draws a grey slab with a 2px underline beneath the active item, which on a
+// three-way filter reads as a tab bar — a thing that navigates — rather than as one control holding
+// one value. A pill riding inside a sunken track says "one of these" the way a physical switch does.
+ion-segment {
+  background: var(--hm-color-surface-sunken);
+  border-radius: var(--hm-radius-pill);
+  padding: 3px;
+}
+
+ion-segment-button {
+  --indicator-color: transparent;
+  --indicator-box-shadow: none;
+  --background-checked: var(--hm-color-surface-raised);
+  --color: var(--hm-color-text-muted);
+  --color-checked: var(--hm-color-text-primary);
+  --border-radius: var(--hm-radius-pill);
+  min-height: 40px;
+  font-weight: 600;
+
+  &.segment-button-checked {
+    box-shadow: var(--hm-shadow-sm);
+  }
+}
+
+// The search field is the first thing touched on Discover and shipped as a grey slab with no edge.
+// Give it the same raised surface and hairline the cards have, so it reads as somewhere to type.
+ion-searchbar {
+  --background: var(--hm-color-surface-raised);
+  --border-radius: var(--hm-radius-md);
+  --box-shadow: none;
+  --icon-color: var(--hm-color-text-muted);
+  --placeholder-color: var(--hm-color-text-muted);
+  padding-inline: 0;
+
+  .searchbar-input {
+    border: 1px solid var(--hm-color-border-subtle);
+    box-shadow: var(--hm-shadow-sm);
+  }
 }
 
 // ---------------------------------------------------------------------------

@@ -14,9 +14,12 @@
     @for (job of jobs(); track job.id) {
       <button class="hm-card job hm-tap" type="button" (click)="open(job)">
         <div class="row">
+          <!-- The TITLE leads and the reference sits under it. Nobody scanning their own jobs is
+               looking for JOB-7K2M9; they are looking for the leak under the sink. The reference is
+               what you read out to support, so it stays — quietly. -->
           <div class="ref">
-            <b>{{ job.reference }}</b>
-            <span class="title">{{ job.title }}</span>
+            <b>{{ job.title }}</b>
+            <span class="code">{{ job.reference }}</span>
           </div>
           <span [class]="'hm-pill ' + tone(job.status)">{{ 'status.' + job.status | translate }}</span>
         </div>

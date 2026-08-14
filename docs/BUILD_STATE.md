@@ -3,10 +3,11 @@
 > Living tracker for the build. Updated as work progresses. Source of truth for **where we
 > are** and **how this machine is set up**. Read this first when resuming.
 
-_Last updated: 2026-08-14 (erasure and data export, the one uncalled pair that was a legal
-obligation; blocking and reporting a person, the last uncalled safety operations; a destructive
-action sheet that was not destructive, an aria binding that threw on every provider profile, and an
-emergency screen that spoke English to a French account)_
+_Last updated: 2026-08-15 (a visual pass after "UIs look horrible" — Material's uppercase buttons,
+flat cards, slab segments, an empty state that pushed its button through the side of its card at
+390px, and a taxonomy left in the wrong language; before that erasure and data export, the one
+uncalled pair that was a legal obligation, and blocking and reporting a person, the last uncalled
+safety operations)_
 
 ## Environment (this dev machine — Windows 10 Pro, non-admin)
 
@@ -308,6 +309,37 @@ Regenerate the list any time with the sweep script pattern above; it takes secon
 found four real defects.
 
 ## What was done, most recent first
+
+- **"UIs look horrible" — and at 390px they did.** Every review up to here was done at 1045–1280px,
+  which is the width a phone-first app looks worst at and the width nobody uses it at. Rendering the
+  screens in 390px iframes (an iframe gets its own viewport, so media queries resolve honestly) made
+  the causes obvious, and most were framework defaults left untouched rather than anything designed.
+  - **Material UPPERCASES every button label.** "Send code" shipped as "SEND CODE", "Quote" as
+    "QUOTE" — a screen of them reads as a row of warnings, and it destroys the word shapes people
+    read by. Sentence case everywhere (`ion-button`, segment buttons, back buttons, alert buttons),
+    with weight carrying the emphasis. Single biggest change on this list.
+  - **Cards had a shadow scale in the tokens and used none of it.** `surface.raised` sits barely a
+    step above `surface.base` in light mode, so a hairline border was doing all the separating and
+    every screen read as flat boxes on flat paper. `.hm-card` takes `shadow-sm`; the border stays
+    for dark mode, where a shadow has nothing to fall on.
+  - **Segments were a grey slab with a 2px underline** — Material's tab-bar treatment on what is
+    actually one control holding one value. Now a raised pill riding in a sunken track.
+  - **The search field** shipped as a grey slab with no edge; it gets the same raised surface and
+    hairline as the cards, so it reads as somewhere to type.
+  - **The jobs list led with `JOB-7K2M9` and put "Fuite sous l'évier" underneath it in grey.**
+    Nobody scans their own jobs looking for the reference. Title leads; the code sits under it in
+    tabular figures, still there for reading out to support.
+  - **The inline empty state pushed its button out through the side of its card at 390px.** It had a
+    stacking rule at `max-width: 380px` — a breakpoint set just below the commonest phone width
+    there is, and keyed on the viewport when the component sits inside cards of different widths.
+    It wraps on available space now, with no breakpoint at all.
+  - **A regression from the locale fix, caught by rendering it**: the taxonomy refetch was keyed off
+    a before/after comparison inside `loadMe()`, and once the account's language was also adopted at
+    launch, whichever got there first left the other seeing no change — so the Discover rail sat in
+    English above French chrome. The language is watched directly now; it does not matter who moves
+    it. Verified: the rail reads "Climatisation et froid", "Coiffure et beauté".
+  - Left alone deliberately: the category tiles already reserve two lines (`min-height: 2.4em`) so
+    the rail's baseline holds, and truncating trade names would be worse than a second line.
 
 - **Erasure and data export were unreachable — the one uncalled pair that is a legal obligation.**
   `DELETE /me` and `GET /me/data-export` (P1-10) have existed since Phase 1, with tests, and no
