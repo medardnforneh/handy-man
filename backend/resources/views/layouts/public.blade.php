@@ -100,10 +100,10 @@
         .site-header {
             position: sticky; top: 0; z-index: 20;
             padding-block: 0.7rem;
-            /* Not transparent: the pill has rounded ends, and without this the page would scroll
-               visibly through the gaps either side of it. A short fade is enough. */
-            background: linear-gradient(to bottom,
-                var(--hm-color-surface-base) 55%, transparent);
+            /* Transparent, now that the hero is a dark lit field: a fade in the page colour would
+               paint a pale strip across the top of it. Content passing beside the pill's rounded
+               ends is the point of a floating bar. */
+            background: transparent;
         }
         .header-inner {
             display: flex; align-items: center; gap: var(--hm-space-md);
@@ -290,53 +290,88 @@
                 the brand is present without being repeated at people;
              3. a hairline at the bottom, so the wash ends deliberately.
            `color-mix` against the tokens means both themes and any future palette follow along. */
+        /* A LIT FIELD, not a tinted panel.
+           A pale wash on white said "considered" and nothing else; the first screen still looked
+           like every other services site. This is dark ground with two coloured lights thrown
+           across it and a technical grid fading out behind — the page opens on depth instead of
+           paper, and every card and control below it reads as sitting in front of something.
+           All of it is color-mix over tokens, so the palette still owns the colours. */
         .hero {
             position: relative;
             isolation: isolate;
             overflow: hidden;
-            background:
-                radial-gradient(60rem 32rem at 78% -12%,
-                    color-mix(in srgb, var(--hm-color-brand-primary) 16%, transparent), transparent 65%),
-                linear-gradient(to bottom,
-                    var(--hm-color-brand-tint), color-mix(in srgb, var(--hm-color-brand-tint) 22%, transparent));
-            border-bottom: 1px solid var(--hm-color-border-subtle);
+            background: var(--hm-color-surface-inverse);
+            color: var(--hm-color-text-onInverse);
         }
-        .hero::before {
+        /* The lights. Brand green from the upper left, a colder blue from the right, so the field
+           has a direction rather than being evenly glowing. */
+        .hero::after {
             content: "";
-            position: absolute;
-            z-index: -1;
-            /* Top-RIGHT, cropped by the hero's own overflow, on the same side as the radial wash:
-               the brand presence gathers on one side and the headline column stays clean paper.
-               Behind the text it was legible enough to read as a smudge across the first line. */
-            inset-block-start: -20%;
-            inset-inline-end: -8%;
-            width: 40rem; height: 40rem;
-            background: currentColor;
-            color: var(--hm-color-brand-primary);
-            opacity: 0.045;
-            /* The header's mark, as a mask so it inherits the brand colour instead of hard-coding it. */
-            -webkit-mask: var(--hm-mark) no-repeat center / contain;
-            mask: var(--hm-mark) no-repeat center / contain;
+            position: absolute; inset: 0; z-index: -2;
+            background:
+                radial-gradient(46rem 30rem at 12% -8%,
+                    color-mix(in srgb, var(--hm-color-brand-primary) 55%, transparent), transparent 68%),
+                radial-gradient(40rem 28rem at 88% 8%,
+                    color-mix(in srgb, var(--hm-color-status-info) 32%, transparent), transparent 66%);
             pointer-events: none;
         }
-        @media (max-width: 48rem) {
-            /* On a phone the mark would sit behind the headline and fight it for the same pixels. */
-            .hero::before { display: none; }
+        /* The grid. Masked to a soft ellipse so it reads as a surface catching light rather than
+           as graph paper — an unmasked grid to the edges is a wireframe, not a product. */
+        .hero::before {
+            content: "";
+            position: absolute; inset: 0; z-index: -1;
+            background-image:
+                linear-gradient(to right, color-mix(in srgb, var(--hm-color-text-onInverse) 8%, transparent) 1px, transparent 1px),
+                linear-gradient(to bottom, color-mix(in srgb, var(--hm-color-text-onInverse) 8%, transparent) 1px, transparent 1px);
+            background-size: 3.5rem 3.5rem;
+            -webkit-mask-image: radial-gradient(60% 65% at 35% 30%, currentColor, transparent 75%);
+            mask-image: radial-gradient(60% 65% at 35% 30%, currentColor, transparent 75%);
+            pointer-events: none;
         }
 
+        /* On dark ground the muted grey is nearly invisible and the eyebrow's brand green goes
+           murky; both step up to the inverse palette. */
+        .hero .t-lede, .hero .muted { color: color-mix(in srgb, var(--hm-color-text-onInverse) 72%, transparent); }
+        .hero .t-eyebrow { color: color-mix(in srgb, var(--hm-color-brand-primary) 55%, var(--hm-color-text-onInverse)); }
+        .hero h1 { color: var(--hm-color-text-onInverse); }
+        /* The secondary CTA was a light-mode ghost button: dark text on a dark field. */
+        .hero .btn-ghost {
+            color: var(--hm-color-text-onInverse);
+            border-color: color-mix(in srgb, var(--hm-color-text-onInverse) 30%, transparent);
+            background: color-mix(in srgb, var(--hm-color-text-onInverse) 8%, transparent);
+        }
+        .hero .btn-ghost:hover { background: color-mix(in srgb, var(--hm-color-text-onInverse) 14%, transparent); }
+        /* Solid white pills on the lit field read louder than the headline. Glass, like the panel. */
+        .hero .chips a {
+            background: color-mix(in srgb, var(--hm-color-text-onInverse) 8%, transparent);
+            border-color: color-mix(in srgb, var(--hm-color-text-onInverse) 18%, transparent);
+            color: color-mix(in srgb, var(--hm-color-text-onInverse) 88%, transparent);
+            backdrop-filter: blur(8px);
+        }
+        .hero .chips a:hover {
+            border-color: color-mix(in srgb, var(--hm-color-brand-primary) 60%, transparent);
+            color: var(--hm-color-text-onInverse);
+        }
         .hero-grid { display: grid; gap: var(--hm-space-2xl); align-items: center; }
         .hero-visual { display: none; }
         @media (min-width: 62rem) {
             .hero-grid { grid-template-columns: 1.05fr 0.95fr; }
             .hero-visual { display: block; }
         }
+        /* GLASS, on the lit field. A white card here read as a light-mode component pasted onto a
+           dark screen — and worse, the hero's own light text colour was inheriting into it, so its
+           labels were pale grey on white and close to unreadable. Everything inside it is restated
+           against the inverse palette below, because a panel that only half changes theme is how
+           that happened in the first place. */
         .mock {
-            background: var(--hm-color-surface-raised);
-            border: 1px solid var(--hm-color-border-subtle);
+            background: color-mix(in srgb, var(--hm-color-text-onInverse) 7%, transparent);
+            backdrop-filter: blur(18px) saturate(1.3);
+            border: 1px solid color-mix(in srgb, var(--hm-color-text-onInverse) 16%, transparent);
             border-radius: var(--hm-radius-lg);
             box-shadow: var(--hm-shadow-lg);
             padding: var(--hm-space-lg);
             max-width: 24rem; margin-inline-start: auto;
+            color: var(--hm-color-text-onInverse);
         }
         .mock-row { display: flex; align-items: center; gap: var(--hm-space-sm); }
         .mock-avatar {
@@ -344,19 +379,31 @@
             display: grid; place-items: center; font-weight: 800; font-size: 0.8rem;
             background: var(--hm-color-brand-primary); color: var(--hm-color-brand-onPrimary);
         }
+        .mock .muted, .mock .t-small.muted { color: color-mix(in srgb, var(--hm-color-text-onInverse) 62%, transparent); }
+        /* The status pill and the escrow panel both used light-mode tints that vanish on glass. */
+        .mock .pill {
+            background: color-mix(in srgb, var(--hm-color-brand-primary) 26%, transparent);
+            color: color-mix(in srgb, var(--hm-color-brand-primary) 45%, var(--hm-color-text-onInverse));
+        }
         .mock-escrow {
             display: flex; align-items: center; gap: var(--hm-space-sm);
             margin-top: var(--hm-space-md); padding: var(--hm-space-md);
-            border-radius: var(--hm-radius-md); background: var(--hm-color-brand-tint);
+            border-radius: var(--hm-radius-md);
+            background: color-mix(in srgb, var(--hm-color-brand-primary) 18%, transparent);
+            border: 1px solid color-mix(in srgb, var(--hm-color-brand-primary) 28%, transparent);
         }
         .mock-steps { margin-top: var(--hm-space-md); display: grid; gap: 0.55rem; }
-        .mock-step { display: flex; align-items: center; gap: 0.6rem; color: var(--hm-color-text-muted); }
+        .mock-step {
+            display: flex; align-items: center; gap: 0.6rem;
+            color: color-mix(in srgb, var(--hm-color-text-onInverse) 55%, transparent);
+        }
         .mock-step .dot {
             width: 1.15rem; height: 1.15rem; border-radius: var(--hm-radius-pill); flex: none;
             display: grid; place-items: center; font-size: 0.7rem;
-            border: 1.5px solid var(--hm-color-border-strong); color: transparent;
+            border: 1.5px solid color-mix(in srgb, var(--hm-color-text-onInverse) 32%, transparent);
+            color: transparent;
         }
-        .mock-step.done { color: var(--hm-color-text-primary); }
+        .mock-step.done { color: var(--hm-color-text-onInverse); }
         .mock-step.done .dot {
             background: var(--hm-color-brand-primary); border-color: var(--hm-color-brand-primary);
             color: var(--hm-color-brand-onPrimary);
