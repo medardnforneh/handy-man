@@ -91,17 +91,30 @@
         .measure-center { max-width: 44rem; margin-inline: auto; }
 
         /* ── Header ─────────────────────────────────────────────────────────────────────────── */
-        /* Frosted, but opaque enough to actually be a surface. At 88% with a 10px blur the display
-           headings — 3rem, 800 weight — slid underneath and stayed legible THROUGH the header,
-           smearing across the nav so that both were hard to read. Glass has to obscure the thing
-           behind it or it is just a tint. */
+        /* A full-width bar pinned to the top edge is the most generic thing a site can wear, and it
+           spent the whole viewport width to say four words and a language. This floats instead: the
+           chrome is a contained pill, so the page reads as content on a surface rather than content
+           under a lid, and the corners let the brand wash show past it on both sides.
+           Glass has to obscure what is behind it or it is just a tint — hence the heavy blur and a
+           surface opaque enough that 3rem display headings passing underneath do not read through. */
         .site-header {
             position: sticky; top: 0; z-index: 20;
-            background: color-mix(in srgb, var(--hm-color-surface-base) 96%, transparent);
-            backdrop-filter: blur(18px) saturate(1.4);
-            border-bottom: 1px solid var(--hm-color-border-subtle);
+            padding-block: 0.7rem;
+            /* Not transparent: the pill has rounded ends, and without this the page would scroll
+               visibly through the gaps either side of it. A short fade is enough. */
+            background: linear-gradient(to bottom,
+                var(--hm-color-surface-base) 55%, transparent);
         }
-        .header-inner { display: flex; align-items: center; gap: var(--hm-space-md); min-height: 4rem; }
+        .header-inner {
+            display: flex; align-items: center; gap: var(--hm-space-md);
+            min-height: 3.4rem;
+            padding-inline: var(--hm-space-md);
+            border-radius: var(--hm-radius-pill);
+            background: color-mix(in srgb, var(--hm-color-surface-raised) 82%, transparent);
+            backdrop-filter: blur(20px) saturate(1.6);
+            border: 1px solid color-mix(in srgb, var(--hm-color-border-subtle) 85%, transparent);
+            box-shadow: var(--hm-shadow-md);
+        }
         .brand {
             display: inline-flex; align-items: center; gap: 0.55rem;
             font-weight: 800; font-size: 1.06rem; letter-spacing: -0.02em;
@@ -113,12 +126,21 @@
             display: grid; place-items: center; flex: none;
         }
         .brand .mark svg { width: 1.05rem; height: 1.05rem; }
-        .site-nav { display: flex; align-items: center; gap: var(--hm-space-md); margin-inline-start: auto; }
+        .site-nav { display: flex; align-items: center; gap: 0.35rem; margin-inline-start: auto; }
         .site-nav a {
-            color: var(--hm-color-text-muted); text-decoration: none; font-size: 0.925rem; font-weight: 500;
+            color: var(--hm-color-text-muted); text-decoration: none; font-size: 0.9rem; font-weight: 550;
         }
-        .site-nav a:hover { color: var(--hm-color-text-primary); }
-        .nav-links { display: none; gap: var(--hm-space-md); }
+        /* The hover target is the pill, not the word — a 2px-tall underline appearing under one of
+           four links is a smaller thing to hit and a smaller thing to notice. */
+        .nav-links a {
+            padding: 0.42rem 0.7rem; border-radius: var(--hm-radius-pill);
+            transition: background-color 120ms ease, color 120ms ease;
+        }
+        .nav-links a:hover {
+            color: var(--hm-color-text-primary);
+            background: color-mix(in srgb, var(--hm-color-brand-primary) 9%, transparent);
+        }
+        .nav-links { display: none; gap: 0.1rem; }
         @media (min-width: 52rem) { .nav-links { display: flex; } }
         .menu { position: relative; }
         .menu > summary {
@@ -139,12 +161,39 @@
         .menu-panel a:hover { background: var(--hm-color-surface-sunken); }
         @media (min-width: 52rem) { .menu { display: none; } }
 
-        .lang-switch { display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.85rem; }
-        .lang-switch a { padding: 0.15rem 0.4rem; border-radius: var(--hm-radius-sm); }
-        .lang-switch a[aria-current="true"] {
-            color: var(--hm-color-text-primary); font-weight: 700; background: var(--hm-color-surface-sunken);
+        /* A segmented control rather than "FR / EN": two links with a slash between them read as
+           breadcrumbs, and the slash was the third-most prominent glyph in the header. */
+        .lang-switch {
+            display: inline-flex; align-items: center; font-size: 0.8rem;
+            padding: 3px; border-radius: var(--hm-radius-pill);
+            background: var(--hm-color-surface-sunken);
         }
-        .lang-sep { color: var(--hm-color-border-strong); }
+        .lang-switch a {
+            padding: 0.22rem 0.6rem; border-radius: var(--hm-radius-pill); font-weight: 600;
+            transition: background-color 120ms ease, color 120ms ease;
+        }
+        .lang-switch a[aria-current="true"] {
+            color: var(--hm-color-text-primary);
+            background: var(--hm-color-surface-raised);
+            box-shadow: var(--hm-shadow-sm);
+        }
+        .lang-sep { display: none; }
+
+        /* The header's own call to action. A marketing header without one asks the reader to scroll
+           back up to the hero to act on what they have just read. */
+        /* Scoped under .site-nav: a bare .nav-cta loses to `.site-nav a`, which set the muted grey and
+           left the label dark-on-green — unreadable, and the loudest control on the page. */
+        .site-nav a.nav-cta {
+            display: none; align-items: center; gap: 0.35rem;
+            padding: 0.5rem 0.95rem; border-radius: var(--hm-radius-pill);
+            background: var(--hm-color-brand-primary); color: var(--hm-color-brand-onPrimary);
+            font-size: 0.875rem; font-weight: 700; text-decoration: none;
+            box-shadow: var(--hm-shadow-sm);
+            transition: background-color 120ms ease, transform 120ms ease;
+        }
+        .site-nav a.nav-cta:hover { background: var(--hm-color-brand-strong); color: var(--hm-color-brand-onPrimary); }
+        .site-nav a.nav-cta:active { transform: translateY(1px); }
+        @media (min-width: 52rem) { .site-nav a.nav-cta { display: inline-flex; } }
 
         /* ── Buttons ────────────────────────────────────────────────────────────────────────── */
         .btn {
@@ -374,6 +423,10 @@
                     <a href="{{ request()->fullUrlWithQuery(['lang' => 'en']) }}"
                        aria-current="{{ app()->getLocale() === 'en' ? 'true' : 'false' }}">{{ __('language.english_short') }}</a>
                 </span>
+                <a class="nav-cta" href="{{ route('services.index') }}">
+                    {{ __('public.hero_cta_primary') }}
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                </a>
             </nav>
         </div>
     </header>
