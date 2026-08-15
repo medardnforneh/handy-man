@@ -312,6 +312,30 @@ found four real defects.
 
 ## What was done, most recent first
 
+- **Create/Edit Provider Profile were empty pages with a Save button**, and both surfaces were
+  given a top.
+  - The two write forms in the admin panel shipped as the Filament scaffold — `->components([])`
+    with a `//` inside — so they opened on nothing. What staff may change is deliberately narrow,
+    because a provider profile carries three kinds of field and only one belongs in a form:
+    **written by the provider** (headline, bio, accepted channels — editable, because moderation is
+    a real job and a headline can carry a phone number or an insult); **earned** (rating, jobs
+    completed — derived, the column is a cache, shown but never editable); and **granted**
+    (verification tier — the fact that gates paid on-site work, raised by APPROVING a document,
+    which records who approved what and when; a number typed here would grant the same capability
+    with no trail). `party_id` is selectable on create and locked on edit — the column is UNIQUE and
+    moving a profile would hand someone another provider's history.
+  - **The public site had no top.** Every section sat on the same near-white surface, so the first
+    screen — the only one most visitors read — was typographically strong and visually anonymous.
+    It now carries a brand wash that fades downward, the header's own tool mark held at four percent
+    as a CSS **mask** (so it takes its colour from the token rather than carrying a second copy of
+    the palette in a data URI), and a hairline where the wash ends. The mark sits top-right, on the
+    same side as the radial wash; behind the headline, where it started, it read as a smudge across
+    the first line, and it is hidden below 48rem where it would fight the text for the same pixels.
+  - **The app got the same top**, so the two surfaces read as one product rather than two things
+    sharing a logo. On `ion-content` rather than `.page`, which is capped at 720px and would have
+    left a tinted column floating in grey; the toolbar takes the same colour at full strength so
+    header and content join with no seam.
+
 - **The app opened on five jobs that were not yours.** Found while adding loading states: the
   `jobs` signal was seeded with five fabricated jobs — real-looking references, provider names and
   amounts ("Fuite sous l'évier · Atelier Nkeng · 900 000 FCFA") — and `chats` with three invented
