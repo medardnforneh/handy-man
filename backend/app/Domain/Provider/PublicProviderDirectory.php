@@ -46,7 +46,11 @@ final class PublicProviderDirectory
             ->where('party_id', $partyId)
             ->whereNull('suspended_at')
             ->withCount('serviceAreas')
-            ->with(['skills.skill'])
+            // Oldest first, so the trade a client shows for a provider is a STABLE choice rather
+            // than whatever order the database happened to return. The earliest trade someone listed
+            // is a fair proxy for their main one, and it is the one the demo seeds to match the
+            // headline (DemoCoverageSeeder::supply).
+            ->with(['skills' => fn ($q) => $q->orderBy('created_at'), 'skills.skill'])
             ->first();
     }
 
@@ -73,7 +77,11 @@ final class PublicProviderDirectory
             // has switched that off would send the customer into a refusal they can't see coming.
             ->where('accepts_direct', true)
             ->withCount('serviceAreas')
-            ->with(['skills.skill']);
+            // Oldest first, so the trade a client shows for a provider is a STABLE choice rather
+            // than whatever order the database happened to return. The earliest trade someone listed
+            // is a fair proxy for their main one, and it is the one the demo seeds to match the
+            // headline (DemoCoverageSeeder::supply).
+            ->with(['skills' => fn ($q) => $q->orderBy('created_at'), 'skills.skill']);
 
         // Whether a provider travels is decided by whether they have declared any service area at
         // all — a yes/no about the KIND of work, which is why it can be filtered on publicly while

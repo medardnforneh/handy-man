@@ -228,6 +228,7 @@
   "followup.warranty_expiring.body": "Votre garantie se termine bientot. Ouvrez une reclamation si besoin.",
   "provider.rating_count": ":count avis",
   "provider.unrated": "Pas encore de note",
+  "provider.unrated_short": "Nouveau",
   "provider.building": "Trop tôt",
   "provider.new_note": "Nouveau prestataire — historique en construction.",
   "provider.stat.completed": "Missions (90 j)",

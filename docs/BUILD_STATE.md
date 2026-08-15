@@ -312,6 +312,27 @@ found four real defects.
 
 ## What was done, most recent first
 
+- **"Informatique et réseaux à domicile", filed under Retouches.** Every card in the Discover rail
+  named a trade that had nothing to do with its headline — home IT under clothing alterations, an
+  air-conditioning firm under something else again — and a provider's profile listed a dozen
+  unrelated trades spanning hairdressing, tiling and languages. It reads as a bug to everyone who
+  sees it, which is most of what "the app looks unfinished" was pointing at.
+  - Not a bug: `DemoCoverageSeeder::supply()` iterates the TRADES rather than the providers, on
+    purpose, so that no page in the public taxonomy is a dead end. Coverage was chosen over
+    coherence and the note says so. The cost had simply never been looked at from the app.
+  - Both, now. Each demo provider gets its **signature trade seeded first** — keyed by headline, so
+    it survives the provider list changing — and the directory's eager-load is **ordered by
+    `created_at`** instead of leaving the displayed trade to whatever order Postgres returned. The
+    earliest trade a provider listed is a fair proxy for their main one, and the client already
+    shows the first (`customer.service.ts`, the `.find(Boolean)` over `p.skills`).
+  - **The trade was also being truncated away.** That line is rating · trade with the trade as the
+    half that shortens, so eighteen characters of "Pas encore de note" were spending the trade's
+    room: "Installation de réseau" and "Installation de climatiseur" both arrived as
+    "Installation d…". The rail says "Nouveau" / "New" and spells it out on the profile, where
+    there is space. Every trade now reads in full.
+  - Provider cards were also packed at `space-sm` with an avatar, a two-line name, a meta line and
+    a call to action pressed against the edges.
+
 - **Create/Edit Provider Profile were empty pages with a Save button**, and both surfaces were
   given a top.
   - The two write forms in the admin panel shipped as the Filament scaffold — `->components([])`

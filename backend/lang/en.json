@@ -228,6 +228,7 @@
   "followup.warranty_expiring.body": "Your warranty ends soon. Open a claim if anything needs fixing.",
   "provider.rating_count": ":count reviews",
   "provider.unrated": "No ratings yet",
+  "provider.unrated_short": "New",
   "provider.building": "Too soon",
   "provider.new_note": "New provider — building a track record.",
   "provider.stat.completed": "Jobs (90d)",

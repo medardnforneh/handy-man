@@ -138,7 +138,12 @@
               @if (p.rating > 0) {
                 <span class="rating"><ion-icon name="star" aria-hidden="true"></ion-icon>{{ p.rating }}</span>
               } @else {
-                <span class="rating new">{{ 'provider.unrated' | translate }}</span>
+                <!-- Short here, spelled out on the profile. This line is rating · trade with the
+                     trade as the half that shortens, so eighteen characters of "No ratings yet"
+                     were spending the trade's room: "Installation de réseau" and "Installation de
+                     climatiseur" both arrived as "Installation d…". The trade is what someone is
+                     scanning this rail for. -->
+                <span class="rating new">{{ 'provider.unrated_short' | translate }}</span>
               }
               <span class="dot" aria-hidden="true"></span>
               <span>{{ p.skill }}</span>

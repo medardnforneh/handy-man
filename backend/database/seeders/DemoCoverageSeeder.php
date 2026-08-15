@@ -209,6 +209,41 @@ final class DemoCoverageSeeder extends Seeder
         ];
         $models = ['hourly', 'fixed', 'quote_only'];
 
+        // SIGNATURE TRADES FIRST.
+        //
+        // The loop below iterates trades rather than providers so that no directory page is a dead
+        // end — a deliberate trade of coherence for coverage. The cost showed up in the app: each
+        // provider ends up listing a dozen unrelated trades, and Discover shows one of them under
+        // the headline, so "Informatique et réseaux à domicile" was filed under "Retouches" and
+        // "Froid et climatisation" under something else again. Read as a bug by everyone who saw it.
+        //
+        // Seeding each demo provider's own trade FIRST costs nothing and fixes the pairing: the
+        // directory keeps its full coverage, and the earliest-listed trade — which is the one the
+        // client shows (see the ordered eager-load in PublicProviderDirectory) — is the one the
+        // headline actually claims. Keyed by headline so it survives the provider list changing.
+        $signatures = [
+            'Dépannage et installation, 7j/7' => 'leak-repair',
+            'Froid et climatisation — devis gratuit' => 'ac-installation',
+            'Plomberie soignée, travail garanti' => 'sanitary-installation',
+            'Bâtiment et second œuvre' => 'construction',
+            'Informatique et réseaux à domicile' => 'network-setup',
+            'Design graphique et identité visuelle' => 'web-development',
+            'Électricité générale et mise aux normes' => 'electrical-installation',
+            'Maçonnerie et finitions' => 'plastering',
+        ];
+        $bySlug = $leaves->keyBy('slug');
+        foreach ($profiles as $profile) {
+            $slug = $signatures[$profile->headline] ?? null;
+            $skill = $slug === null ? null : $bySlug->get($slug);
+            if ($skill === null) {
+                continue;
+            }
+            ProviderSkill::query()->firstOrCreate(
+                ['provider_profile_id' => $profile->id, 'skill_id' => $skill->id],
+                ['price_model' => 'quote_only', 'rate_minor' => null, 'currency' => 'XAF', 'years_experience' => 6],
+            );
+        }
+
         // Iterate the TRADES, not the providers: every leaf gets two providers, so no directory page
         // in the taxonomy is a dead end and every trade has enough supply for ranking to mean
         // something. Walking providers instead covered only the first stretch of the taxonomy and

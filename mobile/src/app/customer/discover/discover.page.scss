@@ -230,7 +230,10 @@ ion-searchbar {
   display: flex;
   align-items: center;
   gap: var(--hm-space-sm);
-  padding: var(--hm-space-sm);
+  // These carry an avatar, a two-line name, a meta line and a call to action. At `space-sm` all
+  // four were pressed against the card's edges, which is what made the rail read as dense rather
+  // than as a list of people worth choosing between.
+  padding: var(--hm-space-md) var(--hm-space-sm) var(--hm-space-md) var(--hm-space-md);
   margin-bottom: var(--hm-space-sm);
 
   // The avatar + info area is a single tap target that opens the profile.

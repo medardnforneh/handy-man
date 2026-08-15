@@ -714,6 +714,7 @@
   "provider": {
     "rating_count": "{{count}} reviews",
     "unrated": "No ratings yet",
+    "unrated_short": "New",
     "building": "Too soon",
     "new_note": "New provider — building a track record.",
     "stat": {

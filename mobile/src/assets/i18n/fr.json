@@ -714,6 +714,7 @@
   "provider": {
     "rating_count": "{{count}} avis",
     "unrated": "Pas encore de note",
+    "unrated_short": "Nouveau",
     "building": "Trop tôt",
     "new_note": "Nouveau prestataire — historique en construction.",
     "stat": {
