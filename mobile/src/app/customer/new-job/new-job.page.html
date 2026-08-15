@@ -8,11 +8,11 @@
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <div class="page">
+  <div class="mx-auto max-w-3xl px-4 pb-10">
     <!-- What -->
-    <div class="hm-section-head"><h2>{{ 'newjob.what' | translate }}</h2></div>
+    <h2 class="mt-6 mb-4 text-md font-extrabold tracking-snug">{{ 'newjob.what' | translate }}</h2>
     <ion-input
-      class="field hm-tap"
+      class="field"
       [value]="title()"
       (ionInput)="onTitle($any($event.target).value)"
       [placeholder]="'newjob.what_ph' | translate"
@@ -20,31 +20,35 @@
     ></ion-input>
 
     <!-- Category -->
-    <div class="hm-section-head"><h2>{{ 'newjob.category' | translate }}</h2></div>
-    <div class="picks">
+    <h2 class="mt-6 mb-4 text-md font-extrabold tracking-snug">{{ 'newjob.category' | translate }}</h2>
+    <div class="grid grid-cols-[repeat(auto-fill,minmax(96px,1fr))] gap-2">
       @for (cat of categories(); track cat.id) {
         <button
           type="button"
-          class="pick hm-tap"
-          [class.selected]="categoryId() === cat.id"
+          class="flex min-h-11 cursor-pointer flex-col items-center gap-1.5 rounded-lg border px-1.5 py-4 transition-colors"
+          [class]="categoryId() === cat.id
+            ? 'border-brand bg-brand/10 text-content'
+            : 'border-edge bg-surface-raised text-content-muted'"
           [attr.aria-pressed]="categoryId() === cat.id"
           (click)="selectCategory(cat.id)"
         >
-          <ion-icon [name]="cat.icon" aria-hidden="true"></ion-icon>
-          <span>{{ cat.label }}</span>
+          <ion-icon [name]="cat.icon" class="text-[1.4rem] text-brand" aria-hidden="true"></ion-icon>
+          <span class="text-xs font-semibold">{{ cat.label }}</span>
         </button>
       }
     </div>
 
     <!-- Specific service (leaf skill) — shown when the chosen category has real leaves -->
     @if (leaves().length > 0) {
-      <div class="hm-section-head"><h2>{{ 'newjob.service' | translate }}</h2></div>
-      <div class="leaves">
+      <h2 class="mt-6 mb-4 text-md font-extrabold tracking-snug">{{ 'newjob.service' | translate }}</h2>
+      <div class="flex flex-wrap gap-2">
         @for (leaf of leaves(); track leaf.id) {
           <button
             type="button"
-            class="leaf hm-tap"
-            [class.selected]="skillId() === leaf.id"
+            class="min-h-11 cursor-pointer rounded-pill border-[1.5px] px-3.5 py-2 text-sm font-semibold transition-colors"
+            [class]="skillId() === leaf.id
+              ? 'border-brand bg-brand/12 text-brand'
+              : 'border-edge bg-surface-raised text-content-muted'"
             [attr.aria-pressed]="skillId() === leaf.id"
             (click)="skillId.set(leaf.id)"
           >{{ leaf.label }}</button>
@@ -53,37 +57,42 @@
     }
 
     <!-- Mode -->
-    <div class="hm-section-head"><h2>{{ 'newjob.mode' | translate }}</h2></div>
+    <h2 class="mt-6 mb-4 text-md font-extrabold tracking-snug">{{ 'newjob.mode' | translate }}</h2>
     <ion-segment class="choice" [value]="mode()">
-      <ion-segment-button class="hm-tap" value="onsite" (click)="setMode('onsite')">
+      <ion-segment-button value="onsite" (click)="setMode('onsite')">
         <ion-label>{{ 'discover.mode.onsite' | translate }}</ion-label>
       </ion-segment-button>
-      <ion-segment-button class="hm-tap" value="remote" (click)="setMode('remote')">
+      <ion-segment-button value="remote" (click)="setMode('remote')">
         <ion-label>{{ 'discover.mode.remote' | translate }}</ion-label>
       </ion-segment-button>
-      <ion-segment-button class="hm-tap" value="hybrid" (click)="setMode('hybrid')">
+      <ion-segment-button value="hybrid" (click)="setMode('hybrid')">
         <ion-label>{{ 'newjob.hybrid' | translate }}</ion-label>
       </ion-segment-button>
     </ion-segment>
 
     <!-- Address — conditional on the engagement mode (doc 06) -->
     @if (needsAddress()) {
-      <div class="hm-section-head"><h2>{{ 'newjob.address' | translate }}</h2></div>
-      <div class="addrs">
+      <h2 class="mt-6 mb-4 text-md font-extrabold tracking-snug">{{ 'newjob.address' | translate }}</h2>
+      <div class="flex flex-col gap-2">
         @for (addr of addresses(); track addr.id) {
           <button
             type="button"
-            class="addr hm-card hm-tap"
-            [class.selected]="addressId() === addr.id"
+            class="flex min-h-11 cursor-pointer items-center gap-2 rounded-lg border p-4 text-start text-inherit shadow-sm transition-colors"
+            [class]="addressId() === addr.id ? 'border-brand bg-brand/8' : 'border-edge bg-surface-raised'"
             [attr.aria-pressed]="addressId() === addr.id"
             (click)="addressId.set(addr.id)"
           >
-            <ion-icon class="pin" name="location-outline" aria-hidden="true"></ion-icon>
-            <span class="addr-text">
-              <b>{{ addr.label }}</b>
-              <small class="hm-muted">{{ addr.line }}</small>
+            <ion-icon class="flex-none text-[1.2rem] text-brand" name="location-outline" aria-hidden="true"></ion-icon>
+            <span class="min-w-0 flex-1">
+              <b class="text-md">{{ addr.label }}</b>
+              <small class="mt-0.5 block text-xs text-content-muted">{{ addr.line }}</small>
             </span>
-            <ion-icon class="tick" [name]="addressId() === addr.id ? 'checkmark-circle' : 'ellipse-outline'" aria-hidden="true"></ion-icon>
+            <ion-icon
+              class="flex-none text-[1.25rem]"
+              [class]="addressId() === addr.id ? 'text-brand' : 'text-edge-strong'"
+              [name]="addressId() === addr.id ? 'checkmark-circle' : 'ellipse-outline'"
+              aria-hidden="true"
+            ></ion-icon>
           </button>
         } @empty {
           <!-- On-site work needs a real address — the column is a DB CHECK, and the pin on it is
@@ -101,21 +110,27 @@
         }
 
         @if (addresses().length) {
-          <button type="button" class="addr-add hm-tap" (click)="addAddress()">
-            <ion-icon name="add" aria-hidden="true"></ion-icon>
+          <!-- Quieter than the address cards it follows, since choosing one of them is the common
+               path and adding another is the exception. -->
+          <button
+            type="button"
+            class="flex min-h-11 cursor-pointer items-center justify-center gap-1.5 rounded-lg border border-dashed border-edge-strong bg-transparent p-2.5 text-sm font-bold text-brand [font:inherit]"
+            (click)="addAddress()"
+          >
+            <ion-icon name="add" class="text-lg" aria-hidden="true"></ion-icon>
             {{ 'account.add_address' | translate }}
           </button>
         }
       </div>
     } @else {
-      <p class="remote-note hm-muted">
-        <ion-icon name="globe-outline" aria-hidden="true"></ion-icon>
+      <p class="m-0 flex items-center gap-1.5 rounded-md border border-dashed border-edge-strong p-4 text-sm text-content-muted">
+        <ion-icon name="globe-outline" class="flex-none text-[1.1rem] text-brand" aria-hidden="true"></ion-icon>
         {{ 'newjob.remote_note' | translate }}
       </p>
     }
 
     <!-- Details -->
-    <div class="hm-section-head"><h2>{{ 'newjob.details' | translate }}</h2></div>
+    <h2 class="mt-6 mb-4 text-md font-extrabold tracking-snug">{{ 'newjob.details' | translate }}</h2>
     <ion-textarea
       class="field"
       [autoGrow]="true"
@@ -127,31 +142,34 @@
     ></ion-textarea>
 
     <!-- Photos (capture lands with the native build) -->
-    <div class="hm-section-head"><h2>{{ 'newjob.photos' | translate }}</h2></div>
-    <button type="button" class="addphoto hm-tap">
-      <ion-icon name="camera-outline" aria-hidden="true"></ion-icon>
+    <h2 class="mt-6 mb-4 text-md font-extrabold tracking-snug">{{ 'newjob.photos' | translate }}</h2>
+    <button
+      type="button"
+      class="flex w-full min-h-11 cursor-pointer items-center justify-center gap-2 rounded-md border border-dashed border-edge-strong bg-transparent p-4 text-sm font-semibold text-content-muted [font:inherit]"
+    >
+      <ion-icon name="camera-outline" class="text-[1.25rem] text-brand" aria-hidden="true"></ion-icon>
       <span>{{ 'newjob.add_photo' | translate }}</span>
     </button>
 
     <!-- Budget -->
-    <div class="hm-section-head"><h2>{{ 'newjob.budget' | translate }}</h2></div>
-    <div class="budget field">
+    <h2 class="mt-6 mb-4 text-md font-extrabold tracking-snug">{{ 'newjob.budget' | translate }}</h2>
+    <div class="field flex items-center pe-3.5">
       <ion-input
-        class="hm-tap"
+        class="flex-1"
         inputmode="numeric"
         [value]="budget()"
         (ionInput)="onBudget($any($event.target).value)"
         [placeholder]="'newjob.budget_ph' | translate"
         [attr.aria-label]="'newjob.budget' | translate"
       ></ion-input>
-      <span class="cur">{{ 'money.currency' | translate }}</span>
+      <span class="flex-none text-sm font-bold text-content-muted">{{ 'money.currency' | translate }}</span>
     </div>
   </div>
 </ion-content>
 
 <ion-footer class="ion-no-border">
-  <div class="cta">
-    <ion-button expand="block" class="hm-tap" [disabled]="!canPost()" (click)="post()">
+  <div class="mx-auto max-w-3xl border-t border-t-edge px-4 py-2">
+    <ion-button expand="block" [disabled]="!canPost()" (click)="post()">
       {{ 'newjob.post' | translate }}
     </ion-button>
   </div>

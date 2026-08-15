@@ -1,4 +1,4 @@
-// Shared primitives (.hm-card, .hm-section-head…) load globally. Semantic tokens only (doc 08).
+// Ionic's own components only — everything else on this page is a Tailwind utility in the template.
 
 ion-toolbar {
   --background: var(--hm-color-surface-base);
@@ -10,17 +10,8 @@ ion-title {
   font-weight: 700;
 }
 
-.page {
-  padding: 0 var(--hm-space-md) var(--hm-space-xl);
-  max-width: 720px;
-  margin: 0 auto;
-}
-
-.hm-section-head h2 {
-  font-size: var(--hm-text-md);
-}
-
-// ---- Text fields
+// The text fields draw their box through custom properties; the outline has to sit on the host to
+// wrap the whole control, which is why it is a declaration rather than a utility.
 .field {
   --background: var(--hm-color-surface-raised);
   --color: var(--hm-color-text-primary);
@@ -31,6 +22,7 @@ ion-title {
   background: var(--hm-color-surface-raised);
   border: 1px solid var(--hm-color-border-subtle);
   border-radius: var(--hm-radius-md);
+  min-height: 44px;
 }
 
 ion-textarea.field {
@@ -38,62 +30,6 @@ ion-textarea.field {
   --padding-bottom: 0.6rem;
 }
 
-// ---- Category picker
-.picks {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
-  gap: var(--hm-space-sm);
-}
-
-.pick {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.35rem;
-  padding: var(--hm-space-md) 0.4rem;
-  background: var(--hm-color-surface-raised);
-  border: 1px solid var(--hm-color-border-subtle);
-  border-radius: var(--hm-radius-lg);
-  color: var(--hm-color-text-muted);
-  cursor: pointer;
-  transition: border-color 0.12s ease, color 0.12s ease, background 0.12s ease;
-
-  ion-icon { font-size: 1.4rem; color: var(--hm-color-brand-primary); }
-  span { font-size: var(--hm-text-xs); font-weight: 600; }
-
-  &.selected {
-    border-color: var(--hm-color-brand-primary);
-    background: color-mix(in srgb, var(--hm-color-brand-primary) 10%, transparent);
-    color: var(--hm-color-text-primary);
-  }
-}
-
-// ---- Specific service (leaf) chips
-.leaves {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-
-.leaf {
-  padding: 0.5rem 0.9rem;
-  border-radius: var(--hm-radius-pill);
-  background: var(--hm-color-surface-raised);
-  border: 1.5px solid var(--hm-color-border-subtle);
-  color: var(--hm-color-text-muted);
-  font-size: var(--hm-text-sm);
-  font-weight: 600;
-  cursor: pointer;
-  transition: border-color 0.12s ease, color 0.12s ease, background 0.12s ease;
-
-  &.selected {
-    border-color: var(--hm-color-brand-primary);
-    background: color-mix(in srgb, var(--hm-color-brand-primary) 12%, transparent);
-    color: var(--hm-color-brand-primary);
-  }
-}
-
-// ---- Mode segment
 .choice {
   --background: var(--hm-color-surface-sunken);
   border-radius: var(--hm-radius-md);
@@ -110,125 +46,13 @@ ion-textarea.field {
   }
 }
 
-// ---- Address picker
-.addrs {
-  display: flex;
-  flex-direction: column;
-  gap: var(--hm-space-sm);
-}
-
-// "Add an address" under the list: quieter than the address cards it follows, since choosing one
-// of them is the common path and adding another is the exception.
-.addr-add {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.4rem;
-  padding: 0.7rem;
-  border: 1px dashed var(--hm-color-border-strong);
-  border-radius: var(--hm-radius-lg);
-  background: none;
-  color: var(--hm-color-brand-primary);
-  font: inherit;
-  font-size: var(--hm-text-sm);
-  font-weight: 700;
-  cursor: pointer;
-
-  ion-icon { font-size: var(--hm-text-lg); }
-}
-
-.addr {
-  display: flex;
-  align-items: center;
-  gap: var(--hm-space-sm);
-  padding: var(--hm-space-md);
-  text-align: start;
-  cursor: pointer;
-  color: inherit;
-  transition: border-color 0.12s ease, background 0.12s ease;
-
-  .pin { font-size: 1.2rem; color: var(--hm-color-brand-primary); flex: none; }
-
-  .addr-text {
-    flex: 1;
-    min-width: 0;
-
-    b { font-size: var(--hm-text-md); }
-    small { display: block; font-size: var(--hm-text-xs); margin-top: 0.1rem; }
-  }
-
-  .tick { font-size: 1.25rem; color: var(--hm-color-border-strong); flex: none; }
-
-  &.selected {
-    border-color: var(--hm-color-brand-primary);
-    background: color-mix(in srgb, var(--hm-color-brand-primary) 8%, transparent);
-
-    .tick { color: var(--hm-color-brand-primary); }
-  }
-}
-
-.remote-note {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  margin: 0;
-  padding: var(--hm-space-md);
-  border: 1px dashed var(--hm-color-border-strong);
-  border-radius: var(--hm-radius-md);
-  font-size: var(--hm-text-sm);
-
-  ion-icon { color: var(--hm-color-brand-primary); font-size: 1.1rem; flex: none; }
-}
-
-// ---- Add photo
-.addphoto {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.45rem;
-  width: 100%;
-  padding: var(--hm-space-md);
-  background: none;
-  border: 1px dashed var(--hm-color-border-strong);
-  border-radius: var(--hm-radius-md);
-  color: var(--hm-color-text-muted);
-  font-size: var(--hm-text-sm);
-  font-weight: 600;
-  cursor: pointer;
-
-  ion-icon { font-size: 1.25rem; color: var(--hm-color-brand-primary); }
-}
-
-// ---- Budget
-.budget {
-  display: flex;
-  align-items: center;
-  padding-inline-end: 0.85rem;
-
-  ion-input { flex: 1; }
-
-  .cur {
-    font-size: var(--hm-text-sm);
-    font-weight: 700;
-    color: var(--hm-color-text-muted);
-    flex: none;
-  }
-}
-
-// ---- Sticky CTA
 ion-footer {
   background: var(--hm-color-surface-base);
-
-  .cta {
-    padding: var(--hm-space-sm) var(--hm-space-md);
-    max-width: 720px;
-    margin: 0 auto;
-    border-top: 1px solid var(--hm-color-border-subtle);
-  }
 
   ion-button {
     --border-radius: var(--hm-radius-md);
     font-weight: 700;
     margin: 0;
+    min-height: 44px;
   }
 }

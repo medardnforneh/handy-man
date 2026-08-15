@@ -58,6 +58,15 @@
        asset. Declared here so both are ordinary `animate-*` utilities. */
     --animate-strip-in: strip-in 180ms ease-out;
     --animate-mark-pulse: mark-pulse 1.4s ease-in-out infinite;
+
+    /* The typing whisper's three dots. Decoration, not information — every use pairs it with
+       `motion-reduce:animate-none`. */
+    --animate-typing-bounce: typing-bounce 1.2s infinite ease-in-out;
+}
+
+@keyframes typing-bounce {
+    0%, 60%, 100% { opacity: 0.35; transform: translateY(0); }
+    30% { opacity: 1; transform: translateY(-0.15rem); }
 }
 
 @keyframes strip-in {
