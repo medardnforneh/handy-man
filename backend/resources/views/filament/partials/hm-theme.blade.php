@@ -39,20 +39,34 @@
     .hm-dash .hm-delta{ grid-column:1; font-size:12px; font-weight:600; }
     .hm-dash .hm-delta.up{ color:var(--hm-success);} .hm-dash .hm-delta.down{ color:var(--hm-danger);} .hm-dash .hm-delta.flat{ color:var(--hm-muted);}
     .hm-dash .hm-kpi.hm-attention{ outline:1px solid var(--hm-danger-w); }
+    /* `min-width:0` so the 1.6fr / 1fr ratio actually holds. A grid track defaults to min-content,
+       so the engagements table's own min-width pushed the left column wider and starved the aside
+       until "Settlement mismatch" was setting two words to a line. The table already scrolls inside
+       its card; that is the right thing to give way, not the panel beside it. */
     .hm-dash .hm-cols{ display:grid; grid-template-columns:1.6fr 1fr; gap:24px; align-items:start; }
+    .hm-dash .hm-cols > *{ min-width:0; }
     .hm-dash .hm-phead{ display:flex; align-items:center; justify-content:space-between; padding:14px 16px; border-bottom:1px solid var(--hm-border); }
     .hm-dash .hm-phead h2{ margin:0; font-size:14px; letter-spacing:-.01em; font-weight:700; }
     .hm-dash .hm-phead a{ font-size:12.5px; color:var(--hm-brand); font-weight:600; text-decoration:none; }
-    .hm-dash table{ width:100%; min-width:520px; border-collapse:collapse; font-size:13px; }
+    .hm-dash table{ width:100%; min-width:640px; border-collapse:collapse; font-size:13px; }
     .hm-dash thead th{ text-align:left; font-size:10.5px; letter-spacing:.07em; text-transform:uppercase; color:var(--hm-muted); font-weight:700; padding:10px 16px; border-bottom:1px solid var(--hm-border); }
     .hm-dash tbody td{ padding:12px 16px; border-bottom:1px solid var(--hm-border); vertical-align:middle; }
     .hm-dash tbody tr:last-child td{ border-bottom:0; }
     /* A money figure must never wrap: "800 000" broken across two lines reads as two numbers. The
        thousands separator here is a space, so nowrap is the only thing holding the figure together. */
     .hm-dash .hm-num{ text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap; }
-    .hm-dash .hm-ref{ font-weight:600; }
+    /* Same reasoning as the money figure, one column over: a reference is ONE token, and a hyphen
+       is a licence to break that has to be revoked explicitly. "JOB-GWRLP" was arriving as "JOB-"
+       above "GWRLP" in every single row, which reads as a broken table rather than as a code. */
+    .hm-dash .hm-ref{ font-weight:600; white-space:nowrap; }
     .hm-dash .hm-sub{ color:var(--hm-muted); font-size:12px; }
+    /* Five columns inside 520px left the first two so narrow that "Entretien de climatiseur" and
+       "Douala Cool Services" each set one word per line. The table already scrolls horizontally;
+       these give the text columns enough room to read before that happens. */
+    .hm-dash tbody td:first-child{ min-width:170px; }
+    .hm-dash tbody td:nth-child(2){ min-width:150px; }
     .hm-dash .hm-prov{ display:flex; align-items:center; gap:9px; }
+    .hm-dash .hm-prov > div{ min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
     .hm-dash .hm-pa{ width:26px; height:26px; border-radius:7px; flex:none; display:grid; place-items:center; font-weight:700; font-size:11px; color:var(--hm-on-brand); background:var(--hm-brand); }
     .hm-dash .hm-pa-lg{ width:42px; height:42px; border-radius:11px; font-size:15px; }
     .hm-dash .hm-pa.accent-info{ background:var(--hm-info); }
@@ -80,12 +94,20 @@
     .hm-dash .hm-exc:last-child{ border-bottom:0; }
     .hm-dash .hm-exc .hm-sev{ width:4px; border-radius:3px; flex:none; }
     .hm-dash .hm-exc.hm-crit .hm-sev{ background:var(--hm-danger);} .hm-dash .hm-exc.hm-warn .hm-sev{ background:var(--hm-warning);}
-    .hm-dash .hm-exc .hm-body{ flex:1; min-width:0; }
+    /* `.hm-body` means two different things in this file: the long free-text body of a report,
+       where `white-space:pre-wrap` and `overflow-wrap:anywhere` are exactly right, and this card's
+       little text block, where they are exactly wrong — they were breaking "mismatch" mid-word and
+       holding the line at 64ch inside a 300px aside. The narrower rule wins them back. */
+    .hm-dash .hm-exc .hm-body{ flex:1; min-width:0; max-width:none; white-space:normal; overflow-wrap:break-word; font-size:inherit; line-height:1.45; }
     .hm-dash .hm-exc .hm-body b{ font-size:13px; }
     .hm-dash .hm-exc .hm-body p{ margin:2px 0 0; color:var(--hm-muted); font-size:12px; }
-    .hm-dash .hm-exc .hm-amt{ font-weight:700; font-size:13px; }
+    /* A figure separated by spaces must not wrap — the same rule the table's `.hm-num` carries. */
+    .hm-dash .hm-exc .hm-amt{ font-weight:700; font-size:13px; flex:none; white-space:nowrap; }
     .hm-dash .hm-exc.hm-crit .hm-amt{ color:var(--hm-danger); }
-    .hm-dash .hm-chip{ display:inline-block; margin-top:7px; font-size:10.5px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; padding:2px 7px; border-radius:6px; }
+    /* A two-word status is a label, not a sentence. Uppercased and letter-spaced it is wide enough
+       to wrap in a narrow aside, and "CRITICAL · UNRESOLV / ED" is not a state anyone should have
+       to read. Same rule the table pills already carry. */
+    .hm-dash .hm-chip{ display:inline-block; margin-top:7px; font-size:10.5px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; padding:2px 7px; border-radius:6px; white-space:nowrap; }
     .hm-dash .hm-chip.hm-crit{ color:var(--hm-danger); background:var(--hm-danger-w); }
     .hm-dash .hm-chip.hm-warn{ color:var(--hm-warning); background:var(--hm-warning-w); }
     .hm-dash .hm-chip.hm-ok{ color:var(--hm-success); background:var(--hm-success-w); }

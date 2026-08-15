@@ -3,7 +3,9 @@
 > Living tracker for the build. Updated as work progresses. Source of truth for **where we
 > are** and **how this machine is set up**. Read this first when resuming.
 
-_Last updated: 2026-08-15 (a visual pass after "UIs look horrible" — Material's uppercase buttons,
+_Last updated: 2026-08-15 (the visual pass across ALL THREE UIs — the admin brand name was
+hyphenated and its palette was the one surface the token generator missed; the public site let
+display headings read through its own sticky header; and in the app, Material's uppercase buttons,
 flat cards, slab segments, an empty state that pushed its button through the side of its card at
 390px, and a taxonomy left in the wrong language; before that erasure and data export, the one
 uncalled pair that was a legal obligation, and blocking and reporting a person, the last uncalled
@@ -309,6 +311,37 @@ Regenerate the list any time with the sweep script pattern above; it takes secon
 found four real defects.
 
 ## What was done, most recent first
+
+- **The other two UIs.** "Rework the UIs" meant all three surfaces, and the first pass had only
+  touched the Ionic app. The public site and the Filament admin were reviewed the same way.
+  - **Public site**: in good shape — the hero, the three-step explainer, the dark professionals
+    section and the trades directory all hold up at 1280px and at 390px. One defect: the sticky
+    header was `surface.base` at 88% with a 10px blur, and the 3rem/800-weight display headings slid
+    underneath and stayed legible THROUGH it, smearing across the nav. 96% and an 18px blur — glass
+    has to obscure what is behind it or it is just a tint.
+  - **Admin — the brand name was wrong.** `->brandName('Handy-Man')`, hyphenated, in the topbar, the
+    login card and every page title. It is "HandyMan" everywhere else. The sort of thing only ever
+    seen by the people least likely to report it.
+  - **Admin — the palette was the one surface the token generator did not reach.** Five hex values
+    copied by hand into `AdminPanelProvider`, because Filament builds its ramps in PHP at boot and
+    cannot read a CSS variable the way Blade, Tailwind and Ionic all do. `tokens/build.mjs` now emits
+    `backend/config/tokens.php` and the provider reads it — the generated values matched the
+    hand-copied ones exactly, so this changes nothing visually and removes the only place the brand
+    could silently drift.
+  - **Not a defect, checked properly**: the admin's mint primary button. `Color::hex()` keeps only
+    the HUE and imposes its own lightness/chroma ramp, so the brand green never appears literally —
+    and the button deliberately pairs shade 400 with 950 text. That is Filament v4's own soft-button
+    language, and forcing the app's deep-green/white treatment onto it would break the pairing.
+  - **Admin dashboard, three real layout defects.** Every job reference arrived broken across two
+    lines ("JOB-" above "GWRLP") — a hyphen is a licence to break and had to be revoked, exactly as
+    the money column already does. Five columns inside 520px set "Entretien de climatiseur" and
+    "Douala Cool Services" one word per line. And `.hm-body` meant two different things in one
+    stylesheet — a long report body, where `pre-wrap`/`overflow-wrap:anywhere` is right, and the
+    exception card's text block, where it broke "mismatch" mid-word and held the line to 64ch inside
+    a 300px aside. The exception amount now carries the same `nowrap` the table figures do, and the
+    two-column grid gets `min-width:0` so the table scrolls inside its own card instead of starving
+    the panel beside it.
+  - Backend 470 tests green, PHPStan L6 clean, Pint clean.
 
 - **The screen sweep at 390px, and the dark theme's first look ever.** Every screen in both sections
   rendered at real phone width, three at a time, signed in as a customer and then as a full provider.

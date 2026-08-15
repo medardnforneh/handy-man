@@ -31,7 +31,10 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path('admin')
-            ->brandName('Handy-Man')
+            // "HandyMan" — one word, as it is in `app.name`, on the public site and in the app.
+            // It read "Handy-Man" here alone, which is the sort of thing only ever seen by the
+            // people least likely to report it.
+            ->brandName('HandyMan')
             ->login()
             // 2FA is MANDATORY (build plan P1-09): isRequired forces enrolment before the panel is
             // reachable. TOTP app authenticator with recovery codes.
@@ -39,15 +42,15 @@ class AdminPanelProvider extends PanelProvider
                 AppAuthentication::make()->recoverable(),
                 isRequired: true,
             )
-            ->colors([
-                // From the design tokens (tokens/tokens.json). Brand green is the single accent;
-                // semantic hues are reserved for state (badges/alerts), never as the accent.
-                'primary' => Color::hex('#0a7d54'),
-                'info' => Color::hex('#1f6feb'),
-                'success' => Color::hex('#1a7f43'),
-                'warning' => Color::hex('#b3620a'),
-                'danger' => Color::hex('#c0392b'),
-            ])
+            // GENERATED from tokens/tokens.json into config/tokens.php, because Filament builds its
+            // ramps in PHP at boot and cannot reference a CSS variable the way Blade, Tailwind and
+            // Ionic all do. These five were previously copied here by hand — the one surface the
+            // token generator did not reach, and therefore the one that could silently drift.
+            // Brand green is the single accent; semantic hues are reserved for state, never accent.
+            ->colors(array_map(
+                static fn (string $hex): array => Color::hex($hex),
+                config('tokens.colors'),
+            ))
             ->font('Inter')
             ->sidebarCollapsibleOnDesktop()
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')

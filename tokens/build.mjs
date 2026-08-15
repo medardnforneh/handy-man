@@ -161,6 +161,42 @@ function buildWebManifest(existing) {
   }, null, 2)}\n`;
 }
 
+/**
+ * The Filament palette, as PHP.
+ *
+ * Filament builds its colour ramps in PHP at boot, from literal hex — it cannot reference a CSS
+ * variable the way Blade, Tailwind and Ionic all can. So the admin panel was the one surface in the
+ * product where the brand palette had been copied by hand into a provider, which is exactly the
+ * drift this generator exists to prevent: a change here reached three surfaces and quietly missed
+ * the fourth. Light values, because the panel is light-only.
+ */
+function buildFilamentPhp() {
+  const pick = (name) => tokens.color[name].light;
+  const palette = {
+    primary: pick('brand.primary'),
+    info: pick('status.info'),
+    success: pick('status.success'),
+    warning: pick('status.warning'),
+    danger: pick('status.danger'),
+  };
+  const lines = Object.entries(palette)
+    .map(([k, v]) => `        '${k}' => '${v}',`)
+    .join('\n');
+
+  return `<?php
+
+// GENERATED from tokens/tokens.json — do not edit by hand. Run \`npm run tokens:build\`.
+
+declare(strict_types=1);
+
+return [
+    'colors' => [
+${lines}
+    ],
+];
+`;
+}
+
 function write(path, content) {
   mkdirSync(dirname(path), { recursive: true });
   writeFileSync(path, content, 'utf8');
@@ -181,6 +217,8 @@ write(join(root, 'backend', 'resources', 'css', 'tokens.css'), tokensCss);
 write(join(root, 'backend', 'tailwind-tokens.cjs'), tailwindPreset);
 // Also emit a directly-linkable copy so Blade can <link> it without a Vite build.
 write(join(root, 'backend', 'public', 'css', 'tokens.css'), tokensCss);
+// Filament resolves its ramps in PHP and cannot read a CSS variable — see buildFilamentPhp.
+write(join(root, 'backend', 'config', 'tokens.php'), buildFilamentPhp());
 
 // Mobile (Ionic app) — only if scaffolded.
 if (existsSync(join(root, 'mobile'))) {

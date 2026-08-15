@@ -85,10 +85,14 @@
         .measure-center { max-width: 44rem; margin-inline: auto; }
 
         /* ── Header ─────────────────────────────────────────────────────────────────────────── */
+        /* Frosted, but opaque enough to actually be a surface. At 88% with a 10px blur the display
+           headings — 3rem, 800 weight — slid underneath and stayed legible THROUGH the header,
+           smearing across the nav so that both were hard to read. Glass has to obscure the thing
+           behind it or it is just a tint. */
         .site-header {
             position: sticky; top: 0; z-index: 20;
-            background: color-mix(in srgb, var(--hm-color-surface-base) 88%, transparent);
-            backdrop-filter: blur(10px);
+            background: color-mix(in srgb, var(--hm-color-surface-base) 96%, transparent);
+            backdrop-filter: blur(18px) saturate(1.4);
             border-bottom: 1px solid var(--hm-color-border-subtle);
         }
         .header-inner { display: flex; align-items: center; gap: var(--hm-space-md); min-height: 4rem; }
