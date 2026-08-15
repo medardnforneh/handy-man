@@ -24,11 +24,7 @@
 
 <ion-content [fullscreen]="true">
   <div class="page">
-    <!-- The lit field sizes to THIS block rather than to a guessed height. A fixed gradient stop
-         put the greeting on the wrong side of the fade the moment the copy or the language
-         changed length — white text on a light ground, and then dark text on a dark one. -->
-    <div class="lede">
-      <h1 class="greeting">{{ 'discover.greeting' | translate }}</h1>
+    <h1 class="greeting">{{ 'discover.greeting' | translate }}</h1>
 
     <ion-searchbar
       class="hm-tap"
@@ -66,7 +62,6 @@
         <ion-label>{{ 'discover.mode.both' | translate }}</ion-label>
       </ion-segment-button>
     </ion-segment>
-    </div>
 
     <!-- The rail holds every category, but a horizontal scroller hides most of them behind a swipe —
          and "is there a category for my problem?" is exactly the question someone opens this screen

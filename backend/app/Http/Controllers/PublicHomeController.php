@@ -49,10 +49,12 @@ final class PublicHomeController extends Controller
                 'name' => __('app.name'),
                 'url' => route('home'),
                 'inLanguage' => [$locale],
+                // No `areaServed`. It named a single country, which is a claim to search engines
+                // that the product is limited to one — and omitting the property says nothing
+                // rather than saying something wrong.
                 'publisher' => [
                     '@type' => 'Organization',
                     'name' => __('app.name'),
-                    'areaServed' => ['@type' => 'Country', 'name' => 'Cameroon'],
                 ],
             ],
         ]);

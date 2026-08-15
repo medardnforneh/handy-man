@@ -43,64 +43,20 @@ ion-toolbar {
 }
 
 // ---- The top ------------------------------------------------------------
-// The same lit field the public site's hero carries, so the two surfaces are recognisably one
-// product. A pale brand wash was the first attempt and it read as a tint on grey; this is dark
-// ground with the brand thrown across it, and the content below sits in front of it.
+// Discover is the app's front door and it opened on the same flat grey as every other screen, so
+// the product had no moment that looked like itself. The public site's hero now carries a brand
+// wash; this is the same idea in the app, so the two read as one product rather than two.
 //
-// It lives on ion-content rather than on `.page` so it bleeds to the edges — `.page` is capped at
-// 720px for tablets, which would leave a lit column floating in grey — and the toolbar takes the
-// darkest end of the same field so the header and the content join with no seam.
+// The wash lives on ion-content rather than on `.page` so it bleeds to the edges — `.page` is
+// capped at 720px for tablets, which would have left a tinted column floating in grey — and the
+// toolbar takes the same colour at full strength so the header and the content join with no seam.
 ion-toolbar {
-  --background: var(--hm-color-surface-inverse);
-  --color: var(--hm-color-text-onInverse);
+  --background: var(--hm-color-brand-tint);
 }
 
-// The field is on the BLOCK, so it is exactly as tall as the greeting, search and segment are —
-// whatever the language does to their height. It bleeds past the page gutter to the screen edges.
-.lede {
-  margin-inline: calc(var(--hm-space-md) * -1);
-  padding: 0 var(--hm-space-md) var(--hm-space-md);
-  background:
-    radial-gradient(22rem 16rem at 8% -10%,
-      color-mix(in srgb, var(--hm-color-brand-primary) 55%, transparent), transparent 70%),
-    radial-gradient(20rem 14rem at 95% 0%,
-      color-mix(in srgb, var(--hm-color-status-info) 30%, transparent), transparent 68%),
-    var(--hm-color-surface-inverse);
-}
-
-// Everything standing ON the field takes the inverse palette. The greeting and the brand lockup
-// were near-black on near-black for exactly as long as it took to render this once.
-.brand b,
-.greeting {
-  color: var(--hm-color-text-onInverse);
-}
-
-.top-avatar {
-  border: 1px solid color-mix(in srgb, var(--hm-color-text-onInverse) 28%, transparent);
-}
-
-// The search field and the mode segment sit in the lit part, so they become glass rather than the
-// raised white surfaces they are further down the page.
-ion-searchbar {
-  --background: #{color-mix(in srgb, var(--hm-color-text-onInverse) 10%, transparent)};
-  --color: var(--hm-color-text-onInverse);
-  --placeholder-color: #{color-mix(in srgb, var(--hm-color-text-onInverse) 55%, transparent)};
-  --icon-color: #{color-mix(in srgb, var(--hm-color-text-onInverse) 65%, transparent)};
-
-  .searchbar-input {
-    border-color: color-mix(in srgb, var(--hm-color-text-onInverse) 18%, transparent);
-    backdrop-filter: blur(12px);
-  }
-}
-
-ion-segment {
-  background: color-mix(in srgb, var(--hm-color-text-onInverse) 10%, transparent);
-  backdrop-filter: blur(12px);
-}
-
-ion-segment-button {
-  --color: #{color-mix(in srgb, var(--hm-color-text-onInverse) 62%, transparent)};
-  --color-checked: var(--hm-color-text-primary);
+ion-content {
+  --background: linear-gradient(to bottom, var(--hm-color-brand-tint), transparent 13rem)
+    var(--hm-color-surface-base);
 }
 
 .page {

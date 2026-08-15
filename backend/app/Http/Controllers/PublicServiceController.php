@@ -92,7 +92,7 @@ final class PublicServiceController extends Controller
                 '@type' => 'Service',
                 'name' => $skill->name($locale),
                 'serviceType' => $skill->name($locale),
-                'areaServed' => ['@type' => 'Country', 'name' => 'Cameroon'],
+                // `areaServed` removed with the country copy — see PublicHomeController.
                 'provider' => ['@type' => 'Organization', 'name' => __('app.name')],
             ],
         ]);
