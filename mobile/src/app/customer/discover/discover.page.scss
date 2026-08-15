@@ -42,6 +42,23 @@ ion-toolbar {
   ion-icon { font-size: var(--hm-text-lg); }
 }
 
+// ---- The top ------------------------------------------------------------
+// Discover is the app's front door and it opened on the same flat grey as every other screen, so
+// the product had no moment that looked like itself. The public site's hero now carries a brand
+// wash; this is the same idea in the app, so the two read as one product rather than two.
+//
+// The wash lives on ion-content rather than on `.page` so it bleeds to the edges — `.page` is
+// capped at 720px for tablets, which would have left a tinted column floating in grey — and the
+// toolbar takes the same colour at full strength so the header and the content join with no seam.
+ion-toolbar {
+  --background: var(--hm-color-brand-tint);
+}
+
+ion-content {
+  --background: linear-gradient(to bottom, var(--hm-color-brand-tint), transparent 13rem)
+    var(--hm-color-surface-base);
+}
+
 .page {
   padding: 0 var(--hm-space-md) var(--hm-space-xl);
   max-width: 720px;   // comfortable on tablet/desktop PWA
