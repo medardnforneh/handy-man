@@ -12,7 +12,7 @@
          The promise, then the two doors. Both sides of the marketplace are visible to everyone
          (doc 10) — there is no "sign up as a provider" fork, because the same person is routinely
          both, so the second CTA leads into the same product rather than a separate one. --}}
-    <section class="section">
+    <section class="section hero">
         <div class="wrap hero-grid">
             <div class="measure">
                 <span class="t-eyebrow">{{ __('public.hero_eyebrow') }}</span>

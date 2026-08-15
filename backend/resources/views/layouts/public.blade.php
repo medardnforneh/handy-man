@@ -41,6 +41,12 @@
             html { scroll-behavior: auto; }
             * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
         }
+        /* The brand mark as a MASK, so anything using it takes its colour from a token rather than
+           carrying a second copy of the palette in a data URI. `black` here is alpha, not paint. */
+        :root {
+            --hm-mark: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14.7 6.3a4 4 0 0 1-5 5L4 17v3h3l5.7-5.7a4 4 0 0 1 5-5l2.6-2.6-2.6-2.6z'/%3E%3C/svg%3E");
+        }
+
         body {
             margin: 0;
             font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
@@ -224,6 +230,51 @@
         }
         .chips a:hover { border-color: var(--hm-color-brand-primary); color: var(--hm-color-brand-primary); }
         /* ── Hero ──────────────────────────────────────────────────────────────────────────── */
+        /* ── The hero's ground ──────────────────────────────────────────────────────────────────
+           The page had no top. Every section sat on the same near-white surface, so the first
+           screen — the only one most visitors read — was typographically strong and visually
+           anonymous: it could have introduced any product.
+
+           Three things, all from tokens, none of them a picture:
+             1. a brand wash that fades out downward, so the fold has a horizon rather than an edge;
+             2. the same tool mark as the header, drawn once at size and held at a few percent, so
+                the brand is present without being repeated at people;
+             3. a hairline at the bottom, so the wash ends deliberately.
+           `color-mix` against the tokens means both themes and any future palette follow along. */
+        .hero {
+            position: relative;
+            isolation: isolate;
+            overflow: hidden;
+            background:
+                radial-gradient(60rem 32rem at 78% -12%,
+                    color-mix(in srgb, var(--hm-color-brand-primary) 16%, transparent), transparent 65%),
+                linear-gradient(to bottom,
+                    var(--hm-color-brand-tint), color-mix(in srgb, var(--hm-color-brand-tint) 22%, transparent));
+            border-bottom: 1px solid var(--hm-color-border-subtle);
+        }
+        .hero::before {
+            content: "";
+            position: absolute;
+            z-index: -1;
+            /* Top-RIGHT, cropped by the hero's own overflow, on the same side as the radial wash:
+               the brand presence gathers on one side and the headline column stays clean paper.
+               Behind the text it was legible enough to read as a smudge across the first line. */
+            inset-block-start: -20%;
+            inset-inline-end: -8%;
+            width: 40rem; height: 40rem;
+            background: currentColor;
+            color: var(--hm-color-brand-primary);
+            opacity: 0.045;
+            /* The header's mark, as a mask so it inherits the brand colour instead of hard-coding it. */
+            -webkit-mask: var(--hm-mark) no-repeat center / contain;
+            mask: var(--hm-mark) no-repeat center / contain;
+            pointer-events: none;
+        }
+        @media (max-width: 48rem) {
+            /* On a phone the mark would sit behind the headline and fight it for the same pixels. */
+            .hero::before { display: none; }
+        }
+
         .hero-grid { display: grid; gap: var(--hm-space-2xl); align-items: center; }
         .hero-visual { display: none; }
         @media (min-width: 62rem) {
