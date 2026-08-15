@@ -1169,6 +1169,44 @@
     "accepted": "C’est convenu. Le travail est lancé.",
     "accept_failed": "Ce devis n’a pas pu être accepté."
   },
+  "dispute": {
+    "section": "Un problème ?",
+    "action": "Signaler un problème sur cette mission",
+    "hint": "Si en parler n'a rien donné, nous examinons le dossier. Votre argent reste où il est pendant ce temps.",
+    "title": "Signaler un problème",
+    "category": "De quoi s'agit-il ?",
+    "cat": {
+      "quality": "Le travail",
+      "payment": "Le paiement",
+      "no_show": "Personne n'est venu",
+      "scope": "Ce qui était convenu",
+      "safety": "La sécurité",
+      "other": "Autre chose"
+    },
+    "body_label": "Que s'est-il passé ?",
+    "body_ph": "Expliquez avec vos mots. Les dates et les montants aident.",
+    "body_required": "Dites-nous ce qui s'est passé.",
+    "note": "Une personne lit ce message. Nous pouvons contacter les deux parties avant de décider, et rien n'est libéré du séquestre tant qu'un dossier est ouvert.",
+    "send": "Envoyer",
+    "raised": "Signalé. Nous revenons vers vous.",
+    "failed": "L'envoi a échoué. Réessayez.",
+    "status": {
+      "open": "Ouvert",
+      "under_review": "En cours d'examen",
+      "resolved": "Résolu",
+      "rejected": "Clôturé"
+    },
+    "open_note": "Nous avons bien reçu votre signalement et revenons vers vous.",
+    "resolved_note": "Ce dossier est clôturé."
+  },
+  "refund": {
+    "action": "Rembourser ce qui est encore retenu",
+    "confirm_title": "Rembourser le solde retenu ?",
+    "confirm_body": "{amount} {currency} vous sont restitués. Le travail déjà approuvé reste payé, et plus rien ne pourra être libéré pour cette mission.",
+    "confirm_action": "Rembourser",
+    "done": "Remboursé",
+    "failed": "Le remboursement a échoué. Réessayez."
+  },
   "wd": {
     "title": "Retrait",
     "amount": "Quel montant",

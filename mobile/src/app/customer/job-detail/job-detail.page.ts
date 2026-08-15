@@ -1,9 +1,11 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AlertController, IonicModule, ToastController } from '@ionic/angular';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { OfflineStripComponent } from '../../core/offline/offline-strip.component';
+import { DisputeCategory } from '../../api/api.service';
 import { JobDetail, JobQuote, JobStatus, MilestoneStatus } from '../customer.models';
 import { CustomerService } from '../customer.service';
 import { MoneyPipe } from '../money.pipe';
@@ -18,7 +20,7 @@ import { MoneyPipe } from '../money.pipe';
   selector: 'app-job-detail',
   templateUrl: './job-detail.page.html',
   styleUrls: ['./job-detail.page.scss'],
-  imports: [CommonModule, IonicModule, TranslatePipe, MoneyPipe, OfflineStripComponent],
+  imports: [CommonModule, FormsModule, IonicModule, TranslatePipe, MoneyPipe, OfflineStripComponent],
 })
 export class JobDetailPage {
   private readonly customers = inject(CustomerService);
@@ -65,9 +67,15 @@ export class JobDetailPage {
 
   constructor() {
     // Show the fixture instantly, then swap in the real job (GET /jobs/{id}) if reachable.
-    void this.customers.fetchJobDetail(this.id).then((real) => {
+    void this.customers.fetchJobDetail(this.id).then(async (real) => {
       if (real !== null) {
         this.job.set(real);
+
+        // Only once there is an engagement: a dispute is attached to one, so before it exists there
+        // is nothing to look up and no reason to spend a request finding that out.
+        if (real.engagementId !== null) {
+          this.dispute.set(await this.customers.fetchDispute(real.engagementId));
+        }
       }
     });
     void this.loadQuotes();
@@ -228,6 +236,110 @@ export class JobDetailPage {
       color,
     });
     await toast.present();
+  }
+
+  // --- When it goes wrong (P6-06 / P3-14) --------------------------------------------------------
+  //
+  // Two different actions, deliberately kept apart. A dispute asks a human to look at the case and
+  // leaves the money where it is; a refund moves what is left in escrow back and ends the money side
+  // of the engagement. Offering them as one control would let someone reach for "I have a problem"
+  // and unwind the payment by accident.
+
+  readonly disputeOpen = signal(false);
+  readonly disputeCategory = signal<DisputeCategory>('quality');
+  readonly disputeBody = signal('');
+  readonly disputeTouched = signal(false);
+  readonly dispute = signal<{ category: string; status: string; resolutionNote: string | null } | null>(null);
+
+  readonly disputeCategories: DisputeCategory[] = ['quality', 'payment', 'no_show', 'scope', 'safety', 'other'];
+
+  readonly disputeBodyMissing = computed(() => this.disputeTouched() && this.disputeBody().trim() === '');
+
+  /** Both only make sense once money and a commitment exist — that is, once there is an engagement. */
+  readonly canDispute = computed(() => this.job().engagementId !== null);
+
+  /** Nothing left in escrow is nothing to refund; the button would only ever produce a refusal. */
+  readonly canRefund = computed(() => this.job().engagementId !== null && this.job().escrowHeldMinor > 0);
+
+  openDispute(): void {
+    this.disputeTouched.set(false);
+    this.disputeOpen.set(true);
+  }
+
+  closeDispute(): void {
+    this.disputeOpen.set(false);
+  }
+
+  async sendDispute(): Promise<void> {
+    this.disputeTouched.set(true);
+    const body = this.disputeBody().trim();
+    const engagementId = this.job().engagementId;
+    if (body === '' || engagementId === null || this.busy()) {
+      return;
+    }
+
+    this.busy.set(true);
+    const result = await this.customers.raiseDispute(engagementId, this.disputeCategory(), body);
+    this.busy.set(false);
+
+    if (!result.ok) {
+      await this.toast(result.detail ?? this.translate.instant('dispute.failed'), 'danger', result.detail !== undefined);
+      return;
+    }
+
+    this.disputeOpen.set(false);
+    this.disputeBody.set('');
+    this.disputeTouched.set(false);
+    this.dispute.set(await this.customers.fetchDispute(engagementId));
+    await this.toast('dispute.raised', 'success');
+  }
+
+  /**
+   * Refunding is confirmed first, and the confirmation names the amount. This is the customer's own
+   * money coming back, but it is also the end of the engagement's money — a provider mid-job stops
+   * being paid for it — so it should never happen on a mis-tap.
+   */
+  async refund(): Promise<void> {
+    const engagementId = this.job().engagementId;
+    if (engagementId === null || this.busy()) {
+      return;
+    }
+
+    const held = this.money.transform(this.job().escrowHeldMinor);
+    const alert = await this.alerts.create({
+      header: this.translate.instant('refund.confirm_title'),
+      message: this.translate.instant('refund.confirm_body', {
+        amount: held,
+        currency: this.translate.instant('money.currency'),
+      }),
+      buttons: [
+        { text: this.translate.instant('common.cancel'), role: 'cancel' },
+        { text: this.translate.instant('refund.confirm_action'), role: 'confirm' },
+      ],
+    });
+    await alert.present();
+
+    const { role } = await alert.onDidDismiss();
+    if (role !== 'confirm') {
+      return;
+    }
+
+    this.busy.set(true);
+    const result = await this.customers.refundEscrow(engagementId, 'customer_requested');
+    this.busy.set(false);
+
+    if (!result.ok) {
+      await this.toast(result.detail ?? this.translate.instant('refund.failed'), 'danger', result.detail !== undefined);
+      return;
+    }
+
+    // Re-read rather than assume: the refund's effect on the held and released figures is the
+    // server's arithmetic, and this card's whole job is to state those two numbers accurately.
+    const fresh = await this.customers.fetchJobDetail(this.id);
+    if (fresh !== null) {
+      this.job.set(fresh);
+    }
+    await this.toast('refund.done', 'success');
   }
 
   // --- Share this visit (P6-05) ------------------------------------------------------------------

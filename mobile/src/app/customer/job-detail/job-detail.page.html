@@ -139,6 +139,19 @@
           </span>
           <span class="font-bold tabular-nums">{{ job().releasedMinor | money }} <small class="ms-0.5 text-2xs font-semibold text-content-muted">{{ 'money.currency' | translate }}</small></span>
         </div>
+
+        <!-- Getting the held balance back (P3-14). Inside the money card, because that is what it
+             changes, and quiet, because it ends the money side of the engagement — a provider
+             mid-job stops being paid for it. Absent entirely when escrow is empty: there would be
+             nothing to move and the button could only ever produce a refusal. -->
+        @if (canRefund()) {
+          <button
+            type="button"
+            class="mt-4 min-h-11 w-full cursor-pointer rounded-md border border-edge bg-transparent px-4 py-2.5 text-sm font-semibold text-content-muted [font:inherit] disabled:opacity-50"
+            [disabled]="busy()"
+            (click)="refund()"
+          >{{ 'refund.action' | translate }}</button>
+        }
       </div>
     }
 
@@ -221,6 +234,38 @@
       </p>
     }
 
+    <!-- When the thread has stopped being enough (P6-06). Deliberately below everything the job is
+         normally about: most people never need it, and a complaint offered too eagerly reads as an
+         expectation that something will go wrong. -->
+    @if (canDispute()) {
+      <h2 class="mt-6 mb-4 text-lg font-extrabold tracking-snug">{{ 'dispute.section' | translate }}</h2>
+      @if (dispute(); as d) {
+        <div class="rounded-lg border border-edge bg-surface-raised p-4 shadow-sm">
+          <div class="flex items-center justify-between gap-2">
+            <b class="text-md">{{ 'dispute.cat.' + d.category | translate }}</b>
+            <span class="hm-pill tone-warning flex-none">{{ 'dispute.status.' + d.status | translate }}</span>
+          </div>
+          <p class="mt-2 mb-0 text-sm leading-snug text-content-muted">
+            {{ (d.resolutionNote ? 'dispute.resolved_note' : 'dispute.open_note') | translate }}
+          </p>
+          @if (d.resolutionNote) {
+            <p class="mt-2 mb-0 rounded-md bg-surface-sunken px-3 py-2 text-sm leading-snug">{{ d.resolutionNote }}</p>
+          }
+        </div>
+      } @else {
+        <button
+          type="button"
+          class="flex w-full min-h-11 cursor-pointer items-center justify-center gap-2 rounded-md border border-dashed border-edge-strong bg-transparent p-4 text-sm font-semibold text-content-muted [font:inherit] disabled:opacity-50"
+          [disabled]="busy()"
+          (click)="openDispute()"
+        >
+          <ion-icon name="alert-circle-outline" class="text-[1.25rem] text-warning" aria-hidden="true"></ion-icon>
+          <span>{{ 'dispute.action' | translate }}</span>
+        </button>
+        <p class="mt-2 text-xs leading-snug text-content-muted">{{ 'dispute.hint' | translate }}</p>
+      }
+    }
+
     <!-- Share this visit (P6-05). Someone the customer trusts can watch a stranger's visit without
          installing anything: the link opens a plain page with the provider's first name, the status
          and the quarter — never the street address. -->
@@ -288,3 +333,64 @@
     }
   </div>
 </ion-footer>
+
+<!-- Raising a dispute (P6-06). A category and the customer's own words: the category routes the
+     case, the words are what a person on the team actually reads. Same shape as the report sheet on
+     a provider profile, because it is the same kind of act. -->
+<ion-modal [isOpen]="disputeOpen()" (didDismiss)="closeDispute()">
+  <ng-template>
+    <ion-header class="ion-no-border">
+      <ion-toolbar>
+        <ion-buttons slot="start">
+          <ion-button (click)="closeDispute()">{{ 'common.cancel' | translate }}</ion-button>
+        </ion-buttons>
+        <ion-title>{{ 'dispute.title' | translate }}</ion-title>
+      </ion-toolbar>
+    </ion-header>
+
+    <ion-content>
+      <div class="mx-auto max-w-3xl px-4 pt-4 pb-10">
+        <span class="mb-1.5 block text-sm font-bold text-content-muted">{{ 'dispute.category' | translate }}</span>
+        <div class="mb-4 flex flex-wrap gap-1.5">
+          @for (c of disputeCategories; track c) {
+            <button
+              type="button"
+              class="min-h-11 cursor-pointer rounded-pill border-[1.5px] bg-transparent px-3 py-1.5 text-sm font-semibold"
+              [class]="disputeCategory() === c ? 'border-brand bg-brand/12 text-brand' : 'border-edge text-content'"
+              [attr.aria-pressed]="disputeCategory() === c"
+              (click)="disputeCategory.set(c)"
+            >{{ 'dispute.cat.' + c | translate }}</button>
+          }
+        </div>
+
+        <label class="mb-4 block">
+          <span class="mb-1.5 block text-sm font-bold text-content-muted">{{ 'dispute.body_label' | translate }}</span>
+          <textarea
+            class="w-full resize-y rounded-md border-[1.5px] border-edge bg-surface-raised px-3 py-2.5 font-sans text-md leading-snug text-content placeholder:text-content-muted focus:border-brand focus:outline-none"
+            rows="5"
+            [ngModel]="disputeBody()"
+            (ngModelChange)="disputeBody.set($event)"
+            [placeholder]="'dispute.body_ph' | translate"
+            maxlength="5000"
+          ></textarea>
+        </label>
+        @if (disputeBodyMissing()) {
+          <p class="-mt-3.5 mb-4 text-xs text-danger">{{ 'dispute.body_required' | translate }}</p>
+        }
+
+        <p class="mt-6 mb-0 flex items-start gap-2 text-xs leading-relaxed text-content-muted">
+          <ion-icon name="information-circle-outline" class="mt-0.5 flex-none text-md" aria-hidden="true"></ion-icon>
+          <span class="min-w-0 flex-1">{{ 'dispute.note' | translate }}</span>
+        </p>
+      </div>
+    </ion-content>
+
+    <ion-footer class="ion-no-border">
+      <div class="mx-auto max-w-3xl border-t border-t-edge px-4 py-2">
+        <ion-button expand="block" [disabled]="busy()" (click)="sendDispute()">
+          {{ 'dispute.send' | translate }}
+        </ion-button>
+      </div>
+    </ion-footer>
+  </ng-template>
+</ion-modal>

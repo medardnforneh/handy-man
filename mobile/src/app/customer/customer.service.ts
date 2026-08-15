@@ -1,6 +1,6 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
-import { ApiService } from '../api/api.service';
+import { ApiService, DisputeCategory } from '../api/api.service';
 import { LocaleService } from '../core/locale.service';
 import { OfflineCache } from '../core/offline/offline-cache.service';
 import { WriteOutcome, WriteQueue } from '../core/offline/write-queue.service';
@@ -813,6 +813,67 @@ export class CustomerService {
   async acceptQuote(quotationId: string): Promise<{ ok: boolean; detail?: string }> {
     try {
       await this.api.acceptQuotation(quotationId);
+      return { ok: true };
+    } catch (e) {
+      const problem = e as { detail?: unknown; title?: unknown };
+      const detail = [problem.detail, problem.title]
+        .find((v): v is string => typeof v === 'string' && v.trim() !== '');
+
+      return { ok: false, detail };
+    }
+  }
+
+  /**
+   * Raise a dispute on an engagement (P6-06) — the formal route when the thread has stopped being
+   * enough. Never queued: someone raising one is usually mid-problem, and a complaint that leaves
+   * the phone hours later, silently, is worse than one that failed loudly.
+   */
+  async raiseDispute(
+    engagementId: string,
+    category: DisputeCategory,
+    body: string,
+  ): Promise<{ ok: boolean; detail?: string }> {
+    try {
+      await this.api.raiseDispute(engagementId, category, body);
+      return { ok: true };
+    } catch (e) {
+      const problem = e as { detail?: unknown; title?: unknown };
+      const detail = [problem.detail, problem.title]
+        .find((v): v is string => typeof v === 'string' && v.trim() !== '');
+
+      return { ok: false, detail };
+    }
+  }
+
+  /**
+   * The dispute this party has raised on a given engagement, if any (GET /disputes).
+   *
+   * The endpoint returns every dispute this party has raised, newest first; the screen only cares
+   * about the one attached to the job in front of them. Filtering here rather than asking the
+   * server keeps it to one request, and the list is a person's own complaints — never long.
+   */
+  async fetchDispute(engagementId: string): Promise<{ category: string; status: string; resolutionNote: string | null } | null> {
+    try {
+      const rows = await this.api.disputes();
+      const mine = rows.find((d) => d.engagement_id === engagementId);
+      return mine === undefined
+        ? null
+        : { category: mine.category, status: mine.status, resolutionNote: mine.resolution_note ?? null };
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Refund what is still held in escrow (P3-14).
+   *
+   * Never queued, and confirmed before it fires. It ends the money side of the engagement: the held
+   * balance goes back and nothing further can be released from it. A customer who has already
+   * approved a milestone cannot un-approve it, so this only ever moves what is left.
+   */
+  async refundEscrow(engagementId: string, reason: string): Promise<{ ok: boolean; detail?: string }> {
+    try {
+      await this.api.refundEngagement(engagementId, reason);
       return { ok: true };
     } catch (e) {
       const problem = e as { detail?: unknown; title?: unknown };

@@ -1169,6 +1169,44 @@
     "accepted": "Agreed. The work is under way.",
     "accept_failed": "That quote could not be accepted."
   },
+  "dispute": {
+    "section": "Something went wrong?",
+    "action": "Report a problem with this job",
+    "hint": "If talking it through has not worked, we will look at it. Your money stays where it is while we do.",
+    "title": "Report a problem",
+    "category": "What is this about?",
+    "cat": {
+      "quality": "The work",
+      "payment": "Payment",
+      "no_show": "Nobody came",
+      "scope": "What was agreed",
+      "safety": "Safety",
+      "other": "Something else"
+    },
+    "body_label": "What happened?",
+    "body_ph": "Tell us in your own words. Dates and amounts help.",
+    "body_required": "Tell us what happened.",
+    "note": "A person reads this. We may contact both sides before deciding anything, and nothing is released from escrow while a case is open.",
+    "send": "Send",
+    "raised": "Reported. We will be in touch.",
+    "failed": "That could not be sent. Try again.",
+    "status": {
+      "open": "Open",
+      "under_review": "Being reviewed",
+      "resolved": "Resolved",
+      "rejected": "Closed"
+    },
+    "open_note": "We have this and will be in touch.",
+    "resolved_note": "This case is closed."
+  },
+  "refund": {
+    "action": "Refund what is still held",
+    "confirm_title": "Refund the held balance?",
+    "confirm_body": "{amount} {currency} goes back to you. Work already approved stays paid, and nothing more can be released for this job.",
+    "confirm_action": "Refund",
+    "done": "Refunded",
+    "failed": "The refund could not be made. Try again."
+  },
   "wd": {
     "title": "Withdraw",
     "amount": "How much",

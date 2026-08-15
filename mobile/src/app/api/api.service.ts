@@ -61,6 +61,14 @@ export type VerificationDocKind =
   | 'niu';
 
 /**
+ * What a dispute is ABOUT (P6-06). A closed set, because the category is what routes the case to
+ * whoever handles it — a free-text reason would arrive nowhere in particular. Either party may use
+ * any of them: `payment` is usually the provider's complaint and `quality` usually the customer's,
+ * but the endpoint does not care which side is speaking and neither does this list.
+ */
+export type DisputeCategory = 'quality' | 'payment' | 'no_show' | 'scope' | 'safety' | 'other';
+
+/**
  * The DI surface for real API calls — a thin, typed wrapper over the generated `openapi-fetch`
  * client. Screens keep talking to their fixture services for now; those services will delegate to
  * this one method-by-method as endpoints are wired, so the migration is incremental and no screen
@@ -894,6 +902,47 @@ export class ApiService {
       throw error;
     }
     return data.data;
+  }
+
+  /**
+   * Raise a dispute on an engagement (P6-06). Open to EITHER party: the customer disputing the work
+   * and the provider disputing the payment are the same mechanism, and a marketplace that only lets
+   * the paying side complain is not neutral.
+   *
+   * The category routes it; the body is what a person on the team actually reads.
+   */
+  async raiseDispute(engagementId: string, category: DisputeCategory, body: string) {
+    const { data, error } = await api.POST('/engagements/{engagement}/disputes', {
+      params: { path: { engagement: engagementId }, header: { 'Idempotency-Key': uuid() } },
+      body: { category, body },
+    });
+    if (error) {
+      throw error;
+    }
+    return data.data;
+  }
+
+  /** The disputes this party has raised (P6-06), newest first. */
+  async disputes() {
+    const { data, error } = await api.GET('/disputes');
+    if (error) {
+      throw error;
+    }
+    return data.data;
+  }
+
+  /**
+   * Refund what is still held in escrow (P3-14). Customer-only, and it ends the money side of the
+   * engagement — the remaining balance goes back, and nothing further can be released from it.
+   */
+  async refundEngagement(engagementId: string, reason: string): Promise<void> {
+    const { error } = await api.POST('/engagements/{engagement}/refund', {
+      params: { path: { engagement: engagementId }, header: { 'Idempotency-Key': uuid() } },
+      body: { reason },
+    });
+    if (error) {
+      throw error;
+    }
   }
 
   /**
