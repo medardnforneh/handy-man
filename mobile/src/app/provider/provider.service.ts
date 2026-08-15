@@ -2,13 +2,14 @@ import { Injectable, inject, signal } from '@angular/core';
 import { ApiService, VerificationDocKind } from '../api/api.service';
 import { Accent } from '../customer/customer.models';
 import { currentPosition, GeoFix } from '../core/geolocation';
+import { uuid } from '../core/uuid';
 import { LocaleService } from '../core/locale.service';
 import { OfflineCache } from '../core/offline/offline-cache.service';
 import { WriteQueue, WriteSpec } from '../core/offline/write-queue.service';
 import {
   ActiveWork, Lead, Payout, PayoutStatus, PipelineEntry, PipelineStage, ProviderClient,
-  ProviderIdentity, ProviderStats, QuoteDraft, ReportDraft, VerificationDoc, WorkDetail, WorkStatus,
-  ProviderWallet,
+  ProviderIdentity, ProviderStats, QuoteDraft, ReportDraft, SubmittedQuote, VerificationDoc,
+  WorkDetail, WorkStatus, ProviderWallet,
 } from './provider.models';
 
 /** The outcome of one execution mutation: accepted, or refused with the server's own explanation. */
@@ -934,5 +935,64 @@ export class ProviderService {
       this.realLeads.delete(offerId);
     }
     return result;
+  }
+
+  /**
+   * This provider's own live quote on a job, if they have one (GET /jobs/{job}/quotations).
+   *
+   * The endpoint returns every submitted quote to the job's customer and only the caller's own to a
+   * provider, so no filtering by party is needed here — but a superseded version is still listed,
+   * and only a `submitted` one can be revised, so that is the one we look for.
+   */
+  async fetchOwnQuote(jobId: string): Promise<SubmittedQuote | null> {
+    try {
+      const rows = await this.api.jobQuotations(jobId);
+      const live = rows.find((q) => q.status === 'submitted');
+      if (live === undefined) {
+        return null;
+      }
+
+      return {
+        id: live.id,
+        version: live.version,
+        subtotalMinor: live.subtotal.amount_minor,
+        depositMinor: live.deposit.amount_minor,
+        notes: live.notes ?? '',
+        validUntil: live.valid_until.slice(0, 10),
+        // The server has no id for a line — a quotation is versioned as a whole, and its lines are
+        // positional. The composer tracks rows by id, so one is minted here.
+        lines: (live.lines ?? []).map((l) => ({
+          id: uuid(),
+          kind: l.kind,
+          label: l.label,
+          quantity: Number(l.quantity),
+          unitPriceMinor: l.unit_price_minor,
+        })),
+      };
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Revise a submitted quotation (POST /quotations/{id}/revise, P2.5-01).
+   *
+   * The server writes a NEW version that supersedes the old one rather than editing it in place, so
+   * the customer keeps a readable history of what was offered when — and a price cannot change
+   * under someone who is still deciding on it. Refusals matter here: a quote that has been accepted
+   * or has expired comes back 409, and the provider should read that rather than a generic error.
+   */
+  async reviseQuote(quotationId: string, draft: QuoteDraft): Promise<MutationResult> {
+    return this.attempt(() => this.api.reviseQuotation(quotationId, {
+      lines: draft.lines.map((l) => ({
+        kind: l.kind,
+        label: l.label.trim(),
+        quantity: l.quantity,
+        unitPriceMinor: l.unitPriceMinor,
+      })),
+      depositMinor: draft.depositMinor,
+      notes: draft.notes.trim() === '' ? undefined : draft.notes.trim(),
+      validUntil: draft.validUntil,
+    }));
   }
 }

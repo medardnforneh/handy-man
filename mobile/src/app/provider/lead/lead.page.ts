@@ -6,7 +6,7 @@ import { IonicModule, ToastController } from '@ionic/angular';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { uuid } from '../../core/uuid';
 import { MoneyPipe } from '../../customer/money.pipe';
-import { Lead, QuoteDraft, QuoteLine, QuoteLineKind } from '../provider.models';
+import { Lead, QuoteDraft, QuoteLine, QuoteLineKind, SubmittedQuote } from '../provider.models';
 import { ProviderService } from '../provider.service';
 
 /** A quote 30 days out is the sensible default; the provider can shorten or extend it. */
@@ -83,6 +83,12 @@ export class ProviderLeadPage {
     if (real !== null) {
       this.lead.set(real);
       this.isReal.set(true);
+
+      // Whether this job already carries a quote of ours decides what this screen offers: sending a
+      // price, or changing the one that is already in front of the customer.
+      if (real.jobId !== null) {
+        this.ownQuote.set(await this.provider.fetchOwnQuote(real.jobId));
+      }
     }
   }
 
@@ -103,8 +109,29 @@ export class ProviderLeadPage {
     await this.notify(result.detail ?? this.translate.instant('pro.offer_accept_failed'), 'danger');
   }
 
+  /**
+   * The quote this provider already has in front of the customer, if any (P2.5-01).
+   *
+   * Its presence is what turns this screen from "price this job" into "change your price" — until
+   * it was read, a provider who had quoted could only send a second, competing quote, and the
+   * revise endpoint had no way in at all.
+   */
+  readonly ownQuote = signal<SubmittedQuote | null>(null);
+
   openQuote(): void {
     this.touched.set(false);
+
+    // Re-opening a live quote opens it on the terms that were actually sent, not on a blank form:
+    // a revision is almost always a change to one line, and retyping the rest invites a new mistake
+    // in a part the customer had already agreed with.
+    const live = this.ownQuote();
+    if (live !== null) {
+      this.lines.set(live.lines.map((l) => ({ ...l })));
+      this.deposit.set(live.depositMinor);
+      this.notes.set(live.notes);
+      this.validUntil.set(live.validUntil);
+    }
+
     if (this.lines().length === 0) {
       this.addLine();
     }
@@ -152,13 +179,22 @@ export class ProviderLeadPage {
       validUntil: this.validUntil(),
     };
 
+    // A live quote is REVISED, never re-sent. Submitting a second one would leave the customer
+    // holding two live prices from the same provider with no way to tell which is meant.
+    const live = this.ownQuote();
+
     this.busy.set(true);
-    const result = await this.provider.submitQuote(this.id, draft);
+    const result = live === null
+      ? await this.provider.submitQuote(this.id, draft)
+      : await this.provider.reviseQuote(live.id, draft);
     this.busy.set(false);
 
     if (result.ok) {
       this.quoteOpen.set(false);
-      await this.notify(this.translate.instant('pro.quote_sent'), 'success');
+      await this.notify(
+        this.translate.instant(live === null ? 'pro.quote_sent' : 'pro.quote_revised'),
+        'success',
+      );
       void this.router.navigate(['/pro/opportunities']);
       return;
     }

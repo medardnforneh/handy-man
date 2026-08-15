@@ -37,6 +37,25 @@
 
       <p class="m-0 rounded-lg border border-edge bg-surface-raised p-4 text-md leading-relaxed shadow-sm">{{ l.details }}</p>
 
+      <!-- The price already in front of this customer (P2.5-01). Shown because a revision is a new
+           VERSION that supersedes the old one, never an in-place edit — so what was last offered,
+           and which version it was, is the thing the provider is deciding against. -->
+      @if (ownQuote(); as mine) {
+        <div class="mt-4 rounded-lg border border-brand bg-[color-mix(in_srgb,var(--color-brand)_7%,var(--color-surface-raised))] p-4 shadow-sm">
+          <div class="flex items-baseline justify-between gap-2">
+            <b class="text-md">{{ 'pro.your_live_quote' | translate }}</b>
+            <span class="hm-pill tone-brand flex-none">{{ 'quote.version' | translate:{ n: mine.version } }}</span>
+          </div>
+          <div class="mt-2 flex items-baseline justify-between gap-2">
+            <span class="text-sm text-content-muted">{{ 'quote.total' | translate }}</span>
+            <span class="text-[1.15rem] font-extrabold tabular-nums">
+              {{ mine.subtotalMinor | money }} <small class="ms-0.5 text-2xs font-semibold text-content-muted">{{ 'money.currency' | translate }}</small>
+            </span>
+          </div>
+          <p class="mt-2 mb-0 text-xs leading-snug text-content-muted">{{ 'pro.revise_hint' | translate }}</p>
+        </div>
+      }
+
       <!-- Two honest answers to an offer: take it at the offered price, or price it up (doc 06). -->
       <p class="mt-4 flex items-start gap-1.5 text-sm leading-snug text-content-muted">
         <ion-icon name="information-circle-outline" class="mt-0.5 flex-none text-lg" aria-hidden="true"></ion-icon>
@@ -56,7 +75,7 @@
     <div class="mx-auto grid max-w-3xl grid-cols-2 gap-2 border-t border-t-edge px-4 py-2 max-[420px]:grid-cols-1">
       <ion-button expand="block" fill="outline" [disabled]="busy()" (click)="openQuote()">
         <ion-icon name="document-text-outline" slot="start" aria-hidden="true"></ion-icon>
-        {{ 'pro.send_quote' | translate }}
+        {{ (ownQuote() ? 'pro.revise_quote' : 'pro.send_quote') | translate }}
       </ion-button>
       <ion-button expand="block" [disabled]="busy()" (click)="accept()">
         <ion-icon name="checkmark-circle-outline" slot="start" aria-hidden="true"></ion-icon>
@@ -74,7 +93,7 @@
         <ion-buttons slot="start">
           <ion-button (click)="closeQuote()">{{ 'work.cancel' | translate }}</ion-button>
         </ion-buttons>
-        <ion-title>{{ 'pro.your_quote' | translate }}</ion-title>
+        <ion-title>{{ (ownQuote() ? 'pro.revise_quote' : 'pro.your_quote') | translate }}</ion-title>
       </ion-toolbar>
     </ion-header>
 
@@ -207,7 +226,7 @@
     <ion-footer class="ion-no-border">
       <div class="mx-auto max-w-3xl border-t border-t-edge px-4 py-2">
         <ion-button expand="block" [disabled]="busy()" (click)="send()">
-          {{ 'pro.send_quote' | translate }}
+          {{ (ownQuote() ? 'pro.send_revision' : 'pro.send_quote') | translate }}
         </ion-button>
       </div>
     </ion-footer>

@@ -152,6 +152,25 @@ export interface QuoteDraft {
   validUntil: string;
 }
 
+/**
+ * A quotation this provider has already submitted on a job (P2.5-01), as the lead screen shows it
+ * back to them.
+ *
+ * It exists so a price can be CHANGED. A revision is a new version that supersedes the old one —
+ * never an in-place edit (doc 06 / rule #9) — so the version is worth showing: it is the customer's
+ * readable history of what was offered and when.
+ */
+export interface SubmittedQuote {
+  id: string;
+  version: number;
+  subtotalMinor: number;
+  depositMinor: number;
+  notes: string;
+  /** ISO date (yyyy-mm-dd), for re-opening the composer on the terms that were actually sent. */
+  validUntil: string;
+  lines: QuoteLine[];
+}
+
 export type PayoutStatus = 'paid' | 'pending' | 'failed';
 
 /** A settlement to the provider's mobile-money account (P3-08). */

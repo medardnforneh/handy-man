@@ -989,6 +989,34 @@ export class ApiService {
     return data.data;
   }
 
+  /**
+   * Revise a submitted quotation (P2.5-01) — a NEW version that supersedes the old one, never an
+   * in-place edit (doc 06 / rule #9). The customer keeps a readable history of what was offered
+   * when, and a price cannot change under someone who is still deciding.
+   *
+   * Only a `submitted` quote can be revised; the server 409s an accepted or expired one.
+   */
+  async reviseQuotation(quotationId: string, quote: QuotationInput) {
+    const { data, error } = await api.POST('/quotations/{quotation}/revise', {
+      params: { path: { quotation: quotationId }, header: { 'Idempotency-Key': uuid() } },
+      body: {
+        lines: quote.lines.map((l) => ({
+          kind: l.kind,
+          label: l.label,
+          quantity: l.quantity,
+          unit_price_minor: l.unitPriceMinor,
+        })),
+        deposit_minor: quote.depositMinor ?? 0,
+        notes: quote.notes ?? null,
+        valid_until: quote.validUntil,
+      },
+    });
+    if (error) {
+      throw error;
+    }
+    return data.data;
+  }
+
   /** Accept a direct offer → forms the engagement (P2-06). Provider-gated; may 409 on a fact gate. */
   async acceptOffer(offerId: string) {
     const { data, error } = await api.POST('/offers/{offer}/accept', {
