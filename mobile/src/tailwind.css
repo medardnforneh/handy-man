@@ -41,6 +41,15 @@
 @source './app/**/*.html';
 @source './app/**/*.ts';
 
+/* Names that are BUILT rather than written: the avatar accent is spelled `'accent-' + p.accent`,
+   so the finished class never appears in any file for the scanner to find. Left to the scan, three
+   of the four accents are simply never generated and every avatar but the brand-coloured one
+   renders as an empty 46px hole — which is exactly what happened.
+
+   The tones next to them do not need this: `tone(status)` returns the whole class name, so
+   'tone-success' and the rest appear as literals in the TypeScript, which is scanned. */
+@source inline("accent-{brand,info,warning,muted}");
+
 @theme {
     --font-sans: var(--ion-font-family);
 }

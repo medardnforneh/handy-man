@@ -5,17 +5,20 @@
            that claimed HandyMan was where you are, and that nothing was wired to. There is no
            location picker in this product and search is not location-filtered, so a brand lockup
            is what this corner honestly holds. -->
-      <div class="brand">
-        <span class="mark" aria-hidden="true"><ion-icon name="hammer-outline"></ion-icon></span>
-        <b>{{ 'app.name' | translate }}</b>
+      <div class="flex items-center gap-1.5 ps-4">
+        <span class="grid size-7 flex-none place-items-center rounded-sm bg-brand/15 text-md text-brand" aria-hidden="true">
+          <ion-icon name="hammer-outline"></ion-icon>
+        </span>
+        <b class="text-md tracking-snug">{{ 'app.name' | translate }}</b>
       </div>
     </ion-buttons>
     <ion-buttons slot="end">
-      <div class="hm-avatar accent-brand top-avatar" aria-hidden="true">
+      <div class="me-4 grid size-9 flex-none place-items-center rounded-full bg-brand text-xs font-bold uppercase text-brand-contrast" aria-hidden="true">
         @if (userInitials().initials) {
           {{ userInitials().initials }}
         } @else {
-          <ion-icon name="person-outline"></ion-icon>
+          <!-- A glyph until we know who is signed in — never a stand-in person's initials. -->
+          <ion-icon name="person-outline" class="text-lg"></ion-icon>
         }
       </div>
     </ion-buttons>
@@ -23,11 +26,14 @@
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <div class="page">
-    <h1 class="greeting">{{ 'discover.greeting' | translate }}</h1>
+  <!-- max-w-3xl: comfortable on a tablet or desktop PWA. -->
+  <div class="mx-auto max-w-3xl px-4 pb-10">
+    <h1 class="mt-2 mb-4 text-[1.45rem] font-extrabold tracking-[-0.03em] text-balance max-[360px]:text-[1.3rem]">
+      {{ 'discover.greeting' | translate }}
+    </h1>
 
     <ion-searchbar
-      class="hm-tap"
+      class="min-h-11"
       [value]="query()"
       (ionInput)="onSearch($any($event.target).value)"
       (ionClear)="onSearch('')"
@@ -36,29 +42,38 @@
     ></ion-searchbar>
 
     <!-- Matching TRADES, not providers: what a customer types is the thing they need done, and the
-         taxonomy is bilingual and indexed for exactly that (P1-07b). Picking one filters the rail. -->
+         taxonomy is bilingual and indexed for exactly that (P1-07b). Picking one filters the rail.
+
+         In normal flow rather than an overlay: a dropdown floating over the categories would cover
+         the very thing it is an alternative to, and on a small screen an overlay that can be
+         scrolled behind is a reliable source of mis-taps. -->
     @if (matches().length > 0) {
-      <div class="matches" role="listbox">
+      <div class="my-1 mb-2 flex flex-col overflow-hidden rounded-lg border border-edge bg-surface-raised" role="listbox">
         @for (m of matches(); track m.id) {
-          <button class="match hm-tap" type="button" role="option" (click)="pickSkill(m.slug)">
-            <ion-icon name="search-outline" aria-hidden="true"></ion-icon>
+          <button
+            class="flex w-full min-h-11 cursor-pointer items-center gap-2.5 border-0 bg-transparent px-4 py-2.5 text-start text-content [font:inherit] not-first:border-t not-first:border-t-edge"
+            type="button"
+            role="option"
+            (click)="pickSkill(m.slug)"
+          >
+            <ion-icon name="search-outline" class="flex-none text-content-muted" aria-hidden="true"></ion-icon>
             <span>{{ m.label }}</span>
           </button>
         }
       </div>
     }
     @if (searched() && matches().length === 0) {
-      <p class="hm-empty no-match">{{ 'discover.no_trade_match' | translate:{ query: query() } }}</p>
+      <p class="py-2 text-md text-content-muted">{{ 'discover.no_trade_match' | translate:{ query: query() } }}</p>
     }
 
     <ion-segment class="mode" [value]="mode()">
-      <ion-segment-button class="hm-tap" value="onsite" (click)="setMode('onsite')">
+      <ion-segment-button value="onsite" (click)="setMode('onsite')">
         <ion-label>{{ 'discover.mode.onsite' | translate }}</ion-label>
       </ion-segment-button>
-      <ion-segment-button class="hm-tap" value="remote" (click)="setMode('remote')">
+      <ion-segment-button value="remote" (click)="setMode('remote')">
         <ion-label>{{ 'discover.mode.remote' | translate }}</ion-label>
       </ion-segment-button>
-      <ion-segment-button class="hm-tap" value="both" (click)="setMode('both')">
+      <ion-segment-button value="both" (click)="setMode('both')">
         <ion-label>{{ 'discover.mode.both' | translate }}</ion-label>
       </ion-segment-button>
     </ion-segment>
@@ -67,9 +82,10 @@
          and "is there a category for my problem?" is exactly the question someone opens this screen
          with. "See all" lays them out as a grid. No request: the taxonomy is already in memory, so
          this works offline like the rest of the category path. -->
-    <div class="hm-section-head">
-      <h2>{{ 'discover.categories' | translate }}</h2>
+    <div class="mt-6 mb-4 flex items-center justify-between gap-2">
+      <h2 class="text-lg font-extrabold tracking-snug">{{ 'discover.categories' | translate }}</h2>
       <a
+        class="cursor-pointer text-sm font-semibold text-brand no-underline"
         role="button"
         tabindex="0"
         [attr.aria-expanded]="allCategories()"
@@ -80,81 +96,143 @@
       </a>
     </div>
 
-    <div class="cats" [class.expanded]="allCategories()">
+    <!-- Two layouts for the same tiles.
+
+         Rail: a horizontal scroller that never widens the page. The last tile used to be sliced
+         arbitrarily at the viewport edge, mid-word, which reads as a broken layout rather than as
+         "there is more this way". Snapping lands a swipe flush against the left edge instead of
+         leaving a random sliver, and the trailing fade turns the cut into a deliberate signal. The
+         mask uses currentColor for its alpha only — a mask never paints, so no colour is implied.
+
+         Grid ("see all"): auto-fill with a 74px minimum keeps the tiles at their designed size and
+         fits as many per row as there is room for — 4 on a 360px phone, more on a tablet, without a
+         breakpoint per device. Nothing is cut off, so neither the fade nor the snapping belongs. -->
+    <div
+      [class]="allCategories()
+        ? 'grid grid-cols-[repeat(auto-fill,minmax(74px,1fr))] gap-2 gap-y-4 -mx-4 px-4'
+        : 'flex items-start gap-2 overflow-x-auto pb-1 -mx-4 px-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden [scroll-snap-type:x_proximity] [scroll-padding-inline-start:1rem] [mask-image:linear-gradient(to_right,currentColor_0_calc(100%-1.75rem),transparent_100%)]'"
+    >
       @for (cat of categories(); track cat.id) {
         <button
-          class="cat hm-tap"
+          class="cursor-pointer border-0 bg-transparent p-0 text-center [scroll-snap-align:start]"
+          [class]="allCategories() ? 'w-auto' : 'w-[74px] flex-none'"
           type="button"
-          [class.on]="category() === cat.id"
           [attr.aria-pressed]="category() === cat.id"
           (click)="toggleCategory(cat.id)"
         >
-          <span class="ic"><ion-icon [name]="cat.icon" aria-hidden="true"></ion-icon></span>
-          <span class="cat-label">{{ cat.label }}</span>
+          <!-- Selected: the rail below is filtered to this trade. Marked by FILLING the tile rather
+               than by colour alone, so the state survives a colour-blind reading and a dimmed
+               screen in sunlight. -->
+          <span
+            class="mx-auto mb-1.5 grid size-16 place-items-center rounded-lg border"
+            [class]="category() === cat.id
+              ? 'border-brand bg-brand text-brand-contrast'
+              : 'border-edge bg-surface-raised text-brand'"
+          >
+            <ion-icon [name]="cat.icon" class="text-2xl" aria-hidden="true"></ion-icon>
+          </span>
+          <!-- Two lines' worth of room whether the label needs one or two ("Tailoring" next to "HVAC
+               and refrigeration"). Without it the tiles are different heights and the rail's
+               baseline wanders. -->
+          <span
+            class="block min-h-[2.4em] text-2xs font-semibold leading-tight"
+            [class]="category() === cat.id ? 'text-brand' : 'text-content-muted'"
+          >{{ cat.label }}</span>
         </button>
       }
     </div>
 
-    <div class="hm-section-head">
+    <div class="mt-6 mb-4 flex items-center justify-between gap-2">
       <!-- The heading names what is on screen. Leaving "Top providers" above a filtered list would
            quietly misdescribe it, and the selected chip is the only other cue that a filter is on. -->
-      <h2>{{ (category() === null ? 'discover.top_providers' : 'discover.in_category') | translate }}</h2>
+      <h2 class="text-lg font-extrabold tracking-snug">{{ (category() === null ? 'discover.top_providers' : 'discover.in_category') | translate }}</h2>
       <!-- No "Map" affordance, deliberately. This product never exposes a provider's service area or
            coordinates (P2-03 — the public provider resource carries no location at all), so there is
            no map of providers to show, and a link that does nothing is worse than no link. Customers
            find someone through search, categories and the ranked rail. -->
       @if (category() !== null) {
-        <a role="button" tabindex="0" (click)="toggleCategory(category()!)" (keyup.enter)="toggleCategory(category()!)">
+        <a
+          class="cursor-pointer text-sm font-semibold text-brand no-underline"
+          role="button"
+          tabindex="0"
+          (click)="toggleCategory(category()!)"
+          (keyup.enter)="toggleCategory(category()!)"
+        >
           {{ 'discover.clear_filter' | translate }}
         </a>
       }
     </div>
 
     @for (p of providers(); track p.id) {
-      <div class="hm-card pro">
-        <button class="pro-open hm-tap" type="button" (click)="openProfile(p)">
-          <div class="hm-avatar pro-av" [class]="'hm-avatar pro-av accent-' + p.accent" aria-hidden="true">
+      <!-- These carry an avatar, a two-line name, a meta line and a call to action. At 8px all four
+           were pressed against the card's edges, which is what made the rail read as dense rather
+           than as a list of people worth choosing between. -->
+      <div class="mb-2 flex items-center gap-2 rounded-lg border border-edge bg-surface-raised py-4 ps-4 pe-2 shadow-sm">
+        <!-- The avatar + info area is a single tap target that opens the profile. -->
+        <button
+          class="flex min-h-11 min-w-0 flex-1 cursor-pointer items-center gap-2 border-0 bg-transparent p-0 text-start text-inherit"
+          type="button"
+          (click)="openProfile(p)"
+        >
+          <div
+            [class]="'grid size-[46px] max-[360px]:size-[42px] flex-none place-items-center rounded-md text-md font-bold text-brand-contrast accent-' + p.accent"
+            aria-hidden="true"
+          >
             @if (p.initials) {
               {{ p.initials }}
             } @else {
-              <ion-icon name="person-outline"></ion-icon>
+              <ion-icon name="person-outline" class="text-[1.25em]"></ion-icon>
             }
           </div>
 
-          <div class="pro-info">
-            <div class="pro-name">
-              <b>{{ p.name }}</b>
+          <div class="min-w-0 flex-1">
+            <div class="flex items-start gap-1">
+              <!-- Trade names are descriptive and long ("Froid et climatisation — dépannage 24h").
+                   Clipping them to one line cut most of them off at the second word; two lines names
+                   the business, and the clamp still stops a very long one from pushing the row
+                   apart. -->
+              <b class="line-clamp-2 text-md leading-tight tracking-snug max-[360px]:text-sm">{{ p.name }}</b>
               @if (p.verified) {
+                <!-- Sits on the first line of the name rather than floating in the middle of a
+                     two-line one. -->
                 <ion-icon
-                  class="verified"
+                  class="mt-0.5 flex-none text-md text-brand"
                   name="shield-checkmark"
                   [attr.aria-label]="'discover.verified' | translate"
                 ></ion-icon>
               }
             </div>
-            <div class="pro-meta">
+            <!-- One line, always. Wrapping left a dangling "·" at the end of a line with its two
+                 halves stranded either side of it; the trade name shortens instead, which is the
+                 part that can. -->
+            <div class="mt-0.5 flex flex-nowrap items-center gap-1.5 text-xs text-content-muted">
               <!-- An unrated provider says so. A bare "0" would read as a terrible score rather than
                    no score, which is the opposite of the truth for someone new (P6-09/P6-12). -->
               @if (p.rating > 0) {
-                <span class="rating"><ion-icon name="star" aria-hidden="true"></ion-icon>{{ p.rating }}</span>
+                <span class="inline-flex flex-none items-center gap-0.5 font-bold text-warning">
+                  <ion-icon name="star" aria-hidden="true"></ion-icon>{{ p.rating }}
+                </span>
               } @else {
                 <!-- Short here, spelled out on the profile. This line is rating · trade with the
                      trade as the half that shortens, so eighteen characters of "No ratings yet"
                      were spending the trade's room: "Installation de réseau" and "Installation de
                      climatiseur" both arrived as "Installation d…". The trade is what someone is
-                     scanning this rail for. -->
-                <span class="rating new">{{ 'provider.unrated_short' | translate }}</span>
+                     scanning this rail for.
+
+                     "New" is a neutral fact, not a warning — it must not borrow the rating's amber
+                     emphasis, or an unrated provider reads as a flagged one. -->
+                <span class="flex-none text-content-muted">{{ 'provider.unrated_short' | translate }}</span>
               }
-              <span class="dot" aria-hidden="true"></span>
-              <span>{{ p.skill }}</span>
+              <span class="size-[3px] flex-none rounded-full bg-edge-strong" aria-hidden="true"></span>
+              <span class="min-w-0 truncate">{{ p.skill }}</span>
               @if (p.mode === 'remote') {
-                <span class="hm-pill tone-info">{{ 'discover.mode.remote' | translate }}</span>
+                <span class="hm-pill tone-info flex-none">{{ 'discover.mode.remote' | translate }}</span>
               }
               <!-- Only when a distance is actually known. The public directory carries no location
                    at all (it is PII), so this is absent for every real browse result — and a
                    "null km away" chip is worse than no chip. -->
               @if (p.mode !== 'remote' && p.distanceKm !== null) {
-                <span class="hm-pill tone-brand">{{ 'discover.distance' | translate:{ km: p.distanceKm } }}</span>
+                <span class="hm-pill tone-brand flex-none">{{ 'discover.distance' | translate:{ km: p.distanceKm } }}</span>
               }
             </div>
           </div>
@@ -163,7 +241,7 @@
         <!-- Outline, not solid: tapping the row opens the profile, which is the main move here.
              Five solid brand buttons down the rail turned the list into a wall of green and left
              every provider's name truncated to make room for them. -->
-        <ion-button class="quote hm-tap" fill="outline" size="small" (click)="openWorkspace(p)">
+        <ion-button class="quote" fill="outline" size="small" (click)="openWorkspace(p)">
           {{ 'discover.quote' | translate }}
         </ion-button>
       </div>
