@@ -689,7 +689,7 @@
   "provider": {
     "rating_count": "{{count}} reviews",
     "unrated": "No ratings yet",
-    "building": "Building",
+    "building": "Too soon",
     "new_note": "New provider — building a track record.",
     "stat": {
       "completed": "Jobs (90d)",

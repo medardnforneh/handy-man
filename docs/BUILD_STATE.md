@@ -310,6 +310,37 @@ found four real defects.
 
 ## What was done, most recent first
 
+- **The screen sweep at 390px, and the dark theme's first look ever.** Every screen in both sections
+  rendered at real phone width, three at a time, signed in as a customer and then as a full provider.
+  - **A type scale** (`tokens/tokens.json` → `text`/`leading`/`tracking`, eight steps). The app had
+    twenty-five font sizes — 0.76, 0.78, 0.8, 0.82, 0.85, 0.88, 0.9, 0.92, 0.95rem — because every
+    screen picked its own, and sizes a hair apart read as no decision at all. 281 body declarations
+    across 29 stylesheets normalised onto five steps; anything above 1.06rem is a heading or an icon
+    and stays hand-tuned. The document baseline and the page-title treatment are global now instead
+    of restated at the top of a dozen page stylesheets.
+  - **Copy caught by rendering it, not by reading it**: "Suivre le système" cannot fit a three-up
+    segment beside "Clair" and "Sombre" (it is "Système" — the verb was redundant); and
+    `provider.building` shipped as "En cours" in French, which on the provider's own dashboard sat
+    directly beside a job status pill also reading "En cours", meaning something entirely different.
+    It is "Trop tôt" / "Too soon" — and English "Building" was worse than ambiguous on a handyman
+    marketplace, where it reads as the trade.
+  - `provider.building` was doing two jobs: a stat value ("On-time: Too soon", which works) and the
+    rating placeholder under the provider's own name, where standing alone it says nothing. The
+    provider's profile now shows what a CUSTOMER is shown for the same fact ("Pas encore de note"),
+    in muted grey rather than amber — having no rating yet is a neutral fact about someone new, not
+    a warning about them.
+  - **Dark mode holds up.** The independently-designed dark palette works across Discover, jobs,
+    the empty states and the brand-coloured wallet card. One observation, deliberately not changed:
+    the wallet's "Retirer" button fills with `brand.onPrimary`, which is white in light and near-black
+    in dark — legible either way, but in dark it reads as an inset hole in a bright card rather than
+    the raised primary action. Changing it means changing what `onPrimary` means, so it is a decision
+    for the palette rather than a patch on one button.
+  - The component style budget failed on files that did not grow: `var(--hm-text-md)` is simply
+    longer than `0.9rem`. Raised 5/6kb → 7/9kb; it passes with no warnings at all at the new figure.
+  - Not changed, considered: job detail's toolbar shows the reference while the body `h1` carries the
+    title. Unlike the jobs LIST — where the code was the bold primary line and the title was greyed
+    underneath — nothing here is inverted, so it was left alone.
+
 - **"UIs look horrible" — and at 390px they did.** Every review up to here was done at 1045–1280px,
   which is the width a phone-first app looks worst at and the width nobody uses it at. Rendering the
   screens in 390px iframes (an iframe gets its own viewport, so media queries resolve honestly) made

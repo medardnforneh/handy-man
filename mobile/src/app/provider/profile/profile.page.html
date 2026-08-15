@@ -32,7 +32,9 @@
             <small class="hm-muted">{{ 'provider.rating_count' | translate:{ count: identity().ratingCount } }}</small>
           </span>
         } @else {
-          <span class="rating none hm-muted">{{ 'provider.building' | translate }}</span>
+          <!-- The words a CUSTOMER is shown for this same fact. `provider.building` belongs beside
+               a label ("On-time: Too soon"); alone under a name it says nothing. -->
+          <span class="rating none hm-muted">{{ 'provider.unrated' | translate }}</span>
         }
       }
     </div>

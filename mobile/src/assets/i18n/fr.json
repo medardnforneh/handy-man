@@ -689,7 +689,7 @@
   "provider": {
     "rating_count": "{{count}} avis",
     "unrated": "Pas encore de note",
-    "building": "En cours",
+    "building": "Trop tôt",
     "new_note": "Nouveau prestataire — historique en construction.",
     "stat": {
       "completed": "Missions (90 j)",

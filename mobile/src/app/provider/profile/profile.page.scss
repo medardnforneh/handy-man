@@ -50,6 +50,13 @@ ion-title { font-weight: 800; letter-spacing: -0.02em; }
     font-weight: 700;
     font-size: var(--hm-text-md);
   }
+
+  // Having no rating yet is a neutral fact about a new provider, not a warning about them. The
+  // amber belongs to the star; without one it is the app frowning at someone for being new.
+  .rating.none {
+    color: var(--hm-color-text-muted);
+    font-weight: 600;
+  }
 }
 
 // ---- Verification ------------------------------------------------------
