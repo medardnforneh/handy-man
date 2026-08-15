@@ -49,7 +49,14 @@ function walk(dir, out = []) {
 // The whole client, not just api.service.ts: auth lives in core/auth.service.ts, and scanning one
 // file reported the OTP endpoints as uncalled.
 const client = walk(join(root, 'mobile/src/app')).map((f) => readFileSync(f, 'utf8')).join('\n');
-const missing = ops.filter((o) => !client.includes(`'${o.path}'`));
+// Reached by FOLLOWING a URL the server supplied, rather than by naming the path. The literal
+// never appears in client code, so the check below cannot see it — and reported it as dead for
+// weeks. `MessageResource` emits the media route as an absolute URL and the client fetches exactly
+// that (see `ApiService.mediaObjectUrl`, which exists because an `<audio src>` cannot carry a
+// Bearer token). Any endpoint the server hands out as a link belongs here, not in the report.
+const REACHED_BY_LINK = new Set(['/media/{media}']);
+
+const missing = ops.filter((o) => !client.includes(`'${o.path}'`) && !REACHED_BY_LINK.has(o.path));
 
 console.log(`operations in the spec: ${ops.length}`);
 console.log(`never called by the client: ${missing.length}\n`);
