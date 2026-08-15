@@ -861,6 +861,20 @@ export class ProviderService {
   }
 
   /**
+   * Issue a warranty on this engagement (POST /engagements/{id}/warranty, P6-11).
+   *
+   * The anti-leakage payoff, and the reason it is worth a provider's while to keep a job on the
+   * platform: the warranty exists here and nowhere else, so work taken off-platform to dodge a fee
+   * is work with nothing standing behind it. One per engagement — the server refuses a second.
+   */
+  async issueWarranty(id: string, durationDays: number, terms?: string): Promise<MutationResult> {
+    if (!this.realWork.has(id)) {
+      return { ok: true };
+    }
+    return this.attempt(() => this.api.issueWarranty(id, durationDays, terms));
+  }
+
+  /**
    * Run one mutation, surfacing the server's problem+json `detail` on failure — a refusal here is
    * usually a real rule (remote check-in, a session already open), and the worker deserves to read
    * it rather than a generic error.

@@ -447,6 +447,65 @@ export class WorkspacePage implements OnDestroy {
     }
   }
 
+  // --- Claiming a warranty (P6-11) ---------------------------------------------------------------
+  //
+  // The warranty card is the customer's only copy of the warranty: there is no read endpoint for
+  // one, so if this message is not in front of them, nothing in the product tells them they are
+  // covered. Claiming from it spawns a real remedy job.
+
+  readonly claiming = signal(false);
+
+  async claimWarranty(message: WorkspaceMessage): Promise<void> {
+    const warranty = message.warranty;
+    if (!warranty || this.claiming()) {
+      return;
+    }
+
+    const alert = await this.alerts.create({
+      header: this.translate.instant('workspace.warranty_claim_title'),
+      message: this.translate.instant('workspace.warranty_claim_body'),
+      inputs: [{
+        name: 'description',
+        type: 'textarea',
+        placeholder: this.translate.instant('workspace.warranty_claim_ph'),
+        attributes: { maxlength: 5000 },
+      }],
+      buttons: [
+        { text: this.translate.instant('common.cancel'), role: 'cancel' },
+        { text: this.translate.instant('workspace.warranty_claim_send'), role: 'confirm' },
+      ],
+    });
+    await alert.present();
+
+    const { role, data } = await alert.onDidDismiss<{ values?: { description?: string } }>();
+    const description = (data?.values?.description ?? '').trim();
+    if (role !== 'confirm' || description === '') {
+      return;
+    }
+
+    this.claiming.set(true);
+    const result = await this.customers.claimWarranty(warranty.id, description);
+    this.claiming.set(false);
+
+    if (!result.ok) {
+      // A 409 here is a real rule — the warranty has expired, or a claim is already open — and the
+      // server says which. That sentence is worth more than "something went wrong".
+      await this.toast(result.detail ?? this.translate.instant('workspace.warranty_claim_failed'), 'danger');
+      return;
+    }
+
+    const thread = this.thread();
+    if (thread !== null) {
+      this.thread.set({
+        ...thread,
+        messages: thread.messages.map((m) =>
+          m.id === message.id && m.warranty ? { ...m, warranty: { ...m.warranty, claimed: true } } : m,
+        ),
+      });
+    }
+    await this.toast(this.translate.instant('workspace.warranty_claimed'), 'success');
+  }
+
   /**
    * Latch the card locally. The server 409s a second review, so the buttons have to go the moment
    * one lands — leaving them up would invite a refusal the customer did nothing to deserve.

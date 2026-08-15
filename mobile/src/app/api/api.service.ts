@@ -918,6 +918,40 @@ export class ApiService {
   }
 
   /**
+   * Issue a warranty on a finished engagement (P6-11). Provider-only, one per engagement.
+   *
+   * This is the anti-leakage payoff: the warranty exists on-platform and nowhere else, so a job
+   * taken off the platform to save a fee is a job with nothing standing behind it. Issuing it is
+   * narrated into the thread, which is how the customer finds out it exists at all.
+   */
+  async issueWarranty(engagementId: string, durationDays: number, terms?: string) {
+    const { data, error } = await api.POST('/engagements/{engagement}/warranty', {
+      params: { path: { engagement: engagementId }, header: { 'Idempotency-Key': uuid() } },
+      body: { duration_days: durationDays, terms: terms ?? null },
+    });
+    if (error) {
+      throw error;
+    }
+    return data.data;
+  }
+
+  /**
+   * File a warranty claim (P6-11). Customer-only, and only while the warranty is active — the
+   * server 409s an expired or already-claimed one. A claim spawns a real remedy job, so the
+   * description is what the returning provider will actually work from.
+   */
+  async fileWarrantyClaim(warrantyId: string, description: string) {
+    const { data, error } = await api.POST('/warranties/{warranty}/claims', {
+      params: { path: { warranty: warrantyId }, header: { 'Idempotency-Key': uuid() } },
+      body: { description },
+    });
+    if (error) {
+      throw error;
+    }
+    return data.data;
+  }
+
+  /**
    * The follow-ups waiting on this person (P7-02) — the nudges the server schedules when something
    * is owed: a quote about to expire, work waiting to be approved, a review not yet written.
    *

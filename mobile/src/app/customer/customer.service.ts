@@ -160,6 +160,23 @@ function mapMessage(m: {
     }
   }
 
+  // A warranty is narrated for one reason: it is the only way the customer learns they have one.
+  // Warranties have no read endpoint, so this message IS their copy — and the id in its payload is
+  // the only thing a claim can be filed against.
+  if (m.kind === 'warranty_issued') {
+    const id = m.payload?.['warranty_id'];
+    const expires = m.payload?.['expires_at'];
+    if (typeof id === 'string') {
+      return {
+        id: m.id,
+        kind: 'warranty',
+        mine,
+        time,
+        warranty: { id, expiresAt: typeof expires === 'string' ? expires : '' },
+      };
+    }
+  }
+
   // Everything else is a server-narrated lifecycle event → a neutral, centred system chip.
   return { id: m.id, kind: 'system', mine: false, systemKey: EVENT_CHIP_KEY[m.kind] ?? `workspace.${m.kind}`, time };
 }
@@ -813,6 +830,24 @@ export class CustomerService {
   async acceptQuote(quotationId: string): Promise<{ ok: boolean; detail?: string }> {
     try {
       await this.api.acceptQuotation(quotationId);
+      return { ok: true };
+    } catch (e) {
+      const problem = e as { detail?: unknown; title?: unknown };
+      const detail = [problem.detail, problem.title]
+        .find((v): v is string => typeof v === 'string' && v.trim() !== '');
+
+      return { ok: false, detail };
+    }
+  }
+
+  /**
+   * File a warranty claim (P6-11). A claim spawns a real remedy job, so the description is what the
+   * returning provider actually works from — which is why the sheet asks for it rather than sending
+   * a bare "it broke".
+   */
+  async claimWarranty(warrantyId: string, description: string): Promise<{ ok: boolean; detail?: string }> {
+    try {
+      await this.api.fileWarrantyClaim(warrantyId, description);
       return { ok: true };
     } catch (e) {
       const problem = e as { detail?: unknown; title?: unknown };

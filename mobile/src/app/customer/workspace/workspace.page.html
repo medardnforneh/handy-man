@@ -149,6 +149,36 @@
             </div>
           }
 
+          @case ('warranty') {
+            <!-- The customer's only copy of their warranty (P6-11). Warranties have no read
+                 endpoint, so if this card is not in the thread, nothing in the product tells the
+                 person they are covered — which also made the claim endpoint unreachable, since a
+                 claim needs an id nothing else would hand them. -->
+            <div class="self-stretch overflow-hidden rounded-lg border border-edge bg-surface-raised shadow-sm">
+              <div class="flex items-center gap-1.5 border-b border-b-edge px-3.5 py-2.5 text-2xs font-bold uppercase tracking-wide text-success">
+                <ion-icon name="shield-checkmark-outline" aria-hidden="true"></ion-icon>
+                <span>{{ 'workspace.warranty' | translate }}</span>
+              </div>
+              <div class="p-3.5">
+                <b class="block text-md leading-snug">{{ 'workspace.warranty_covered' | translate }}</b>
+                <p class="mt-1 mb-0 text-sm text-content-muted">
+                  {{ 'workspace.warranty_until' | translate:{ date: (m.warranty?.expiresAt | date:'longDate') } }}
+                </p>
+
+                @if (m.warranty?.claimed) {
+                  <p class="mt-3 mb-0 flex items-center gap-1.5 text-sm">
+                    <ion-icon name="checkmark-circle" class="flex-none text-md text-success" aria-hidden="true"></ion-icon>
+                    <span class="text-content-muted">{{ 'workspace.warranty_claim_open' | translate }}</span>
+                  </p>
+                } @else if (!m.mine) {
+                  <ion-button class="mt-3" expand="block" fill="outline" [disabled]="claiming()" (click)="claimWarranty(m)">
+                    {{ 'workspace.warranty_claim' | translate }}
+                  </ion-button>
+                }
+              </div>
+            </div>
+          }
+
           @case ('deliverable') {
             <!-- The remote path's proof of work, and the one narrated event in this thread that the
                  customer has to answer: remote jobs have no site visit and no on-site report, so

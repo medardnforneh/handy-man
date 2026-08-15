@@ -146,6 +146,21 @@
       <span>{{ 'work.cash_record' | translate }}</span>
     </button>
     <p class="mt-2 text-xs leading-snug text-content-muted">{{ 'work.cash_hint' | translate }}</p>
+
+    <!-- Offering a warranty (P6-11). Not a step of the work: a sales argument, and the one the
+         platform is built around — a warranty exists here and nowhere else, so it is what makes
+         staying on-platform worth more than the fee a provider saves by leaving. -->
+    <h2 class="mt-6 mb-4 text-lg font-extrabold tracking-snug">{{ 'work.warranty_heading' | translate }}</h2>
+    <button
+      type="button"
+      class="flex w-full min-h-11 cursor-pointer items-center justify-center gap-2 rounded-md border border-dashed border-edge-strong bg-transparent p-4 text-sm font-semibold text-content-muted [font:inherit] disabled:opacity-50"
+      [disabled]="busy()"
+      (click)="openWarranty()"
+    >
+      <ion-icon name="shield-checkmark-outline" class="text-[1.25rem] text-success" aria-hidden="true"></ion-icon>
+      <span>{{ 'work.warranty_offer' | translate }}</span>
+    </button>
+    <p class="mt-2 text-xs leading-snug text-content-muted">{{ 'work.warranty_hint' | translate }}</p>
   </div>
 </ion-content>
 
@@ -287,6 +302,66 @@
       <div class="mx-auto max-w-3xl border-t border-t-edge px-4 py-2">
         <ion-button expand="block" [disabled]="busy()" (click)="submitReport()">
           {{ 'work.send_report' | translate }}
+        </ion-button>
+      </div>
+    </ion-footer>
+  </ng-template>
+</ion-modal>
+
+<!-- The warranty sheet (P6-11). A window and, optionally, what it covers — the terms are free text
+     and reach the customer as written, so they are the provider's promise in their own words. -->
+<ion-modal [isOpen]="warrantyOpen()" (didDismiss)="closeWarranty()">
+  <ng-template>
+    <ion-header class="ion-no-border">
+      <ion-toolbar>
+        <ion-buttons slot="start">
+          <ion-button (click)="closeWarranty()">{{ 'work.cancel' | translate }}</ion-button>
+        </ion-buttons>
+        <ion-title>{{ 'work.warranty_offer' | translate }}</ion-title>
+      </ion-toolbar>
+    </ion-header>
+
+    <ion-content>
+      <div class="mx-auto max-w-3xl px-4 pt-4 pb-10">
+        <span class="mb-1.5 block text-sm font-bold text-content-muted">{{ 'work.warranty_length' | translate }}</span>
+        <div class="mb-4 flex flex-wrap gap-1.5">
+          @for (days of warrantyChoices; track days) {
+            <button
+              type="button"
+              class="min-h-11 cursor-pointer rounded-pill border px-3 py-2 text-sm font-semibold [font:inherit]"
+              [class]="warrantyDays() === days
+                ? 'border-brand bg-brand text-brand-contrast'
+                : 'border-edge bg-surface-raised text-content'"
+              [attr.aria-pressed]="warrantyDays() === days"
+              (click)="warrantyDays.set(days)"
+            >{{ 'work.warranty_days' | translate:{ days: days } }}</button>
+          }
+        </div>
+
+        <label class="mb-4 block">
+          <span class="mb-1.5 block text-sm font-bold text-content-muted">{{ 'work.warranty_terms' | translate }}</span>
+          <textarea
+            class="finput resize-y leading-snug"
+            rows="4"
+            [ngModel]="warrantyTerms()"
+            (ngModelChange)="warrantyTerms.set($event)"
+            [placeholder]="'work.warranty_terms_ph' | translate"
+            maxlength="5000"
+          ></textarea>
+          <small class="mt-1 block text-xs leading-snug text-content-muted">{{ 'work.warranty_terms_hint' | translate }}</small>
+        </label>
+
+        <p class="mt-6 mb-0 flex items-start gap-2 text-xs leading-relaxed text-content-muted">
+          <ion-icon name="information-circle-outline" class="mt-0.5 flex-none text-md" aria-hidden="true"></ion-icon>
+          <span class="min-w-0 flex-1">{{ 'work.warranty_note' | translate }}</span>
+        </p>
+      </div>
+    </ion-content>
+
+    <ion-footer class="ion-no-border">
+      <div class="mx-auto max-w-3xl border-t border-t-edge px-4 py-2">
+        <ion-button expand="block" [disabled]="busy()" (click)="issueWarranty()">
+          {{ 'work.warranty_confirm' | translate }}
         </ion-button>
       </div>
     </ion-footer>

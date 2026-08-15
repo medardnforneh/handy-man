@@ -198,7 +198,7 @@ export interface ChatSummary {
   accent: Accent;
 }
 
-export type MessageKind = 'text' | 'voice' | 'system' | 'quote' | 'milestone' | 'deliverable';
+export type MessageKind = 'text' | 'voice' | 'system' | 'quote' | 'milestone' | 'deliverable' | 'warranty';
 
 export interface QuotePayload {
   version: number;
@@ -212,6 +212,20 @@ export interface MilestonePayload {
 }
 
 /**
+ * A warranty the provider has issued on this engagement (P6-11).
+ *
+ * Like a deliverable, it arrives as a narrated thread event and not through a list endpoint —
+ * warranties have no read of their own, so this message IS the customer's copy of it. The id is
+ * what a claim is filed against, and `claimed` is a local latch: the server refuses a second claim,
+ * so the button goes as soon as one lands.
+ */
+export interface WarrantyPayload {
+  id: string;
+  expiresAt: string;
+  claimed?: boolean;
+}
+
+/**
  * A deliverable the provider has submitted for review (P4-08) — the remote path's proof of work.
  *
  * It arrives as a narrated thread event rather than through a list endpoint, because the thread is
@@ -219,6 +233,7 @@ export interface MilestonePayload {
  * what `POST /deliverables/{id}/review` needs, and `reviewed` is a local latch: the server 409s a
  * second review, so the buttons go the moment one lands rather than inviting a refusal.
  */
+
 export interface DeliverablePayload {
   id: string;
   title: string;
@@ -245,6 +260,7 @@ export interface WorkspaceMessage {
   quote?: QuotePayload;
   milestone?: MilestonePayload;
   deliverable?: DeliverablePayload;
+  warranty?: WarrantyPayload;
   /**
    * Set only on a message this device composed and the server has not confirmed yet (P5-02).
    * Absent means the server has it — which is the state every message reaches once the write queue

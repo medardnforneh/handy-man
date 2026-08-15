@@ -307,7 +307,19 @@
     "completed": "Work completed",
     "payment_requested": "Payment requested",
     "payment_received": "Payment received",
-    "deliverable_submitted": "Provider submitted a deliverable"
+    "deliverable_submitted": "Provider submitted a deliverable",
+    "warranty": "Warranty",
+    "warranty_covered": "This work is covered.",
+    "warranty_until": "Covered until {date}.",
+    "warranty_claim": "Make a claim",
+    "warranty_claim_title": "Make a claim",
+    "warranty_claim_body": "Tell us what went wrong. This opens a new job so it can be put right.",
+    "warranty_claim_ph": "What has failed, and when did it start?",
+    "warranty_claim_send": "Send claim",
+    "warranty_claim_open": "Your claim is open.",
+    "warranty_claimed": "Claim sent",
+    "warranty_claim_failed": "The claim could not be sent. Try again.",
+    "warranty_issued": "Warranty issued"
   },
   "admin": {
     "kpi": {
@@ -1017,7 +1029,18 @@
       "submitted": "Awaiting review",
       "accepted": "Accepted",
       "rejected": "Changes requested"
-    }
+    },
+    "warranty_heading": "Warranty",
+    "warranty_offer": "Offer a warranty",
+    "warranty_hint": "A warranty only exists on the platform. It is the strongest reason a customer has to come back to you through it.",
+    "warranty_length": "How long is it covered?",
+    "warranty_days": "{days} days",
+    "warranty_terms": "What does it cover? (optional)",
+    "warranty_terms_ph": "Parts and labour on the work done. Does not cover damage from misuse.",
+    "warranty_terms_hint": "The customer reads this as you write it.",
+    "warranty_note": "The customer sees the warranty in your conversation and can claim against it while it is active. A claim opens a new job for the repair.",
+    "warranty_confirm": "Issue warranty",
+    "warranty_toast": "Warranty issued"
   },
   "crm": {
     "title": "My business",

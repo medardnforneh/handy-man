@@ -307,7 +307,19 @@
     "completed": "Travaux terminés",
     "payment_requested": "Paiement demandé",
     "payment_received": "Paiement reçu",
-    "deliverable_submitted": "Le prestataire a soumis un livrable"
+    "deliverable_submitted": "Le prestataire a soumis un livrable",
+    "warranty": "Garantie",
+    "warranty_covered": "Ce travail est couvert.",
+    "warranty_until": "Couvert jusqu'au {date}.",
+    "warranty_claim": "Faire jouer la garantie",
+    "warranty_claim_title": "Faire jouer la garantie",
+    "warranty_claim_body": "Dites-nous ce qui ne va pas. Cela ouvre une nouvelle mission pour y remédier.",
+    "warranty_claim_ph": "Qu'est-ce qui a lâché, et depuis quand ?",
+    "warranty_claim_send": "Envoyer la réclamation",
+    "warranty_claim_open": "Votre réclamation est ouverte.",
+    "warranty_claimed": "Réclamation envoyée",
+    "warranty_claim_failed": "L'envoi de la réclamation a échoué. Réessayez.",
+    "warranty_issued": "Garantie émise"
   },
   "admin": {
     "kpi": {
@@ -1017,7 +1029,18 @@
       "submitted": "En attente de validation",
       "accepted": "Accepté",
       "rejected": "Modifications demandées"
-    }
+    },
+    "warranty_heading": "Garantie",
+    "warranty_offer": "Proposer une garantie",
+    "warranty_hint": "Une garantie n'existe que sur la plateforme. C'est la meilleure raison qu'un client a de repasser par elle pour vous retrouver.",
+    "warranty_length": "Couvert pendant combien de temps ?",
+    "warranty_days": "{days} jours",
+    "warranty_terms": "Que couvre-t-elle ? (facultatif)",
+    "warranty_terms_ph": "Pièces et main-d'œuvre sur le travail effectué. Ne couvre pas les dommages dus à un mauvais usage.",
+    "warranty_terms_hint": "Le client lit ce texte tel que vous l'écrivez.",
+    "warranty_note": "Le client voit la garantie dans votre conversation et peut la faire jouer tant qu'elle est active. Une réclamation ouvre une nouvelle mission pour la réparation.",
+    "warranty_confirm": "Émettre la garantie",
+    "warranty_toast": "Garantie émise"
   },
   "crm": {
     "title": "Mon activité",

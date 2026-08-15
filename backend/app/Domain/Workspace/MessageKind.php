@@ -37,6 +37,7 @@ enum MessageKind: string
     case PaymentRequested = 'payment_requested';
     case PaymentReceived = 'payment_received';
     case DeliverableSubmitted = 'deliverable_submitted';
+    case WarrantyIssued = 'warranty_issued';
 
     /**
      * Free-form kinds a client is allowed to post directly. Everything else is narrated by the server.

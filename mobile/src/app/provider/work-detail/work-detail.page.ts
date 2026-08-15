@@ -289,6 +289,45 @@ export class ProviderWorkDetailPage implements OnInit {
     }
   }
 
+  // --- Issuing a warranty (P6-11) ----------------------------------------------------------------
+  //
+  // The one thing on this screen that is a sales argument rather than a step of the work. A warranty
+  // exists on-platform and nowhere else, so offering one is how a provider makes staying here worth
+  // more than the fee they save by leaving — and the customer learns about it because issuing it is
+  // narrated into their thread.
+
+  readonly warrantyOpen = signal(false);
+  readonly warrantyDays = signal(90);
+  readonly warrantyTerms = signal('');
+
+  /** Three windows that mean something in trade terms, rather than a free-text number of days. */
+  readonly warrantyChoices = [30, 90, 365];
+
+  openWarranty(): void {
+    this.warrantyOpen.set(true);
+  }
+
+  closeWarranty(): void {
+    this.warrantyOpen.set(false);
+  }
+
+  async issueWarranty(): Promise<void> {
+    const days = this.warrantyDays();
+    if (days <= 0) {
+      return;
+    }
+
+    const terms = this.warrantyTerms().trim();
+    const ok = await this.run(
+      () => this.provider.issueWarranty(this.id, days, terms === '' ? undefined : terms),
+      'work.warranty_toast',
+    );
+    if (ok) {
+      this.warrantyOpen.set(false);
+      this.warrantyTerms.set('');
+    }
+  }
+
   /**
    * The workspace thread is keyed by the JOB (`GET /jobs/{job}/messages`), not the engagement — so
    * this must navigate with `jobId`. Passing the engagement id 404s the read and drops the screen
