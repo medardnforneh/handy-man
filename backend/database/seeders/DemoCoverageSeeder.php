@@ -142,9 +142,14 @@ final class DemoCoverageSeeder extends Seeder
             // Quote from someone who actually does this trade where we can. A climatisation
             // specialist quoting a graphic-design job is the kind of detail that makes a demo read
             // as generated rather than real.
+            // Through the PROFILE: `provider_skills` is keyed by `provider_profile_id`, and there
+            // has never been a `provider_party_id` on it. Plucking one threw
+            // "column does not exist" and took the whole demo seed down with it — invisible until
+            // someone ran `dev:fresh`, which is exactly when a broken seeder is least welcome.
             $matching = ProviderSkill::query()
-                ->where('skill_id', $job->skill_id)
-                ->pluck('provider_party_id')
+                ->where('provider_skills.skill_id', $job->skill_id)
+                ->join('provider_profiles', 'provider_profiles.id', '=', 'provider_skills.provider_profile_id')
+                ->pluck('provider_profiles.party_id')
                 ->all();
             $qualified = $providers->whereIn('party_id', $matching)->values();
             $pool = $qualified->count() >= $count ? $qualified : $providers;
