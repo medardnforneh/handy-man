@@ -1,8 +1,8 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, effect, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { IonicModule } from '@ionic/angular';
-import { TranslatePipe } from '@ngx-translate/core';
+import { AlertController, IonicModule, ToastController } from '@ionic/angular';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { OfflineStripComponent } from '../../core/offline/offline-strip.component';
 import { WriteQueue } from '../../core/offline/write-queue.service';
 import { RealtimeService, Unsubscribe } from '../../core/realtime.service';
@@ -37,6 +37,9 @@ export class WorkspacePage implements OnDestroy {
   private readonly queue = inject(WriteQueue);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  private readonly alerts = inject(AlertController);
+  private readonly toasts = inject(ToastController);
+  private readonly translate = inject(TranslateService);
 
   private readonly jobId = this.route.snapshot.paramMap.get('id') ?? '';
 
@@ -368,6 +371,105 @@ export class WorkspacePage implements OnDestroy {
       default:
         return 'tone-info';
     }
+  }
+
+  // --- Reviewing a deliverable (P4-08) -----------------------------------------------------------
+  //
+  // The one narrated event in this thread the customer must ACT on. Remote work has no site visit
+  // and no on-site report; it finishes when the customer accepts what was delivered, and until this
+  // shipped nothing in the app could — the provider submitted into a chip that said so and stopped.
+  //
+  // Accepting stays here rather than moving to the job overview like the quote did, and for the
+  // opposite reason: a quote is money and a commitment, worth a screen that shows every offer side
+  // by side; a deliverable is a piece of work whose whole context — what was asked for, what was
+  // sent, the conversation around it — is this thread.
+
+  readonly reviewing = signal<string | null>(null);
+
+  async acceptDeliverable(message: WorkspaceMessage): Promise<void> {
+    const deliverable = message.deliverable;
+    if (!deliverable || this.reviewing() !== null) {
+      return;
+    }
+
+    this.reviewing.set(deliverable.id);
+    const result = await this.customers.reviewDeliverable(deliverable.id, 'accept');
+    this.reviewing.set(null);
+
+    if (result.ok) {
+      this.markReviewed(message.id, 'accepted');
+    } else {
+      await this.toast(result.detail ?? this.translate.instant('workspace.deliverable_failed'), 'danger');
+    }
+  }
+
+  /**
+   * A rejection carries the customer's own words, so it asks for them. The server requires a reason
+   * and would refuse an empty one — but the real point is that the provider is about to redo work on
+   * the strength of this sentence, and "rejected" alone is an instruction nobody can act on.
+   */
+  async rejectDeliverable(message: WorkspaceMessage): Promise<void> {
+    const deliverable = message.deliverable;
+    if (!deliverable || this.reviewing() !== null) {
+      return;
+    }
+
+    const alert = await this.alerts.create({
+      header: this.translate.instant('workspace.deliverable_reject_title'),
+      message: this.translate.instant('workspace.deliverable_reject_body'),
+      inputs: [{
+        name: 'reason',
+        type: 'textarea',
+        placeholder: this.translate.instant('workspace.deliverable_reject_ph'),
+        attributes: { maxlength: 2000 },
+      }],
+      buttons: [
+        { text: this.translate.instant('common.cancel'), role: 'cancel' },
+        { text: this.translate.instant('workspace.deliverable_reject_send'), role: 'confirm' },
+      ],
+    });
+    await alert.present();
+
+    const { role, data } = await alert.onDidDismiss<{ values?: { reason?: string } }>();
+    const reason = (data?.values?.reason ?? '').trim();
+    if (role !== 'confirm' || reason === '') {
+      return;
+    }
+
+    this.reviewing.set(deliverable.id);
+    const result = await this.customers.reviewDeliverable(deliverable.id, 'reject', reason);
+    this.reviewing.set(null);
+
+    if (result.ok) {
+      this.markReviewed(message.id, 'rejected');
+    } else {
+      await this.toast(result.detail ?? this.translate.instant('workspace.deliverable_failed'), 'danger');
+    }
+  }
+
+  /**
+   * Latch the card locally. The server 409s a second review, so the buttons have to go the moment
+   * one lands — leaving them up would invite a refusal the customer did nothing to deserve.
+   */
+  private markReviewed(messageId: string, outcome: 'accepted' | 'rejected'): void {
+    const thread = this.thread();
+    if (thread === null) {
+      return;
+    }
+
+    this.thread.set({
+      ...thread,
+      messages: thread.messages.map((m) =>
+        m.id === messageId && m.deliverable
+          ? { ...m, deliverable: { ...m.deliverable, reviewed: outcome } }
+          : m,
+      ),
+    });
+  }
+
+  private async toast(message: string, color: 'success' | 'danger'): Promise<void> {
+    const toast = await this.toasts.create({ message, duration: 3500, position: 'top', color });
+    await toast.present();
   }
 
   /**

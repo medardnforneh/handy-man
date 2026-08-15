@@ -897,6 +897,25 @@ export class ApiService {
   }
 
   /**
+   * Accept or reject a deliverable (P4-08). Customer-only, and only once — the server 409s a second
+   * review, which is why the thread stops offering the buttons as soon as one lands.
+   *
+   * A rejection carries the customer's own words. The provider is going to redo work on the strength
+   * of this sentence, so it is required rather than optional: "rejected" with no reason is an
+   * instruction nobody can act on.
+   */
+  async reviewDeliverable(deliverableId: string, decision: 'accept' | 'reject', rejectReason?: string) {
+    const { data, error } = await api.POST('/deliverables/{deliverable}/review', {
+      params: { path: { deliverable: deliverableId }, header: { 'Idempotency-Key': uuid() } },
+      body: { decision, reject_reason: rejectReason ?? null },
+    });
+    if (error) {
+      throw error;
+    }
+    return data.data;
+  }
+
+  /**
    * Mint a share link for an engagement (P6-05) — "someone is coming to my house, here is who and
    * when". Signed, expiring and revocable; the page it opens carries the provider's first name, the
    * status and the quarter, and never the street address.

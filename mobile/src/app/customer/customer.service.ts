@@ -142,6 +142,24 @@ function mapMessage(m: {
       time,
     };
   }
+  // A submitted deliverable is the one narrated event the customer has to ACT on: remote work is
+  // finished by accepting it, and nothing else in the app can. It carries the deliverable's id in
+  // its payload, which is exactly what the review endpoint needs, so it becomes a card with two
+  // buttons rather than a chip that states a fact and offers nothing.
+  if (m.kind === 'deliverable_submitted') {
+    const id = m.payload?.['deliverable_id'];
+    const title = m.payload?.['title'];
+    if (typeof id === 'string') {
+      return {
+        id: m.id,
+        kind: 'deliverable',
+        mine,
+        time,
+        deliverable: { id, title: typeof title === 'string' ? title : '' },
+      };
+    }
+  }
+
   // Everything else is a server-narrated lifecycle event → a neutral, centred system chip.
   return { id: m.id, kind: 'system', mine: false, systemKey: EVENT_CHIP_KEY[m.kind] ?? `workspace.${m.kind}`, time };
 }
@@ -795,6 +813,30 @@ export class CustomerService {
   async acceptQuote(quotationId: string): Promise<{ ok: boolean; detail?: string }> {
     try {
       await this.api.acceptQuotation(quotationId);
+      return { ok: true };
+    } catch (e) {
+      const problem = e as { detail?: unknown; title?: unknown };
+      const detail = [problem.detail, problem.title]
+        .find((v): v is string => typeof v === 'string' && v.trim() !== '');
+
+      return { ok: false, detail };
+    }
+  }
+
+  /**
+   * Accept or reject a submitted deliverable (P4-08).
+   *
+   * Never queued. A rejection sends the provider back to redo work, and an acceptance is what
+   * releases the remote path's money — neither should fire hours later from a queue against a
+   * deliverable that has since been withdrawn or already reviewed.
+   */
+  async reviewDeliverable(
+    deliverableId: string,
+    decision: 'accept' | 'reject',
+    rejectReason?: string,
+  ): Promise<{ ok: boolean; detail?: string }> {
+    try {
+      await this.api.reviewDeliverable(deliverableId, decision, rejectReason);
       return { ok: true };
     } catch (e) {
       const problem = e as { detail?: unknown; title?: unknown };

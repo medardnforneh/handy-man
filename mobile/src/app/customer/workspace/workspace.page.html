@@ -149,6 +149,47 @@
             </div>
           }
 
+          @case ('deliverable') {
+            <!-- The remote path's proof of work, and the one narrated event in this thread that the
+                 customer has to answer: remote jobs have no site visit and no on-site report, so
+                 accepting what was delivered is what finishes them. The buttons go the moment a
+                 review lands — the server refuses a second one. -->
+            <div class="self-stretch overflow-hidden rounded-lg border border-edge bg-surface-raised shadow-sm">
+              <div class="flex items-center gap-1.5 border-b border-b-edge px-3.5 py-2.5 text-2xs font-bold uppercase tracking-wide text-brand">
+                <ion-icon name="cloud-upload-outline" aria-hidden="true"></ion-icon>
+                <span>{{ 'workspace.deliverable' | translate }}</span>
+              </div>
+              <div class="p-3.5">
+                <b class="block text-md leading-snug">{{ m.deliverable?.title }}</b>
+
+                @if (m.deliverable?.reviewed; as outcome) {
+                  <p class="mt-2 mb-0 flex items-center gap-1.5 text-sm">
+                    <ion-icon
+                      class="flex-none text-md"
+                      [class]="outcome === 'accepted' ? 'text-success' : 'text-danger'"
+                      [name]="outcome === 'accepted' ? 'checkmark-circle' : 'close-circle'"
+                      aria-hidden="true"
+                    ></ion-icon>
+                    <span class="text-content-muted">{{ 'workspace.deliverable_' + outcome | translate }}</span>
+                  </p>
+                } @else if (!m.mine) {
+                  <p class="mt-1 mb-3 text-sm leading-snug text-content-muted">{{ 'workspace.deliverable_prompt' | translate }}</p>
+                  <div class="flex gap-2 max-[380px]:flex-col">
+                    <ion-button class="m-0 flex-1" expand="block" [disabled]="reviewing() !== null" (click)="acceptDeliverable(m)">
+                      {{ 'workspace.deliverable_accept' | translate }}
+                    </ion-button>
+                    <ion-button class="m-0 flex-1" expand="block" fill="outline" [disabled]="reviewing() !== null" (click)="rejectDeliverable(m)">
+                      {{ 'workspace.deliverable_reject' | translate }}
+                    </ion-button>
+                  </div>
+                } @else {
+                  <!-- The provider's own view of what they sent: a record, not a decision. -->
+                  <p class="mt-2 mb-0 text-sm text-content-muted">{{ 'workspace.deliverable_awaiting' | translate }}</p>
+                }
+              </div>
+            </div>
+          }
+
           @case ('milestone') {
             <div class="self-stretch overflow-hidden rounded-lg border border-edge bg-surface-raised shadow-sm">
               <div class="flex items-center gap-1.5 border-b border-b-edge px-3.5 py-2.5 text-2xs font-bold uppercase tracking-wide text-brand">
