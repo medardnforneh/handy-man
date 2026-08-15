@@ -17,12 +17,17 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const SCAN = [
   { dir: 'mobile/src/app', exts: ['.ts', '.html', '.scss', '.css'] },
   { dir: 'backend/resources/views', exts: ['.php', '.html'] },
+  // The public site's CSS moved OUT of the Blade layout and into resources/css when it went to
+  // Tailwind. Without this line the lint kept passing while no longer looking at it — the marketing
+  // surface is exactly where a "just this once" hex creeps in and then fails in dark mode.
+  { dir: 'backend/resources/css', exts: ['.css'] },
 ];
 
 // Files/dirs where literal colours are allowed (generated or framework-owned).
 const EXCLUDE = [
   /[\\/]tokens\.css$/,
   /[\\/]ionic-tokens\.css$/,
+  /[\\/]tailwind-theme\.css$/,
   /[\\/]generated[\\/]/,
   /[\\/]node_modules[\\/]/,
 ];

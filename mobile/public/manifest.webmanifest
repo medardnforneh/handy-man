@@ -1,7 +1,7 @@
 {
   "name": "HandyMan",
   "short_name": "HandyMan",
-  "description": "Find trusted help in Cameroon — on-site or remote.",
+  "description": "Find trusted help near you — on-site or remote.",
   "display": "standalone",
   "orientation": "portrait",
   "scope": "./",

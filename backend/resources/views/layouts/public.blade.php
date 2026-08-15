@@ -27,407 +27,91 @@
 
     @stack('structured-data')
 
-    {{-- Design tokens — GENERATED from tokens/tokens.json (npm run tokens:build). Same semantic
-         --hm-* variables as the app, so Blade and the Ionic app share one theme (doc 08). --}}
-    <link rel="stylesheet" href="{{ asset('css/tokens.css') }}">
-    <style>
-        /* ── Foundations ───────────────────────────────────────────────────────────────────────
-           Every colour here resolves to a --hm-* token: the no-literal-colour lint scans this file,
-           which is deliberate — the marketing surface is exactly where a "just this once" hex would
-           creep in and then fail in dark mode. */
-        *, *::before, *::after { box-sizing: border-box; }
-        html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
-        @media (prefers-reduced-motion: reduce) {
-            html { scroll-behavior: auto; }
-            * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
-        }
-        /* The brand mark as a MASK, so anything using it takes its colour from a token rather than
-           carrying a second copy of the palette in a data URI. `black` here is alpha, not paint. */
-        :root {
-            --hm-mark: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14.7 6.3a4 4 0 0 1-5 5L4 17v3h3l5.7-5.7a4 4 0 0 1 5-5l2.6-2.6-2.6-2.6z'/%3E%3C/svg%3E");
-        }
-
-        body {
-            margin: 0;
-            font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
-            background: var(--hm-color-surface-base);
-            color: var(--hm-color-text-primary);
-            line-height: 1.6;
-            font-size: 16px;
-            -webkit-font-smoothing: antialiased;
-        }
-        img, svg { max-width: 100%; }
-        a { color: var(--hm-color-brand-primary); text-underline-offset: 3px; }
-
-        /* Fluid type scale. clamp() rather than breakpoints so headlines are proportionate on a
-           360px Tecno and on a desktop without a cascade of media queries. */
-        h1, h2, h3 { margin: 0; letter-spacing: -0.025em; line-height: 1.15; font-weight: 800; }
-        .t-display { font-size: clamp(2.1rem, 1.35rem + 3.2vw, 3.9rem); }
-        .t-h2 { font-size: clamp(1.55rem, 1.15rem + 1.7vw, 2.4rem); }
-        .t-h3 { font-size: clamp(1.05rem, 0.95rem + 0.4vw, 1.2rem); line-height: 1.3; }
-        .t-lede { font-size: clamp(1.02rem, 0.96rem + 0.35vw, 1.2rem); color: var(--hm-color-text-muted); }
-        .t-small { font-size: 0.875rem; }
-        .t-eyebrow {
-            display: inline-block; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.12em;
-            text-transform: uppercase; color: var(--hm-color-brand-primary);
-        }
-        .muted { color: var(--hm-color-text-muted); }
-
-        /* ── Layout ─────────────────────────────────────────────────────────────────────────── */
-        .wrap { width: 100%; max-width: 72rem; margin: 0 auto; padding-inline: var(--hm-space-lg); }
-        .section { padding-block: var(--hm-space-3xl); }
-        .section-sm { padding-block: var(--hm-space-xl); }
-        /* Two adjacent sections would otherwise stack their padding into a visible void; collapse
-           the seam so the inner pages read as one document rather than a stack of slabs. */
-        .section-sm + .section-sm { padding-block-start: 0; }
-        .stack-sm > * + * { margin-top: var(--hm-space-sm); }
-        .stack > * + * { margin-top: var(--hm-space-md); }
-        .grid { display: grid; gap: var(--hm-space-md); }
-        .grid-2 { grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr)); }
-        .grid-3 { grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr)); }
-        .grid-4 { grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr)); }
-        .center { text-align: center; }
-        .measure { max-width: 44rem; }
-        .measure-center { max-width: 44rem; margin-inline: auto; }
-
-        /* ── Header ─────────────────────────────────────────────────────────────────────────── */
-        /* A full-width bar pinned to the top edge is the most generic thing a site can wear, and it
-           spent the whole viewport width to say four words and a language. This floats instead: the
-           chrome is a contained pill, so the page reads as content on a surface rather than content
-           under a lid, and the corners let the brand wash show past it on both sides.
-           Glass has to obscure what is behind it or it is just a tint — hence the heavy blur and a
-           surface opaque enough that 3rem display headings passing underneath do not read through. */
-        .site-header {
-            position: sticky; top: 0; z-index: 20;
-            padding-block: 0.7rem;
-            /* Not transparent: the pill has rounded ends, and without this the page would scroll
-               visibly through the gaps either side of it. A short fade is enough. */
-            background: linear-gradient(to bottom,
-                var(--hm-color-surface-base) 55%, transparent);
-        }
-        .header-inner {
-            display: flex; align-items: center; gap: var(--hm-space-md);
-            min-height: 3.4rem;
-            padding-inline: var(--hm-space-md);
-            border-radius: var(--hm-radius-pill);
-            background: color-mix(in srgb, var(--hm-color-surface-raised) 82%, transparent);
-            backdrop-filter: blur(20px) saturate(1.6);
-            border: 1px solid color-mix(in srgb, var(--hm-color-border-subtle) 85%, transparent);
-            box-shadow: var(--hm-shadow-md);
-        }
-        .brand {
-            display: inline-flex; align-items: center; gap: 0.55rem;
-            font-weight: 800; font-size: 1.06rem; letter-spacing: -0.02em;
-            color: var(--hm-color-text-primary); text-decoration: none;
-        }
-        .brand .mark {
-            width: 1.85rem; height: 1.85rem; border-radius: var(--hm-radius-md);
-            background: var(--hm-color-brand-primary); color: var(--hm-color-brand-onPrimary);
-            display: grid; place-items: center; flex: none;
-        }
-        .brand .mark svg { width: 1.05rem; height: 1.05rem; }
-        .site-nav { display: flex; align-items: center; gap: 0.35rem; margin-inline-start: auto; }
-        .site-nav a {
-            color: var(--hm-color-text-muted); text-decoration: none; font-size: 0.9rem; font-weight: 550;
-        }
-        /* The hover target is the pill, not the word — a 2px-tall underline appearing under one of
-           four links is a smaller thing to hit and a smaller thing to notice. */
-        .nav-links a {
-            padding: 0.42rem 0.7rem; border-radius: var(--hm-radius-pill);
-            transition: background-color 120ms ease, color 120ms ease;
-        }
-        .nav-links a:hover {
-            color: var(--hm-color-text-primary);
-            background: color-mix(in srgb, var(--hm-color-brand-primary) 9%, transparent);
-        }
-        .nav-links { display: none; gap: 0.1rem; }
-        @media (min-width: 52rem) { .nav-links { display: flex; } }
-        .menu { position: relative; }
-        .menu > summary {
-            list-style: none; cursor: pointer; display: grid; place-items: center;
-            width: 2.5rem; height: 2.5rem; border-radius: var(--hm-radius-md);
-            border: 1px solid var(--hm-color-border-subtle); color: var(--hm-color-text-primary);
-        }
-        .menu > summary::-webkit-details-marker { display: none; }
-        .menu > summary svg { width: 1.15rem; height: 1.15rem; }
-        .menu-panel {
-            position: absolute; inset-inline-end: 0; top: calc(100% + 0.5rem);
-            min-width: 13rem; display: grid; gap: 0.15rem; padding: var(--hm-space-sm);
-            background: var(--hm-color-surface-raised);
-            border: 1px solid var(--hm-color-border-subtle);
-            border-radius: var(--hm-radius-lg); box-shadow: var(--hm-shadow-lg);
-        }
-        .menu-panel a { padding: 0.6rem 0.7rem; border-radius: var(--hm-radius-sm); }
-        .menu-panel a:hover { background: var(--hm-color-surface-sunken); }
-        @media (min-width: 52rem) { .menu { display: none; } }
-
-        /* A segmented control rather than "FR / EN": two links with a slash between them read as
-           breadcrumbs, and the slash was the third-most prominent glyph in the header. */
-        .lang-switch {
-            display: inline-flex; align-items: center; font-size: 0.8rem;
-            padding: 3px; border-radius: var(--hm-radius-pill);
-            background: var(--hm-color-surface-sunken);
-        }
-        .lang-switch a {
-            padding: 0.22rem 0.6rem; border-radius: var(--hm-radius-pill); font-weight: 600;
-            transition: background-color 120ms ease, color 120ms ease;
-        }
-        .lang-switch a[aria-current="true"] {
-            color: var(--hm-color-text-primary);
-            background: var(--hm-color-surface-raised);
-            box-shadow: var(--hm-shadow-sm);
-        }
-        .lang-sep { display: none; }
-
-        /* The header's own call to action. A marketing header without one asks the reader to scroll
-           back up to the hero to act on what they have just read. */
-        /* Scoped under .site-nav: a bare .nav-cta loses to `.site-nav a`, which set the muted grey and
-           left the label dark-on-green — unreadable, and the loudest control on the page. */
-        .site-nav a.nav-cta {
-            display: none; align-items: center; gap: 0.35rem;
-            padding: 0.5rem 0.95rem; border-radius: var(--hm-radius-pill);
-            background: var(--hm-color-brand-primary); color: var(--hm-color-brand-onPrimary);
-            font-size: 0.875rem; font-weight: 700; text-decoration: none;
-            box-shadow: var(--hm-shadow-sm);
-            transition: background-color 120ms ease, transform 120ms ease;
-        }
-        .site-nav a.nav-cta:hover { background: var(--hm-color-brand-strong); color: var(--hm-color-brand-onPrimary); }
-        .site-nav a.nav-cta:active { transform: translateY(1px); }
-        @media (min-width: 52rem) { .site-nav a.nav-cta { display: inline-flex; } }
-
-        /* ── Buttons ────────────────────────────────────────────────────────────────────────── */
-        .btn {
-            display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
-            padding: 0.72rem 1.15rem; border-radius: var(--hm-radius-md);
-            font-weight: 650; font-size: 0.95rem; text-decoration: none; cursor: pointer;
-            border: 1px solid transparent; transition: transform .12s ease, box-shadow .12s ease, background .12s ease;
-            /* 44px minimum target: this is a phone-first market. */
-            min-height: 2.75rem;
-        }
-        .btn:focus-visible { outline: 3px solid var(--hm-color-brand-ring); outline-offset: 2px; }
-        .btn-primary { background: var(--hm-color-brand-primary); color: var(--hm-color-brand-onPrimary); box-shadow: var(--hm-shadow-sm); }
-        .btn-primary:hover { background: var(--hm-color-brand-strong); transform: translateY(-1px); box-shadow: var(--hm-shadow-md); }
-        .btn-ghost { background: var(--hm-color-surface-raised); color: var(--hm-color-text-primary); border-color: var(--hm-color-border-subtle); }
-        .btn-ghost:hover { border-color: var(--hm-color-border-strong); transform: translateY(-1px); }
-        .btn-onInverse { background: var(--hm-color-surface-raised); color: var(--hm-color-text-primary); }
-        .btn-onInverse:hover { transform: translateY(-1px); box-shadow: var(--hm-shadow-md); }
-        .btn-row { display: flex; flex-wrap: wrap; gap: var(--hm-space-sm); }
-
-        /* ── Cards ──────────────────────────────────────────────────────────────────────────── */
-        .card {
-            background: var(--hm-color-surface-raised);
-            border: 1px solid var(--hm-color-border-subtle);
-            border-radius: var(--hm-radius-lg);
-            padding: var(--hm-space-lg);
-        }
-        a.card { display: block; text-decoration: none; color: inherit; transition: transform .14s ease, box-shadow .14s ease, border-color .14s ease; }
-        a.card:hover { transform: translateY(-2px); border-color: var(--hm-color-brand-primary); box-shadow: var(--hm-shadow-md); }
-        .icon-badge {
-            width: 2.5rem; height: 2.5rem; border-radius: var(--hm-radius-md); flex: none;
-            display: grid; place-items: center;
-            background: var(--hm-color-brand-tint); color: var(--hm-color-brand-primary);
-        }
-        .icon-badge svg { width: 1.25rem; height: 1.25rem; }
-        .pill {
-            display: inline-flex; align-items: center; gap: 0.3rem;
-            padding: 0.2rem 0.6rem; border-radius: var(--hm-radius-pill);
-            font-size: 0.75rem; font-weight: 650;
-            background: var(--hm-color-brand-tint); color: var(--hm-color-brand-primary);
-        }
-        .pill-quiet { background: var(--hm-color-surface-sunken); color: var(--hm-color-text-muted); }
-
-        /* ── Inverted band ──────────────────────────────────────────────────────────────────── */
-        .band-inverse {
-            background: var(--hm-color-surface-inverse);
-            color: var(--hm-color-text-onInverse);
-        }
-        .band-inverse h2, .band-inverse h3 { color: var(--hm-color-text-onInverse); }
-        .band-inverse .muted { color: var(--hm-color-text-onInverse); opacity: 0.72; }
-        .band-inverse .card {
-            background: transparent; border-color: var(--hm-color-border-onInverse);
-        }
-        .band-tint { background: var(--hm-color-brand-tint); }
-
-        /* ── Footer ─────────────────────────────────────────────────────────────────────────── */
-        .site-footer {
-            border-top: 1px solid var(--hm-color-border-subtle);
-            background: var(--hm-color-surface-raised);
-            padding-block: var(--hm-space-2xl) var(--hm-space-lg);
-        }
-        .footer-grid { display: grid; gap: var(--hm-space-lg); grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr)); }
-        .footer-grid h3 { font-size: 0.8rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--hm-color-text-muted); font-weight: 700; }
-        .footer-links { list-style: none; margin: var(--hm-space-sm) 0 0; padding: 0; display: grid; gap: 0.45rem; }
-        .footer-links a { color: var(--hm-color-text-muted); text-decoration: none; font-size: 0.9rem; }
-        .footer-links a:hover { color: var(--hm-color-text-primary); }
-        .footer-bottom {
-            margin-top: var(--hm-space-xl); padding-top: var(--hm-space-md);
-            border-top: 1px solid var(--hm-color-border-subtle);
-            display: flex; flex-wrap: wrap; gap: var(--hm-space-sm); justify-content: space-between;
-            font-size: 0.85rem; color: var(--hm-color-text-muted);
-        }
-
-        /* ── Misc shared ────────────────────────────────────────────────────────────────────── */
-        .crumbs { font-size: 0.85rem; color: var(--hm-color-text-muted); }
-        .crumbs a { color: var(--hm-color-text-muted); text-decoration: none; }
-        .crumbs a:hover { color: var(--hm-color-text-primary); text-decoration: underline; }
-        .chips { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: var(--hm-space-sm); }
-        .chips a {
-            display: inline-block; padding: 0.45rem 0.85rem;
-            background: var(--hm-color-surface-raised); border: 1px solid var(--hm-color-border-subtle);
-            border-radius: var(--hm-radius-pill); text-decoration: none; font-size: 0.9rem;
-            color: var(--hm-color-text-primary); transition: border-color .12s ease, color .12s ease;
-        }
-        .chips a:hover { border-color: var(--hm-color-brand-primary); color: var(--hm-color-brand-primary); }
-        /* ── Hero ──────────────────────────────────────────────────────────────────────────── */
-        /* ── The hero's ground ──────────────────────────────────────────────────────────────────
-           The page had no top. Every section sat on the same near-white surface, so the first
-           screen — the only one most visitors read — was typographically strong and visually
-           anonymous: it could have introduced any product.
-
-           Three things, all from tokens, none of them a picture:
-             1. a brand wash that fades out downward, so the fold has a horizon rather than an edge;
-             2. the same tool mark as the header, drawn once at size and held at a few percent, so
-                the brand is present without being repeated at people;
-             3. a hairline at the bottom, so the wash ends deliberately.
-           `color-mix` against the tokens means both themes and any future palette follow along. */
-        .hero {
-            position: relative;
-            isolation: isolate;
-            overflow: hidden;
-            background:
-                radial-gradient(60rem 32rem at 78% -12%,
-                    color-mix(in srgb, var(--hm-color-brand-primary) 16%, transparent), transparent 65%),
-                linear-gradient(to bottom,
-                    var(--hm-color-brand-tint), color-mix(in srgb, var(--hm-color-brand-tint) 22%, transparent));
-            border-bottom: 1px solid var(--hm-color-border-subtle);
-        }
-        .hero::before {
-            content: "";
-            position: absolute;
-            z-index: -1;
-            /* Top-RIGHT, cropped by the hero's own overflow, on the same side as the radial wash:
-               the brand presence gathers on one side and the headline column stays clean paper.
-               Behind the text it was legible enough to read as a smudge across the first line. */
-            inset-block-start: -20%;
-            inset-inline-end: -8%;
-            width: 40rem; height: 40rem;
-            background: currentColor;
-            color: var(--hm-color-brand-primary);
-            opacity: 0.045;
-            /* The header's mark, as a mask so it inherits the brand colour instead of hard-coding it. */
-            -webkit-mask: var(--hm-mark) no-repeat center / contain;
-            mask: var(--hm-mark) no-repeat center / contain;
-            pointer-events: none;
-        }
-        @media (max-width: 48rem) {
-            /* On a phone the mark would sit behind the headline and fight it for the same pixels. */
-            .hero::before { display: none; }
-        }
-
-        .hero-grid { display: grid; gap: var(--hm-space-2xl); align-items: center; }
-        .hero-visual { display: none; }
-        @media (min-width: 62rem) {
-            .hero-grid { grid-template-columns: 1.05fr 0.95fr; }
-            .hero-visual { display: block; }
-        }
-        .mock {
-            background: var(--hm-color-surface-raised);
-            border: 1px solid var(--hm-color-border-subtle);
-            border-radius: var(--hm-radius-lg);
-            box-shadow: var(--hm-shadow-lg);
-            padding: var(--hm-space-lg);
-            max-width: 24rem; margin-inline-start: auto;
-        }
-        .mock-row { display: flex; align-items: center; gap: var(--hm-space-sm); }
-        .mock-avatar {
-            width: 2.4rem; height: 2.4rem; border-radius: var(--hm-radius-md); flex: none;
-            display: grid; place-items: center; font-weight: 800; font-size: 0.8rem;
-            background: var(--hm-color-brand-primary); color: var(--hm-color-brand-onPrimary);
-        }
-        .mock-escrow {
-            display: flex; align-items: center; gap: var(--hm-space-sm);
-            margin-top: var(--hm-space-md); padding: var(--hm-space-md);
-            border-radius: var(--hm-radius-md); background: var(--hm-color-brand-tint);
-        }
-        .mock-steps { margin-top: var(--hm-space-md); display: grid; gap: 0.55rem; }
-        .mock-step { display: flex; align-items: center; gap: 0.6rem; color: var(--hm-color-text-muted); }
-        .mock-step .dot {
-            width: 1.15rem; height: 1.15rem; border-radius: var(--hm-radius-pill); flex: none;
-            display: grid; place-items: center; font-size: 0.7rem;
-            border: 1.5px solid var(--hm-color-border-strong); color: transparent;
-        }
-        .mock-step.done { color: var(--hm-color-text-primary); }
-        .mock-step.done .dot {
-            background: var(--hm-color-brand-primary); border-color: var(--hm-color-brand-primary);
-            color: var(--hm-color-brand-onPrimary);
-        }
-        .mock-cta {
-            margin-top: var(--hm-space-md); text-align: center;
-            padding: 0.7rem; border-radius: var(--hm-radius-md);
-            background: var(--hm-color-brand-primary); color: var(--hm-color-brand-onPrimary);
-            font-weight: 650; font-size: 0.92rem;
-        }
-
-        .skip-link {
-            position: absolute; left: -9999px; top: 0;
-            background: var(--hm-color-brand-primary); color: var(--hm-color-brand-onPrimary);
-            padding: var(--hm-space-sm) var(--hm-space-md); border-radius: var(--hm-radius-md); z-index: 30;
-        }
-        .skip-link:focus { left: var(--hm-space-md); top: var(--hm-space-md); }
-    </style>
+    {{-- Tailwind, with the design tokens compiled into it (resources/css/app.css imports
+         tokens.css and the generated @theme block). This replaces the hand-written stylesheet that
+         used to live in this file: the palette still comes from tokens/tokens.json, but the styling
+         is utilities in the markup. --}}
+    @vite(['resources/css/app.css'])
 </head>
 <body>
     <a class="skip-link" href="#main">{{ __('public.skip_to_content') }}</a>
 
-    <header class="site-header">
-        <div class="wrap header-inner">
-            <a class="brand" href="{{ route('home') }}">
-                <span class="mark" aria-hidden="true">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M14.7 6.3a4 4 0 0 1-5 5L4 17v3h3l5.7-5.7a4 4 0 0 1 5-5l2.6-2.6-2.6-2.6z"/>
-                    </svg>
-                </span>
-                {{ __('app.name') }}
-            </a>
-
-            <nav class="site-nav" aria-label="{{ __('public.nav_label') }}">
-                <span class="nav-links">
-                    <a href="{{ route('services.index') }}">{{ __('public.nav_trades') }}</a>
-                    <a href="{{ route('home') }}#how">{{ __('public.nav_how') }}</a>
-                    <a href="{{ route('home') }}#trust">{{ __('public.nav_trust') }}</a>
-                    <a href="{{ route('home') }}#providers">{{ __('public.nav_providers') }}</a>
-                </span>
-
-                {{-- Small screens got only the language switch, which left a phone visitor unable to
-                     reach anything from the header — on a phone-first market that is the majority.
-                     A <details> disclosure is a real menu with no JavaScript, so it still works on
-                     the first paint and on a dead connection. --}}
-                <details class="menu">
-                    <summary aria-label="{{ __('public.nav_menu') }}">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
-                            <path d="M4 7h16M4 12h16M4 17h16"/>
+    {{-- Sticky, but floating: the chrome is a contained pill rather than a bar welded to the top
+         edge, so the page reads as content on a surface. The short fade behind it stops the page
+         showing through the gaps either side of the pill's rounded ends. --}}
+    <header class="sticky top-0 z-20 py-3 bg-linear-to-b from-surface from-55% to-transparent">
+        <div class="w-full max-w-6xl mx-auto px-6">
+            <div class="flex items-center gap-4 min-h-14 px-4 rounded-pill border border-edge/85 bg-surface-raised/85 shadow-md backdrop-blur-xl backdrop-saturate-150">
+                <a class="inline-flex items-center gap-2 font-extrabold text-lg tracking-tight text-content no-underline" href="{{ route('home') }}">
+                    <span class="grid place-items-center shrink-0 size-7 rounded-md bg-brand text-brand-contrast" aria-hidden="true">
+                        <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14.7 6.3a4 4 0 0 1-5 5L4 17v3h3l5.7-5.7a4 4 0 0 1 5-5l2.6-2.6-2.6-2.6z"/>
                         </svg>
-                    </summary>
-                    <div class="menu-panel">
-                        <a href="{{ route('services.index') }}">{{ __('public.nav_trades') }}</a>
-                        <a href="{{ route('home') }}#how">{{ __('public.nav_how') }}</a>
-                        <a href="{{ route('home') }}#trust">{{ __('public.nav_trust') }}</a>
-                        <a href="{{ route('home') }}#providers">{{ __('public.nav_providers') }}</a>
-                        <a href="{{ route('home') }}#faq">{{ __('public.nav_faq') }}</a>
-                    </div>
-                </details>
-                <span class="lang-switch">
-                    <a href="{{ request()->fullUrlWithQuery(['lang' => 'fr']) }}"
-                       aria-current="{{ app()->getLocale() === 'fr' ? 'true' : 'false' }}">{{ __('language.french_short') }}</a>
-                    <span class="lang-sep" aria-hidden="true">/</span>
-                    <a href="{{ request()->fullUrlWithQuery(['lang' => 'en']) }}"
-                       aria-current="{{ app()->getLocale() === 'en' ? 'true' : 'false' }}">{{ __('language.english_short') }}</a>
-                </span>
-                <a class="nav-cta" href="{{ route('services.index') }}">
-                    {{ __('public.hero_cta_primary') }}
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                    </span>
+                    {{ __('app.name') }}
                 </a>
-            </nav>
+
+                <nav class="flex items-center gap-1.5 ms-auto" aria-label="{{ __('public.nav_label') }}">
+                    {{-- The hover target is the pill, not the word. --}}
+                    <span class="hidden lg:flex gap-0.5">
+                        @foreach ([
+                            ['public.nav_trades', route('services.index')],
+                            ['public.nav_how', route('home').'#how'],
+                            ['public.nav_trust', route('home').'#trust'],
+                            ['public.nav_providers', route('home').'#providers'],
+                        ] as [$key, $href])
+                            <a class="px-3 py-2 rounded-pill text-sm font-medium text-content-muted no-underline transition-colors hover:text-content hover:bg-brand/10"
+                               href="{{ $href }}">{{ __($key) }}</a>
+                        @endforeach
+                    </span>
+
+                    {{-- Small screens got only the language switch, which left a phone visitor unable
+                         to reach anything from the header. A <details> disclosure is a real menu with
+                         no JavaScript, so it works on the first paint and on a dead connection. --}}
+                    <details class="relative lg:hidden group">
+                        <summary class="grid place-items-center size-10 rounded-md border border-edge text-content cursor-pointer list-none [&::-webkit-details-marker]:hidden"
+                                 aria-label="{{ __('public.nav_menu') }}">
+                            <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                                <path d="M4 7h16M4 12h16M4 17h16"/>
+                            </svg>
+                        </summary>
+                        <div class="absolute end-0 top-[calc(100%+0.5rem)] grid gap-0.5 min-w-52 p-2 rounded-lg border border-edge bg-surface-raised shadow-lg">
+                            @foreach ([
+                                ['public.nav_trades', route('services.index')],
+                                ['public.nav_how', route('home').'#how'],
+                                ['public.nav_trust', route('home').'#trust'],
+                                ['public.nav_providers', route('home').'#providers'],
+                                ['public.nav_faq', route('home').'#faq'],
+                            ] as [$key, $href])
+                                <a class="px-3 py-2.5 rounded-sm text-sm font-medium text-content-muted no-underline hover:bg-surface-sunken hover:text-content"
+                                   href="{{ $href }}">{{ __($key) }}</a>
+                            @endforeach
+                        </div>
+                    </details>
+
+                    {{-- A segmented control rather than "FR / EN": two links with a slash between
+                         them read as breadcrumbs, and the slash was the third-loudest glyph here. --}}
+                    <span class="inline-flex items-center p-[3px] rounded-pill bg-surface-sunken text-xs">
+                        @foreach (['fr' => 'language.french_short', 'en' => 'language.english_short'] as $code => $label)
+                            <a href="{{ request()->fullUrlWithQuery(['lang' => $code]) }}"
+                               aria-current="{{ app()->getLocale() === $code ? 'true' : 'false' }}"
+                               @class([
+                                   'px-2.5 py-1 rounded-pill font-semibold no-underline transition-colors',
+                                   'text-content bg-surface-raised shadow-sm' => app()->getLocale() === $code,
+                                   'text-content-muted' => app()->getLocale() !== $code,
+                               ])>{{ __($label) }}</a>
+                        @endforeach
+                    </span>
+
+                    {{-- The header's own call to action. Without one, a reader convinced by what they
+                         just read has to scroll back up to the hero to act on it. --}}
+                    <a class="hidden lg:inline-flex items-center gap-1.5 px-4 py-2.5 rounded-pill bg-brand text-brand-contrast text-sm font-bold no-underline shadow-sm transition-colors hover:bg-brand-strong active:translate-y-px"
+                       href="{{ route('services.index') }}">
+                        {{ __('public.hero_cta_primary') }}
+                        <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                    </a>
+                </nav>
+            </div>
         </div>
     </header>
 

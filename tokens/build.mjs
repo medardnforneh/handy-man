@@ -4,7 +4,7 @@
 // ONE source (tokens/tokens.json, semantic names) → every surface:
 //   - tokens.css            semantic CSS custom properties (--hm-*), light + dark
 //   - ionic-tokens.css      maps Ionic's --ion-* variables onto our --hm-* vars
-//   - tailwind-tokens.cjs   a Tailwind theme preset referencing the same CSS vars
+//   - tailwind-theme.css    a Tailwind v4 @theme block referencing the same CSS vars
 //
 // All surfaces consume the SAME --hm-* variables, so a token change here flips Blade, the Ionic
 // app and Filament at once. Light is the default (:root); dark applies via the system preference
@@ -93,46 +93,58 @@ function buildIonicCss() {
 `;
 }
 
-function buildTailwindPreset() {
+/**
+ * The Tailwind theme, as a v4 `@theme` block.
+ *
+ * This used to emit a v3-style JS preset (`module.exports = { theme: { extend: … } }`), which was
+ * doubly dead: nothing imported it, and the project is on Tailwind v4, where configuration is
+ * CSS-first and a JS preset is not read at all. So the one file whose whole job was carrying the
+ * palette into Tailwind was the wrong shape for the Tailwind actually installed.
+ *
+ * Every value points at the `--hm-*` variable rather than copying its literal, so a utility like
+ * `bg-surface-raised` follows the light/dark switch for free — the variables are what change with
+ * the theme, and Tailwind never needs to know there are two palettes.
+ */
+function buildTailwindTheme() {
   const ref = (group, name) => `var(${cssVar(group, name)})`;
-  const preset = {
-    theme: {
-      extend: {
-        colors: {
-          surface: {
-            DEFAULT: ref('color', 'surface.base'),
-            raised: ref('color', 'surface.raised'),
-            sunken: ref('color', 'surface.sunken'),
-          },
-          content: {
-            DEFAULT: ref('color', 'text.primary'),
-            muted: ref('color', 'text.muted'),
-            inverse: ref('color', 'text.inverse'),
-          },
-          border: {
-            subtle: ref('color', 'border.subtle'),
-            strong: ref('color', 'border.strong'),
-          },
-          brand: {
-            DEFAULT: ref('color', 'brand.primary'),
-            contrast: ref('color', 'brand.onPrimary'),
-          },
-          success: ref('color', 'status.success'),
-          warning: ref('color', 'status.warning'),
-          danger: ref('color', 'status.danger'),
-          info: ref('color', 'status.info'),
-        },
-        borderRadius: Object.fromEntries(
-          Object.keys(tokens.radius ?? {}).map((k) => [k, `var(${cssVar('radius', k)})`]),
-        ),
-        spacing: Object.fromEntries(
-          Object.keys(tokens.space ?? {}).map((k) => [k, `var(${cssVar('space', k)})`]),
-        ),
-      },
-    },
-  };
+  const lines = [];
 
-  return `// GENERATED from tokens/tokens.json — do not edit by hand. Run \`npm run tokens:build\`.\nmodule.exports = ${JSON.stringify(preset, null, 2)};\n`;
+  const color = (name, group, token) => lines.push(`  --color-${name}: ${ref(group, token)};`);
+  color('surface', 'color', 'surface.base');
+  color('surface-raised', 'color', 'surface.raised');
+  color('surface-sunken', 'color', 'surface.sunken');
+  color('surface-inverse', 'color', 'surface.inverse');
+  color('content', 'color', 'text.primary');
+  color('content-muted', 'color', 'text.muted');
+  color('content-inverse', 'color', 'text.onInverse');
+  color('edge', 'color', 'border.subtle');
+  color('edge-strong', 'color', 'border.strong');
+  color('brand', 'color', 'brand.primary');
+  color('brand-strong', 'color', 'brand.strong');
+  color('brand-tint', 'color', 'brand.tint');
+  color('brand-contrast', 'color', 'brand.onPrimary');
+  color('success', 'color', 'status.success');
+  color('warning', 'color', 'status.warning');
+  color('danger', 'color', 'status.danger');
+  color('info', 'color', 'status.info');
+
+  lines.push('');
+  for (const k of Object.keys(tokens.radius ?? {})) lines.push(`  --radius-${k}: ${ref('radius', k)};`);
+  lines.push('');
+  for (const k of Object.keys(tokens.shadow ?? {})) lines.push(`  --shadow-${k}: ${ref('shadow', k)};`);
+  lines.push('');
+  for (const k of Object.keys(tokens.text ?? {})) lines.push(`  --text-${k}: ${ref('text', k)};`);
+  lines.push('');
+  for (const k of Object.keys(tokens.leading ?? {})) lines.push(`  --leading-${k}: ${ref('leading', k)};`);
+  lines.push('');
+  for (const k of Object.keys(tokens.tracking ?? {})) lines.push(`  --tracking-${k}: ${ref('tracking', k)};`);
+
+  return `${header}
+/* Tailwind v4 reads its theme from CSS. Import this after the tailwindcss import. */
+@theme {
+${lines.join('\n')}
+}
+`;
 }
 
 /**
@@ -149,7 +161,7 @@ function buildWebManifest(existing) {
   return `${JSON.stringify({
     name: 'HandyMan',
     short_name: 'HandyMan',
-    description: 'Find trusted help in Cameroon — on-site or remote.',
+    description: 'Find trusted help near you — on-site or remote.',
     display: 'standalone',
     orientation: 'portrait',
     scope: './',
@@ -205,16 +217,16 @@ function write(path, content) {
 
 const tokensCss = buildTokensCss();
 const ionicCss = buildIonicCss();
-const tailwindPreset = buildTailwindPreset();
+const tailwindTheme = buildTailwindTheme();
 
 // Shared generated copies (source of truth for the build artifacts).
 write(join(__dirname, 'generated', 'tokens.css'), tokensCss);
 write(join(__dirname, 'generated', 'ionic-tokens.css'), ionicCss);
-write(join(__dirname, 'generated', 'tailwind-tokens.cjs'), tailwindPreset);
+write(join(__dirname, 'generated', 'tailwind-theme.css'), tailwindTheme);
 
 // Backend (Blade + Filament share Tailwind + the CSS vars).
 write(join(root, 'backend', 'resources', 'css', 'tokens.css'), tokensCss);
-write(join(root, 'backend', 'tailwind-tokens.cjs'), tailwindPreset);
+write(join(root, 'backend', 'resources', 'css', 'tailwind-theme.css'), tailwindTheme);
 // Also emit a directly-linkable copy so Blade can <link> it without a Vite build.
 write(join(root, 'backend', 'public', 'css', 'tokens.css'), tokensCss);
 // Filament resolves its ramps in PHP and cannot read a CSS variable — see buildFilamentPhp.
