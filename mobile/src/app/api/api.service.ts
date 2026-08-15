@@ -918,6 +918,79 @@ export class ApiService {
   }
 
   /**
+   * Rebook a provider you have used before (P8-05) — clones the last job and sends them a direct
+   * offer, in one tap. The one-tap part is the point: the alternative is describing the same work
+   * again to the same person.
+   *
+   * Refuses (422) when there is nothing to clone, or when either side has blocked the other.
+   */
+  async rebookProvider(partyId: string) {
+    const { data, error } = await api.POST('/providers/{party}/rebook', {
+      params: { path: { party: partyId }, header: { 'Idempotency-Key': uuid() } },
+    });
+    if (error) {
+      throw error;
+    }
+    return data.data;
+  }
+
+  /** This party's referral code (P8-01) — the thing they share. Generated on first ask. */
+  async referralCode() {
+    const { data, error } = await api.GET('/referral-code');
+    if (error) {
+      throw error;
+    }
+    return data.data;
+  }
+
+  /**
+   * Claim somebody else's referral code (P8-01). Refuses (422) on a code that is not real, one's
+   * own code, or a second claim — a person can be referred once.
+   */
+  async claimReferral(code: string) {
+    const { data, error } = await api.POST('/referrals/claim', {
+      params: { header: { 'Idempotency-Key': uuid() } },
+      body: { code },
+    });
+    if (error) {
+      throw error;
+    }
+    return data.data;
+  }
+
+  /**
+   * Schedule a site visit on a job (P2-07) — the trade answer to "I cannot price this without
+   * seeing it". Chargeable or not, at the provider's discretion; a fee is required when it is.
+   */
+  async scheduleSiteVisit(jobId: string, scheduledFor: string, feeMinor?: number) {
+    const { data, error } = await api.POST('/jobs/{job}/site-visits', {
+      params: { path: { job: jobId }, header: { 'Idempotency-Key': uuid() } },
+      body: {
+        scheduled_for: scheduledFor,
+        is_chargeable: feeMinor !== undefined && feeMinor > 0,
+        // Omitted rather than nulled: the server requires a fee only when the visit is chargeable,
+        // and sending `null` would fail that rule instead of skipping it.
+        ...(feeMinor !== undefined && feeMinor > 0 ? { fee_minor: feeMinor } : {}),
+      },
+    });
+    if (error) {
+      throw error;
+    }
+    return data.data;
+  }
+
+  // `POST /site-visits/{siteVisit}/complete` is NOT wrapped here, deliberately, and the omission is
+  // load-bearing: a method nobody calls would satisfy `npm run check:uncalled` and hide the fact
+  // that the endpoint is still unreachable, which is worse than the gap it papers over.
+  //
+  // The blocker is not the button. A site visit is never narrated and has no read endpoint, so its
+  // id survives only inside the session that scheduled it. Warranties had the same problem and were
+  // fixed by narrating into the thread — that fix is not safe here as-is, because a site visit
+  // happens PRE-engagement and a conversation enrols both parties, which would disclose a provider
+  // the customer is not yet meant to be able to identify (P2-03). It needs a provider-scoped read,
+  // or a narration that discloses nothing.
+
+  /**
    * Issue a warranty on a finished engagement (P6-11). Provider-only, one per engagement.
    *
    * This is the anti-leakage payoff: the warranty exists on-platform and nowhere else, so a job

@@ -954,7 +954,18 @@
     "setup_done": "Votre profil prestataire est actif.",
     "setup_done_no_area": "Profil créé — mais votre zone d’intervention n’a pas été enregistrée, les demandes sur site ne vous parviendront donc pas encore. Ajoutez-la depuis votre profil.",
     "setup_failed": "Nous n’avons pas pu créer votre profil. Veuillez réessayer.",
-    "setup_nav_title": "Devenir prestataire"
+    "setup_nav_title": "Devenir prestataire",
+    "visit_propose": "Proposer une visite sur place",
+    "visit_hint": "Pour un travail que vous ne pouvez pas chiffrer sans l'avoir vu.",
+    "visit_when": "Quand passeriez-vous ?",
+    "visit_when_hint": "Le client confirme ou propose un autre jour.",
+    "visit_chargeable": "Facturer le déplacement",
+    "visit_chargeable_hint": "Courant pour un vrai diagnostic. Gratuit est courant pour un simple coup d'œil.",
+    "visit_fee": "Frais de déplacement",
+    "visit_note": "Le client voit le jour et les frais avant d'accepter. Rien n'est facturé avant.",
+    "visit_send": "Proposer la visite",
+    "visit_sent": "Visite proposée",
+    "visit_failed": "L'envoi a échoué. Réessayez."
   },
   "payout": {
     "paid": "Versé",
@@ -1344,5 +1355,26 @@
     "submit": "Envoyer l’avis",
     "submitted": "Avis enregistré. Il reste masqué jusqu’à ce qu’ils écrivent le leur.",
     "done": "Vous avez donné votre avis sur ce travail."
+  },
+  "rebook": {
+    "action": "Reprendre avec {name}",
+    "done": "Demande envoyée",
+    "failed": "L'envoi a échoué. Réessayez."
+  },
+  "referral": {
+    "section": "Parrainer un proche",
+    "hint": "Partagez votre code avec quelqu'un qui a besoin d'un service. Vous y gagnez tous les deux.",
+    "show": "Afficher mon code",
+    "your_code_hint": "Partagez ce code avec une personne qui n'utilise pas encore l'application.",
+    "copy": "Copier le code",
+    "copied": "Code copié",
+    "copy_failed": "Copie impossible. Lisez le code ci-dessus.",
+    "have_code": "On m'a donné un code",
+    "claim_title": "Saisir un code de parrainage",
+    "claim_body": "Si quelqu'un vous a donné un code, saisissez-le ici. Vous ne pouvez être parrainé qu'une fois.",
+    "claim_ph": "Son code",
+    "claim_send": "Utiliser le code",
+    "claimed": "Code accepté",
+    "claim_failed": "Ce code n'a pas pu être utilisé."
   }
 }

@@ -954,7 +954,18 @@
     "setup_done": "Your provider profile is live.",
     "setup_done_no_area": "Profile created — but your service area was not set, so on-site requests will not reach you yet. Add it from your profile.",
     "setup_failed": "We could not create your profile. Please try again.",
-    "setup_nav_title": "Become a provider"
+    "setup_nav_title": "Become a provider",
+    "visit_propose": "Propose a site visit",
+    "visit_hint": "For work you cannot price without seeing it.",
+    "visit_when": "When would you come?",
+    "visit_when_hint": "The customer confirms or asks for another day.",
+    "visit_chargeable": "Charge for the visit",
+    "visit_chargeable_hint": "Normal for real diagnostic work. Free is normal for a quick look.",
+    "visit_fee": "Visit fee",
+    "visit_note": "The customer sees the day and the fee before agreeing. Nothing is charged until they do.",
+    "visit_send": "Propose visit",
+    "visit_sent": "Visit proposed",
+    "visit_failed": "That could not be sent. Try again."
   },
   "payout": {
     "paid": "Paid",
@@ -1344,5 +1355,26 @@
     "submit": "Submit review",
     "submitted": "Review saved. It stays hidden until they write theirs.",
     "done": "You have reviewed this job."
+  },
+  "rebook": {
+    "action": "Book {name} again",
+    "done": "Request sent to them",
+    "failed": "That could not be sent. Try again."
+  },
+  "referral": {
+    "section": "Refer a friend",
+    "hint": "Share your code with someone who needs work done. You both benefit when they use it.",
+    "show": "Show my code",
+    "your_code_hint": "Share this code with someone who has not used the app yet.",
+    "copy": "Copy code",
+    "copied": "Code copied",
+    "copy_failed": "Could not copy. Read the code above instead.",
+    "have_code": "I was given a code",
+    "claim_title": "Enter a referral code",
+    "claim_body": "If someone gave you a code, enter it here. You can only be referred once.",
+    "claim_ph": "Their code",
+    "claim_send": "Use code",
+    "claimed": "Code accepted",
+    "claim_failed": "That code could not be used."
   }
 }

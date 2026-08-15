@@ -234,6 +234,22 @@
       </p>
     }
 
+    <!-- Book the same person again (P8-05). One tap clones this job and offers it to them, because
+         the alternative is describing the same work to the same provider a second time. Only on a
+         finished job with a provider on it: that is where the thought occurs, and the one place we
+         know for certain they have worked together. -->
+    @if (job().completedAt !== null && job().providerId) {
+      <button
+        type="button"
+        class="mt-4 flex w-full min-h-11 cursor-pointer items-center justify-center gap-2 rounded-md border border-edge bg-surface-raised p-4 text-sm font-semibold text-content [font:inherit] shadow-sm disabled:opacity-50"
+        [disabled]="busy()"
+        (click)="rebook()"
+      >
+        <ion-icon name="repeat-outline" class="text-[1.25rem] text-brand" aria-hidden="true"></ion-icon>
+        <span>{{ 'rebook.action' | translate:{ name: job().providerName } }}</span>
+      </button>
+    }
+
     <!-- When the thread has stopped being enough (P6-06). Deliberately below everything the job is
          normally about: most people never need it, and a complaint offered too eagerly reads as an
          expectation that something will go wrong. -->

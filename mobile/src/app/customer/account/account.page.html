@@ -62,6 +62,32 @@
       ></app-empty-state>
     }
 
+    <!-- Referrals (P8-01). Word of mouth is how this product actually spreads — a plumber
+         recommended by a neighbour — so both halves are here: the code you give, and the box for
+         one you were given. -->
+    <h2 class="mt-6 mb-4 text-lg font-extrabold tracking-snug">{{ 'referral.section' | translate }}</h2>
+    <div class="rounded-lg border border-edge bg-surface-raised p-4 shadow-sm">
+      @if (referralCode(); as code) {
+        <p class="mt-0 mb-2 text-sm leading-snug text-content-muted">{{ 'referral.your_code_hint' | translate }}</p>
+        <p class="m-0 rounded-md bg-surface-sunken px-3 py-2 text-center text-lg font-extrabold tracking-[0.12em] tabular-nums">{{ code }}</p>
+        <ion-button class="mt-4" size="small" expand="block" (click)="copyReferral()">
+          <ion-icon name="copy-outline" slot="start" aria-hidden="true"></ion-icon>
+          {{ 'referral.copy' | translate }}
+        </ion-button>
+      } @else {
+        <p class="mt-0 mb-4 text-sm leading-snug text-content-muted">{{ 'referral.hint' | translate }}</p>
+        <ion-button size="small" expand="block" fill="outline" (click)="showReferral()">
+          {{ 'referral.show' | translate }}
+        </ion-button>
+      }
+
+      <button
+        type="button"
+        class="mt-2 min-h-11 w-full cursor-pointer border-0 bg-transparent px-2 py-1.5 text-sm font-bold text-brand [font:inherit]"
+        (click)="claimReferral()"
+      >{{ 'referral.have_code' | translate }}</button>
+    </div>
+
     <h2 class="mt-6 mb-4 text-lg font-extrabold tracking-snug">{{ 'account.language' | translate }}</h2>
     <ion-segment class="choice" [value]="locale()">
       @for (code of supported; track code) {

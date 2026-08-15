@@ -861,6 +861,20 @@ export class ProviderService {
   }
 
   /**
+   * Propose a site visit on a lead's job (POST /jobs/{job}/site-visits, P2-07).
+   *
+   * The trade's honest answer to work that cannot be priced from a description — a leak behind a
+   * wall, a rewire in a house nobody has seen. Before this the provider's only options were to
+   * guess a price or walk away, which is how a marketplace ends up full of quotes nobody honours.
+   *
+   * Chargeable is the provider's call: a fee for showing up is normal for real diagnostic work and
+   * insulting for a ten-minute look, and only they know which this is.
+   */
+  async scheduleSiteVisit(jobId: string, scheduledFor: string, feeMinor?: number): Promise<MutationResult> {
+    return this.attempt(() => this.api.scheduleSiteVisit(jobId, scheduledFor, feeMinor));
+  }
+
+  /**
    * Issue a warranty on this engagement (POST /engagements/{id}/warranty, P6-11).
    *
    * The anti-leakage payoff, and the reason it is worth a provider's while to keep a job on the

@@ -61,6 +61,21 @@
         <ion-icon name="information-circle-outline" class="mt-0.5 flex-none text-lg" aria-hidden="true"></ion-icon>
         {{ 'pro.answer_note' | translate }}
       </p>
+
+      <!-- And a third, for work that cannot be priced from a description (P2-07). Quieter than the
+           two in the footer because it is the less common answer, not a lesser one. -->
+      @if (l.jobId) {
+        <button
+          type="button"
+          class="mt-4 flex w-full min-h-11 cursor-pointer items-center justify-center gap-2 rounded-md border border-dashed border-edge-strong bg-transparent p-4 text-sm font-semibold text-content-muted [font:inherit] disabled:opacity-50"
+          [disabled]="busy()"
+          (click)="openVisit()"
+        >
+          <ion-icon name="calendar-outline" class="text-[1.25rem] text-brand" aria-hidden="true"></ion-icon>
+          <span>{{ 'pro.visit_propose' | translate }}</span>
+        </button>
+        <p class="mt-2 text-xs leading-snug text-content-muted">{{ 'pro.visit_hint' | translate }}</p>
+      }
     </div>
   } @else {
     <div class="mx-auto max-w-3xl px-4 pb-10">
@@ -227,6 +242,75 @@
       <div class="mx-auto max-w-3xl border-t border-t-edge px-4 py-2">
         <ion-button expand="block" [disabled]="busy()" (click)="send()">
           {{ (ownQuote() ? 'pro.send_revision' : 'pro.send_quote') | translate }}
+        </ion-button>
+      </div>
+    </ion-footer>
+  </ng-template>
+</ion-modal>
+
+<!-- The site-visit sheet (P2-07). A date and, if the provider charges for showing up, a fee — which
+     is their call: a call-out fee is normal for real diagnostic work and insulting for a ten-minute
+     look, and only they know which this is. -->
+<ion-modal [isOpen]="visitOpen()" (didDismiss)="closeVisit()">
+  <ng-template>
+    <ion-header class="ion-no-border">
+      <ion-toolbar>
+        <ion-buttons slot="start">
+          <ion-button (click)="closeVisit()">{{ 'work.cancel' | translate }}</ion-button>
+        </ion-buttons>
+        <ion-title>{{ 'pro.visit_propose' | translate }}</ion-title>
+      </ion-toolbar>
+    </ion-header>
+
+    <ion-content>
+      <div class="mx-auto max-w-3xl px-4 pt-4 pb-10">
+        <label class="mb-4 block">
+          <span class="mb-1.5 block text-sm font-bold text-content-muted">{{ 'pro.visit_when' | translate }}</span>
+          <input
+            class="finput"
+            type="date"
+            [ngModel]="visitWhen()"
+            (ngModelChange)="visitWhen.set($event)"
+          />
+          <small class="mt-1 block text-xs leading-snug text-content-muted">{{ 'pro.visit_when_hint' | translate }}</small>
+        </label>
+
+        <label class="mb-4 flex items-center justify-between gap-2">
+          <span class="min-w-0 flex-1">
+            <b class="block text-md">{{ 'pro.visit_chargeable' | translate }}</b>
+            <small class="mt-0.5 block text-xs leading-snug text-content-muted">{{ 'pro.visit_chargeable_hint' | translate }}</small>
+          </span>
+          <ion-toggle
+            [checked]="visitChargeable()"
+            (ionChange)="visitChargeable.set($any($event.detail).checked)"
+          ></ion-toggle>
+        </label>
+
+        @if (visitChargeable()) {
+          <label class="mb-4 block">
+            <span class="mb-1.5 block text-sm font-bold text-content-muted">{{ 'pro.visit_fee' | translate }}</span>
+            <input
+              class="finput"
+              type="number"
+              inputmode="numeric"
+              min="1"
+              [ngModel]="visitFee()"
+              (ngModelChange)="visitFee.set(+$event)"
+            />
+          </label>
+        }
+
+        <p class="mt-6 mb-0 flex items-start gap-2 text-xs leading-relaxed text-content-muted">
+          <ion-icon name="information-circle-outline" class="mt-0.5 flex-none text-md" aria-hidden="true"></ion-icon>
+          <span class="min-w-0 flex-1">{{ 'pro.visit_note' | translate }}</span>
+        </p>
+      </div>
+    </ion-content>
+
+    <ion-footer class="ion-no-border">
+      <div class="mx-auto max-w-3xl border-t border-t-edge px-4 py-2">
+        <ion-button expand="block" [disabled]="busy()" (click)="sendVisit()">
+          {{ 'pro.visit_send' | translate }}
         </ion-button>
       </div>
     </ion-footer>

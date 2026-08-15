@@ -238,6 +238,34 @@ export class JobDetailPage {
     await toast.present();
   }
 
+  /**
+   * Book the same provider again (P8-05).
+   *
+   * Offered only on a finished job, next to the person who did it — which is both where the thought
+   * occurs and the one place we know for certain the two have worked together, so the server's
+   * "nothing to clone" refusal is not a trap laid for the customer.
+   */
+  async rebook(): Promise<void> {
+    const providerId = this.job().providerId;
+    if (providerId === null || this.busy()) {
+      return;
+    }
+
+    this.busy.set(true);
+    const result = await this.customers.rebook(providerId);
+    this.busy.set(false);
+
+    if (!result.ok) {
+      await this.toast(result.detail ?? this.translate.instant('rebook.failed'), 'danger', result.detail !== undefined);
+      return;
+    }
+
+    await this.toast('rebook.done', 'success');
+    if (result.jobId !== undefined) {
+      void this.router.navigate(['/job', result.jobId]);
+    }
+  }
+
   // --- When it goes wrong (P6-06 / P3-14) --------------------------------------------------------
   //
   // Two different actions, deliberately kept apart. A dispute asks a human to look at the case and

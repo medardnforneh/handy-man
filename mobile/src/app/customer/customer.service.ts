@@ -841,6 +841,53 @@ export class CustomerService {
   }
 
   /**
+   * Rebook a provider (P8-05) — clones the last job with them and sends a direct offer.
+   *
+   * Offered only where we know the two have actually worked together, so the 422 for "nothing to
+   * clone" is not a trap someone falls into: this appears on a finished job, beside the provider
+   * who did it.
+   */
+  async rebook(partyId: string): Promise<{ ok: boolean; jobId?: string; detail?: string }> {
+    try {
+      const result = await this.api.rebookProvider(partyId);
+      return { ok: true, jobId: result.job_id };
+    } catch (e) {
+      const problem = e as { detail?: unknown; title?: unknown };
+      const detail = [problem.detail, problem.title]
+        .find((v): v is string => typeof v === 'string' && v.trim() !== '');
+
+      return { ok: false, detail };
+    }
+  }
+
+  /** This person's own referral code (P8-01), or null when it cannot be read. */
+  async referralCode(): Promise<string | null> {
+    try {
+      const { code } = await this.api.referralCode();
+      return code ?? null;
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Claim somebody else's referral code (P8-01). The refusals are all real and all different — not
+   * a code, your own code, already referred — so the server's own sentence is what surfaces.
+   */
+  async claimReferral(code: string): Promise<{ ok: boolean; detail?: string }> {
+    try {
+      await this.api.claimReferral(code);
+      return { ok: true };
+    } catch (e) {
+      const problem = e as { detail?: unknown; title?: unknown };
+      const detail = [problem.detail, problem.title]
+        .find((v): v is string => typeof v === 'string' && v.trim() !== '');
+
+      return { ok: false, detail };
+    }
+  }
+
+  /**
    * File a warranty claim (P6-11). A claim spawns a real remedy job, so the description is what the
    * returning provider actually works from — which is why the sheet asks for it rather than sending
    * a bare "it broke".

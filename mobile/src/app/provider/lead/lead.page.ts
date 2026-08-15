@@ -118,6 +118,53 @@ export class ProviderLeadPage {
    */
   readonly ownQuote = signal<SubmittedQuote | null>(null);
 
+  // --- Proposing a site visit (P2-07) ------------------------------------------------------------
+  //
+  // The third answer to a lead, and the honest one when the work cannot be priced from a
+  // description: a leak behind a wall, a rewire in a house nobody has seen. Without it a provider
+  // could only guess a number or walk away, which is how a marketplace fills up with quotes nobody
+  // intends to honour.
+
+  readonly visitOpen = signal(false);
+  readonly visitWhen = signal(isoDaysFromNow(2));
+  readonly visitChargeable = signal(false);
+  readonly visitFee = signal(0);
+
+  openVisit(): void {
+    this.visitOpen.set(true);
+  }
+
+  closeVisit(): void {
+    this.visitOpen.set(false);
+  }
+
+  async sendVisit(): Promise<void> {
+    const jobId = this.lead()?.jobId;
+    if (!jobId || this.busy()) {
+      return;
+    }
+
+    const fee = this.visitChargeable() ? Math.max(0, Math.round(this.visitFee() || 0)) : 0;
+    if (this.visitChargeable() && fee <= 0) {
+      return;
+    }
+
+    // The server wants an instant, and the field gives a date. Nine in the morning is when this
+    // work starts; proposing midnight because that is what a bare date parses to would be absurd.
+    const scheduledFor = `${this.visitWhen()}T09:00:00`;
+
+    this.busy.set(true);
+    const result = await this.provider.scheduleSiteVisit(jobId, scheduledFor, fee > 0 ? fee : undefined);
+    this.busy.set(false);
+
+    if (result.ok) {
+      this.visitOpen.set(false);
+      await this.notify(this.translate.instant('pro.visit_sent'), 'success');
+      return;
+    }
+    await this.notify(result.detail ?? this.translate.instant('pro.visit_failed'), 'danger');
+  }
+
   openQuote(): void {
     this.touched.set(false);
 
