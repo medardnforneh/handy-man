@@ -1,28 +1,30 @@
 <ion-content [fullscreen]="true">
-  <div class="page">
+  <div class="mx-auto flex max-w-md flex-col px-4 pt-8 pb-6">
     <!-- Brand -->
-    <div class="brand">
-      <div class="mark" aria-hidden="true"><ion-icon name="construct"></ion-icon></div>
-      <h1>{{ 'app.name' | translate }}</h1>
-      <p class="tagline">{{ 'app.tagline' | translate }}</p>
+    <div class="my-8 text-center">
+      <div class="mx-auto mb-4 grid size-19 place-items-center rounded-lg bg-brand text-[2.2rem] text-brand-contrast" aria-hidden="true">
+        <ion-icon name="construct"></ion-icon>
+      </div>
+      <h1 class="text-[1.7rem] font-extrabold tracking-[-0.03em]">{{ 'app.name' | translate }}</h1>
+      <p class="mt-1.5 text-md text-balance text-content-muted">{{ 'app.tagline' | translate }}</p>
     </div>
 
     <!-- Language offer (first launch, doc 09) -->
-    <label class="lbl">{{ 'auth.language_prompt' | translate }}</label>
+    <label class="mt-6 mb-2 block text-sm font-semibold text-content-muted">{{ 'auth.language_prompt' | translate }}</label>
     <ion-segment class="choice" [value]="locale()">
       @for (code of supported; track code) {
-        <ion-segment-button class="hm-tap" [value]="code" (click)="setLocale(code)">
+        <ion-segment-button [value]="code" (click)="setLocale(code)">
           <ion-label>{{ (code === 'fr' ? 'language.french' : 'language.english') | translate }}</ion-label>
         </ion-segment-button>
       }
     </ion-segment>
 
     <!-- Phone -->
-    <label class="lbl">{{ 'auth.phone' | translate }}</label>
-    <div class="phone field">
-      <span class="cc" aria-hidden="true">{{ countryCode }}</span>
+    <label class="mt-6 mb-2 block text-sm font-semibold text-content-muted">{{ 'auth.phone' | translate }}</label>
+    <div class="field flex items-center">
+      <span class="flex-none ps-3.5 pe-0.5 font-bold text-content" aria-hidden="true">{{ countryCode }}</span>
       <ion-input
-        class="hm-tap"
+        class="flex-1"
         inputmode="tel"
         [value]="local()"
         (ionInput)="onPhone($any($event.target).value)"
@@ -32,20 +34,21 @@
     </div>
     <!-- The server's own reason for refusing (a rate limit, a rejected number). Shown in place of
          the hint rather than beside it: two lines of small print under a field is where an error
-         goes unread. -->
+         goes unread. A refusal takes the hint's place, so it needs to read as a different KIND of
+         message — the danger tone plus weight, not just different words in the same grey. -->
     @if (error()) {
-      <p class="hint error" role="alert">{{ error() }}</p>
+      <p class="mt-2 text-xs font-semibold text-danger" role="alert">{{ error() }}</p>
     } @else {
-      <p class="hint hm-muted">{{ 'auth.phone_hint' | translate }}</p>
+      <p class="mt-2 text-xs text-content-muted">{{ 'auth.phone_hint' | translate }}</p>
     }
   </div>
 </ion-content>
 
 <ion-footer class="ion-no-border">
-  <div class="cta">
-    <ion-button expand="block" class="hm-tap" [disabled]="!canSend() || sending()" (click)="sendCode()">
+  <div class="mx-auto max-w-md px-4 pt-2 pb-4">
+    <ion-button expand="block" [disabled]="!canSend() || sending()" (click)="sendCode()">
       {{ 'auth.send_code' | translate }}
     </ion-button>
-    <p class="terms hm-muted">{{ 'auth.terms' | translate }}</p>
+    <p class="mt-2 text-center text-xs text-balance text-content-muted">{{ 'auth.terms' | translate }}</p>
   </div>
 </ion-footer>

@@ -7,15 +7,17 @@
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <div class="page">
-    <h1>{{ 'auth.otp_prompt' | translate }}</h1>
-    <p class="sent hm-muted">{{ 'auth.otp_sent' | translate:{ phone: phone } }}</p>
+  <div class="mx-auto max-w-md px-4 pt-4 pb-6">
+    <h1 class="mt-2 mb-1.5 text-[1.4rem] font-extrabold tracking-tight text-balance">{{ 'auth.otp_prompt' | translate }}</h1>
+    <p class="mb-8 text-md text-content-muted">{{ 'auth.otp_sent' | translate:{ phone: phone } }}</p>
 
     <!-- One hidden input drives six cells; tapping the row focuses it. -->
-    <label class="code" [class.err]="error()">
+    <label class="relative grid cursor-text grid-cols-6 gap-2">
+      <!-- The capture input sits invisibly over the whole row. The caret is kept off-screen so only
+           the cells read as the field, and the 16px size avoids iOS zoom-on-focus. -->
       <input
         #capture
-        class="capture"
+        class="absolute inset-0 size-full border-0 bg-transparent text-[16px] text-transparent caret-transparent opacity-0"
         type="text"
         inputmode="numeric"
         autocomplete="one-time-code"
@@ -25,38 +27,52 @@
         [attr.aria-label]="'auth.otp_prompt' | translate"
       />
       @for (i of cells; track i) {
-        <span class="cell" [class.filled]="charAt(i)" [class.active]="code().length === i">{{ charAt(i) }}</span>
+        <span
+          class="grid h-14 place-items-center rounded-md border-[1.5px] bg-surface-raised text-[1.4rem] font-bold tabular-nums text-content transition-colors"
+          [class]="error()
+            ? 'border-danger'
+            : (code().length === i ? 'border-brand' : (charAt(i) ? 'border-edge-strong' : 'border-edge'))"
+        >{{ charAt(i) }}</span>
       }
     </label>
 
     @if (error()) {
-      <p class="error">{{ 'auth.otp_invalid' | translate }}</p>
+      <p class="mt-2 text-sm font-semibold text-danger">{{ 'auth.otp_invalid' | translate }}</p>
     }
 
     <!-- Local development only: the API returns the code when it is running on a developer's own
-         machine, where no SMS is sent. It is labelled as a dev aid so nobody mistakes it for
-         something a real user would ever see, and one tap fills the boxes. -->
+         machine, where no SMS is sent. Dashed and explicitly tagged, so it reads as scaffolding
+         rather than as part of the product — it cannot appear outside a local API, where the field
+         is absent. One tap fills the boxes. -->
     @if (devCode()) {
-      <button type="button" class="devcode hm-tap" (click)="useDevCode()">
-        <span class="tag">{{ 'auth.dev_code_tag' | translate }}</span>
-        <b>{{ devCode() }}</b>
-        <small>{{ 'auth.dev_code_hint' | translate }}</small>
+      <button
+        type="button"
+        class="mt-4 flex w-full min-h-11 cursor-pointer items-center gap-2 rounded-md border border-dashed border-warning bg-warning/8 px-4 py-2.5 text-start text-content [font:inherit]"
+        (click)="useDevCode()"
+      >
+        <span class="flex-none rounded-sm bg-warning px-1.5 py-0.5 text-2xs font-extrabold uppercase tracking-wide text-content-inverse">{{ 'auth.dev_code_tag' | translate }}</span>
+        <b class="text-lg font-extrabold tabular-nums tracking-[0.16em]">{{ devCode() }}</b>
+        <small class="ms-auto text-xs text-content-muted">{{ 'auth.dev_code_hint' | translate }}</small>
       </button>
     }
 
-    <div class="resend">
+    <div class="mt-6 text-center text-sm">
       @if (resendIn() > 0) {
-        <span class="hm-muted">{{ 'auth.resend_in' | translate:{ s: resendIn() } }}</span>
+        <span class="text-content-muted">{{ 'auth.resend_in' | translate:{ s: resendIn() } }}</span>
       } @else {
-        <button type="button" class="link hm-tap" (click)="resend()">{{ 'auth.resend' | translate }}</button>
+        <button
+          type="button"
+          class="min-h-11 cursor-pointer border-0 bg-transparent px-2.5 py-1.5 text-sm font-bold text-brand"
+          (click)="resend()"
+        >{{ 'auth.resend' | translate }}</button>
       }
     </div>
   </div>
 </ion-content>
 
 <ion-footer class="ion-no-border">
-  <div class="cta">
-    <ion-button expand="block" class="hm-tap" [disabled]="!canVerify()" (click)="verify()">
+  <div class="mx-auto max-w-md px-4 pt-2 pb-4">
+    <ion-button expand="block" [disabled]="!canVerify()" (click)="verify()">
       {{ 'auth.verify' | translate }}
     </ion-button>
   </div>

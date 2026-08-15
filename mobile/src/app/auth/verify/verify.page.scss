@@ -1,5 +1,4 @@
-// Shared primitives (.hm-muted, .hm-tap…) load once globally — see angular.json styles.
-// SEMANTIC TOKENS ONLY — never a literal colour (doc 08; enforced by `npm run lint:colors`).
+// Ionic's own components only — everything else on this page is a Tailwind utility in the template.
 
 ion-toolbar {
   --background: var(--hm-color-surface-base);
@@ -10,148 +9,13 @@ ion-content {
   --background: var(--hm-color-surface-base);
 }
 
-.page {
-  padding: var(--hm-space-md) var(--hm-space-md) var(--hm-space-lg);
-  max-width: 440px;
-  margin: 0 auto;
-}
-
-h1 {
-  margin: var(--hm-space-sm) 0 0.35rem;
-  font-size: 1.4rem;
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  text-wrap: balance;
-}
-
-.sent {
-  margin: 0 0 var(--hm-space-xl);
-  font-size: var(--hm-text-md);
-}
-
-// ---- Code cells --------------------------------------------------------
-.code {
-  position: relative;
-  display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap: 0.5rem;
-  cursor: text;
-
-  // The capture input sits invisibly over the whole row.
-  .capture {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    opacity: 0;
-    border: 0;
-    background: transparent;
-    // Keep the caret off-screen so only the cells read as the field.
-    color: transparent;
-    caret-color: transparent;
-    font-size: 16px; // avoids iOS zoom-on-focus
-  }
-
-  .cell {
-    display: grid;
-    place-items: center;
-    height: 56px;
-    border-radius: var(--hm-radius-md);
-    background: var(--hm-color-surface-raised);
-    border: 1.5px solid var(--hm-color-border-subtle);
-    font-size: 1.4rem;
-    font-weight: 700;
-    font-variant-numeric: tabular-nums;
-    color: var(--hm-color-text-primary);
-    transition: border-color 0.12s ease;
-
-    &.filled { border-color: var(--hm-color-border-strong); }
-    &.active { border-color: var(--hm-color-brand-primary); }
-  }
-
-  &.err .cell { border-color: var(--hm-color-status-danger); }
-}
-
-.error {
-  margin: var(--hm-space-sm) 0 0;
-  color: var(--hm-color-status-danger);
-  font-size: var(--hm-text-sm);
-  font-weight: 600;
-}
-
-.resend {
-  margin-top: var(--hm-space-lg);
-  text-align: center;
-  font-size: var(--hm-text-sm);
-
-  .link {
-    background: none;
-    border: 0;
-    padding: 0.4rem 0.6rem;
-    color: var(--hm-color-brand-primary);
-    font-weight: 700;
-    font-size: var(--hm-text-sm);
-    cursor: pointer;
-  }
-}
-
-// ---- Local-development code hint ---------------------------------------
-// Dashed and explicitly tagged, so it reads as scaffolding rather than as part of the product.
-// It cannot appear outside a local API (the field is absent in every other environment).
-.devcode {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  width: 100%;
-  margin-top: var(--hm-space-md);
-  padding: 0.65rem var(--hm-space-md);
-  border: 1px dashed var(--hm-color-status-warning);
-  border-radius: var(--hm-radius-md);
-  background: color-mix(in srgb, var(--hm-color-status-warning) 8%, transparent);
-  color: var(--hm-color-text-primary);
-  font: inherit;
-  text-align: start;
-  cursor: pointer;
-
-  .tag {
-    flex: none;
-    padding: 0.1rem 0.4rem;
-    border-radius: var(--hm-radius-sm);
-    background: var(--hm-color-status-warning);
-    color: var(--hm-color-text-inverse);
-    font-size: var(--hm-text-2xs);
-    font-weight: 800;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-  }
-
-  b {
-    font-size: var(--hm-text-lg);
-    font-weight: 800;
-    letter-spacing: 0.16em;
-    font-variant-numeric: tabular-nums;
-  }
-
-  small {
-    margin-inline-start: auto;
-    color: var(--hm-color-text-muted);
-    font-size: var(--hm-text-xs);
-  }
-}
-
-// ---- Footer CTA --------------------------------------------------------
 ion-footer {
   background: var(--hm-color-surface-base);
-
-  .cta {
-    padding: var(--hm-space-sm) var(--hm-space-md) var(--hm-space-md);
-    max-width: 440px;
-    margin: 0 auto;
-  }
 
   ion-button {
     --border-radius: var(--hm-radius-md);
     font-weight: 700;
     margin: 0;
+    min-height: 44px;
   }
 }

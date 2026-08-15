@@ -1,61 +1,10 @@
-// Shared primitives (.field, .hm-muted, .hm-tap…) load once globally — see angular.json styles.
-// SEMANTIC TOKENS ONLY — never a literal colour (doc 08; enforced by `npm run lint:colors`).
+// Ionic's own components only — everything else on this page is a Tailwind utility in the template.
 
 ion-content {
   --background: var(--hm-color-surface-base);
 }
 
-.page {
-  padding: var(--hm-space-xl) var(--hm-space-md) var(--hm-space-lg);
-  max-width: 440px;
-  margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-}
-
-// ---- Brand -------------------------------------------------------------
-.brand {
-  text-align: center;
-  margin: var(--hm-space-xl) 0 var(--hm-space-xl);
-
-  .mark {
-    display: grid;
-    place-items: center;
-    width: 76px;
-    height: 76px;
-    margin: 0 auto var(--hm-space-md);
-    border-radius: var(--hm-radius-lg);
-    background: var(--hm-color-brand-primary);
-    color: var(--hm-color-brand-onPrimary);
-
-    ion-icon { font-size: 2.2rem; }
-  }
-
-  h1 {
-    margin: 0;
-    font-size: 1.7rem;
-    font-weight: 800;
-    letter-spacing: -0.03em;
-  }
-
-  .tagline {
-    margin: 0.35rem 0 0;
-    color: var(--hm-color-text-muted);
-    font-size: var(--hm-text-md);
-    text-wrap: balance;
-  }
-}
-
-// ---- Labels ------------------------------------------------------------
-.lbl {
-  display: block;
-  margin: var(--hm-space-lg) 0 var(--hm-space-sm);
-  font-size: var(--hm-text-sm);
-  font-weight: 600;
-  color: var(--hm-color-text-muted);
-}
-
-// ---- Fields ------------------------------------------------------------
+// The field's box has to sit on the host so the country code and the input share one outline.
 .field {
   --background: var(--hm-color-surface-raised);
   --color: var(--hm-color-text-primary);
@@ -66,6 +15,7 @@ ion-content {
   background: var(--hm-color-surface-raised);
   border: 1px solid var(--hm-color-border-subtle);
   border-radius: var(--hm-radius-md);
+  min-height: 44px;
 }
 
 .choice {
@@ -84,52 +34,13 @@ ion-content {
   }
 }
 
-.phone {
-  display: flex;
-  align-items: center;
-
-  .cc {
-    padding-inline: 0.85rem 0.1rem;
-    font-weight: 700;
-    color: var(--hm-color-text-primary);
-    flex: none;
-  }
-
-  ion-input { flex: 1; }
-}
-
-.hint {
-  margin: var(--hm-space-sm) 0 0;
-  font-size: var(--hm-text-xs);
-
-  // A refusal takes the hint's place, so it needs to read as a different KIND of message — the
-  // danger tone plus weight, not just different words in the same grey.
-  &.error {
-    color: var(--hm-color-status-danger);
-    font-weight: 600;
-  }
-}
-
-// ---- Footer CTA --------------------------------------------------------
 ion-footer {
   background: var(--hm-color-surface-base);
-
-  .cta {
-    padding: var(--hm-space-sm) var(--hm-space-md) var(--hm-space-md);
-    max-width: 440px;
-    margin: 0 auto;
-  }
 
   ion-button {
     --border-radius: var(--hm-radius-md);
     font-weight: 700;
     margin: 0;
-  }
-
-  .terms {
-    margin: var(--hm-space-sm) 0 0;
-    text-align: center;
-    font-size: var(--hm-text-xs);
-    text-wrap: balance;
+    min-height: 44px;
   }
 }
