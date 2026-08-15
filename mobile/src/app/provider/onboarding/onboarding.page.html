@@ -9,14 +9,14 @@
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <div class="page">
-    <p class="lead hm-muted">{{ 'pro.setup_lead' | translate }}</p>
+  <div class="mx-auto max-w-3xl px-4 pb-10">
+    <p class="mt-2 text-md leading-snug text-content-muted">{{ 'pro.setup_lead' | translate }}</p>
 
     <!-- Headline: optional. It is what a customer reads first, but nobody should be stopped at the
          door by a blank text field, so it is not required to finish. -->
-    <div class="hm-section-head"><h2>{{ 'pro.setup_headline' | translate }}</h2></div>
+    <h2 class="mt-6 mb-4 text-lg font-extrabold tracking-snug">{{ 'pro.setup_headline' | translate }}</h2>
     <ion-input
-      class="field hm-tap"
+      class="field"
       [value]="headline()"
       (ionInput)="onHeadline($any($event.target).value)"
       [placeholder]="'pro.setup_headline_ph' | translate"
@@ -27,24 +27,31 @@
 
     <!-- Trades: the one required answer. A provider with no listed trade cannot be matched to any
          request at all (P2-04), so this is the difference between a profile and a listing. -->
-    <div class="hm-section-head">
-      <h2>{{ 'pro.setup_trades' | translate }}</h2>
+    <div class="mt-6 mb-4 flex items-center justify-between gap-2">
+      <h2 class="text-lg font-extrabold tracking-snug">{{ 'pro.setup_trades' | translate }}</h2>
       @if (selectedCount() > 0) {
         <span class="hm-pill tone-brand">{{ 'pro.setup_selected' | translate:{ count: selectedCount() } }}</span>
       }
     </div>
-    <p class="hint hm-muted">{{ 'pro.setup_trades_hint' | translate }}</p>
+    <p class="-mt-2 mb-2 text-sm text-content-muted">{{ 'pro.setup_trades_hint' | translate }}</p>
 
     @for (cat of categories(); track cat.id) {
       @if (trades(cat.id).length > 0) {
-        <div class="cat-block">
-          <h3><ion-icon [name]="cat.icon" aria-hidden="true"></ion-icon>{{ cat.label }}</h3>
-          <div class="chips">
+        <div class="mb-4">
+          <h3 class="mb-2 flex items-center gap-1.5 text-sm font-bold text-content-muted">
+            <ion-icon [name]="cat.icon" class="text-md text-brand" aria-hidden="true"></ion-icon>{{ cat.label }}
+          </h3>
+          <div class="flex flex-wrap gap-1.5">
+            <!-- A trade is picked or not picked. FILLED rather than merely tinted when on, so the
+                 state survives a colour-blind reading and a dimmed screen in sunlight — same rule
+                 as the discover category tiles. -->
             @for (trade of trades(cat.id); track trade.id) {
               <button
-                class="chip hm-tap"
+                class="min-h-11 cursor-pointer rounded-pill border px-3 py-2 text-sm font-semibold [font:inherit]"
+                [class]="isSelected(trade.id)
+                  ? 'border-brand bg-brand text-brand-contrast'
+                  : 'border-edge bg-surface-raised text-content'"
                 type="button"
-                [class.on]="isSelected(trade.id)"
                 [attr.aria-pressed]="isSelected(trade.id)"
                 (click)="toggleTrade(trade.id)"
               >
@@ -58,40 +65,42 @@
 
     <!-- How you charge. Stored per listed trade; one answer here rather than one per trade, because
          a provider prices the same way across their work far more often than not. -->
-    <div class="hm-section-head"><h2>{{ 'pro.setup_pricing' | translate }}</h2></div>
+    <h2 class="mt-6 mb-4 text-lg font-extrabold tracking-snug">{{ 'pro.setup_pricing' | translate }}</h2>
     <ion-segment class="choice" [value]="priceModel()">
-      <ion-segment-button class="hm-tap" value="quote_only" (click)="setPriceModel('quote_only')">
+      <ion-segment-button value="quote_only" (click)="setPriceModel('quote_only')">
         <ion-label>{{ 'pro.price_quote_only' | translate }}</ion-label>
       </ion-segment-button>
-      <ion-segment-button class="hm-tap" value="hourly" (click)="setPriceModel('hourly')">
+      <ion-segment-button value="hourly" (click)="setPriceModel('hourly')">
         <ion-label>{{ 'pro.price_hourly' | translate }}</ion-label>
       </ion-segment-button>
-      <ion-segment-button class="hm-tap" value="fixed" (click)="setPriceModel('fixed')">
+      <ion-segment-button value="fixed" (click)="setPriceModel('fixed')">
         <ion-label>{{ 'pro.price_fixed' | translate }}</ion-label>
       </ion-segment-button>
     </ion-segment>
 
     <!-- Where you work. Remote work has no geography at all (doc 06), so choosing it removes the
          service-area question rather than showing a disabled one. -->
-    <div class="hm-section-head"><h2>{{ 'pro.setup_where' | translate }}</h2></div>
+    <h2 class="mt-6 mb-4 text-lg font-extrabold tracking-snug">{{ 'pro.setup_where' | translate }}</h2>
     <ion-segment class="choice" [value]="mode()">
-      <ion-segment-button class="hm-tap" value="onsite" (click)="setMode('onsite')">
+      <ion-segment-button value="onsite" (click)="setMode('onsite')">
         <ion-label>{{ 'discover.mode.onsite' | translate }}</ion-label>
       </ion-segment-button>
-      <ion-segment-button class="hm-tap" value="remote" (click)="setMode('remote')">
+      <ion-segment-button value="remote" (click)="setMode('remote')">
         <ion-label>{{ 'discover.mode.remote' | translate }}</ion-label>
       </ion-segment-button>
     </ion-segment>
 
     @if (mode() === 'onsite') {
-      <div class="area hm-card">
-        <p class="hm-muted">{{ 'pro.setup_area_body' | translate }}</p>
-        <div class="radii">
+      <div class="mt-4 rounded-lg border border-edge bg-surface-raised p-4 shadow-sm">
+        <p class="mt-0 mb-2 text-sm leading-snug text-content-muted">{{ 'pro.setup_area_body' | translate }}</p>
+        <div class="flex flex-wrap gap-1.5">
           @for (km of radii; track km) {
             <button
-              class="chip hm-tap"
+              class="min-h-11 cursor-pointer rounded-pill border px-3 py-2 text-sm font-semibold [font:inherit]"
+              [class]="radiusKm() === km
+                ? 'border-brand bg-brand text-brand-contrast'
+                : 'border-edge bg-surface-raised text-content'"
               type="button"
-              [class.on]="radiusKm() === km"
               [attr.aria-pressed]="radiusKm() === km"
               (click)="setRadius(km)"
             >
@@ -99,8 +108,10 @@
             </button>
           }
         </div>
-        <small class="consent hm-muted">
-          <ion-icon name="location-outline" aria-hidden="true"></ion-icon>
+        <!-- Says plainly that a location permission is about to be asked for, before it is asked
+             for. -->
+        <small class="mt-2 flex items-start gap-1.5 text-xs leading-snug text-content-muted">
+          <ion-icon name="location-outline" class="mt-0.5 flex-none text-brand" aria-hidden="true"></ion-icon>
           {{ 'pro.setup_area_consent' | translate }}
         </small>
       </div>
@@ -109,8 +120,8 @@
 </ion-content>
 
 <ion-footer class="ion-no-border">
-  <div class="cta">
-    <ion-button expand="block" class="hm-tap" [disabled]="!canSubmit()" (click)="submit()">
+  <div class="mx-auto max-w-3xl border-t border-t-edge px-4 py-2">
+    <ion-button expand="block" [disabled]="!canSubmit()" (click)="submit()">
       @if (saving()) {
         <ion-spinner name="crescent"></ion-spinner>
       } @else {

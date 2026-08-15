@@ -5,36 +5,40 @@
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <div class="page">
+  <div class="mx-auto max-w-3xl px-4 pt-2 pb-10">
     <!-- Identity. Without a provider profile the name came out blank and the tier badge was left
          as the only thing under a featureless avatar — the screen introduced you as "Building".
          The signed-in person is known either way, so they are named either way. -->
-    <div class="ident">
-      <div class="hm-avatar id-av accent-brand" aria-hidden="true">
+    <div class="grid place-items-center gap-1 pt-4 pb-2 text-center">
+      <div class="mb-1 grid size-18 place-items-center rounded-full bg-brand text-[1.4rem] font-bold uppercase text-brand-contrast" aria-hidden="true">
         @if (who().initials) {
           {{ who().initials }}
         } @else {
-          <ion-icon name="person-outline"></ion-icon>
+          <ion-icon name="person-outline" class="text-[1.9rem]"></ion-icon>
         }
       </div>
-      <div class="id-name">
-        <b>{{ who().name }}</b>
+      <div class="inline-flex items-center gap-1.5">
+        <b class="text-[1.2rem] font-extrabold tracking-tight">{{ who().name }}</b>
         @if (fullyVerified()) {
-          <ion-icon class="verified" name="shield-checkmark" [attr.aria-label]="'discover.verified' | translate"></ion-icon>
+          <ion-icon class="text-md text-brand" name="shield-checkmark" [attr.aria-label]="'discover.verified' | translate"></ion-icon>
         }
       </div>
       <!-- Reputation belongs to a profile. With no profile there is none to report, and the prompt
            below already says what to do — a status line here would say it a second time. -->
       @if (hasProfile()) {
         @if (hasRating()) {
-          <span class="rating">
+          <span class="inline-flex items-center gap-1 text-md font-bold text-warning">
             <ion-icon name="star" aria-hidden="true"></ion-icon>{{ identity().rating }}
-            <small class="hm-muted">{{ 'provider.rating_count' | translate:{ count: identity().ratingCount } }}</small>
+            <small class="text-content-muted">{{ 'provider.rating_count' | translate:{ count: identity().ratingCount } }}</small>
           </span>
         } @else {
           <!-- The words a CUSTOMER is shown for this same fact. `provider.building` belongs beside
-               a label ("On-time: Too soon"); alone under a name it says nothing. -->
-          <span class="rating none hm-muted">{{ 'provider.unrated' | translate }}</span>
+               a label ("On-time: Too soon"); alone under a name it says nothing.
+
+               Having no rating yet is a neutral fact about a new provider, not a warning about
+               them: the amber belongs to the star, and without one it is the app frowning at
+               someone for being new. -->
+          <span class="inline-flex items-center gap-1 text-md font-semibold text-content-muted">{{ 'provider.unrated' | translate }}</span>
         }
       }
     </div>
@@ -52,120 +56,122 @@
       ></app-empty-state>
     } @else {
 
-    <!-- Verification -->
-    <div class="hm-section-head"><h2>{{ 'pro.verification' | translate }}</h2></div>
-    <!-- Verified or not, this opens the same screen: tier 2 is not the end of the ladder, and a
-         provider who has cleared it may still hold a licence that takes them to tier 3. -->
-    @if (fullyVerified()) {
-      <div class="verif hm-card ok hm-tap" role="button" tabindex="0"
-           (click)="openVerification()" (keyup.enter)="openVerification()">
-        <ion-icon name="shield-checkmark" aria-hidden="true"></ion-icon>
-        <div class="v-text">
-          <b>{{ 'pro.verified_title' | translate }}</b>
-          <small class="hm-muted">{{ 'pro.tier' | translate:{ n: identity().verificationTier } }}</small>
+      <!-- Verification. Verified or not, this opens the same screen: tier 2 is not the end of the
+           ladder, and a provider who has cleared it may still hold a licence that takes them to
+           tier 3. -->
+      <h2 class="mt-6 mb-4 text-lg font-extrabold tracking-snug">{{ 'pro.verification' | translate }}</h2>
+      @if (fullyVerified()) {
+        <div class="flex min-h-11 cursor-pointer items-center gap-2 rounded-lg border border-edge bg-surface-raised p-4 shadow-sm" role="button" tabindex="0"
+             (click)="openVerification()" (keyup.enter)="openVerification()">
+          <ion-icon name="shield-checkmark" class="flex-none text-[1.6rem] text-success" aria-hidden="true"></ion-icon>
+          <div class="min-w-0 flex-1">
+            <b class="text-md">{{ 'pro.verified_title' | translate }}</b>
+            <small class="mt-0.5 block text-xs text-content-muted">{{ 'pro.tier' | translate:{ n: identity().verificationTier } }}</small>
+          </div>
+          <!-- The affordance on the verified card — it still opens the screen, because tier 3 is
+               above tier 2. Sized and coloured as a chevron, not as a second status glyph. -->
+          <ion-icon class="flex-none text-md text-content-muted" name="chevron-forward" aria-hidden="true"></ion-icon>
         </div>
-        <ion-icon class="chev" name="chevron-forward" aria-hidden="true"></ion-icon>
-      </div>
-    } @else {
-      <div class="verif hm-card warn">
-        <ion-icon name="alert-circle" aria-hidden="true"></ion-icon>
-        <div class="v-text">
-          <b>{{ 'pro.verify_title' | translate }}</b>
-          <small class="hm-muted">{{ 'pro.verify_body' | translate }}</small>
+      } @else {
+        <div class="flex items-center gap-2 rounded-lg border border-edge bg-surface-raised p-4 shadow-sm">
+          <ion-icon name="alert-circle" class="flex-none text-[1.6rem] text-warning" aria-hidden="true"></ion-icon>
+          <div class="min-w-0 flex-1">
+            <b class="text-md">{{ 'pro.verify_title' | translate }}</b>
+            <small class="mt-0.5 block text-xs text-content-muted">{{ 'pro.verify_body' | translate }}</small>
+          </div>
+          <ion-button size="small" class="flex-none" (click)="openVerification()">
+            {{ 'pro.verify_cta' | translate }}
+          </ion-button>
         </div>
-        <ion-button size="small" class="hm-tap" (click)="openVerification()">
-          {{ 'pro.verify_cta' | translate }}
-        </ion-button>
-      </div>
-    }
+      }
 
-    <!-- Availability -->
-    <ion-item class="avail hm-card" lines="none">
-      <ion-icon slot="start" name="power-outline" aria-hidden="true"></ion-icon>
-      <ion-label>
-        <b>{{ 'pro.availability' | translate }}</b>
-        <p class="hm-muted">{{ (available() ? 'pro.available_on' : 'pro.available_off') | translate }}</p>
-      </ion-label>
-      <ion-toggle slot="end" [checked]="available()" (ionChange)="toggleAvailability($any($event.detail).checked)"></ion-toggle>
-    </ion-item>
+      <!-- Availability -->
+      <ion-item class="avail mt-4 rounded-lg border border-edge shadow-sm" lines="none">
+        <ion-icon slot="start" name="power-outline" aria-hidden="true"></ion-icon>
+        <ion-label>
+          <b class="text-md">{{ 'pro.availability' | translate }}</b>
+          <p class="mt-0.5 mb-0 text-xs text-content-muted">{{ (available() ? 'pro.available_on' : 'pro.available_off') | translate }}</p>
+        </ion-label>
+        <ion-toggle slot="end" [checked]="available()" (ionChange)="toggleAvailability($any($event.detail).checked)"></ion-toggle>
+      </ion-item>
 
-    <!-- Skills -->
-    <div class="hm-section-head"><h2>{{ 'provider.skills' | translate }}</h2></div>
-    @if (identity().skills.length) {
-      <div class="chips">
-        @for (skill of identity().skills; track skill) {
-          <span class="chip">{{ skill }}</span>
-        }
-      </div>
-    } @else {
-      <app-empty-state
-        inline="true"
-        icon="hammer-outline"
-        heading="pro.no_skills"
-        body="pro.no_skills_body"
-      ></app-empty-state>
-    }
+      <!-- Skills -->
+      <h2 class="mt-6 mb-4 text-lg font-extrabold tracking-snug">{{ 'provider.skills' | translate }}</h2>
+      @if (identity().skills.length) {
+        <div class="flex flex-wrap gap-1.5">
+          @for (skill of identity().skills; track skill) {
+            <span class="rounded-pill border border-edge bg-surface-sunken px-2.5 py-1 text-xs font-semibold text-content">{{ skill }}</span>
+          }
+        </div>
+      } @else {
+        <app-empty-state
+          inline="true"
+          icon="hammer-outline"
+          heading="pro.no_skills"
+          body="pro.no_skills_body"
+        ></app-empty-state>
+      }
 
-    <!-- Service area. There is no city stored on the row, so we state the radius rather than
-         invent a place name (P1-08 stores a centre point + radius). -->
-    <div class="hm-section-head"><h2>{{ 'pro.service_area' | translate }}</h2></div>
-    @if (identity().serviceAreaRadiusKm !== null) {
-      <p class="area hm-card">
-        <ion-icon name="map-outline" aria-hidden="true"></ion-icon>
-        {{ 'pro.service_radius' | translate:{ km: identity().serviceAreaRadiusKm } }}
-      </p>
-    } @else {
-      <p class="area hm-card hm-muted">
-        <ion-icon name="map-outline" aria-hidden="true"></ion-icon>
-        {{ 'pro.no_service_area' | translate }}
-      </p>
-    }
+      <!-- Service area. There is no city stored on the row, so we state the radius rather than
+           invent a place name (P1-08 stores a centre point + radius). -->
+      <h2 class="mt-6 mb-4 text-lg font-extrabold tracking-snug">{{ 'pro.service_area' | translate }}</h2>
+      @if (identity().serviceAreaRadiusKm !== null) {
+        <p class="m-0 flex items-center gap-2 rounded-lg border border-edge bg-surface-raised p-4 text-md shadow-sm">
+          <ion-icon name="map-outline" class="flex-none text-[1.1rem] text-brand" aria-hidden="true"></ion-icon>
+          {{ 'pro.service_radius' | translate:{ km: identity().serviceAreaRadiusKm } }}
+        </p>
+      } @else {
+        <p class="m-0 flex items-center gap-2 rounded-lg border border-edge bg-surface-raised p-4 text-md text-content-muted shadow-sm">
+          <ion-icon name="map-outline" class="flex-none text-[1.1rem] text-brand" aria-hidden="true"></ion-icon>
+          {{ 'pro.no_service_area' | translate }}
+        </p>
+      }
 
     }
 
     <!-- Preferences. Outside the profile/no-profile split: language, theme and logging out belong
          to whoever is holding the phone, not to a provider profile. -->
-    <div class="hm-section-head"><h2>{{ 'account.language' | translate }}</h2></div>
+    <h2 class="mt-6 mb-4 text-lg font-extrabold tracking-snug">{{ 'account.language' | translate }}</h2>
     <ion-segment class="choice" [value]="locale()">
       @for (code of supported; track code) {
-        <ion-segment-button class="hm-tap" [value]="code" (click)="setLocale(code)">
+        <ion-segment-button [value]="code" (click)="setLocale(code)">
           <ion-label>{{ (code === 'fr' ? 'language.french' : 'language.english') | translate }}</ion-label>
         </ion-segment-button>
       }
     </ion-segment>
 
-    <div class="hm-section-head"><h2>{{ 'account.appearance' | translate }}</h2></div>
+    <h2 class="mt-6 mb-4 text-lg font-extrabold tracking-snug">{{ 'account.appearance' | translate }}</h2>
     <ion-segment class="choice" [value]="theme()">
-      <ion-segment-button class="hm-tap" value="system" (click)="setTheme('system')">
+      <ion-segment-button value="system" (click)="setTheme('system')">
         <ion-label>{{ 'account.theme_system' | translate }}</ion-label>
       </ion-segment-button>
-      <ion-segment-button class="hm-tap" value="light" (click)="setTheme('light')">
+      <ion-segment-button value="light" (click)="setTheme('light')">
         <ion-label>{{ 'account.theme_light' | translate }}</ion-label>
       </ion-segment-button>
-      <ion-segment-button class="hm-tap" value="dark" (click)="setTheme('dark')">
+      <ion-segment-button value="dark" (click)="setTheme('dark')">
         <ion-label>{{ 'account.theme_dark' | translate }}</ion-label>
       </ion-segment-button>
     </ion-segment>
 
     <!-- Account actions -->
-    <ion-list class="actions hm-card" lines="full">
-      <ion-item button="true" detail="true" class="hm-tap" (click)="openClients()">
+    <ion-list class="actions mt-6 overflow-hidden rounded-lg border border-edge shadow-sm" lines="full">
+      <ion-item button="true" detail="true" class="min-h-11" (click)="openClients()">
         <ion-icon slot="start" name="people-outline" aria-hidden="true"></ion-icon>
         <ion-label>{{ 'crm.title' | translate }}</ion-label>
       </ion-item>
-      <ion-item button="true" detail="true" class="hm-tap" (click)="openSafety()">
+      <ion-item button="true" detail="true" class="min-h-11" (click)="openSafety()">
         <ion-icon slot="start" name="shield-outline" aria-hidden="true"></ion-icon>
         <ion-label>{{ 'safety.title' | translate }}</ion-label>
       </ion-item>
-      <ion-item button="true" detail="true" class="hm-tap" (click)="openPrivacy()">
+      <ion-item button="true" detail="true" class="min-h-11" (click)="openPrivacy()">
         <ion-icon slot="start" name="lock-closed-outline" aria-hidden="true"></ion-icon>
         <ion-label>{{ 'rights.title' | translate }}</ion-label>
       </ion-item>
-      <ion-item button="true" detail="true" class="hm-tap" (click)="backToCustomer()">
+      <ion-item button="true" detail="true" class="min-h-11" (click)="backToCustomer()">
         <ion-icon slot="start" name="swap-horizontal-outline" aria-hidden="true"></ion-icon>
         <ion-label>{{ 'pro.back_to_customer' | translate }}</ion-label>
       </ion-item>
-      <ion-item button="true" detail="true" class="hm-tap" (click)="logout()">
+      <ion-item button="true" detail="true" class="min-h-11" (click)="logout()">
         <ion-icon slot="start" name="log-out-outline" aria-hidden="true"></ion-icon>
         <ion-label>{{ 'auth.logout' | translate }}</ion-label>
       </ion-item>

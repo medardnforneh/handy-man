@@ -1,119 +1,19 @@
-// Provider client book (P7-08). Shared primitives (.hm-card, .hm-pill, .hm-empty…) load globally.
-// SEMANTIC TOKENS ONLY — never a literal colour (doc 08; enforced by `npm run lint:colors`).
+// Provider client book (P7-08).
+// Ionic's own components only — everything else on this page is a Tailwind utility in the template.
 
 ion-toolbar {
   --background: var(--hm-color-surface-base);
   --border-width: 0;
 }
 
-ion-title { font-weight: 800; letter-spacing: -0.02em; }
-
-.page {
-  padding: var(--hm-space-sm) var(--hm-space-md) var(--hm-space-xl);
-  max-width: 760px;
-  margin: 0 auto;
+ion-title {
+  font-weight: 800;
+  letter-spacing: -0.02em;
 }
 
 .crm-tabs {
   --background: var(--hm-color-surface-sunken);
   margin-bottom: var(--hm-space-md);
-}
-
-// ---- Work funnel (P7-08) -----------------------------------------------
-// Four rows with bars on a shared scale. Hand-drawn divs, not a chart library: four numbers do not
-// justify a charting payload on a low-end Android over a slow network.
-.funnel {
-  display: flex;
-  flex-direction: column;
-  gap: var(--hm-space-md);
-
-  .stage {
-    // A stage with nothing in it stays on screen — the shape of the funnel is the information, and
-    // hiding empty stages would quietly redraw it.
-    &.none { opacity: 0.55; }
-  }
-
-  .stage-head {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: var(--hm-space-sm);
-  }
-
-  .stage-name {
-    font-size: var(--hm-text-md);
-    letter-spacing: -0.01em;
-    overflow-wrap: anywhere;
-  }
-
-  .stage-count {
-    flex: none;
-    font-size: 1.15rem;
-    font-weight: 800;
-    letter-spacing: -0.02em;
-    font-variant-numeric: tabular-nums;
-  }
-
-  .bar-track {
-    height: 10px;
-    margin-top: 0.4rem;
-    border-radius: var(--hm-radius-pill);
-    background: var(--hm-color-surface-sunken);
-    overflow: hidden;
-  }
-
-  .bar {
-    height: 100%;
-    border-radius: var(--hm-radius-pill);
-    background: var(--hm-color-brand-primary);
-    transition: width 240ms ease;
-  }
-
-  .stage-foot {
-    margin-top: 0.3rem;
-    min-height: 1rem;   // reserved, so rows do not jump as values load or a stage goes unpriced
-  }
-
-  .stage-value {
-    font-size: var(--hm-text-sm);
-    font-weight: 700;
-    font-variant-numeric: tabular-nums;
-
-    small { font-weight: 600; font-size: var(--hm-text-2xs); opacity: 0.7; margin-inline-start: 0.15rem; }
-    &.none { font-weight: 600; color: var(--hm-color-text-muted); }
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .funnel .bar { transition: none; }
-}
-
-// ---- Summary tiles -----------------------------------------------------
-// 3 across on anything roomy, 2 across on a phone (the money tile spans the row so a seven-figure
-// lifetime value never has to shrink to fit a third of 360px).
-.summary {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--hm-space-sm);
-  margin-bottom: var(--hm-space-md);
-
-  .tile {
-    padding: var(--hm-space-md) var(--hm-space-sm);
-    text-align: center;
-    min-width: 0;
-
-    b {
-      display: block;
-      font-size: 1.35rem;
-      font-weight: 800;
-      letter-spacing: -0.02em;
-      overflow-wrap: anywhere;
-
-      em { font-style: normal; font-size: var(--hm-text-xs); font-weight: 600; opacity: 0.7; }
-    }
-
-    small { display: block; font-size: var(--hm-text-xs); margin-top: 0.15rem; }
-  }
 }
 
 ion-searchbar {
@@ -123,216 +23,24 @@ ion-searchbar {
   padding: 0 0 var(--hm-space-sm);
 }
 
-// ---- One client --------------------------------------------------------
-.client {
-  padding: var(--hm-space-md);
-  margin-bottom: var(--hm-space-sm);
-
-  // A blocked row stays legible but visibly stands down — it is a row the provider can no longer act
-  // on, and it should read that way at a glance without disappearing from their own history.
-  &.blocked .who { opacity: 0.62; }
-
-  .who {
-    display: flex;
-    align-items: flex-start;
-    gap: var(--hm-space-sm);
-  }
-
-  .av {
-    width: 42px;
-    height: 42px;
-    font-size: var(--hm-text-md);
-  }
-
-  .ident {
-    flex: 1;
-    min-width: 0;
-  }
-
-  .name {
-    display: block;
-    font-size: var(--hm-text-md);
-    letter-spacing: -0.01em;
-    overflow-wrap: anywhere;
-  }
-
-  .meta {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;          // three facts wrap onto a second line rather than pushing the money off
-    gap: 0.3rem;
-    font-size: var(--hm-text-xs);
-    margin-top: 0.15rem;
-
-    .dot {
-      width: 0.2rem;
-      height: 0.2rem;
-      border-radius: 50%;
-      background: currentColor;
-      opacity: 0.6;
-    }
-  }
-
-  .ltv {
-    flex: none;
-    text-align: end;
-    line-height: 1.15;
-
-    b { font-size: var(--hm-text-md); font-weight: 800; letter-spacing: -0.02em; }
-    small { display: block; font-size: var(--hm-text-2xs); }
-  }
-
-  // One line, right-aligned. Named `client-acts`, NOT `.acts`: that class is a global primitive in
-  // customer/ui.scss which stretches any `ion-button` inside it (`flex: 1`) and laid this row out on
-  // the cross axis, so the two controls stacked and centred. `flex-direction` is declared rather
-  // than left to the default for the same reason — the axis is load-bearing here.
-  .client-acts {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: flex-end;
-    flex-wrap: nowrap;
-    gap: var(--hm-space-sm);
-    margin-top: var(--hm-space-sm);
-    padding-top: var(--hm-space-sm);
-    border-top: 1px solid var(--hm-color-border-subtle);
-  }
-
-  .nudge {
-    --border-radius: var(--hm-radius-md);
-    --border-color: var(--hm-color-brand-primary);
-    --color: var(--hm-color-brand-primary);
-    --padding-start: var(--hm-space-md);
-    --padding-end: var(--hm-space-md);
-    // Sentence case: SHOUTING a marketing action on every row reads as pressure, and the uppercase
-    // label was also the widest thing in the card.
-    text-transform: none;
-    letter-spacing: 0;
-    font-size: var(--hm-text-sm);
-    font-weight: 700;
-    height: 34px;
-    min-height: 34px;   // beats .hm-tap's 44px here — the row's own hit area is comfortable
-    margin: 0;
-  }
-
-  // Icon-only overflow. Kept to the 44px tap target even though the glyph is small.
-  .more {
-    display: grid;
-    place-items: center;
-    flex: none;
-    width: 40px;
-    height: 34px;
-    padding: 0;
-    background: none;
-    border: 1px solid var(--hm-color-border-subtle);
-    border-radius: var(--hm-radius-md);
-    color: var(--hm-color-text-muted);
-    font-size: var(--hm-text-lg);
-    cursor: pointer;
-
-    &[disabled] { opacity: 0.5; cursor: default; }
-  }
-}
-
-// ---- Empty / unreachable ----------------------------------------------
-.hm-empty.first {
-  padding-top: var(--hm-space-xl);
-
-  h2 {
-    margin: 0 0 var(--hm-space-xs);
-    font-size: var(--hm-text-lg);
-    color: var(--hm-color-text-primary);
-  }
-
-  p { margin: 0; font-size: var(--hm-text-md); }
-}
-
-.retry {
+ion-button {
   --border-radius: var(--hm-radius-md);
-  max-width: 260px;
-  margin: 0 auto;
+  font-weight: 700;
+  margin: 0;
 }
 
-.foot {
-  font-size: var(--hm-text-xs);
-  text-align: center;
-  margin: var(--hm-space-lg) 0 0;
-  padding: 0 var(--hm-space-sm);
-}
-
-// ---- Loading skeletons -------------------------------------------------
-@keyframes hm-pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.45; }
-}
-
-.sk-strip {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--hm-space-sm);
-  margin-bottom: var(--hm-space-md);
-}
-
-.sk-tile,
-.sk-av,
-.sk-line {
-  background: var(--hm-color-surface-sunken);
-  border-radius: var(--hm-radius-md);
-  animation: hm-pulse 1.4s ease-in-out infinite;
-}
-
-.sk-tile { height: 74px; }
-
-.sk-row {
-  display: flex;
-  align-items: center;
-  gap: var(--hm-space-sm);
-  padding: var(--hm-space-md);
-  margin-bottom: var(--hm-space-sm);
-}
-
-.sk-av { width: 42px; height: 42px; flex: none; }
-
-.sk-lines { flex: 1; min-width: 0; }
-
-.sk-line {
-  display: block;
-  height: 10px;
-  border-radius: var(--hm-radius-sm);
-
-  &.w60 { width: 60%; }
-  &.w40 { width: 40%; margin-top: 0.5rem; }
-}
-
-// ---- Small phones ------------------------------------------------------
-// The money tile takes the full second row so it never has to shrink; rows keep their shape.
-@media (max-width: 420px) {
-  .summary,
-  .sk-strip {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .summary .tile.wide,
-  .sk-strip .sk-tile:last-child {
-    grid-column: 1 / -1;
-  }
-
-  .summary .tile b { font-size: 1.2rem; }
-}
-
-@media (max-width: 360px) {
-  .page { padding-inline: var(--hm-space-sm); }
-
-  .client {
-    padding: var(--hm-space-sm);
-
-    .ltv b { font-size: var(--hm-text-md); }
-  }
-}
-
-// Respect a user who has asked for less motion — the skeleton settles rather than pulses.
-@media (prefers-reduced-motion: reduce) {
-  .sk-tile,
-  .sk-av,
-  .sk-line { animation: none; }
+// The follow-up nudge. Sentence case: SHOUTING a marketing action on every row reads as pressure,
+// and the uppercase label was also the widest thing in the card. Its 34px height is deliberate and
+// deliberately under the app's 44px floor — the row's own hit area is comfortable, and a 44px
+// button here made every card look like a form.
+.nudge {
+  --border-color: var(--hm-color-brand-primary);
+  --color: var(--hm-color-brand-primary);
+  --padding-start: var(--hm-space-md);
+  --padding-end: var(--hm-space-md);
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: var(--hm-text-sm);
+  height: 34px;
+  min-height: 34px;
 }

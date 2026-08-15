@@ -9,53 +9,56 @@
 
 <ion-content [fullscreen]="true">
   @if (lead(); as l) {
-    <div class="page">
+    <div class="mx-auto max-w-3xl px-4 pb-10">
       <!-- Request -->
-      <h1>{{ l.title }}</h1>
-      <div class="meta hm-muted">
+      <h1 class="mt-2 mb-1.5 text-[1.3rem] font-extrabold tracking-tight text-balance">{{ l.title }}</h1>
+      <div class="flex flex-wrap items-center gap-1.5 text-sm text-content-muted">
         @if (l.skill) {
           <span>{{ l.skill }}</span>
-          <span class="dot" aria-hidden="true"></span>
+          <span class="size-[3px] flex-none rounded-full bg-edge-strong" aria-hidden="true"></span>
         }
         @if (l.area) {
-          <span><ion-icon name="location-outline" aria-hidden="true"></ion-icon>{{ l.area }}</span>
-          <span class="dot" aria-hidden="true"></span>
+          <span><ion-icon name="location-outline" class="me-0.5 -mb-px" aria-hidden="true"></ion-icon>{{ l.area }}</span>
+          <span class="size-[3px] flex-none rounded-full bg-edge-strong" aria-hidden="true"></span>
         }
         <span>{{ l.postedAgo }}</span>
       </div>
 
-      <div class="budget-row">
+      <div class="my-4 flex items-center justify-between gap-2 text-md">
         @if (l.budgetMinor) {
-          <span class="hm-muted">{{ 'pro.customer_budget' | translate }}</span>
-          <span class="budget">{{ l.budgetMinor | money }} <small>{{ 'money.currency' | translate }}</small></span>
+          <span class="text-content-muted">{{ 'pro.customer_budget' | translate }}</span>
+          <span class="font-extrabold tabular-nums">
+            {{ l.budgetMinor | money }} <small class="ms-0.5 text-2xs font-semibold text-content-muted">{{ 'money.currency' | translate }}</small>
+          </span>
         } @else {
           <span class="hm-pill tone-neutral">{{ 'pro.quote_requested' | translate }}</span>
         }
       </div>
 
-      <p class="details hm-card">{{ l.details }}</p>
+      <p class="m-0 rounded-lg border border-edge bg-surface-raised p-4 text-md leading-relaxed shadow-sm">{{ l.details }}</p>
 
       <!-- Two honest answers to an offer: take it at the offered price, or price it up (doc 06). -->
-      <p class="accept-note hm-muted">
-        <ion-icon name="information-circle-outline" aria-hidden="true"></ion-icon>
+      <p class="mt-4 flex items-start gap-1.5 text-sm leading-snug text-content-muted">
+        <ion-icon name="information-circle-outline" class="mt-0.5 flex-none text-lg" aria-hidden="true"></ion-icon>
         {{ 'pro.answer_note' | translate }}
       </p>
     </div>
   } @else {
-    <div class="page">
-      <p class="hm-empty">{{ 'pro.lead_unavailable' | translate }}</p>
+    <div class="mx-auto max-w-3xl px-4 pb-10">
+      <p class="px-4 py-8 text-center text-md text-content-muted">{{ 'pro.lead_unavailable' | translate }}</p>
     </div>
   }
 </ion-content>
 
 @if (lead()) {
   <ion-footer class="ion-no-border">
-    <div class="cta two">
-      <ion-button expand="block" fill="outline" class="hm-tap" [disabled]="busy()" (click)="openQuote()">
+    <!-- Two equal answers to an offer: quote it, or accept it. -->
+    <div class="mx-auto grid max-w-3xl grid-cols-2 gap-2 border-t border-t-edge px-4 py-2 max-[420px]:grid-cols-1">
+      <ion-button expand="block" fill="outline" [disabled]="busy()" (click)="openQuote()">
         <ion-icon name="document-text-outline" slot="start" aria-hidden="true"></ion-icon>
         {{ 'pro.send_quote' | translate }}
       </ion-button>
-      <ion-button expand="block" class="hm-tap" [disabled]="busy()" (click)="accept()">
+      <ion-button expand="block" [disabled]="busy()" (click)="accept()">
         <ion-icon name="checkmark-circle-outline" slot="start" aria-hidden="true"></ion-icon>
         {{ 'pro.accept_offer' | translate }}
       </ion-button>
@@ -76,14 +79,15 @@
     </ion-header>
 
     <ion-content>
-      <div class="sheet">
+      <div class="mx-auto max-w-3xl px-4 pt-4 pb-10">
         <!-- Lines -->
-        <div class="hm-section-head"><h2>{{ 'pro.quote_lines' | translate }}</h2></div>
+        <h2 class="mt-6 mb-4 text-lg font-extrabold tracking-snug">{{ 'pro.quote_lines' | translate }}</h2>
         @for (line of lines(); track line.id) {
-          <div class="qline hm-card">
-            <div class="q-top">
+          <!-- One quote line: kind + description on top, quantity/price/total beneath. -->
+          <div class="mb-2 rounded-lg border border-edge bg-surface-raised p-2 shadow-sm">
+            <div class="mb-2 grid grid-cols-[8.5rem_1fr_auto] items-center gap-2 max-[480px]:grid-cols-[1fr_auto]">
               <select
-                class="finput qkind"
+                class="finput max-[480px]:col-span-full"
                 [ngModel]="line.kind"
                 (ngModelChange)="updateLine(line.id, { kind: $event })"
                 [attr.aria-label]="'pro.line_kind' | translate"
@@ -93,7 +97,7 @@
                 }
               </select>
               <input
-                class="finput qlabel"
+                class="finput"
                 [ngModel]="line.label"
                 (ngModelChange)="updateLine(line.id, { label: $event })"
                 [placeholder]="'pro.line_label_ph' | translate"
@@ -101,14 +105,14 @@
               />
               <button
                 type="button"
-                class="qdel hm-tap"
+                class="grid size-8 cursor-pointer place-items-center rounded-full border-0 bg-transparent text-[1.1rem] text-content-muted hover:bg-surface-sunken hover:text-danger"
                 [attr.aria-label]="'work.remove' | translate"
                 (click)="removeLine(line.id)"
               ><ion-icon name="close" aria-hidden="true"></ion-icon></button>
             </div>
-            <div class="q-bot">
-              <label class="qf">
-                <span class="hm-muted">{{ 'pro.line_qty' | translate }}</span>
+            <div class="grid grid-cols-[5rem_1fr_auto] items-end gap-2">
+              <label class="block min-w-0">
+                <span class="mb-0.5 block text-xs text-content-muted">{{ 'pro.line_qty' | translate }}</span>
                 <input
                   class="finput"
                   type="number"
@@ -118,8 +122,8 @@
                   (ngModelChange)="updateLine(line.id, { quantity: +$event })"
                 />
               </label>
-              <label class="qf">
-                <span class="hm-muted">{{ 'pro.line_unit_price' | translate }}</span>
+              <label class="block min-w-0">
+                <span class="mb-0.5 block text-xs text-content-muted">{{ 'pro.line_unit_price' | translate }}</span>
                 <input
                   class="finput"
                   type="number"
@@ -128,24 +132,33 @@
                   (ngModelChange)="updateLine(line.id, { unitPriceMinor: +$event })"
                 />
               </label>
-              <span class="qtotal">{{ lineTotal(line) | money }} <small>{{ 'money.currency' | translate }}</small></span>
+              <span class="whitespace-nowrap pb-2.5 text-md font-bold">
+                {{ lineTotal(line) | money }} <small class="text-2xs font-semibold text-content-muted">{{ 'money.currency' | translate }}</small>
+              </span>
             </div>
           </div>
         }
-        <button type="button" class="ghost hm-tap" (click)="addLine()">
-          <ion-icon name="add" aria-hidden="true"></ion-icon>
+        <button
+          type="button"
+          class="mb-4 flex w-full min-h-11 cursor-pointer items-center justify-center gap-1.5 rounded-md border border-dashed border-edge-strong bg-transparent px-4 py-2.5 text-sm font-semibold text-content-muted hover:border-brand hover:text-content"
+          (click)="addLine()"
+        >
+          <ion-icon name="add" class="text-[1.1rem] text-brand" aria-hidden="true"></ion-icon>
           <span>{{ 'pro.add_line' | translate }}</span>
         </button>
 
-        <!-- The server computes this from the lines; showing it here keeps the price honest. -->
-        <div class="subtotal hm-card">
+        <!-- The server computes this from the lines; showing it here keeps the price honest. It is
+             never an input. -->
+        <div class="mb-4 flex items-baseline justify-between gap-2 rounded-lg border border-edge bg-surface-raised p-4 text-md shadow-sm">
           <span>{{ 'pro.subtotal' | translate }}</span>
-          <b>{{ subtotalMinor() | money }} <small>{{ 'money.currency' | translate }}</small></b>
+          <b class="text-[1.15rem] font-extrabold tracking-snug">
+            {{ subtotalMinor() | money }} <small class="text-xs font-semibold text-content-muted">{{ 'money.currency' | translate }}</small>
+          </b>
         </div>
 
         <!-- Deposit -->
-        <label class="field">
-          <span class="flabel">{{ 'pro.deposit' | translate }}</span>
+        <label class="mb-4 block">
+          <span class="mb-1.5 block text-sm font-bold text-content-muted">{{ 'pro.deposit' | translate }}</span>
           <input
             class="finput"
             type="number"
@@ -153,12 +166,12 @@
             [ngModel]="deposit()"
             (ngModelChange)="deposit.set(+$event)"
           />
-          <small class="hm-muted fhelp">{{ 'pro.deposit_hint' | translate }}</small>
+          <small class="mt-1 block text-xs text-content-muted">{{ 'pro.deposit_hint' | translate }}</small>
         </label>
 
         <!-- Validity -->
-        <label class="field">
-          <span class="flabel">{{ 'pro.valid_until' | translate }}</span>
+        <label class="mb-4 block">
+          <span class="mb-1.5 block text-sm font-bold text-content-muted">{{ 'pro.valid_until' | translate }}</span>
           <input
             class="finput"
             type="date"
@@ -168,10 +181,10 @@
         </label>
 
         <!-- Notes -->
-        <label class="field">
-          <span class="flabel">{{ 'pro.message' | translate }}</span>
+        <label class="mb-4 block">
+          <span class="mb-1.5 block text-sm font-bold text-content-muted">{{ 'pro.message' | translate }}</span>
           <textarea
-            class="ftext"
+            class="finput resize-y leading-snug"
             rows="3"
             [ngModel]="notes()"
             (ngModelChange)="notes.set($event)"
@@ -180,7 +193,7 @@
         </label>
 
         @if (showErrors()) {
-          <p class="err">
+          <p class="mb-4 text-sm font-semibold text-danger">
             @if (depositTooBig()) {
               {{ 'pro.deposit_too_big' | translate }}
             } @else {
@@ -192,8 +205,8 @@
     </ion-content>
 
     <ion-footer class="ion-no-border">
-      <div class="cta">
-        <ion-button expand="block" class="hm-tap" [disabled]="busy()" (click)="send()">
+      <div class="mx-auto max-w-3xl border-t border-t-edge px-4 py-2">
+        <ion-button expand="block" [disabled]="busy()" (click)="send()">
           {{ 'pro.send_quote' | translate }}
         </ion-button>
       </div>

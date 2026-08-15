@@ -1,5 +1,4 @@
-// Shared primitives (.hm-card, .hm-pill, .hm-tap…) load once globally — see angular.json styles.
-// SEMANTIC TOKENS ONLY — never a literal colour.
+// Ionic's own components only — everything else on this page is a Tailwind utility in the template.
 
 ion-toolbar {
   --background: var(--hm-color-surface-base);
@@ -11,23 +10,6 @@ ion-title {
   letter-spacing: -0.02em;
 }
 
-.page {
-  padding: 0 var(--hm-space-md) var(--hm-space-xl);
-  max-width: 720px;
-  margin: 0 auto;
-}
-
-.lead {
-  margin: var(--hm-space-sm) 0 0;
-  font-size: var(--hm-text-md);
-  line-height: 1.45;
-}
-
-.hint {
-  margin: calc(var(--hm-space-sm) * -1) 0 var(--hm-space-sm);
-  font-size: var(--hm-text-sm);
-}
-
 .field {
   --background: var(--hm-color-surface-raised);
   --color: var(--hm-color-text-primary);
@@ -36,52 +18,7 @@ ion-title {
   --padding-end: var(--hm-space-md);
   border: 1px solid var(--hm-color-border-subtle);
   border-radius: var(--hm-radius-md);
-}
-
-.cat-block {
-  margin-bottom: var(--hm-space-md);
-
-  h3 {
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    margin: 0 0 0.45rem;
-    font-size: var(--hm-text-sm);
-    font-weight: 700;
-    letter-spacing: 0.01em;
-    color: var(--hm-color-text-muted);
-
-    ion-icon {
-      color: var(--hm-color-brand-primary);
-      font-size: var(--hm-text-md);
-    }
-  }
-}
-
-.chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
-}
-
-// A trade is picked or not picked. Filled rather than merely tinted when on, so the state survives
-// a colour-blind reading and a dimmed screen in sunlight — same rule as the discover category tiles.
-.chip {
-  padding: 0.5rem 0.8rem;
-  border-radius: var(--hm-radius-pill);
-  border: 1px solid var(--hm-color-border-subtle);
-  background: var(--hm-color-surface-raised);
-  color: var(--hm-color-text-primary);
-  font: inherit;
-  font-size: var(--hm-text-sm);
-  font-weight: 600;
-  cursor: pointer;
-
-  &.on {
-    background: var(--hm-color-brand-primary);
-    border-color: var(--hm-color-brand-primary);
-    color: var(--hm-color-brand-onPrimary);
-  }
+  min-height: 44px;
 }
 
 .choice {
@@ -100,53 +37,14 @@ ion-title {
   }
 }
 
-.area {
-  margin-top: var(--hm-space-md);
-  padding: var(--hm-space-md);
-
-  p {
-    margin: 0 0 var(--hm-space-sm);
-    font-size: var(--hm-text-sm);
-    line-height: 1.45;
-  }
-}
-
-.radii {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
-}
-
-// Says plainly that a location permission is about to be asked for, before it is asked for.
-.consent {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.35rem;
-  margin-top: var(--hm-space-sm);
-  font-size: var(--hm-text-xs);
-  line-height: 1.4;
-
-  ion-icon {
-    flex: none;
-    margin-top: 0.1rem;
-    color: var(--hm-color-brand-primary);
-  }
-}
-
 ion-footer {
   background: var(--hm-color-surface-base);
-
-  .cta {
-    padding: var(--hm-space-sm) var(--hm-space-md);
-    max-width: 720px;
-    margin: 0 auto;
-    border-top: 1px solid var(--hm-color-border-subtle);
-  }
 
   ion-button {
     --border-radius: var(--hm-radius-md);
     font-weight: 700;
     margin: 0;
+    min-height: 44px;
   }
 
   ion-spinner {

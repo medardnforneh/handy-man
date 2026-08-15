@@ -19,7 +19,7 @@
       <ion-list lines="none">
         @for (item of items; track item.tab) {
           <ion-item
-            class="hm-tap"
+            class="min-h-11 min-w-11"
             [routerLink]="['/tabs', item.tab]"
             routerLinkActive="active"
             [detail]="false"
@@ -36,7 +36,7 @@
   <ion-tabs id="tabs-content">
     <ion-tab-bar slot="bottom">
       @for (item of items; track item.tab) {
-        <ion-tab-button [tab]="item.tab" class="hm-tap">
+        <ion-tab-button [tab]="item.tab" class="min-h-11 min-w-11">
           <ion-icon [name]="item.icon" aria-hidden="true"></ion-icon>
           <ion-label>{{ item.label | translate }}</ion-label>
         </ion-tab-button>

@@ -1,31 +1,11 @@
-// Shared primitives (.hm-card, .hm-pill, .hm-avatar, .hm-empty…) load globally — see angular.json.
-// SEMANTIC TOKENS ONLY — never a literal colour (doc 08; enforced by `npm run lint:colors`).
+// Ionic's own components only — everything else on this page is a Tailwind utility in the template.
 
 ion-toolbar {
   --background: var(--hm-color-surface-base);
   --border-width: 0;
 }
 
-ion-title { font-weight: 800; letter-spacing: -0.02em; }
-
-.page {
-  padding: var(--hm-space-sm) var(--hm-space-md) var(--hm-space-xl);
-  max-width: 720px;
-  margin: 0 auto;
-}
-
-.work {
-  display: flex;
-  align-items: center;
-  gap: var(--hm-space-sm);
-  width: 100%;
-  padding: var(--hm-space-sm) var(--hm-space-md);
-  margin-bottom: var(--hm-space-sm);
-  text-align: start;
-  color: inherit;
-  cursor: pointer;
-
-  .work-av { width: 40px; height: 40px; border-radius: 50%; font-size: var(--hm-text-sm); text-transform: uppercase; }
-  .work-info { flex: 1; min-width: 0; b { font-size: var(--hm-text-md); } small { display: block; font-size: var(--hm-text-xs); } }
-  .hm-pill { flex: none; }
+ion-title {
+  font-weight: 800;
+  letter-spacing: -0.02em;
 }

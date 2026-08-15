@@ -5,32 +5,41 @@
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <div class="page hm-page-fill">
+  <div class="flex min-h-full flex-col mx-auto max-w-3xl px-4 pt-2 pb-10">
     @for (lead of leads(); track lead.id) {
-      <button class="lead hm-card hm-tap" type="button" (click)="openLead(lead)">
-        <div [class]="'hm-avatar lead-av accent-' + lead.accent" aria-hidden="true">
+      <button
+        class="mb-2 flex w-full min-h-11 cursor-pointer gap-2 rounded-lg border border-edge bg-surface-raised p-4 text-start text-inherit shadow-sm"
+        type="button"
+        (click)="openLead(lead)"
+      >
+        <div
+          [class]="'grid size-11 flex-none place-items-center rounded-md text-[1.2rem] text-brand-contrast accent-' + lead.accent"
+          aria-hidden="true"
+        >
           <ion-icon name="briefcase" aria-hidden="true"></ion-icon>
         </div>
-        <div class="lead-info">
-          <b>{{ lead.title }}</b>
-          <div class="lead-meta hm-muted">
+        <div class="min-w-0 flex-1">
+          <b class="block text-md">{{ lead.title }}</b>
+          <div class="mt-0.5 flex flex-wrap items-center gap-1.5 text-xs text-content-muted">
             @if (lead.skill) {
               <span>{{ lead.skill }}</span>
-              <span class="dot" aria-hidden="true"></span>
+              <span class="size-[3px] flex-none rounded-full bg-edge-strong" aria-hidden="true"></span>
             }
             @if (lead.area) {
-              <span><ion-icon name="location-outline" aria-hidden="true"></ion-icon>{{ lead.area }}</span>
+              <span><ion-icon name="location-outline" class="me-0.5 -mb-px" aria-hidden="true"></ion-icon>{{ lead.area }}</span>
             } @else {
-              <span><ion-icon name="globe-outline" aria-hidden="true"></ion-icon>{{ 'discover.mode.remote' | translate }}</span>
+              <span><ion-icon name="globe-outline" class="me-0.5 -mb-px" aria-hidden="true"></ion-icon>{{ 'discover.mode.remote' | translate }}</span>
             }
           </div>
-          <div class="lead-foot">
+          <div class="mt-2 flex items-center justify-between gap-2">
             @if (lead.budgetMinor) {
-              <span class="budget">{{ lead.budgetMinor | money }} <small>{{ 'money.currency' | translate }}</small></span>
+              <span class="font-bold tabular-nums">
+                {{ lead.budgetMinor | money }} <small class="ms-0.5 text-2xs font-semibold text-content-muted">{{ 'money.currency' | translate }}</small>
+              </span>
             } @else {
               <span class="hm-pill tone-neutral">{{ 'pro.quote_requested' | translate }}</span>
             }
-            <span class="ago hm-muted">{{ lead.postedAgo }}</span>
+            <span class="text-xs text-content-muted">{{ lead.postedAgo }}</span>
           </div>
         </div>
       </button>

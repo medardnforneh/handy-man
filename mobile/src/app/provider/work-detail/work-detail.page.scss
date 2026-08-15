@@ -1,178 +1,35 @@
-// Shared primitives (.hm-card, .hm-pill, .hm-avatar, .hm-section-head…) load globally — see angular.json.
-// SEMANTIC TOKENS ONLY — never a literal colour (doc 08; enforced by `npm run lint:colors`).
+// Ionic's own components, plus one shared rule for the composers' NATIVE form controls.
 
 ion-toolbar {
   --background: var(--hm-color-surface-base);
   --border-width: 0;
 }
 
-ion-title { font-size: var(--hm-text-md); font-weight: 700; }
-
-.page {
-  padding: 0 var(--hm-space-md) var(--hm-space-xl);
-  max-width: 720px;
-  margin: 0 auto;
-}
-
-.head {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: var(--hm-space-sm);
-  margin: var(--hm-space-sm) 0 var(--hm-space-md);
-
-  h1 { margin: 0; font-size: 1.3rem; font-weight: 800; letter-spacing: -0.02em; text-wrap: balance; }
-  .hm-pill { flex: none; margin-top: 0.2rem; }
-}
-
-// ---- Customer ----------------------------------------------------------
-.cust {
-  display: flex;
-  align-items: center;
-  gap: var(--hm-space-sm);
-  padding: var(--hm-space-sm) var(--hm-space-md);
-  margin-bottom: var(--hm-space-md);
-
-  .cust-av { width: 44px; height: 44px; border-radius: 50%; font-size: var(--hm-text-sm); text-transform: uppercase; }
-  .cust-info { flex: 1; min-width: 0; b { font-size: var(--hm-text-md); } small { display: block; font-size: var(--hm-text-xs); } }
-}
-
-// ---- Location ----------------------------------------------------------
-.loc {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin: 0;
-  padding: var(--hm-space-md);
+ion-title {
   font-size: var(--hm-text-md);
-
-  ion-icon { color: var(--hm-color-brand-primary); font-size: 1.1rem; flex: none; }
-
-  &.remote { border: 1px dashed var(--hm-color-border-strong); border-radius: var(--hm-radius-md); }
+  font-weight: 700;
 }
 
-// ---- Check-in ----------------------------------------------------------
-.checkin {
+ion-button {
   --border-radius: var(--hm-radius-md);
   font-weight: 700;
   margin: 0;
+  min-height: 44px;
 }
 
-.hint {
-  margin: var(--hm-space-sm) 0 0;
-  font-size: var(--hm-text-xs);
-}
-
-.checked {
-  display: flex;
-  align-items: center;
-  gap: 0.55rem;
-  padding: var(--hm-space-md);
-
-  ion-icon { color: var(--hm-color-status-success); font-size: 1.4rem; flex: none; }
-  .c-text { font-weight: 700; font-size: var(--hm-text-md); }
-
-  .link {
-    margin-inline-start: auto;
-    background: none;
-    border: 0;
-    padding: 0.3rem 0.5rem;
-    color: var(--hm-color-brand-primary);
-    font-weight: 700;
-    font-size: var(--hm-text-sm);
-    cursor: pointer;
-  }
-}
-
-// ---- Status chips ------------------------------------------------------
-.statuses {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-
-.schip {
-  padding: 0.5rem 0.9rem;
-  border-radius: var(--hm-radius-pill);
-  background: var(--hm-color-surface-raised);
-  border: 1.5px solid var(--hm-color-border-subtle);
-  color: var(--hm-color-text-muted);
-  font-size: var(--hm-text-sm);
-  font-weight: 600;
-  cursor: pointer;
-  transition: border-color 0.12s ease, color 0.12s ease, background 0.12s ease;
-
-  &.active {
-    border-color: var(--hm-color-brand-primary);
-    background: color-mix(in srgb, var(--hm-color-brand-primary) 12%, transparent);
-    color: var(--hm-color-brand-primary);
-  }
-}
-
-// ---- Dashed "add / submit" affordance ----------------------------------
-// Shared by the report + deliverable buttons on the page and the add-row buttons in the sheets.
-.report,
-.ghost {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.45rem;
-  width: 100%;
-  background: none;
-  border: 1px dashed var(--hm-color-border-strong);
-  border-radius: var(--hm-radius-md);
-  color: var(--hm-color-text-muted);
-  font-weight: 600;
-  cursor: pointer;
-
-  ion-icon { color: var(--hm-color-brand-primary); }
-}
-
-.report {
-  padding: var(--hm-space-md);
-  font-size: var(--hm-text-md);
-
-  ion-icon { font-size: 1.25rem; }
-}
-
-// ---- Footer CTA --------------------------------------------------------
 ion-footer {
   background: var(--hm-color-surface-base);
-
-  .cta {
-    padding: var(--hm-space-sm) var(--hm-space-md);
-    max-width: 720px;
-    margin: 0 auto;
-    border-top: 1px solid var(--hm-color-border-subtle);
-  }
-
-  ion-button { --border-radius: var(--hm-radius-md); font-weight: 700; margin: 0; }
 }
 
-// ---- Report composer sheet ---------------------------------------------
-.sheet {
-  padding: var(--hm-space-md) var(--hm-space-md) var(--hm-space-xl);
-  max-width: 720px;
-  margin: 0 auto;
-}
-
-.field {
-  display: block;
-  margin-bottom: var(--hm-space-md);
-}
-
-.flabel {
-  display: block;
-  margin-bottom: 0.35rem;
-  font-size: var(--hm-text-sm);
-  font-weight: 700;
-  color: var(--hm-color-text-muted);
-}
-
-.finput,
-.ftext {
+// The report and deliverable composers are built from bare <input> and <textarea> rather than
+// ion-input: a materials row is four small fields on one line and Ionic's control does not sit in
+// a grid cell. Preflight is deliberately not loaded on this surface (it would undo Ionic's own
+// normalize), so these elements still carry their user-agent font — `font: inherit` is not
+// something a utility can express.
+.finput {
   width: 100%;
-  padding: 0.7rem 0.8rem;
+  min-width: 0;
+  padding: 0.65rem 0.75rem;
   background: var(--hm-color-surface-raised);
   border: 1.5px solid var(--hm-color-border-subtle);
   border-radius: var(--hm-radius-md);
@@ -181,103 +38,5 @@ ion-footer {
   font-size: var(--hm-text-md);
 
   &::placeholder { color: var(--hm-color-text-muted); }
-
-  &:focus {
-    outline: none;
-    border-color: var(--hm-color-brand-primary);
-  }
-}
-
-.ftext { resize: vertical; line-height: 1.45; }
-
-.err {
-  margin: -0.5rem 0 var(--hm-space-md);
-  font-size: var(--hm-text-xs);
-  font-weight: 600;
-  color: var(--hm-color-status-danger);
-}
-
-// A materials line: item / qty / unit price, with a remove affordance.
-.mrow {
-  display: grid;
-  grid-template-columns: 1fr 4.5rem 7rem auto;
-  gap: 0.5rem;
-  align-items: center;
-  padding: var(--hm-space-sm);
-  margin-bottom: 0.5rem;
-
-  // On a phone the three fields stack into two rows rather than squeeze illegibly.
-  @media (max-width: 480px) {
-    grid-template-columns: 1fr 1fr auto;
-    .mlabel { grid-column: 1 / -1; }
-  }
-}
-
-.mdel {
-  display: grid;
-  place-items: center;
-  width: 2rem;
-  height: 2rem;
-  background: none;
-  border: 0;
-  border-radius: 50%;
-  color: var(--hm-color-text-muted);
-  cursor: pointer;
-
-  ion-icon { font-size: 1.1rem; }
-  &:hover { background: var(--hm-color-surface-sunken); color: var(--hm-color-status-danger); }
-}
-
-.ghost {
-  padding: 0.7rem var(--hm-space-md);
-  margin-bottom: var(--hm-space-md);
-  font-size: var(--hm-text-sm);
-
-  ion-icon { font-size: 1.1rem; }
-  &:hover { border-color: var(--hm-color-brand-primary); color: var(--hm-color-text-primary); }
-}
-
-.padd {
-  display: flex;
-  gap: 0.5rem;
-
-  .ghost { margin-bottom: 0; }
-
-  @media (max-width: 420px) { flex-direction: column; }
-}
-
-// Chosen-photo rows in the sheet, and deliverable rows on the page.
-.plist,
-.dlist {
-  list-style: none;
-  margin: 0 0 var(--hm-space-sm);
-  padding: 0;
-}
-
-.pitem,
-.ditem {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem var(--hm-space-sm);
-  margin-bottom: 0.4rem;
-
-  .hm-pill { flex: none; }
-}
-
-.pname,
-.dtitle {
-  flex: 1;
-  min-width: 0;
-  font-size: var(--hm-text-sm);
-}
-
-// A filename can't wrap usefully; a deliverable title should.
-.pname { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.dtitle { font-weight: 600; overflow-wrap: anywhere; }
-
-.fhelp {
-  display: block;
-  margin-top: 0.3rem;
-  font-size: var(--hm-text-xs);
+  &:focus { outline: none; border-color: var(--hm-color-brand-primary); }
 }

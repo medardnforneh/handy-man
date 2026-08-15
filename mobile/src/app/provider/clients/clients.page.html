@@ -14,17 +14,23 @@
     <ion-refresher-content></ion-refresher-content>
   </ion-refresher>
 
-  <div class="page">
+  <div class="mx-auto max-w-[47.5rem] px-4 pt-2 pb-10 max-[360px]:px-2">
     @if (loading()) {
-      <!-- CSS-only skeletons: nothing here loads a lazy asset, so the first paint is the same on a
-           dead connection as on a good one. -->
-      <div class="sk-strip" aria-hidden="true">
-        <div class="sk-tile"></div><div class="sk-tile"></div><div class="sk-tile"></div>
+      <!-- CSS-only skeletons, drawing the shape of what is coming: nothing here loads a lazy asset,
+           so the first paint is the same on a dead connection as on a good one. The money tile
+           takes the full second row on a small phone, exactly as the real one does. -->
+      <div class="mb-4 grid grid-cols-3 gap-2 max-[420px]:grid-cols-2" aria-hidden="true">
+        <div class="hm-skel h-[74px] rounded-md"></div>
+        <div class="hm-skel h-[74px] rounded-md"></div>
+        <div class="hm-skel h-[74px] rounded-md max-[420px]:col-span-full"></div>
       </div>
       @for (n of [1, 2, 3, 4]; track n) {
-        <div class="sk-row hm-card" aria-hidden="true">
-          <div class="sk-av"></div>
-          <div class="sk-lines"><span class="sk-line w60"></span><span class="sk-line w40"></span></div>
+        <div class="mb-2 flex items-center gap-2 rounded-lg border border-edge bg-surface-raised p-4 shadow-sm" aria-hidden="true">
+          <div class="hm-skel size-[42px] flex-none rounded-md"></div>
+          <div class="min-w-0 flex-1">
+            <span class="hm-skel block h-2.5 w-3/5 rounded-sm"></span>
+            <span class="hm-skel mt-2 block h-2.5 w-2/5 rounded-sm"></span>
+          </div>
         </div>
       }
       <p class="sr-only">{{ 'common.loading' | translate }}</p>
@@ -32,161 +38,178 @@
       @if (unreachable()) {
         <!-- The book was never reachable AND nothing was remembered. Distinct from an empty book:
              one means "we couldn't ask", the other means "you have no clients yet". -->
-        <p class="hm-empty unreachable">{{ 'crm.unreachable' | translate }}</p>
-        <ion-button expand="block" fill="outline" class="hm-tap retry" (click)="load()">
+        <p class="px-4 py-8 text-center text-md text-content-muted">{{ 'crm.unreachable' | translate }}</p>
+        <ion-button expand="block" fill="outline" class="mx-auto max-w-[16rem]" (click)="load()">
           {{ 'common.retry' | translate }}
         </ion-button>
       } @else {
         <!-- The CRM surface is two things (P7-08): the funnel of work, and the book of clients.
              A segment rather than two screens — they answer "how is business?" together. -->
         <ion-segment class="crm-tabs" [value]="tab()">
-          <ion-segment-button class="hm-tap" value="pipeline" (click)="showTab('pipeline')">
+          <ion-segment-button value="pipeline" (click)="showTab('pipeline')">
             <ion-label>{{ 'crm.tab.pipeline' | translate }}</ion-label>
           </ion-segment-button>
-          <ion-segment-button class="hm-tap" value="clients" (click)="showTab('clients')">
+          <ion-segment-button value="clients" (click)="showTab('clients')">
             <ion-label>{{ 'crm.tab.clients' | translate }}</ion-label>
           </ion-segment-button>
         </ion-segment>
 
         @if (tab() === 'pipeline') {
           @if (pipeline() === null) {
-            <p class="hm-empty unreachable">{{ 'crm.unreachable' | translate }}</p>
+            <p class="px-4 py-8 text-center text-md text-content-muted">{{ 'crm.unreachable' | translate }}</p>
           } @else if (pipelineEmpty()) {
-            <div class="hm-empty first">
-              <h2>{{ 'crm.pipeline_empty_title' | translate }}</h2>
-              <p>{{ 'crm.pipeline_empty_body' | translate }}</p>
+            <div class="px-4 pt-8 pb-8 text-center text-content-muted">
+              <h2 class="mb-1 text-lg text-content">{{ 'crm.pipeline_empty_title' | translate }}</h2>
+              <p class="m-0 text-md">{{ 'crm.pipeline_empty_body' | translate }}</p>
             </div>
           } @else {
-            <div class="funnel">
+            <!-- Four rows with bars on a shared scale. Hand-drawn divs, not a chart library: four
+                 numbers do not justify a charting payload on a low-end Android over a slow
+                 network. -->
+            <div class="flex flex-col gap-4">
               @for (s of pipeline(); track s.stage) {
-                <div class="stage" [class.none]="s.count === 0">
-                  <div class="stage-head">
-                    <b class="stage-name">{{ 'crm.stage.' + s.stage | translate }}</b>
-                    <span class="stage-count">{{ s.count }}</span>
+                <!-- A stage with nothing in it stays on screen — the shape of the funnel is the
+                     information, and hiding empty stages would quietly redraw it. -->
+                <div [class]="s.count === 0 ? 'opacity-55' : ''">
+                  <div class="flex items-baseline justify-between gap-2">
+                    <b class="text-md tracking-snug [overflow-wrap:anywhere]">{{ 'crm.stage.' + s.stage | translate }}</b>
+                    <span class="flex-none text-[1.15rem] font-extrabold tabular-nums tracking-tight">{{ s.count }}</span>
                   </div>
-                  <!-- Bars share one scale (the widest stage), so their lengths are comparable.
-                       Drawn with a div rather than a chart library: four numbers do not justify a
-                       payload on a low-end phone. -->
-                  <div class="bar-track" role="presentation">
-                    <div class="bar" [style.width.%]="barWidth(s)"></div>
+                  <div class="mt-1.5 h-2.5 overflow-hidden rounded-pill bg-surface-sunken" role="presentation">
+                    <div class="h-full rounded-pill bg-brand transition-[width] duration-240 motion-reduce:transition-none" [style.width.%]="barWidth(s)"></div>
                   </div>
-                  <div class="stage-foot">
+                  <!-- Reserved height, so rows do not jump as values load or a stage goes unpriced. -->
+                  <div class="mt-1 min-h-4">
                     @if (s.valueMinor > 0) {
-                      <span class="stage-value">{{ s.valueMinor | money }} <small>{{ 'money.currency' | translate }}</small></span>
+                      <span class="text-sm font-bold tabular-nums">
+                        {{ s.valueMinor | money }} <small class="ms-0.5 text-2xs font-semibold opacity-70">{{ 'money.currency' | translate }}</small>
+                      </span>
                     } @else if (s.count > 0) {
                       <!-- Counted but unpriced. Saying so beats printing "0 FCFA", which reads as
                            worthless rather than as not-yet-quoted. -->
-                      <span class="stage-value none">{{ 'crm.no_price_yet' | translate }}</span>
+                      <span class="text-sm font-semibold text-content-muted">{{ 'crm.no_price_yet' | translate }}</span>
                     }
                   </div>
                 </div>
               }
             </div>
-            <p class="foot hm-muted">{{ 'crm.pipeline_note' | translate }}</p>
+            <p class="mt-6 px-2 text-center text-xs text-content-muted">{{ 'crm.pipeline_note' | translate }}</p>
           }
         } @else if ((clients() ?? []).length === 0) {
           <!-- An empty BOOK, not a failed load — and it no longer hides the funnel, because a new
                provider with live leads and no completed job yet is exactly who has one and not the
                other. -->
-          <div class="hm-empty first">
-            <h2>{{ 'crm.empty_title' | translate }}</h2>
-            <p>{{ 'crm.empty_body' | translate }}</p>
+          <div class="px-4 pt-8 pb-8 text-center text-content-muted">
+            <h2 class="mb-1 text-lg text-content">{{ 'crm.empty_title' | translate }}</h2>
+            <p class="m-0 text-md">{{ 'crm.empty_body' | translate }}</p>
           </div>
         } @else {
-        <!-- Summary: three counts, each derived from the list already on screen rather than a
-             second request the provider would wait for. -->
-        <div class="summary">
-          <div class="tile hm-card">
-            <b>{{ (clients() ?? []).length }}</b>
-            <small class="hm-muted">{{ 'crm.stat.clients' | translate }}</small>
+          <!-- Summary: three counts, each derived from the list already on screen rather than a
+               second request the provider would wait for. Three across on anything roomy, two on a
+               phone — the money tile spans the row so a seven-figure lifetime value never has to
+               shrink to fit a third of 360px. -->
+          <div class="mb-4 grid grid-cols-3 gap-2 max-[420px]:grid-cols-2">
+            <div class="min-w-0 rounded-lg border border-edge bg-surface-raised px-2 py-4 text-center shadow-sm">
+              <b class="block text-[1.35rem] font-extrabold tracking-tight max-[420px]:text-[1.2rem] [overflow-wrap:anywhere]">{{ (clients() ?? []).length }}</b>
+              <small class="mt-0.5 block text-xs text-content-muted">{{ 'crm.stat.clients' | translate }}</small>
+            </div>
+            <div class="min-w-0 rounded-lg border border-edge bg-surface-raised px-2 py-4 text-center shadow-sm">
+              <b class="block text-[1.35rem] font-extrabold tracking-tight max-[420px]:text-[1.2rem] [overflow-wrap:anywhere]">{{ repeatCount() }}</b>
+              <small class="mt-0.5 block text-xs text-content-muted">{{ 'crm.stat.repeat' | translate }}</small>
+            </div>
+            <div class="min-w-0 rounded-lg border border-edge bg-surface-raised px-2 py-4 text-center shadow-sm max-[420px]:col-span-full">
+              <b class="block text-[1.35rem] font-extrabold tracking-tight max-[420px]:text-[1.2rem] [overflow-wrap:anywhere]">
+                {{ lifetimeTotalMinor() | money }} <em class="text-xs font-semibold not-italic opacity-70">{{ 'money.currency' | translate }}</em>
+              </b>
+              <small class="mt-0.5 block text-xs text-content-muted">{{ 'crm.stat.lifetime' | translate }}</small>
+            </div>
           </div>
-          <div class="tile hm-card">
-            <b>{{ repeatCount() }}</b>
-            <small class="hm-muted">{{ 'crm.stat.repeat' | translate }}</small>
-          </div>
-          <div class="tile hm-card wide">
-            <b>{{ lifetimeTotalMinor() | money }} <em>{{ 'money.currency' | translate }}</em></b>
-            <small class="hm-muted">{{ 'crm.stat.lifetime' | translate }}</small>
-          </div>
-        </div>
 
-        <ion-searchbar
-          class="hm-tap"
-          [value]="query()"
-          (ionInput)="onSearch($any($event.target).value)"
-          (ionClear)="onSearch('')"
-          [placeholder]="'crm.search_placeholder' | translate"
-          [attr.aria-label]="'crm.search_placeholder' | translate"
-        ></ion-searchbar>
+          <ion-searchbar
+            class="min-h-11"
+            [value]="query()"
+            (ionInput)="onSearch($any($event.target).value)"
+            (ionClear)="onSearch('')"
+            [placeholder]="'crm.search_placeholder' | translate"
+            [attr.aria-label]="'crm.search_placeholder' | translate"
+          ></ion-searchbar>
 
-        @for (c of filtered(); track c.partyId) {
-          <div class="client hm-card" [class.blocked]="c.doNotContact">
-            <div class="who">
-              <div [class]="'hm-avatar av accent-' + c.accent" aria-hidden="true">
-                @if (c.initials) {
-                  {{ c.initials }}
-                } @else {
-                  <ion-icon name="person-outline"></ion-icon>
-                }
-              </div>
-              <div class="ident">
-                <b class="name">{{ c.name }}</b>
-                <!-- Singular/plural picked explicitly: there is no ICU message compiler wired in,
-                     so "1 missions" is the failure mode a bare interpolation would ship. -->
-                <div class="meta hm-muted">
-                  <span>{{ (c.jobCount === 1 ? 'crm.jobs_count_one' : 'crm.jobs_count_other') | translate:{ count: c.jobCount } }}</span>
-                  @if (c.completedCount > 0) {
-                    <span class="dot" aria-hidden="true"></span>
-                    <span>{{ (c.completedCount === 1 ? 'crm.completed_count_one' : 'crm.completed_count_other') | translate:{ count: c.completedCount } }}</span>
-                  }
-                  @if (c.lastEngagedLabel) {
-                    <span class="dot" aria-hidden="true"></span>
-                    <span>{{ c.lastEngagedLabel }}</span>
+          @for (c of filtered(); track c.partyId) {
+            <div class="mb-2 rounded-lg border border-edge bg-surface-raised p-4 shadow-sm max-[360px]:p-2">
+              <!-- A blocked row stays legible but visibly stands down — it is a row the provider can
+                   no longer act on, and it should read that way at a glance without disappearing
+                   from their own history. -->
+              <div class="flex items-start gap-2" [class]="c.doNotContact ? 'opacity-62' : ''">
+                <div
+                  [class]="'grid size-[42px] flex-none place-items-center rounded-md text-md font-bold text-brand-contrast accent-' + c.accent"
+                  aria-hidden="true"
+                >
+                  @if (c.initials) {
+                    {{ c.initials }}
+                  } @else {
+                    <ion-icon name="person-outline" class="text-[1.25em]"></ion-icon>
                   }
                 </div>
-              </div>
-              <div class="ltv">
-                <b>{{ c.lifetimeValueMinor | money }}</b>
-                <small class="hm-muted">{{ 'money.currency' | translate }}</small>
-              </div>
-            </div>
+                <div class="min-w-0 flex-1">
+                  <b class="block text-md tracking-snug [overflow-wrap:anywhere]">{{ c.name }}</b>
+                  <!-- Singular/plural picked explicitly: there is no ICU message compiler wired in,
+                       so "1 missions" is the failure mode a bare interpolation would ship.
 
-            <!-- One line, right-aligned: the primary action plus an overflow. Do-not-contact is
-                 deliberately behind the overflow — it is rare, hard to undo in spirit, and putting
-                 it beside the nudge as a second button made every card look like a decision. -->
-            <div class="client-acts">
-              @if (c.doNotContact) {
-                <!-- No nudge affordance at all when the customer has said no. The server would
-                     refuse it (P7-08), and offering a button that cannot work is worse than
-                     offering none. -->
-                <span class="hm-pill tone-neutral">{{ 'crm.dnc_badge' | translate }}</span>
-              } @else {
-                <ion-button
-                  size="small"
-                  fill="outline"
-                  class="hm-tap nudge"
+                       Three facts wrap onto a second line rather than pushing the money off. -->
+                  <div class="mt-0.5 flex flex-wrap items-center gap-1 text-xs text-content-muted">
+                    <span>{{ (c.jobCount === 1 ? 'crm.jobs_count_one' : 'crm.jobs_count_other') | translate:{ count: c.jobCount } }}</span>
+                    @if (c.completedCount > 0) {
+                      <span class="size-[0.2rem] rounded-full bg-current opacity-60" aria-hidden="true"></span>
+                      <span>{{ (c.completedCount === 1 ? 'crm.completed_count_one' : 'crm.completed_count_other') | translate:{ count: c.completedCount } }}</span>
+                    }
+                    @if (c.lastEngagedLabel) {
+                      <span class="size-[0.2rem] rounded-full bg-current opacity-60" aria-hidden="true"></span>
+                      <span>{{ c.lastEngagedLabel }}</span>
+                    }
+                  </div>
+                </div>
+                <div class="flex-none text-end leading-tight">
+                  <b class="text-md font-extrabold tracking-tight">{{ c.lifetimeValueMinor | money }}</b>
+                  <small class="block text-2xs text-content-muted">{{ 'money.currency' | translate }}</small>
+                </div>
+              </div>
+
+              <!-- One line, right-aligned: the primary action plus an overflow. Do-not-contact is
+                   deliberately behind the overflow — it is rare, hard to undo in spirit, and putting
+                   it beside the nudge as a second button made every card look like a decision. -->
+              <div class="mt-2 flex flex-nowrap items-center justify-end gap-2 border-t border-t-edge pt-2">
+                @if (c.doNotContact) {
+                  <!-- No nudge affordance at all when the customer has said no. The server would
+                       refuse it (P7-08), and offering a button that cannot work is worse than
+                       offering none. -->
+                  <span class="hm-pill tone-neutral">{{ 'crm.dnc_badge' | translate }}</span>
+                } @else {
+                  <ion-button
+                    size="small"
+                    fill="outline"
+                    class="nudge"
+                    [disabled]="busy() !== null"
+                    (click)="followUp(c)"
+                  >
+                    {{ (busy() === c.partyId ? 'crm.nudge_sending' : 'crm.nudge') | translate }}
+                  </ion-button>
+                }
+                <button
+                  class="grid h-[34px] w-10 flex-none cursor-pointer place-items-center rounded-md border border-edge bg-transparent p-0 text-lg text-content-muted disabled:cursor-default disabled:opacity-50"
+                  type="button"
                   [disabled]="busy() !== null"
-                  (click)="followUp(c)"
+                  (click)="openActions(c)"
                 >
-                  {{ (busy() === c.partyId ? 'crm.nudge_sending' : 'crm.nudge') | translate }}
-                </ion-button>
-              }
-              <button
-                class="more hm-tap"
-                type="button"
-                [disabled]="busy() !== null"
-                (click)="openActions(c)"
-              >
-                <ion-icon name="ellipsis-horizontal" aria-hidden="true"></ion-icon>
-                <span class="sr-only">{{ 'crm.more_for' | translate:{ name: c.name } }}</span>
-              </button>
+                  <ion-icon name="ellipsis-horizontal" aria-hidden="true"></ion-icon>
+                  <span class="sr-only">{{ 'crm.more_for' | translate:{ name: c.name } }}</span>
+                </button>
+              </div>
             </div>
-          </div>
-        } @empty {
-          <p class="hm-empty">{{ 'crm.no_match' | translate:{ query: query() } }}</p>
-        }
+          } @empty {
+            <p class="px-4 py-8 text-center text-md text-content-muted">{{ 'crm.no_match' | translate:{ query: query() } }}</p>
+          }
 
-        <p class="foot hm-muted">{{ 'crm.budget_note' | translate }}</p>
+          <p class="mt-6 px-2 text-center text-xs text-content-muted">{{ 'crm.budget_note' | translate }}</p>
         }
       }
     }

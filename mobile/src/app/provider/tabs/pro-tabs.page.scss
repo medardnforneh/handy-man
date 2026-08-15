@@ -15,54 +15,6 @@ ion-split-pane {
   --padding-top: var(--hm-space-md);
 }
 
-.brand {
-  display: flex;
-  align-items: center;
-  gap: var(--hm-space-sm);
-  padding: var(--hm-space-sm) var(--hm-space-sm) var(--hm-space-lg);
-}
-
-.brand .mark {
-  display: grid;
-  place-items: center;
-  width: 38px;
-  height: 38px;
-  flex: none;
-  border-radius: var(--hm-radius-md);
-  background: var(--hm-color-brand-primary);
-  color: var(--hm-color-brand-onPrimary);
-  font-size: 1.15rem;
-}
-
-.brand-text {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-}
-
-.brand-text strong {
-  font-size: var(--hm-text-md);
-  font-weight: 700;
-  letter-spacing: -0.01em;
-  color: var(--hm-color-text-primary);
-}
-
-.brand-text small {
-  font-size: var(--hm-text-2xs);
-  line-height: 1.3;
-  color: var(--hm-color-text-muted);
-}
-
-.rail-label {
-  margin: 0 0 var(--hm-space-xs);
-  padding-inline: var(--hm-space-sm);
-  font-size: var(--hm-text-2xs);
-  font-weight: 700;
-  letter-spacing: 0.09em;
-  text-transform: uppercase;
-  color: var(--hm-color-text-muted);
-}
-
 .hm-rail ion-list {
   background: transparent;
   padding: 0;

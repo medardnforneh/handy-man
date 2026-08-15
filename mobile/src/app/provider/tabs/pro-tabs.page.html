@@ -4,22 +4,22 @@
 <ion-split-pane contentId="pro-tabs-content" when="(min-width: 768px)">
   <ion-menu contentId="pro-tabs-content" type="overlay" [swipeGesture]="false">
     <ion-content class="hm-rail">
-      <div class="brand">
-        <span class="mark" aria-hidden="true">
+      <div class="flex items-center gap-2 px-2 pt-2 pb-6">
+        <span class="grid size-[38px] flex-none place-items-center rounded-md bg-brand text-[1.15rem] text-brand-contrast" aria-hidden="true">
           <ion-icon name="hammer-outline"></ion-icon>
         </span>
-        <span class="brand-text">
-          <strong>{{ 'app.name' | translate }}</strong>
-          <small>{{ 'pro.title' | translate }}</small>
+        <span class="flex min-w-0 flex-col">
+          <strong class="text-md font-bold tracking-snug text-content">{{ 'app.name' | translate }}</strong>
+          <small class="text-2xs leading-tight text-content-muted">{{ 'pro.title' | translate }}</small>
         </span>
       </div>
 
-      <p class="rail-label">{{ 'pro.title' | translate }}</p>
+      <p class="mt-0 mb-1 px-2 text-2xs font-bold uppercase tracking-[0.09em] text-content-muted">{{ 'pro.title' | translate }}</p>
 
       <ion-list lines="none">
         @for (item of items; track item.tab) {
           <ion-item
-            class="hm-tap"
+            class="min-h-11 min-w-11"
             [routerLink]="['/pro', item.tab]"
             routerLinkActive="active"
             [detail]="false"
@@ -32,7 +32,7 @@
       </ion-list>
 
       <ion-list lines="none" class="rail-foot">
-        <ion-item class="hm-tap" [detail]="false" button (click)="backToCustomer()">
+        <ion-item class="min-h-11 min-w-11" [detail]="false" button (click)="backToCustomer()">
           <ion-icon slot="start" name="swap-horizontal-outline" aria-hidden="true"></ion-icon>
           <ion-label>{{ 'pro.back_to_customer' | translate }}</ion-label>
         </ion-item>
@@ -43,7 +43,7 @@
   <ion-tabs id="pro-tabs-content">
     <ion-tab-bar slot="bottom">
       @for (item of items; track item.tab) {
-        <ion-tab-button [tab]="item.tab" class="hm-tap">
+        <ion-tab-button [tab]="item.tab" class="min-h-11 min-w-11">
           <ion-icon [name]="item.icon" aria-hidden="true"></ion-icon>
           <ion-label>{{ item.label | translate }}</ion-label>
         </ion-tab-button>

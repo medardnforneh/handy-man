@@ -2,11 +2,11 @@
   <ion-toolbar>
     <ion-title>{{ 'pro.title' | translate }}</ion-title>
     <ion-buttons slot="end">
-      <div class="hm-avatar top-av accent-brand" aria-hidden="true">
+      <div class="me-4 grid size-9 flex-none place-items-center rounded-full bg-brand text-xs font-bold uppercase text-brand-contrast" aria-hidden="true">
         @if (who().initials) {
           {{ who().initials }}
         } @else {
-          <ion-icon name="person-outline"></ion-icon>
+          <ion-icon name="person-outline" class="text-[1.25em]"></ion-icon>
         }
       </div>
     </ion-buttons>
@@ -14,17 +14,17 @@
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <div class="page">
-    <div class="hello">
-      <h1>{{ 'pro.greeting' | translate }}</h1>
+  <div class="mx-auto max-w-3xl px-4 pb-10">
+    <div class="mt-2 mb-4">
+      <h1 class="text-[1.1rem] font-semibold text-content-muted">{{ 'pro.greeting' | translate }}</h1>
       <!-- The person is known whether or not they have a provider profile — they are signed in —
            so the greeting names them either way. What used to sit here was the setup instruction
            itself, rendered as muted text with nothing to tap; that prompt is a real card below. -->
       @if (who().name) {
-        <span class="who">
+        <span class="inline-flex items-center gap-1.5 text-[1.5rem] font-extrabold tracking-tight">
           {{ who().name }}
           @if (identity().verificationTier >= 2) {
-            <ion-icon class="verified" name="shield-checkmark" [attr.aria-label]="'discover.verified' | translate"></ion-icon>
+            <ion-icon class="text-md text-brand" name="shield-checkmark" [attr.aria-label]="'discover.verified' | translate"></ion-icon>
           }
         </span>
       }
@@ -32,90 +32,116 @@
 
     @if (!hasProfile()) {
       <!-- No provider profile: the one thing worth doing on this screen, said once and actionable,
-           above a wallet that can only ever read zero until it is done. -->
-      <button class="setup hm-card hm-tap" type="button" (click)="startOnboarding()">
-        <span class="ic" aria-hidden="true"><ion-icon name="hammer-outline"></ion-icon></span>
-        <span class="ct">
-          <b>{{ 'pro.setup_title' | translate }}</b>
-          <small class="hm-muted">{{ 'pro.setup_body' | translate }}</small>
+           above a wallet that can only ever read zero until it is done. It shares the client-book
+           card's shape but carries the brand ring. -->
+      <button
+        class="mb-4 flex w-full min-h-11 cursor-pointer items-center gap-2 rounded-lg border border-brand bg-[color-mix(in_srgb,var(--color-brand)_7%,var(--color-surface-raised))] p-4 text-start text-inherit shadow-sm"
+        type="button"
+        (click)="startOnboarding()"
+      >
+        <span class="grid size-[38px] flex-none place-items-center rounded-md bg-brand/12 text-[1.1rem] text-brand" aria-hidden="true">
+          <ion-icon name="hammer-outline"></ion-icon>
         </span>
-        <ion-icon class="chev" name="chevron-forward" aria-hidden="true"></ion-icon>
+        <span class="min-w-0 flex-1">
+          <b class="block text-md">{{ 'pro.setup_title' | translate }}</b>
+          <small class="mt-0.5 block text-xs text-content-muted">{{ 'pro.setup_body' | translate }}</small>
+        </span>
+        <ion-icon class="flex-none text-md text-content-muted" name="chevron-forward" aria-hidden="true"></ion-icon>
       </button>
     }
 
     <!-- Wallet -->
-    <div class="wallet hm-on-brand">
-      <span class="wl">{{ 'pro.available' | translate }}</span>
-      <div class="bal">{{ wallet().availableMinor | money }} <small>{{ 'money.currency' | translate }}</small></div>
+    <div class="hm-on-brand mb-4 rounded-lg bg-brand px-4 py-6 text-brand-contrast">
+      <span class="text-sm font-semibold opacity-85">{{ 'pro.available' | translate }}</span>
+      <div class="mt-0.5 text-[2rem] font-extrabold tracking-[-0.03em]">
+        {{ wallet().availableMinor | money }} <small class="ms-1 text-sm font-semibold opacity-85">{{ 'money.currency' | translate }}</small>
+      </div>
       @if (wallet().pendingPayoutMinor > 0) {
-        <span class="pending">{{ 'pro.payout_pending' | translate:{ amount: (wallet().pendingPayoutMinor | money), currency: ('money.currency' | translate) } }}</span>
+        <span class="mt-0.5 block text-xs opacity-85">{{ 'pro.payout_pending' | translate:{ amount: (wallet().pendingPayoutMinor | money), currency: ('money.currency' | translate) } }}</span>
       }
       <!-- Disabled at zero rather than left tappable-then-refused: a primary button that only ever
            produces an error toast reads as a broken app, not as a rule. -->
-      <ion-button expand="block" class="withdraw hm-tap" [disabled]="wallet().availableMinor <= 0" (click)="withdraw()">
+      <ion-button expand="block" class="withdraw mt-4" [disabled]="wallet().availableMinor <= 0" (click)="withdraw()">
         <ion-icon name="cash-outline" slot="start" aria-hidden="true"></ion-icon>
         {{ 'pro.withdraw' | translate }}
       </ion-button>
       @if (wallet().availableMinor <= 0) {
-        <span class="pending">{{ 'pro.nothing_to_withdraw' | translate }}</span>
+        <span class="mt-0.5 block text-xs opacity-85">{{ 'pro.nothing_to_withdraw' | translate }}</span>
       }
     </div>
 
     <!-- Stats -->
-    <div class="stats">
-      <div class="stat hm-card">
-        <b>{{ stats().activeJobs }}</b>
-        <small class="hm-muted">{{ 'pro.active_jobs' | translate }}</small>
+    <div class="mb-2 grid grid-cols-3 gap-2">
+      <div class="grid place-items-center gap-0.5 rounded-lg border border-edge bg-surface-raised px-1.5 py-4 text-center shadow-sm">
+        <b class="text-[1.25rem] font-extrabold tracking-tight">{{ stats().activeJobs }}</b>
+        <small class="text-2xs text-content-muted">{{ 'pro.active_jobs' | translate }}</small>
       </div>
-      <div class="stat hm-card">
-        <b class="rating"><ion-icon name="star" aria-hidden="true"></ion-icon>{{ stats().rating ?? '—' }}</b>
-        <small class="hm-muted">{{ 'pro.rating' | translate }}</small>
+      <div class="grid place-items-center gap-0.5 rounded-lg border border-edge bg-surface-raised px-1.5 py-4 text-center shadow-sm">
+        <b class="inline-flex items-center gap-1 text-[1.25rem] font-extrabold tracking-tight text-warning">
+          <ion-icon name="star" aria-hidden="true"></ion-icon>{{ stats().rating ?? '—' }}
+        </b>
+        <small class="text-2xs text-content-muted">{{ 'pro.rating' | translate }}</small>
       </div>
-      <div class="stat hm-card">
+      <div class="grid place-items-center gap-0.5 rounded-lg border border-edge bg-surface-raised px-1.5 py-4 text-center shadow-sm">
         @if (hasOnTime()) {
-          <b>{{ onTimePercent() }}%</b>
+          <b class="text-[1.25rem] font-extrabold tracking-tight">{{ onTimePercent() }}%</b>
         } @else {
-          <b class="pending">{{ 'provider.building' | translate }}</b>
+          <b class="text-md font-bold text-content-muted">{{ 'provider.building' | translate }}</b>
         }
-        <small class="hm-muted">{{ 'provider.stat.on_time' | translate }}</small>
+        <small class="text-2xs text-content-muted">{{ 'provider.stat.on_time' | translate }}</small>
       </div>
     </div>
 
     <!-- The client book (P7-08). One row rather than a preview list: it costs no extra request on a
          slow network, and this is a screen a provider goes to deliberately. -->
-    <button class="clients hm-card hm-tap" type="button" (click)="openClients()">
-      <span class="ic" aria-hidden="true"><ion-icon name="people-outline"></ion-icon></span>
-      <span class="ct">
-        <b>{{ 'crm.title' | translate }}</b>
-        <small class="hm-muted">{{ 'crm.home_hint' | translate }}</small>
+    <button
+      class="mt-4 flex w-full min-h-11 cursor-pointer items-center gap-2 rounded-lg border border-edge bg-surface-raised p-4 text-start text-inherit shadow-sm"
+      type="button"
+      (click)="openClients()"
+    >
+      <span class="grid size-[38px] flex-none place-items-center rounded-md bg-brand/12 text-[1.1rem] text-brand" aria-hidden="true">
+        <ion-icon name="people-outline"></ion-icon>
       </span>
-      <ion-icon class="chev" name="chevron-forward" aria-hidden="true"></ion-icon>
+      <span class="min-w-0 flex-1">
+        <b class="block text-md">{{ 'crm.title' | translate }}</b>
+        <small class="mt-0.5 block text-xs text-content-muted">{{ 'crm.home_hint' | translate }}</small>
+      </span>
+      <ion-icon class="flex-none text-md text-content-muted" name="chevron-forward" aria-hidden="true"></ion-icon>
     </button>
 
     <!-- Opportunities -->
-    <div class="hm-section-head">
-      <h2>{{ 'pro.opportunities' | translate }}</h2>
-      <a (click)="seeOpportunities()">{{ 'discover.see_all' | translate }} ({{ leadCount() }})</a>
+    <div class="mt-6 mb-4 flex items-center justify-between gap-2">
+      <h2 class="text-lg font-extrabold tracking-snug">{{ 'pro.opportunities' | translate }}</h2>
+      <a class="cursor-pointer text-sm font-semibold text-brand no-underline" (click)="seeOpportunities()">{{ 'discover.see_all' | translate }} ({{ leadCount() }})</a>
     </div>
     @for (lead of topLeads(); track lead.id) {
-      <button class="lead hm-card hm-tap" type="button" (click)="openLead(lead)">
-        <div [class]="'hm-avatar lead-av accent-' + lead.accent" aria-hidden="true">
+      <button
+        class="mb-2 flex w-full min-h-11 cursor-pointer gap-2 rounded-lg border border-edge bg-surface-raised p-4 text-start text-inherit shadow-sm"
+        type="button"
+        (click)="openLead(lead)"
+      >
+        <div
+          [class]="'grid size-11 flex-none place-items-center rounded-md text-[1.2rem] text-brand-contrast accent-' + lead.accent"
+          aria-hidden="true"
+        >
           <ion-icon name="briefcase" aria-hidden="true"></ion-icon>
         </div>
-        <div class="lead-info">
-          <b>{{ lead.title }}</b>
-          <div class="lead-meta hm-muted">
+        <div class="min-w-0 flex-1">
+          <b class="block text-md">{{ lead.title }}</b>
+          <div class="mt-0.5 flex flex-wrap items-center gap-1.5 text-xs text-content-muted">
             <span>{{ lead.skill }}</span>
-            <span class="dot" aria-hidden="true"></span>
-            <span><ion-icon name="location-outline" aria-hidden="true"></ion-icon>{{ lead.area }}</span>
+            <span class="size-[3px] flex-none rounded-full bg-edge-strong" aria-hidden="true"></span>
+            <span><ion-icon name="location-outline" class="me-0.5 -mb-px" aria-hidden="true"></ion-icon>{{ lead.area }}</span>
           </div>
-          <div class="lead-foot">
+          <div class="mt-2 flex items-center justify-between gap-2">
             @if (lead.budgetMinor) {
-              <span class="budget">{{ lead.budgetMinor | money }} <small>{{ 'money.currency' | translate }}</small></span>
+              <span class="font-bold tabular-nums">
+                {{ lead.budgetMinor | money }} <small class="ms-0.5 text-2xs font-semibold text-content-muted">{{ 'money.currency' | translate }}</small>
+              </span>
             } @else {
               <span class="hm-pill tone-neutral">{{ 'pro.quote_requested' | translate }}</span>
             }
-            <span class="ago hm-muted">{{ lead.postedAgo }}</span>
+            <span class="text-xs text-content-muted">{{ lead.postedAgo }}</span>
           </div>
         </div>
       </button>
@@ -129,18 +155,25 @@
     }
 
     <!-- Active work -->
-    <div class="hm-section-head">
-      <h2>{{ 'pro.active_work' | translate }}</h2>
-      <a (click)="seeWork()">{{ 'discover.see_all' | translate }}</a>
+    <div class="mt-6 mb-4 flex items-center justify-between gap-2">
+      <h2 class="text-lg font-extrabold tracking-snug">{{ 'pro.active_work' | translate }}</h2>
+      <a class="cursor-pointer text-sm font-semibold text-brand no-underline" (click)="seeWork()">{{ 'discover.see_all' | translate }}</a>
     </div>
     @for (work of topActive(); track work.id) {
-      <button class="work hm-card hm-tap" type="button" (click)="openWork(work)">
-        <div [class]="'hm-avatar work-av accent-' + work.accent" aria-hidden="true">{{ work.customerName.charAt(0) }}</div>
-        <div class="work-info">
-          <b>{{ work.title }}</b>
-          <small class="hm-muted">{{ work.reference }} · {{ work.customerName }}</small>
+      <button
+        class="mb-2 flex w-full min-h-11 cursor-pointer items-center gap-2 rounded-lg border border-edge bg-surface-raised px-4 py-2 text-start text-inherit shadow-sm"
+        type="button"
+        (click)="openWork(work)"
+      >
+        <div
+          [class]="'grid size-10 flex-none place-items-center rounded-full text-sm font-bold uppercase text-brand-contrast accent-' + work.accent"
+          aria-hidden="true"
+        >{{ work.customerName.charAt(0) }}</div>
+        <div class="min-w-0 flex-1">
+          <b class="text-md">{{ work.title }}</b>
+          <small class="block text-xs text-content-muted">{{ work.reference }} · {{ work.customerName }}</small>
         </div>
-        <span [class]="'hm-pill ' + tone(work.status)">{{ 'status.' + work.status | translate }}</span>
+        <span [class]="'hm-pill flex-none ' + tone(work.status)">{{ 'status.' + work.status | translate }}</span>
       </button>
     } @empty {
       <!-- The opportunities list had an empty state and this one did not, so an idle provider saw a

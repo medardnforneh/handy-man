@@ -8,15 +8,15 @@
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <div class="page">
-    <p class="lead hm-muted">{{ 'safety.lead' | translate }}</p>
+  <div class="mx-auto max-w-3xl px-4 pb-10">
+    <p class="mt-2 text-md leading-snug text-content-muted">{{ 'safety.lead' | translate }}</p>
 
     <!-- Held, not tapped: nothing fires from a pocket, and there is no dialog to read and dismiss
          between deciding and being heard. -->
-    <div class="panic">
+    <div class="mt-6 mb-4 flex flex-col items-center">
       <button
         type="button"
-        class="pbtn hm-tap"
+        class="pbtn"
         [class.armed]="armed()"
         [disabled]="raising()"
         [style.--hold]="holdProgress()"
@@ -28,47 +28,52 @@
         @if (raising()) {
           <ion-spinner name="crescent"></ion-spinner>
         } @else {
-          <ion-icon name="warning" aria-hidden="true"></ion-icon>
-          <span class="plabel">{{ 'safety.panic' | translate }}</span>
+          <ion-icon name="warning" class="text-[2.6rem]" aria-hidden="true"></ion-icon>
+          <!-- Wraps inside the circle rather than running out of both sides of it — which is exactly
+               what "Hold for help" did at 168px, and what any translation longer than a word would
+               do again. -->
+          <span class="max-w-[74%] text-center text-sm font-extrabold uppercase leading-tight tracking-wide text-balance">{{ 'safety.panic' | translate }}</span>
         }
       </button>
-      <p class="phint hm-muted">{{ 'safety.panic_hint' | translate }}</p>
+      <p class="mt-2 text-center text-sm leading-snug text-content-muted">{{ 'safety.panic_hint' | translate }}</p>
     </div>
 
     @if (raised()) {
       <!-- Said on the screen, not only in a toast that has since gone: someone who raised an alarm
            should be able to look down and see that it went. -->
-      <p class="pdone">
-        <ion-icon name="checkmark-circle" aria-hidden="true"></ion-icon>
-        <span>{{ 'safety.raised_note' | translate }}</span>
+      <p class="mb-4 flex items-start gap-2 rounded-md bg-success/10 px-4 py-2 text-sm leading-snug">
+        <ion-icon name="checkmark-circle" class="mt-0.5 flex-none text-lg text-success" aria-hidden="true"></ion-icon>
+        <span class="min-w-0 flex-1">{{ 'safety.raised_note' | translate }}</span>
       </p>
     }
 
-    <div class="hm-section-head">
-      <h2>{{ 'safety.contacts' | translate }}</h2>
-      <ion-button fill="clear" size="small" class="hm-tap" (click)="openSheet()">
+    <div class="mt-6 mb-4 flex items-center justify-between gap-2">
+      <h2 class="text-lg font-extrabold tracking-snug">{{ 'safety.contacts' | translate }}</h2>
+      <ion-button fill="clear" size="small" (click)="openSheet()">
         {{ 'safety.add_contact' | translate }}
       </ion-button>
     </div>
-    <p class="gnote hm-muted">{{ 'safety.contacts_body' | translate }}</p>
+    <p class="-mt-3 mb-2 text-sm leading-snug text-content-muted">{{ 'safety.contacts_body' | translate }}</p>
 
     @if (loadFailed()) {
-      <p class="failed">
-        <ion-icon name="alert-circle-outline" aria-hidden="true"></ion-icon>
-        <span>{{ 'safety.contacts_load_failed' | translate }}</span>
-        <ion-button fill="clear" size="small" class="hm-tap" (click)="load()">
+      <p class="mt-2 flex flex-wrap items-center gap-1.5 text-sm text-danger">
+        <ion-icon name="alert-circle-outline" class="flex-none text-md" aria-hidden="true"></ion-icon>
+        <span class="min-w-0 flex-1">{{ 'safety.contacts_load_failed' | translate }}</span>
+        <ion-button class="retry" fill="clear" size="small" (click)="load()">
           {{ 'common.retry' | translate }}
         </ion-button>
       </p>
     } @else {
       @for (c of contacts() ?? []; track c.id) {
-        <div class="crow hm-card">
-          <span class="cav" aria-hidden="true"><ion-icon name="person-outline"></ion-icon></span>
-          <span class="ctext">
-            <b>{{ c.name }}</b>
-            <small class="hm-muted">{{ c.phone }}</small>
+        <div class="mb-2 flex items-center gap-2 rounded-lg border border-edge bg-surface-raised px-4 py-2 shadow-sm">
+          <span class="grid size-9 flex-none place-items-center rounded-full bg-brand/12 text-lg text-brand" aria-hidden="true">
+            <ion-icon name="person-outline"></ion-icon>
           </span>
-          <ion-button fill="clear" size="small" class="crm hm-tap" (click)="remove(c)"
+          <span class="min-w-0 flex-1">
+            <b class="block text-md">{{ c.name }}</b>
+            <small class="block text-xs tabular-nums text-content-muted">{{ c.phone }}</small>
+          </span>
+          <ion-button class="crm" fill="clear" size="small" (click)="remove(c)"
                       [attr.aria-label]="'safety.remove_contact' | translate">
             <ion-icon slot="icon-only" name="close"></ion-icon>
           </ion-button>
@@ -89,16 +94,19 @@
     <!-- Blocked people. Only listed once there is one: a heading over "nobody is blocked" is a
          section about nothing, on a screen someone may be reading in a hurry. -->
     @if (blocked().length) {
-      <div class="hm-section-head"><h2>{{ 'block.blocked' | translate }}</h2></div>
-      <p class="gnote hm-muted">{{ 'block.blocked_body' | translate }}</p>
+      <h2 class="mt-6 mb-4 text-lg font-extrabold tracking-snug">{{ 'block.blocked' | translate }}</h2>
+      <p class="-mt-3 mb-2 text-sm leading-snug text-content-muted">{{ 'block.blocked_body' | translate }}</p>
 
       @for (b of blocked(); track b.partyId) {
-        <div class="crow hm-card">
-          <span class="cav blk" aria-hidden="true"><ion-icon name="ban-outline"></ion-icon></span>
-          <span class="ctext">
-            <b>{{ b.label || ('block.unknown' | translate) }}</b>
+        <div class="mb-2 flex items-center gap-2 rounded-lg border border-edge bg-surface-raised px-4 py-2 shadow-sm">
+          <!-- A block is a boundary, not a contact — it does not wear the brand tint. -->
+          <span class="grid size-9 flex-none place-items-center rounded-full bg-danger/12 text-lg text-danger" aria-hidden="true">
+            <ion-icon name="ban-outline"></ion-icon>
           </span>
-          <ion-button fill="clear" size="small" class="hm-tap" (click)="unblock(b)">
+          <span class="min-w-0 flex-1">
+            <b class="block text-md">{{ b.label || ('block.unknown' | translate) }}</b>
+          </span>
+          <ion-button fill="clear" size="small" (click)="unblock(b)">
             {{ 'block.unblock' | translate }}
           </ion-button>
         </div>
@@ -119,35 +127,46 @@
     </ion-header>
 
     <ion-content>
-      <div class="sheet">
-        <label class="field">
-          <span class="flabel">{{ 'safety.contact_name' | translate }}</span>
-          <input class="finput" [ngModel]="name()" (ngModelChange)="name.set($event)" maxlength="60" />
+      <div class="mx-auto max-w-3xl px-4 pt-4 pb-10">
+        <label class="mb-4 block">
+          <span class="mb-1.5 block text-sm font-bold text-content-muted">{{ 'safety.contact_name' | translate }}</span>
+          <input
+            class="w-full rounded-md border-[1.5px] border-edge bg-surface-raised px-3 py-2.5 font-sans text-md text-content placeholder:text-content-muted focus:border-brand focus:outline-none"
+            [ngModel]="name()"
+            (ngModelChange)="name.set($event)"
+            maxlength="60"
+          />
         </label>
         @if (nameMissing()) {
-          <p class="err">{{ 'safety.contact_name_required' | translate }}</p>
+          <p class="-mt-3.5 mb-4 text-xs text-danger">{{ 'safety.contact_name_required' | translate }}</p>
         }
 
-        <label class="field">
-          <span class="flabel">{{ 'safety.contact_phone' | translate }}</span>
-          <input class="finput" type="tel" inputmode="tel"
-                 [ngModel]="phone()" (ngModelChange)="phone.set($event)" maxlength="16" />
-          <small class="hm-muted fhelp">{{ 'safety.contact_phone_hint' | translate }}</small>
+        <label class="mb-4 block">
+          <span class="mb-1.5 block text-sm font-bold text-content-muted">{{ 'safety.contact_phone' | translate }}</span>
+          <input
+            class="w-full rounded-md border-[1.5px] border-edge bg-surface-raised px-3 py-2.5 font-sans text-md text-content placeholder:text-content-muted focus:border-brand focus:outline-none"
+            type="tel"
+            inputmode="tel"
+            [ngModel]="phone()"
+            (ngModelChange)="phone.set($event)"
+            maxlength="16"
+          />
+          <small class="mt-1 block text-xs leading-snug text-content-muted">{{ 'safety.contact_phone_hint' | translate }}</small>
         </label>
         @if (phoneInvalid()) {
-          <p class="err">{{ 'safety.contact_phone_invalid' | translate }}</p>
+          <p class="-mt-3.5 mb-4 text-xs text-danger">{{ 'safety.contact_phone_invalid' | translate }}</p>
         }
 
-        <p class="note">
-          <ion-icon name="information-circle-outline" aria-hidden="true"></ion-icon>
-          <span>{{ 'safety.contact_note' | translate }}</span>
+        <p class="mt-6 mb-0 flex items-start gap-2 text-xs leading-relaxed text-content-muted">
+          <ion-icon name="information-circle-outline" class="mt-0.5 flex-none text-md" aria-hidden="true"></ion-icon>
+          <span class="min-w-0 flex-1">{{ 'safety.contact_note' | translate }}</span>
         </p>
       </div>
     </ion-content>
 
     <ion-footer class="ion-no-border">
-      <div class="cta">
-        <ion-button expand="block" class="hm-tap" [disabled]="saving()" (click)="save()">
+      <div class="mx-auto max-w-3xl border-t border-t-edge px-4 py-2">
+        <ion-button expand="block" [disabled]="saving()" (click)="save()">
           @if (saving()) {
             <ion-spinner name="crescent"></ion-spinner>
           } @else {
