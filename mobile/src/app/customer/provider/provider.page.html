@@ -8,7 +8,7 @@
          without being suggested, since most people looking at a profile are deciding whether to
          hire, not whether to complain. -->
     <ion-buttons slot="end">
-      <ion-button class="hm-tap" (click)="openActions()">
+      <ion-button (click)="openActions()">
         <ion-icon slot="icon-only" name="ellipsis-horizontal" aria-hidden="true"></ion-icon>
         <span class="sr-only">{{ 'safety.more' | translate }}</span>
       </ion-button>
@@ -18,141 +18,149 @@
 
 <ion-content [fullscreen]="true">
   @if (provider(); as p) {
-  <div class="page">
-    <!-- Hero -->
-    <section class="hero hm-card">
-      <div [class]="'hm-avatar hero-av accent-' + p.accent" aria-hidden="true">
-        @if (p.initials) {
-          {{ p.initials }}
-        } @else {
-          <ion-icon name="person-outline"></ion-icon>
-        }
-      </div>
-
-      <!-- No name means the real profile has not landed yet (or could not be reached). Say that,
-           rather than showing an empty line where a person's name belongs. -->
-      <div class="hero-name">
-        @if (p.name) {
-          <b>{{ p.name }}</b>
-          @if (p.verified) {
-            <ion-icon class="verified" name="shield-checkmark" [attr.aria-label]="'discover.verified' | translate"></ion-icon>
+    <div class="mx-auto max-w-3xl px-4 pb-10">
+      <!-- Hero -->
+      <section class="mt-2 grid place-items-center rounded-lg border border-edge bg-surface-raised px-4 py-6 text-center shadow-sm">
+        <div
+          [class]="'mb-2 grid size-18 place-items-center rounded-full text-[1.4rem] font-bold text-brand-contrast accent-' + p.accent"
+          aria-hidden="true"
+        >
+          @if (p.initials) {
+            {{ p.initials }}
+          } @else {
+            <ion-icon name="person-outline" class="text-[1.25em]"></ion-icon>
           }
-        } @else {
-          <b class="hm-muted">{{ 'provider.loading' | translate }}</b>
-        }
-      </div>
-
-      <div class="hero-sub">
-        <!-- The sub-line is the trade. A provider with no listed skill has nothing else to say here,
-             and its fallback is the headline — which is already the name above it, so showing it
-             again reads as a rendering fault rather than information. -->
-        @if (p.headline && p.headline !== p.name) {
-          <span>{{ p.headline }}</span>
-        }
-        @if (p.city) {
-          <span class="dot" aria-hidden="true"></span>
-          <span class="hm-muted"><ion-icon name="location-outline" aria-hidden="true"></ion-icon>{{ p.city }}</span>
-        }
-      </div>
-
-      <div class="rate">
-        @if (p.ratingAvg !== null) {
-          <span class="stars" [attr.aria-label]="p.ratingAvg">
-            @for (s of stars(p.ratingAvg); track $index) {
-              <ion-icon [name]="s === 'full' ? 'star' : (s === 'half' ? 'star-half' : 'star-outline')" aria-hidden="true"></ion-icon>
-            }
-          </span>
-          <b class="score">{{ p.ratingAvg | number:'1.1-1' }}</b>
-          <span class="hm-muted count">{{ 'provider.rating_count' | translate:{ count: p.ratingCount } }}</span>
-        } @else {
-          <span class="hm-muted">{{ 'provider.unrated' | translate }}</span>
-        }
-      </div>
-    </section>
-
-    <!-- Reputation metrics (display-safe subset) -->
-    <div class="stats">
-      <div class="stat hm-card">
-        <b>{{ p.jobsCompleted90d }}</b>
-        <small class="hm-muted">{{ 'provider.stat.completed' | translate }}</small>
-      </div>
-      <div class="stat hm-card">
-        @if (hasEnoughSignal()) {
-          <b>{{ onTimePercent() }}%</b>
-        } @else {
-          <b class="pending">{{ 'provider.building' | translate }}</b>
-        }
-        <small class="hm-muted">{{ 'provider.stat.on_time' | translate }}</small>
-      </div>
-      @if (p.responseTime) {
-        <div class="stat hm-card">
-          <b>{{ p.responseTime }}</b>
-          <small class="hm-muted">{{ 'provider.stat.response' | translate }}</small>
         </div>
-      }
-    </div>
 
-    @if (!hasEnoughSignal()) {
-      <p class="floor-note hm-muted">
-        <ion-icon name="sparkles-outline" aria-hidden="true"></ion-icon>
-        {{ 'provider.new_note' | translate }}
-      </p>
-    }
+        <!-- No name means the real profile has not landed yet (or could not be reached). Say that,
+             rather than showing an empty line where a person's name belongs. -->
+        <div class="flex items-center gap-1.5">
+          @if (p.name) {
+            <b class="text-[1.2rem] font-extrabold tracking-tight">{{ p.name }}</b>
+            @if (p.verified) {
+              <ion-icon class="text-md text-brand" name="shield-checkmark" [attr.aria-label]="'discover.verified' | translate"></ion-icon>
+            }
+          } @else {
+            <b class="text-[1.2rem] font-extrabold tracking-tight text-content-muted">{{ 'provider.loading' | translate }}</b>
+          }
+        </div>
 
-    <!-- Skills -->
-    @if (p.skills.length > 0) {
-      <div class="hm-section-head"><h2>{{ 'provider.skills' | translate }}</h2></div>
-      <div class="chips">
-        @for (skill of p.skills; track skill) {
-          <span class="chip">{{ skill }}</span>
-        }
-      </div>
-    }
+        <div class="mt-1 flex flex-wrap items-center justify-center gap-1.5 text-sm font-semibold">
+          <!-- The sub-line is the trade. A provider with no listed skill has nothing else to say
+               here, and its fallback is the headline — which is already the name above it, so
+               showing it again reads as a rendering fault rather than information. -->
+          @if (p.headline && p.headline !== p.name) {
+            <span>{{ p.headline }}</span>
+          }
+          @if (p.city) {
+            <span class="size-[3px] flex-none rounded-full bg-edge-strong" aria-hidden="true"></span>
+            <span class="text-content-muted">
+              <ion-icon name="location-outline" class="me-0.5 -mb-px text-sm" aria-hidden="true"></ion-icon>{{ p.city }}
+            </span>
+          }
+        </div>
 
-    <!-- About -->
-    @if (p.about) {
-      <div class="hm-section-head"><h2>{{ 'provider.about' | translate }}</h2></div>
-      <p class="about">{{ p.about }}</p>
-    }
-    @if (p.memberSince) {
-      <p class="since hm-muted">{{ 'provider.member_since' | translate:{ year: p.memberSince } }}</p>
-    }
-
-    <!-- Reviews -->
-    <div class="hm-section-head"><h2>{{ 'provider.reviews' | translate }}</h2></div>
-    @for (r of p.reviews; track r.id) {
-      <article class="review hm-card">
-        <div [class]="'hm-avatar rev-av accent-' + r.accent" aria-hidden="true">{{ r.authorInitials }}</div>
-        <div class="rev-body">
-          <div class="rev-top">
-            <b>{{ r.authorName || ('provider.reviewer' | translate) }}</b>
-            <span class="rev-stars" [attr.aria-label]="r.rating">
-              @for (s of stars(r.rating); track $index) {
-                <ion-icon [name]="s === 'full' ? 'star' : 'star-outline'" aria-hidden="true"></ion-icon>
+        <div class="mt-2 flex items-center gap-1.5">
+          @if (p.ratingAvg !== null) {
+            <span class="inline-flex text-md text-warning" [attr.aria-label]="p.ratingAvg">
+              @for (s of stars(p.ratingAvg); track $index) {
+                <ion-icon [name]="s === 'full' ? 'star' : (s === 'half' ? 'star-half' : 'star-outline')" aria-hidden="true"></ion-icon>
               }
             </span>
-          </div>
-          <p class="rev-text">{{ r.comment }}</p>
-          <div class="rev-meta hm-muted">
-            <span>{{ r.date }}</span>
-          </div>
+            <b class="text-md font-extrabold">{{ p.ratingAvg | number:'1.1-1' }}</b>
+            <span class="text-sm text-content-muted">{{ 'provider.rating_count' | translate:{ count: p.ratingCount } }}</span>
+          } @else {
+            <span class="text-content-muted">{{ 'provider.unrated' | translate }}</span>
+          }
         </div>
-      </article>
-    } @empty {
-      <app-empty-state
-        inline="true"
-        icon="star-outline"
-        heading="provider.no_reviews_title"
-        body="provider.no_reviews_body"
-      ></app-empty-state>
-    }
-  </div>
+      </section>
+
+      <!-- Reputation metrics (display-safe subset) -->
+      <div class="mt-4 grid grid-cols-3 gap-2">
+        <div class="grid place-items-center gap-0.5 rounded-lg border border-edge bg-surface-raised px-1.5 py-4 text-center shadow-sm">
+          <b class="text-[1.25rem] font-extrabold tracking-tight">{{ p.jobsCompleted90d }}</b>
+          <small class="text-2xs text-content-muted">{{ 'provider.stat.completed' | translate }}</small>
+        </div>
+        <div class="grid place-items-center gap-0.5 rounded-lg border border-edge bg-surface-raised px-1.5 py-4 text-center shadow-sm">
+          @if (hasEnoughSignal()) {
+            <b class="text-[1.25rem] font-extrabold tracking-tight">{{ onTimePercent() }}%</b>
+          } @else {
+            <b class="text-md font-bold text-content-muted">{{ 'provider.building' | translate }}</b>
+          }
+          <small class="text-2xs text-content-muted">{{ 'provider.stat.on_time' | translate }}</small>
+        </div>
+        @if (p.responseTime) {
+          <div class="grid place-items-center gap-0.5 rounded-lg border border-edge bg-surface-raised px-1.5 py-4 text-center shadow-sm">
+            <b class="text-[1.25rem] font-extrabold tracking-tight">{{ p.responseTime }}</b>
+            <small class="text-2xs text-content-muted">{{ 'provider.stat.response' | translate }}</small>
+          </div>
+        }
+      </div>
+
+      @if (!hasEnoughSignal()) {
+        <p class="mt-2 flex items-center gap-1.5 text-xs text-content-muted">
+          <ion-icon name="sparkles-outline" class="flex-none text-md text-brand" aria-hidden="true"></ion-icon>
+          {{ 'provider.new_note' | translate }}
+        </p>
+      }
+
+      <!-- Skills -->
+      @if (p.skills.length > 0) {
+        <h2 class="mt-6 mb-4 text-lg font-extrabold tracking-snug">{{ 'provider.skills' | translate }}</h2>
+        <div class="flex flex-wrap gap-1.5">
+          @for (skill of p.skills; track skill) {
+            <span class="rounded-pill border border-edge bg-surface-sunken px-2.5 py-1 text-xs font-semibold text-content">{{ skill }}</span>
+          }
+        </div>
+      }
+
+      <!-- About -->
+      @if (p.about) {
+        <h2 class="mt-6 mb-4 text-lg font-extrabold tracking-snug">{{ 'provider.about' | translate }}</h2>
+        <p class="m-0 text-md leading-relaxed text-content">{{ p.about }}</p>
+      }
+      @if (p.memberSince) {
+        <p class="mt-1.5 mb-0 text-xs text-content-muted">{{ 'provider.member_since' | translate:{ year: p.memberSince } }}</p>
+      }
+
+      <!-- Reviews -->
+      <h2 class="mt-6 mb-4 text-lg font-extrabold tracking-snug">{{ 'provider.reviews' | translate }}</h2>
+      @for (r of p.reviews; track r.id) {
+        <article class="mb-2 flex gap-2 rounded-lg border border-edge bg-surface-raised p-4 shadow-sm">
+          <div
+            [class]="'grid size-10 flex-none place-items-center rounded-full text-sm font-bold text-brand-contrast accent-' + r.accent"
+            aria-hidden="true"
+          >{{ r.authorInitials }}</div>
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center justify-between gap-2">
+              <b class="text-md">{{ r.authorName || ('provider.reviewer' | translate) }}</b>
+              <span class="inline-flex flex-none text-sm text-warning" [attr.aria-label]="r.rating">
+                @for (s of stars(r.rating); track $index) {
+                  <ion-icon [name]="s === 'full' ? 'star' : 'star-outline'" aria-hidden="true"></ion-icon>
+                }
+              </span>
+            </div>
+            <p class="mt-1.5 mb-2 text-sm leading-snug">{{ r.comment }}</p>
+            <div class="flex items-center gap-2 text-xs text-content-muted">
+              <span>{{ r.date }}</span>
+            </div>
+          </div>
+        </article>
+      } @empty {
+        <app-empty-state
+          inline="true"
+          icon="star-outline"
+          heading="provider.no_reviews_title"
+          body="provider.no_reviews_body"
+        ></app-empty-state>
+      }
+    </div>
   }
 </ion-content>
 
 <ion-footer class="ion-no-border">
-  <div class="cta">
-    <ion-button expand="block" class="hm-tap" [disabled]="sending()" (click)="requestQuote()">
+  <div class="mx-auto max-w-3xl border-t border-t-edge px-4 py-2">
+    <ion-button expand="block" [disabled]="sending()" (click)="requestQuote()">
       <ion-icon name="chatbubble-ellipses-outline" slot="start" aria-hidden="true"></ion-icon>
       {{ (hasJob ? 'provider.send_offer' : 'provider.request_quote') | translate }}
     </ion-button>
@@ -173,23 +181,26 @@
     </ion-header>
 
     <ion-content>
-      <div class="sheet">
-        <span class="flabel">{{ 'report.category' | translate }}</span>
-        <div class="cats">
+      <div class="mx-auto max-w-3xl px-4 pt-4 pb-10">
+        <span class="mb-1.5 block text-sm font-bold text-content-muted">{{ 'report.category' | translate }}</span>
+        <!-- Chips rather than a select: seven reasons is a list you read, and one of them is the
+             point of the whole screen — burying them behind a dropdown hides what the platform will
+             act on. -->
+        <div class="mb-4 flex flex-wrap gap-1.5">
           @for (c of categories; track c) {
             <button
               type="button"
-              class="cat hm-tap"
-              [class.on]="category() === c"
+              class="min-h-11 cursor-pointer rounded-pill border-[1.5px] bg-transparent px-3 py-1.5 text-sm font-semibold"
+              [class]="category() === c ? 'border-brand bg-brand/12 text-brand' : 'border-edge text-content'"
               (click)="category.set(c)"
             >{{ ('report.cat.' + c) | translate }}</button>
           }
         </div>
 
-        <label class="field">
-          <span class="flabel">{{ 'report.body_label' | translate }}</span>
+        <label class="mb-4 block">
+          <span class="mb-1.5 block text-sm font-bold text-content-muted">{{ 'report.body_label' | translate }}</span>
           <textarea
-            class="ftext"
+            class="w-full resize-y rounded-md border-[1.5px] border-edge bg-surface-raised px-3 py-2.5 font-sans text-md leading-snug text-content focus:border-brand focus:outline-none"
             rows="5"
             [ngModel]="reportBody()"
             (ngModelChange)="reportBody.set($event)"
@@ -198,19 +209,19 @@
           ></textarea>
         </label>
         @if (reportBodyMissing()) {
-          <p class="err">{{ 'report.body_required' | translate }}</p>
+          <p class="-mt-3.5 mb-4 text-xs text-danger">{{ 'report.body_required' | translate }}</p>
         }
 
-        <p class="note">
-          <ion-icon name="information-circle-outline" aria-hidden="true"></ion-icon>
-          <span>{{ 'report.note' | translate }}</span>
+        <p class="mt-6 mb-0 flex items-start gap-2 text-xs leading-relaxed text-content-muted">
+          <ion-icon name="information-circle-outline" class="mt-0.5 flex-none text-md" aria-hidden="true"></ion-icon>
+          <span class="min-w-0 flex-1">{{ 'report.note' | translate }}</span>
         </p>
       </div>
     </ion-content>
 
     <ion-footer class="ion-no-border">
-      <div class="cta">
-        <ion-button expand="block" class="hm-tap" [disabled]="reporting()" (click)="sendReport()">
+      <div class="mx-auto max-w-3xl border-t border-t-edge px-4 py-2">
+        <ion-button expand="block" [disabled]="reporting()" (click)="sendReport()">
           @if (reporting()) {
             <ion-spinner name="crescent"></ion-spinner>
           } @else {
