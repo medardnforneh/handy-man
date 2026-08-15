@@ -14,6 +14,7 @@ use App\Models\Engagement;
 use App\Models\Membership;
 use App\Models\Organization;
 use App\Models\User;
+use BackedEnum;
 use Carbon\CarbonImmutable;
 use Filament\Actions\Action;
 use Filament\Forms\Components\DateTimePicker;
@@ -40,8 +41,21 @@ class AssignmentsRelationManager extends RelationManager
             ->recordTitleAttribute('id')
             ->columns([
                 TextColumn::make('worker.party.display_name')->label('Worker'),
-                TextColumn::make('role')->badge(),
-                TextColumn::make('status')->badge(),
+                // The lead is the one accountable for the engagement; it should not look identical
+                // to a helper in a list of five.
+                TextColumn::make('role')
+                    ->badge()
+                    ->color(fn (mixed $state): string => ($state instanceof BackedEnum ? $state->value : $state) === 'lead' ? 'primary' : 'gray'),
+                TextColumn::make('status')
+                    ->badge()
+                    ->color(fn (mixed $state): string => match ($state instanceof BackedEnum ? $state->value : $state) {
+                        'assigned' => 'info',
+                        'accepted', 'en_route', 'on_site' => 'warning',
+                        'completed' => 'success',
+                        'declined' => 'danger',
+                        'removed' => 'gray',
+                        default => 'gray',
+                    }),
                 TextColumn::make('scheduled_from')->dateTime()->placeholder('—'),
                 TextColumn::make('scheduled_to')->dateTime()->placeholder('—'),
             ])

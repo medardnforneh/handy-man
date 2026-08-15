@@ -1031,5 +1031,6 @@
   "review.body_ph": "What went well, what did not (optional)",
   "review.submit": "Submit review",
   "review.submitted": "Review saved. It stays hidden until they write theirs.",
-  "review.done": "You have reviewed this job."
+  "review.done": "You have reviewed this job.",
+  "admin.verification.file_missing": "This document is no longer in storage. Nothing was shown and the attempt was logged."
 }

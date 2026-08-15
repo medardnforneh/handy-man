@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\JobOffers\Tables;
 
+use BackedEnum;
 use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -15,8 +16,26 @@ class JobOffersTable
             ->columns([
                 TextColumn::make('job.reference')->label('Job')->searchable()->sortable(),
                 TextColumn::make('provider.display_name')->label('Provider')->searchable(),
-                TextColumn::make('origin')->badge(),
-                TextColumn::make('status')->badge(),
+                // Origin is a KIND, not a state, so its colours only need to be distinguishable —
+                // where an offer came from is the first thing to check when one looks wrong.
+                TextColumn::make('origin')
+                    ->badge()
+                    ->color(fn (mixed $state): string => match ($state instanceof BackedEnum ? $state->value : $state) {
+                        'customer_direct' => 'info',
+                        'system_dispatch' => 'primary',
+                        'provider_bid' => 'warning',
+                        default => 'gray',
+                    }),
+                TextColumn::make('status')
+                    ->badge()
+                    ->color(fn (mixed $state): string => match ($state instanceof BackedEnum ? $state->value : $state) {
+                        'pending' => 'warning',
+                        'accepted' => 'success',
+                        'declined' => 'danger',
+                        // Neither a success nor a failure — the offer simply stopped being live.
+                        'withdrawn', 'expired', 'superseded' => 'gray',
+                        default => 'gray',
+                    }),
                 TextColumn::make('amount_minor')->label('Amount')->money('XAF', divideBy: 100)->sortable(),
                 TextColumn::make('expires_at')->dateTime()->sortable(),
                 TextColumn::make('responded_at')->dateTime()->placeholder('—')->toggleable(),

@@ -643,6 +643,9 @@
       "ip": "IP",
       "context": "Détail",
       "document_views": "Consultations de documents seulement"
+    },
+    "verification": {
+      "file_missing": "Ce document n’est plus dans le stockage. Rien n’a été affiché et la tentative a été enregistrée."
     }
   },
   "push": {

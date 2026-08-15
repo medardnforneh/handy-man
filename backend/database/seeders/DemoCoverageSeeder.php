@@ -6,6 +6,7 @@ namespace Database\Seeders;
 
 use App\Domain\Jobs\JobStatus;
 use App\Domain\Safety\SafetyAlertKind;
+use App\Domain\Verification\VerificationStorage;
 use App\Models\Assignment;
 use App\Models\Block;
 use App\Models\CashSettlement;
@@ -41,6 +42,8 @@ use App\Models\WorkSession;
 use App\Support\ActivityLogger;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use MatanYadaev\EloquentSpatial\Objects\Point;
 
@@ -286,6 +289,8 @@ final class DemoCoverageSeeder extends Seeder
      */
     private function identity(Collection $providers, Collection $customers, User $admin): void
     {
+        $storage = app(VerificationStorage::class);
+
         foreach ($customers->take(4) as $customer) {
             foreach (['terms', 'privacy', 'location_tracking', 'marketing'] as $purpose) {
                 Consent::query()->firstOrCreate(
@@ -337,7 +342,7 @@ final class DemoCoverageSeeder extends Seeder
                 continue;
             }
 
-            VerificationDocument::factory()->create([
+            $document = VerificationDocument::factory()->create([
                 'party_id' => $provider->party_id,
                 'kind' => $state['kind'],
                 'status' => $state['status'],
@@ -345,6 +350,25 @@ final class DemoCoverageSeeder extends Seeder
                 'reviewed_at' => $state['status'] === 'pending' ? null : now()->subDays(3),
                 'reject_reason' => $state['status'] === 'rejected' ? 'Document illisible — merci de renvoyer une photo nette.' : null,
             ]);
+
+            // The factory invents a `storage_path` and writes nothing at it, so every "view
+            // document" in the demo hit `Crypt::decryptString('')` and failed with "The payload is
+            // invalid". The reviewer's whole job is looking at the file; a queue where that button
+            // always errors demonstrates the opposite of what it is for.
+            //
+            // Deliberately text rather than a fake photograph of an identity document: it exercises
+            // the real path (encrypt at rest → signed URL → decrypt → stream → audit log) and says
+            // plainly what it is, which a synthetic ID card would not.
+            Storage::disk($storage->disk())->put(
+                $document->storage_path,
+                Crypt::encryptString(
+                    "DEMO DOCUMENT\n\n"
+                    ."Kind: {$state['kind']}\n"
+                    ."Status: {$state['status']}\n\n"
+                    ."Seed data — no real identity document is stored. This file exists so the\n"
+                    ."reviewer's view path can be exercised end to end."
+                ),
+            );
         }
 
         // An audit row for a document view: the insider-threat control (P6-02) with evidence in it.

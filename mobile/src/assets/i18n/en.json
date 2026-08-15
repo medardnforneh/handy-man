@@ -643,6 +643,9 @@
       "ip": "IP",
       "context": "Detail",
       "document_views": "Document views only"
+    },
+    "verification": {
+      "file_missing": "This document is no longer in storage. Nothing was shown and the attempt was logged."
     }
   },
   "push": {

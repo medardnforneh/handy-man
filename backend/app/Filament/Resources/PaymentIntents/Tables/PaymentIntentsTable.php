@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\PaymentIntents\Tables;
 
 use App\Domain\Money\PaymentStatus;
+use BackedEnum;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
@@ -14,7 +15,15 @@ class PaymentIntentsTable
         return $table
             ->columns([
                 TextColumn::make('party.display_name')->label(__('admin.money.payer'))->searchable(),
-                TextColumn::make('purpose')->badge(),
+                // Where the money is going is a KIND — distinguishable, not semantic.
+                TextColumn::make('purpose')
+                    ->badge()
+                    ->color(fn (mixed $state): string => match ($state instanceof BackedEnum ? $state->value : $state) {
+                        'deposit' => 'info',
+                        'milestone' => 'primary',
+                        'balance' => 'warning',
+                        default => 'gray',
+                    }),
                 TextColumn::make('amount_minor')
                     ->label(__('admin.amount'))
                     ->formatStateUsing(fn (int $state): string => number_format($state, 0, '.', ' '))

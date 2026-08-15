@@ -85,7 +85,12 @@
     .hm-dash .hm-stack{ display:flex; flex-direction:column; gap:24px; }
     /* Long-form prose (a complaint, a report, a resolution note) — the one place in the admin where
        a full paragraph is read rather than scanned, so it gets a reading measure and line height. */
-    .hm-dash .hm-body{ margin:0; font-size:13.5px; line-height:1.65; color:var(--hm-text); max-width:64ch; white-space:pre-wrap; overflow-wrap:anywhere; }
+    /* `.hm-card` carries no padding of its own — every child inside it provides its own, which is
+       why `.hm-phead` sets 14px/16px. `.hm-body` set none, so on all five detail pages (the
+       dispute complaint, the exception's finding, the report, the referral's flag reason, the
+       safety-alert note) the heading was inset and the text under it ran flush to the card's edge.
+       It is the same 16px as the heading above it; `max-width` keeps the measure readable. */
+    .hm-dash .hm-body{ margin:0; padding:14px 16px; font-size:13.5px; line-height:1.65; color:var(--hm-text); max-width:64ch; white-space:pre-wrap; overflow-wrap:anywhere; }
     .hm-dash .hm-linkcard{ display:flex; align-items:center; justify-content:space-between; gap:12px;
         padding:14px 16px; border-radius:var(--hm-radius-lg, 14px); border:1px solid var(--hm-border);
         background:var(--hm-raised); color:var(--hm-brand); font-size:13px; font-weight:600; text-decoration:none; }
@@ -98,7 +103,7 @@
        where `white-space:pre-wrap` and `overflow-wrap:anywhere` are exactly right, and this card's
        little text block, where they are exactly wrong — they were breaking "mismatch" mid-word and
        holding the line at 64ch inside a 300px aside. The narrower rule wins them back. */
-    .hm-dash .hm-exc .hm-body{ flex:1; min-width:0; max-width:none; white-space:normal; overflow-wrap:break-word; font-size:inherit; line-height:1.45; }
+    .hm-dash .hm-exc .hm-body{ flex:1; min-width:0; max-width:none; padding:0; white-space:normal; overflow-wrap:break-word; font-size:inherit; line-height:1.45; }
     .hm-dash .hm-exc .hm-body b{ font-size:13px; }
     .hm-dash .hm-exc .hm-body p{ margin:2px 0 0; color:var(--hm-muted); font-size:12px; }
     /* A figure separated by spaces must not wrap — the same rule the table's `.hm-num` carries. */

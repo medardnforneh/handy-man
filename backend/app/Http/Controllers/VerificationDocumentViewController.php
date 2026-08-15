@@ -7,8 +7,10 @@ namespace App\Http\Controllers;
 use App\Domain\Verification\VerificationStorage;
 use App\Models\VerificationDocument;
 use App\Support\ActivityLogger;
+use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use League\Flysystem\UnableToReadFile;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -30,7 +32,16 @@ final class VerificationDocumentViewController extends Controller
             ip: $request->ip(),
         );
 
-        $bytes = $storage->read($document);
+        // A row can outlive its file — a bucket restored from an older snapshot, a partial upload,
+        // an erasure that purged the object and left the record. That is a missing document, not a
+        // server fault, and it should say so instead of raising a 500 at a reviewer who is halfway
+        // through a queue. `decryptString` throws the same way on absent bytes as on corrupt ones.
+        try {
+            $bytes = $storage->read($document);
+        } catch (DecryptException|UnableToReadFile $e) {
+            abort(Response::HTTP_NOT_FOUND, __('admin.verification.file_missing'));
+        }
+
         $mime = (new \finfo(FILEINFO_MIME_TYPE))->buffer($bytes) ?: 'application/octet-stream';
 
         return response($bytes, 200, [

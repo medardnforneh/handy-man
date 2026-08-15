@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Parties\Tables;
 
 use App\Filament\Resources\Parties\PartyResource;
 use App\Models\Party;
+use BackedEnum;
 use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
@@ -24,7 +25,10 @@ class PartiesTable
                     // An erased party keeps its row (P1-10) — say so, rather than showing a
                     // tombstoned name as if it were a live account.
                     ->description(fn (Party $record): ?string => $record->erased_at !== null ? __('admin.party.erased_on', ['date' => $record->erased_at->format('d M Y')]) : null),
-                TextColumn::make('kind')->badge()->formatStateUsing(fn (string $state): string => __('admin.party.kind.'.$state)),
+                TextColumn::make('kind')
+                    ->badge()
+                    ->color(fn (mixed $state): string => ($state instanceof BackedEnum ? $state->value : $state) === 'organization' ? 'info' : 'gray')
+                    ->formatStateUsing(fn (string $state): string => __('admin.party.kind.'.$state)),
                 TextColumn::make('status')->badge()->colors([
                     'success' => 'active', 'warning' => 'pending', 'danger' => 'suspended', 'gray' => 'closed',
                 ])->formatStateUsing(fn (string $state): string => __('admin.party.status.'.$state)),

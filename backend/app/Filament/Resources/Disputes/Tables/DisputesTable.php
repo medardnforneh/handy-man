@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Disputes\Tables;
 use App\Filament\Resources\Disputes\Actions\AdjudicateAction;
 use App\Filament\Resources\Disputes\DisputeResource;
 use App\Models\Dispute;
+use BackedEnum;
 use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -16,7 +17,19 @@ class DisputesTable
     {
         return $table
             ->columns([
-                TextColumn::make('category')->badge()->searchable(),
+                // Distinguishable rather than semantic — a category is a kind, not a state. Safety
+                // is the exception: it is the one that has to be picked out of a list at a glance.
+                TextColumn::make('category')
+                    ->badge()
+                    ->searchable()
+                    ->color(fn (mixed $state): string => match ($state instanceof BackedEnum ? $state->value : $state) {
+                        'safety' => 'danger',
+                        'payment' => 'warning',
+                        'quality' => 'info',
+                        'no_show' => 'primary',
+                        'scope' => 'gray',
+                        default => 'gray',
+                    }),
                 TextColumn::make('engagement_id')->label('Engagement')->limit(8)->copyable(),
                 TextColumn::make('body')->limit(60)->wrap(),
                 TextColumn::make('status')->badge()->colors([

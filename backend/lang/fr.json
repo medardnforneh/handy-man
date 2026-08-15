@@ -1031,5 +1031,6 @@
   "review.body_ph": "Ce qui s’est bien passé, ou moins bien (facultatif)",
   "review.submit": "Envoyer l’avis",
   "review.submitted": "Avis enregistré. Il reste masqué jusqu’à ce qu’ils écrivent le leur.",
-  "review.done": "Vous avez donné votre avis sur ce travail."
+  "review.done": "Vous avez donné votre avis sur ce travail.",
+  "admin.verification.file_missing": "Ce document n’est plus dans le stockage. Rien n’a été affiché et la tentative a été enregistrée."
 }
