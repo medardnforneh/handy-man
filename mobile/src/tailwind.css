@@ -50,9 +50,10 @@
    'tone-success' and the rest appear as literals in the TypeScript, which is scanned. */
 @source inline("accent-{brand,info,warning,muted}");
 
+/* No --font-sans override: the app takes Tailwind's own default stack. Ionic is pointed AT it from
+   theme/variables.scss rather than the reverse, so --font-sans is the single source of the
+   typeface and Ionic's components follow it. */
 @theme {
-    --font-sans: var(--ion-font-family);
-
     /* The connectivity strip slides in rather than appearing — a bar that pops into existence reads
        as a layout bug — and its state mark breathes so "sending" is legible without a spinner
        asset. Declared here so both are ordinary `animate-*` utilities. */
