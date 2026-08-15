@@ -1376,5 +1376,29 @@
     "claim_send": "Utiliser le code",
     "claimed": "Code accepté",
     "claim_failed": "Ce code n'a pas pu être utilisé."
+  },
+  "fund": {
+    "action": "Payer sur le séquestre",
+    "title": "Payer sur le séquestre",
+    "amount": "Quel montant payez-vous ?",
+    "amount_hint": "C'est ce qui reste dû sur le prix convenu.",
+    "msisdn": "Numéro Mobile Money",
+    "msisdn_hint": "Le numéro qui recevra la demande de confirmation.",
+    "required": "Indiquez un montant et un numéro.",
+    "note": "Vous recevrez une demande sur ce téléphone. L'argent est retenu et ne parvient au prestataire que lorsque vous validez le travail.",
+    "confirm": "Envoyer la demande",
+    "pending": "Vérifiez votre téléphone pour valider le paiement",
+    "failed": "Le paiement n'a pas pu être lancé. Réessayez."
+  },
+  "credits": {
+    "top_up": "Acheter des crédits",
+    "amount": "Combien voulez-vous ajouter ?",
+    "amount_hint": "Les crédits servent à répondre aux opportunités que vous choisissez.",
+    "msisdn": "Numéro Mobile Money",
+    "required": "Indiquez un montant et un numéro.",
+    "note": "Vous recevrez une demande sur ce téléphone. Votre solde de crédits est mis à jour dès que vous la validez.",
+    "confirm": "Envoyer la demande",
+    "pending": "Vérifiez votre téléphone pour valider le paiement",
+    "failed": "Le paiement n'a pas pu être lancé. Réessayez."
   }
 }

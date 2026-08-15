@@ -56,15 +56,41 @@ const client = walk(join(root, 'mobile/src/app')).map((f) => readFileSync(f, 'ut
 // Bearer token). Any endpoint the server hands out as a link belongs here, not in the report.
 const REACHED_BY_LINK = new Set(['/media/{media}']);
 
-const missing = ops.filter((o) => !client.includes(`'${o.path}'`) && !REACHED_BY_LINK.has(o.path));
+/**
+ * Endpoints the app is RIGHT not to call, each with the reason it is right.
+ *
+ * This list is deliberately hard to add to: every entry is an admission that something in the spec
+ * has no user, and "we meant to" is not one of the reasons below. Anything that is merely unbuilt
+ * belongs in the report, where it stays uncomfortable.
+ */
+const NOT_FOR_THE_APP = new Map([
+  ['/webhooks/payments/{gateway}', 'server-to-server: the gateway calls it, never a client'],
+  ['/notes', 'the P0-05 reference slice — a worked example, not a product surface'],
+  ['/notes/{note}', 'the P0-05 reference slice — a worked example, not a product surface'],
+  ['/engagements/{engagement}/assignments', 'admin-panel function (dispatching a company’s workers)'],
+  ['/engagements/{engagement}/assignments/{assignment}', 'admin-panel function (dispatching a company’s workers)'],
+  ['/provider/credits', 'redundant: /provider/earnings returns lead_credits in the same payload, and the earnings screen is the only reader'],
+]);
+
+const uncalled = ops.filter((o) => !client.includes(`'${o.path}'`) && !REACHED_BY_LINK.has(o.path));
+const missing = uncalled.filter((o) => !NOT_FOR_THE_APP.has(o.path));
+const excused = uncalled.filter((o) => NOT_FOR_THE_APP.has(o.path));
 
 console.log(`operations in the spec: ${ops.length}`);
 console.log(`never called by the client: ${missing.length}\n`);
 for (const o of missing) {
   console.log('  ', o.method.toUpperCase().padEnd(6), o.path.padEnd(48), o.id);
 }
+
+if (missing.length === 0) {
+  console.log('  every operation the app should reach, it reaches.\n');
+}
+
+console.log(`not for the app (${excused.length}):`);
+for (const o of excused) {
+  console.log('  ', o.path.padEnd(48), NOT_FOR_THE_APP.get(o.path));
+}
 console.log(
-  '\nNot every one is a defect — the payment webhook is server-to-server, /notes is the P0-05\n'
-  + 'reference slice, and worker assignment is an admin-panel function. Everything else is a\n'
-  + 'surface the API can serve and the app cannot reach. docs/BUILD_STATE.md triages the list.',
+  '\nAn entry in the second list is a claim that the endpoint has no business in the client.\n'
+  + 'Anything merely unbuilt belongs in the first one. docs/BUILD_STATE.md carries the history.',
 );

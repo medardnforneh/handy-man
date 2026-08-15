@@ -841,6 +841,27 @@ export class CustomerService {
   }
 
   /**
+   * Put money into an engagement's escrow (P3-04).
+   *
+   * Accepting a quote generates the milestone plan but collects nothing, so before this the job
+   * screen could show "In escrow" as a figure the customer had no way to actually pay in. The
+   * money moves when they answer the USSD prompt on their own phone — this call only starts it,
+   * which is why the screen says to check their handset rather than announcing a payment.
+   */
+  async fundEscrow(engagementId: string, amountMinor: number, msisdn: string): Promise<{ ok: boolean; detail?: string }> {
+    try {
+      await this.api.initiatePaymentIntent('escrow', amountMinor, msisdn, engagementId);
+      return { ok: true };
+    } catch (e) {
+      const problem = e as { detail?: unknown; title?: unknown };
+      const detail = [problem.detail, problem.title]
+        .find((v): v is string => typeof v === 'string' && v.trim() !== '');
+
+      return { ok: false, detail };
+    }
+  }
+
+  /**
    * Rebook a provider (P8-05) — clones the last job with them and sends a direct offer.
    *
    * Offered only where we know the two have actually worked together, so the 422 for "nothing to

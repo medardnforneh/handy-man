@@ -1376,5 +1376,29 @@
     "claim_send": "Use code",
     "claimed": "Code accepted",
     "claim_failed": "That code could not be used."
+  },
+  "fund": {
+    "action": "Pay into escrow",
+    "title": "Pay into escrow",
+    "amount": "How much are you paying?",
+    "amount_hint": "This is what is still owed on the agreed price.",
+    "msisdn": "Mobile Money number",
+    "msisdn_hint": "The number that will be prompted to confirm.",
+    "required": "Enter an amount and a number.",
+    "note": "You will get a prompt on that phone. The money is held and only reaches the provider when you approve the work.",
+    "confirm": "Send the request",
+    "pending": "Check your phone to approve the payment",
+    "failed": "That could not be started. Try again."
+  },
+  "credits": {
+    "top_up": "Buy more credits",
+    "amount": "How much do you want to add?",
+    "amount_hint": "Credits are spent on opportunities you choose to bid on.",
+    "msisdn": "Mobile Money number",
+    "required": "Enter an amount and a number.",
+    "note": "You will get a prompt on that phone. Your credit balance updates once you approve it.",
+    "confirm": "Send the request",
+    "pending": "Check your phone to approve the payment",
+    "failed": "That could not be started. Try again."
   }
 }

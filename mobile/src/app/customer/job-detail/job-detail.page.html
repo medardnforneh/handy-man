@@ -140,6 +140,15 @@
           <span class="font-bold tabular-nums">{{ job().releasedMinor | money }} <small class="ms-0.5 text-2xs font-semibold text-content-muted">{{ 'money.currency' | translate }}</small></span>
         </div>
 
+        <!-- Paying the agreed money in (P3-04). Accepting a quote builds the plan and collects
+             nothing, so without this the figure above was one the customer had no way to fund. -->
+        @if (canFund()) {
+          <ion-button class="mt-4" expand="block" [disabled]="busy()" (click)="openFund()">
+            <ion-icon name="phone-portrait-outline" slot="start" aria-hidden="true"></ion-icon>
+            {{ 'fund.action' | translate }}
+          </ion-button>
+        }
+
         <!-- Getting the held balance back (P3-14). Inside the money card, because that is what it
              changes, and quiet, because it ends the money side of the engagement — a provider
              mid-job stops being paid for it. Absent entirely when escrow is empty: there would be
@@ -405,6 +414,68 @@
       <div class="mx-auto max-w-3xl border-t border-t-edge px-4 py-2">
         <ion-button expand="block" [disabled]="busy()" (click)="sendDispute()">
           {{ 'dispute.send' | translate }}
+        </ion-button>
+      </div>
+    </ion-footer>
+  </ng-template>
+</ion-modal>
+
+<!-- Funding escrow (P3-04). Two fields, because the collection takes two things: how much, and the
+     Mobile Money number to prompt. It ends PENDING by design — the money moves when the customer
+     answers the prompt on their handset — so the sheet says to expect that rather than implying the
+     payment is already done. -->
+<ion-modal [isOpen]="fundOpen()" (didDismiss)="closeFund()">
+  <ng-template>
+    <ion-header class="ion-no-border">
+      <ion-toolbar>
+        <ion-buttons slot="start">
+          <ion-button (click)="closeFund()">{{ 'common.cancel' | translate }}</ion-button>
+        </ion-buttons>
+        <ion-title>{{ 'fund.title' | translate }}</ion-title>
+      </ion-toolbar>
+    </ion-header>
+
+    <ion-content>
+      <div class="mx-auto max-w-3xl px-4 pt-4 pb-10">
+        <label class="mb-4 block">
+          <span class="mb-1.5 block text-sm font-bold text-content-muted">{{ 'fund.amount' | translate }}</span>
+          <input
+            class="w-full rounded-md border-[1.5px] border-edge bg-surface-raised px-3 py-2.5 font-sans text-md tabular-nums text-content focus:border-brand focus:outline-none"
+            type="number"
+            inputmode="numeric"
+            min="1"
+            [ngModel]="fundAmount()"
+            (ngModelChange)="fundAmount.set(+$event)"
+          />
+          <small class="mt-1 block text-xs leading-snug text-content-muted">{{ 'fund.amount_hint' | translate }}</small>
+        </label>
+
+        <label class="mb-4 block">
+          <span class="mb-1.5 block text-sm font-bold text-content-muted">{{ 'fund.msisdn' | translate }}</span>
+          <input
+            class="w-full rounded-md border-[1.5px] border-edge bg-surface-raised px-3 py-2.5 font-sans text-md tabular-nums text-content focus:border-brand focus:outline-none"
+            type="tel"
+            inputmode="tel"
+            [ngModel]="fundMsisdn()"
+            (ngModelChange)="fundMsisdn.set($event)"
+          />
+          <small class="mt-1 block text-xs leading-snug text-content-muted">{{ 'fund.msisdn_hint' | translate }}</small>
+        </label>
+        @if (fundInvalid()) {
+          <p class="-mt-3.5 mb-4 text-xs text-danger">{{ 'fund.required' | translate }}</p>
+        }
+
+        <p class="mt-6 mb-0 flex items-start gap-2 text-xs leading-relaxed text-content-muted">
+          <ion-icon name="information-circle-outline" class="mt-0.5 flex-none text-md" aria-hidden="true"></ion-icon>
+          <span class="min-w-0 flex-1">{{ 'fund.note' | translate }}</span>
+        </p>
+      </div>
+    </ion-content>
+
+    <ion-footer class="ion-no-border">
+      <div class="mx-auto max-w-3xl border-t border-t-edge px-4 py-2">
+        <ion-button expand="block" [disabled]="busy()" (click)="fund()">
+          {{ 'fund.confirm' | translate }}
         </ion-button>
       </div>
     </ion-footer>

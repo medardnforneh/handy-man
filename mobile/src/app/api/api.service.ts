@@ -918,6 +918,37 @@ export class ApiService {
   }
 
   /**
+   * Start a Mobile Money collection (P3-04).
+   *
+   * Two purposes, two very different moments: `escrow` is a customer putting the agreed money
+   * somewhere neither side can touch, and `lead_credits` is a provider buying the right to bid.
+   *
+   * It returns PENDING, always. The money moves when the payer answers the USSD prompt on their own
+   * handset, which happens outside this app and after this response — so nothing that calls it may
+   * claim the payment succeeded. The webhook resolves it.
+   */
+  async initiatePaymentIntent(
+    purpose: 'escrow' | 'lead_credits',
+    amountMinor: number,
+    msisdn: string,
+    engagementId?: string,
+  ) {
+    const { data, error } = await api.POST('/payment-intents', {
+      params: { header: { 'Idempotency-Key': uuid() } },
+      body: {
+        purpose,
+        amount_minor: amountMinor,
+        msisdn,
+        ...(engagementId !== undefined ? { engagement_id: engagementId } : {}),
+      },
+    });
+    if (error) {
+      throw error;
+    }
+    return data.data;
+  }
+
+  /**
    * Rebook a provider you have used before (P8-05) — clones the last job and sends them a direct
    * offer, in one tap. The one-tap part is the point: the alternative is describing the same work
    * again to the same person.

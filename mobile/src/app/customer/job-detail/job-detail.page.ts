@@ -238,6 +238,65 @@ export class JobDetailPage {
     await toast.present();
   }
 
+  // --- Funding escrow (P3-04) --------------------------------------------------------------------
+  //
+  // Accepting a quote builds the milestone plan and collects nothing, so this screen could show
+  // "In escrow" as a number the customer had no way to actually pay in. This is that way.
+  //
+  // The payment is PENDING when the call returns: the money moves when they answer the prompt on
+  // their own handset, which happens outside this app. Nothing here may say "paid".
+
+  readonly fundOpen = signal(false);
+  readonly fundAmount = signal(0);
+  readonly fundMsisdn = signal('');
+  readonly fundTouched = signal(false);
+
+  /** What is agreed but neither held nor released yet — the honest default for the amount field. */
+  readonly outstandingMinor = computed(() => {
+    const job = this.job();
+    return Math.max(0, job.agreedMinor - job.escrowHeldMinor - job.releasedMinor);
+  });
+
+  readonly canFund = computed(() => this.job().engagementId !== null && this.outstandingMinor() > 0);
+
+  readonly fundInvalid = computed(
+    () => this.fundTouched() && (this.fundAmount() <= 0 || this.fundMsisdn().trim() === ''),
+  );
+
+  openFund(): void {
+    this.fundTouched.set(false);
+    this.fundAmount.set(this.outstandingMinor());
+    this.fundOpen.set(true);
+  }
+
+  closeFund(): void {
+    this.fundOpen.set(false);
+  }
+
+  async fund(): Promise<void> {
+    this.fundTouched.set(true);
+    const engagementId = this.job().engagementId;
+    const amount = Math.trunc(this.fundAmount());
+    const msisdn = this.fundMsisdn().trim();
+    if (engagementId === null || amount <= 0 || msisdn === '' || this.busy()) {
+      return;
+    }
+
+    this.busy.set(true);
+    const result = await this.customers.fundEscrow(engagementId, amount, msisdn);
+    this.busy.set(false);
+
+    if (!result.ok) {
+      await this.toast(result.detail ?? this.translate.instant('fund.failed'), 'danger', result.detail !== undefined);
+      return;
+    }
+
+    this.fundOpen.set(false);
+    // "Check your phone", not "paid": the USSD prompt is where this actually completes, and the
+    // escrow figure on this card must not move until the server says the money arrived.
+    await this.toast('fund.pending', 'success');
+  }
+
   /**
    * Book the same provider again (P8-05).
    *

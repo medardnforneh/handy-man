@@ -123,4 +123,60 @@ export class ProviderEarningsPage {
     });
     await toast.present();
   }
+
+  // --- Buying lead credits (P3-04) ---------------------------------------------------------------
+  //
+  // The mirror of the payout above: money in rather than out. This screen has shown a credit balance
+  // since it was built with no way to add to it, so a provider who ran out simply stopped being able
+  // to bid and nothing told them what to do about it.
+  //
+  // Pending on return — the money moves when they answer the prompt on their handset — so the toast
+  // says to expect that rather than announcing a purchase.
+
+  readonly topUpOpen = signal(false);
+  readonly topUpAmount = signal(0);
+  readonly topUpMsisdn = signal('');
+  readonly topUpTouched = signal(false);
+
+  readonly topUpInvalid = computed(
+    () => this.topUpTouched() && (this.topUpAmount() <= 0 || this.topUpMsisdn().trim() === ''),
+  );
+
+  openTopUp(): void {
+    this.topUpTouched.set(false);
+    this.topUpMsisdn.set(this.customers.me().phone);
+    this.topUpOpen.set(true);
+  }
+
+  closeTopUp(): void {
+    this.topUpOpen.set(false);
+  }
+
+  async buyCredits(): Promise<void> {
+    this.topUpTouched.set(true);
+    const amount = Math.trunc(this.topUpAmount());
+    const msisdn = this.topUpMsisdn().trim();
+    if (amount <= 0 || msisdn === '' || this.busy()) {
+      return;
+    }
+
+    this.busy.set(true);
+    const result = await this.provider.buyLeadCredits(amount, msisdn);
+    this.busy.set(false);
+
+    if (result.ok) {
+      this.topUpOpen.set(false);
+      this.topUpAmount.set(0);
+    }
+
+    const toast = await this.toasts.create({
+      message: result.ok
+        ? this.translate.instant('credits.pending')
+        : result.detail ?? this.translate.instant('credits.failed'),
+      duration: result.ok ? 3500 : 4000,
+      position: 'top',
+      color: result.ok ? 'success' : 'danger',
+    });
+    await toast.present();
+  }
 }

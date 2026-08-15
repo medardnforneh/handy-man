@@ -41,6 +41,14 @@
           {{ credits() | money }} <small class="ms-0.5 text-2xs font-semibold text-content-muted">{{ 'money.currency' | translate }}</small>
         </span>
       </div>
+      <!-- Adding to it (P3-04). The balance has been readable since this screen was built and there
+           was no way to top it up, so running out meant quietly losing the ability to bid. -->
+      <button
+        type="button"
+        class="mb-4 min-h-11 w-full cursor-pointer rounded-md border border-edge bg-surface-raised px-4 py-2.5 text-sm font-semibold text-content [font:inherit] shadow-sm disabled:opacity-50"
+        [disabled]="busy()"
+        (click)="openTopUp()"
+      >{{ 'credits.top_up' | translate }}</button>
     }
 
     <!-- Payout history -->
@@ -144,6 +152,65 @@
           } @else {
             {{ 'wd.confirm' | translate }}
           }
+        </ion-button>
+      </div>
+    </ion-footer>
+  </ng-template>
+</ion-modal>
+
+<!-- Buying lead credits (P3-04) — the mirror of the withdraw sheet above, money in rather than out.
+     Pending on return: the money moves when the provider answers the prompt on their own handset. -->
+<ion-modal [isOpen]="topUpOpen()" (didDismiss)="closeTopUp()">
+  <ng-template>
+    <ion-header class="ion-no-border">
+      <ion-toolbar>
+        <ion-buttons slot="start">
+          <ion-button (click)="closeTopUp()">{{ 'common.cancel' | translate }}</ion-button>
+        </ion-buttons>
+        <ion-title>{{ 'credits.top_up' | translate }}</ion-title>
+      </ion-toolbar>
+    </ion-header>
+
+    <ion-content>
+      <div class="mx-auto max-w-3xl px-4 pt-4 pb-10">
+        <label class="mb-4 block">
+          <span class="mb-1.5 block text-sm font-bold text-content-muted">{{ 'credits.amount' | translate }}</span>
+          <input
+            class="finput"
+            type="number"
+            inputmode="numeric"
+            min="1"
+            [ngModel]="topUpAmount()"
+            (ngModelChange)="topUpAmount.set(+$event)"
+          />
+          <small class="mt-1 block text-xs leading-snug text-content-muted">{{ 'credits.amount_hint' | translate }}</small>
+        </label>
+
+        <label class="mb-4 block">
+          <span class="mb-1.5 block text-sm font-bold text-content-muted">{{ 'credits.msisdn' | translate }}</span>
+          <input
+            class="finput"
+            type="tel"
+            inputmode="tel"
+            [ngModel]="topUpMsisdn()"
+            (ngModelChange)="topUpMsisdn.set($event)"
+          />
+        </label>
+        @if (topUpInvalid()) {
+          <p class="-mt-3.5 mb-4 text-xs text-danger">{{ 'credits.required' | translate }}</p>
+        }
+
+        <p class="mt-6 mb-0 flex items-start gap-2 text-xs leading-relaxed text-content-muted">
+          <ion-icon name="information-circle-outline" class="mt-0.5 flex-none text-md" aria-hidden="true"></ion-icon>
+          <span class="min-w-0 flex-1">{{ 'credits.note' | translate }}</span>
+        </p>
+      </div>
+    </ion-content>
+
+    <ion-footer class="ion-no-border">
+      <div class="mx-auto max-w-3xl border-t border-t-edge px-4 py-2">
+        <ion-button expand="block" [disabled]="busy()" (click)="buyCredits()">
+          {{ 'credits.confirm' | translate }}
         </ion-button>
       </div>
     </ion-footer>

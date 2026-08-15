@@ -861,6 +861,19 @@ export class ProviderService {
   }
 
   /**
+   * Buy lead credits with Mobile Money (POST /payment-intents, purpose `lead_credits`, P3-04).
+   *
+   * The earnings screen has been showing a credit balance since it was built, with no way to add to
+   * it — a provider who ran out simply stopped being able to bid, and nothing in the app said what
+   * to do about it.
+   *
+   * Pending on return: the money moves when they answer the prompt on their handset.
+   */
+  async buyLeadCredits(amountMinor: number, msisdn: string): Promise<MutationResult> {
+    return this.attempt(() => this.api.initiatePaymentIntent('lead_credits', amountMinor, msisdn));
+  }
+
+  /**
    * Propose a site visit on a lead's job (POST /jobs/{job}/site-visits, P2-07).
    *
    * The trade's honest answer to work that cannot be priced from a description — a leak behind a
