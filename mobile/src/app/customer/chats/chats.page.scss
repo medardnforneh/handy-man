@@ -1,21 +1,12 @@
-// Shared primitives load once globally — see angular.json styles.
+// Ionic's own components only — everything else on this page is a Tailwind utility in the template.
 
 ion-toolbar {
   --background: var(--hm-color-surface-base);
   --border-width: 0;
 }
 
-ion-title {
-  font-weight: 800;
-  letter-spacing: -0.02em;
-}
-
-.page {
-  padding: var(--hm-space-sm) var(--hm-space-md) var(--hm-space-xl);
-  max-width: 720px;
-  margin: 0 auto;
-}
-
+// The searchbar's box is drawn by its own custom properties; the border has to sit on the host,
+// which is why this one rule is not a utility on the element.
 ion-searchbar {
   --background: var(--hm-color-surface-raised);
   --color: var(--hm-color-text-primary);
@@ -26,97 +17,4 @@ ion-searchbar {
   border-radius: var(--hm-radius-md);
   padding: 0;
   margin-bottom: var(--hm-space-sm);
-}
-
-.chat {
-  display: flex;
-  align-items: center;
-  gap: var(--hm-space-sm);
-  width: 100%;
-  padding: var(--hm-space-sm) 0;
-  background: none;
-  border: 0;
-  border-bottom: 1px solid var(--hm-color-border-subtle);
-  color: inherit;
-  font: inherit;
-  text-align: start;
-  cursor: pointer;
-
-  &:last-of-type { border-bottom: 0; }
-
-  // Unread threads read louder: the name goes full-strength and the preview stops looking muted.
-  &.is-unread {
-    b { font-weight: 800; }
-    .preview { color: var(--hm-color-text-primary); font-weight: 600; }
-  }
-}
-
-.chat-av {
-  width: 48px;
-  height: 48px;
-  font-size: var(--hm-text-md);
-}
-
-.body {
-  flex: 1;
-  min-width: 0;
-}
-
-.line {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
-
-  b {
-    font-size: var(--hm-text-md);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  small { flex: none; font-size: var(--hm-text-2xs); }
-}
-
-.preview {
-  flex: 1;
-  min-width: 0;
-  font-size: var(--hm-text-sm);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.unread {
-  flex: none;
-  min-width: 20px;
-  height: 20px;
-  padding: 0 0.35rem;
-  border-radius: var(--hm-radius-pill);
-  background: var(--hm-color-brand-primary);
-  color: var(--hm-color-brand-onPrimary);
-  font-size: var(--hm-text-2xs);
-  font-weight: 700;
-  display: grid;
-  place-items: center;
-}
-
-.ref {
-  display: block;
-  margin-top: 0.1rem;
-  font-size: var(--hm-text-2xs);
-}
-
-// The loading state draws the row it is about to replace, so nothing jumps when the answer lands.
-// Widths differ per line because a column of identical bars reads as a pattern rather than as text.
-.chat.skel {
-  cursor: default;
-
-  .chat-av { width: 44px; height: 44px; border-radius: var(--hm-radius-md); }
-  .line { align-items: center; }
-
-  .sk-name { width: 42%; height: 0.9em; }
-  .sk-time { width: 2.6rem; height: 0.75em; margin-inline-start: auto; }
-  .sk-prev { width: 68%; height: 0.8em; }
-  .sk-ref { display: block; width: 5.5rem; height: 0.7em; margin-top: 0.35rem; }
 }

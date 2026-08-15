@@ -7,10 +7,10 @@
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <div class="page hm-page-fill">
+  <div class="flex min-h-full flex-col mx-auto max-w-3xl px-4 pt-2 pb-10">
     @if (hasChats()) {
       <ion-searchbar
-        class="hm-tap"
+        class="min-h-11"
         [value]="query()"
         (ionInput)="onSearch($any($event.target).value)"
         [placeholder]="'chats.search' | translate"
@@ -19,48 +19,62 @@
     }
 
     @for (chat of chats(); track chat.id) {
-      <button class="chat hm-tap" type="button" [class.is-unread]="chat.unread" (click)="open(chat)">
-        <div [class]="'hm-avatar chat-av accent-' + chat.accent" aria-hidden="true">
+      <button
+        class="flex w-full min-h-11 cursor-pointer items-center gap-2 border-0 border-b border-b-edge bg-transparent py-2 text-start text-inherit [font:inherit] last-of-type:border-b-0"
+        type="button"
+        (click)="open(chat)"
+      >
+        <div
+          [class]="'grid size-12 flex-none place-items-center rounded-md text-md font-bold text-brand-contrast accent-' + chat.accent"
+          aria-hidden="true"
+        >
           @if (chat.initials) {
             {{ chat.initials }}
           } @else {
-            <ion-icon name="person-outline"></ion-icon>
+            <ion-icon name="person-outline" class="text-[1.25em]"></ion-icon>
           }
         </div>
 
-        <div class="body">
-          <div class="line">
-            <b>{{ chat.providerName }}</b>
-            <small class="hm-muted">{{ chat.time }}</small>
+        <div class="min-w-0 flex-1">
+          <div class="flex items-center justify-between gap-2">
+            <!-- Unread threads read louder: the name goes full-strength and the preview stops
+                 looking muted. -->
+            <b class="truncate text-md" [class]="chat.unread ? 'font-extrabold' : ''">{{ chat.providerName }}</b>
+            <small class="flex-none text-2xs text-content-muted">{{ chat.time }}</small>
           </div>
-          <div class="line">
+          <div class="flex items-center justify-between gap-2">
             <!-- A server-narrated last message arrives as a KIND, so it is translated here rather
                  than printed in whatever language the server happened to compose it in. -->
-            @if (chat.previewKey) {
-              <span class="preview hm-muted">{{ chat.previewKey | translate }}</span>
-            } @else {
-              <span class="preview hm-muted">{{ chat.preview }}</span>
-            }
+            <span
+              class="min-w-0 flex-1 truncate text-sm"
+              [class]="chat.unread ? 'font-semibold text-content' : 'text-content-muted'"
+            >{{ chat.previewKey ? (chat.previewKey | translate) : chat.preview }}</span>
             @if (chat.unread > 0) {
-              <span class="unread">{{ chat.unread }}</span>
+              <span class="grid h-5 min-w-5 flex-none place-items-center rounded-pill bg-brand px-1.5 text-2xs font-bold text-brand-contrast">{{ chat.unread }}</span>
             }
           </div>
-          <small class="ref hm-muted">{{ chat.reference }}</small>
+          <small class="mt-0.5 block text-2xs text-content-muted">{{ chat.reference }}</small>
         </div>
       </button>
     } @empty {
       <!-- THREE emptinesses, not two. The third is "we have not been told yet", and it is the one
            that used to be papered over with three fabricated conversations. Saying "no messages
            yet" to someone who has messages is the same lie in a quieter voice, so the shape of the
-           list is drawn until the server answers. -->
+           list is drawn until the server answers. Widths differ per line because a column of
+           identical bars reads as a pattern rather than as text. -->
       @if (!loaded()) {
         @for (i of [1, 2, 3]; track i) {
-          <div class="chat skel" aria-hidden="true">
-            <div class="hm-avatar chat-av hm-skel"></div>
-            <div class="body">
-              <div class="line"><span class="hm-skel sk-name"></span><span class="hm-skel sk-time"></span></div>
-              <div class="line"><span class="hm-skel sk-prev"></span></div>
-              <span class="hm-skel sk-ref"></span>
+          <div class="flex w-full items-center gap-2 border-b border-b-edge py-2 last-of-type:border-b-0" aria-hidden="true">
+            <div class="hm-skel size-11 flex-none rounded-md"></div>
+            <div class="min-w-0 flex-1">
+              <div class="flex items-center justify-between gap-2">
+                <span class="hm-skel h-[0.9em] w-2/5"></span>
+                <span class="hm-skel ms-auto h-[0.75em] w-10"></span>
+              </div>
+              <div class="flex items-center justify-between gap-2">
+                <span class="hm-skel h-[0.8em] w-2/3"></span>
+              </div>
+              <span class="hm-skel mt-1.5 block h-[0.7em] w-22"></span>
             </div>
           </div>
         }

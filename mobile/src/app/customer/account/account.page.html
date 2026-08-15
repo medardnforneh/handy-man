@@ -5,46 +5,47 @@
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <div class="page">
+  <div class="mx-auto max-w-3xl px-4 pb-10">
     <!-- Profile header -->
-    <div class="ident">
-      <div class="hm-avatar id-av accent-brand" aria-hidden="true">
+    <div class="flex items-center gap-4 pt-4 pb-2">
+      <div class="grid size-15 flex-none place-items-center rounded-full bg-brand text-[1.2rem] font-bold uppercase text-brand-contrast" aria-hidden="true">
         @if (me().initials) {
           {{ me().initials }}
         } @else {
-          <ion-icon name="person-outline"></ion-icon>
+          <!-- The fallback when we don't know who you are yet — a glyph, never someone else's initials. -->
+          <ion-icon name="person-outline" class="text-[1.6rem]"></ion-icon>
         }
       </div>
-      <div class="id-info">
+      <div class="min-w-0">
         <!-- Never a placeholder person: a name if the server sent one, else the phone you signed in
              with, else an honest line saying the details have not loaded. -->
         @if (displayName()) {
-          <b>{{ displayName() }}</b>
+          <b class="text-[1.15rem] font-extrabold tracking-tight">{{ displayName() }}</b>
           @if (knowsName()) {
-            <small class="hm-muted">{{ me().phone }}</small>
+            <small class="mt-0.5 block text-sm tabular-nums text-content-muted">{{ me().phone }}</small>
           }
         } @else {
-          <b class="hm-muted">{{ 'account.details_unavailable' | translate }}</b>
+          <b class="text-[1.15rem] font-extrabold tracking-tight text-content-muted">{{ 'account.details_unavailable' | translate }}</b>
         }
       </div>
     </div>
 
     <!-- Saved addresses -->
-    <div class="hm-section-head"><h2>{{ 'account.addresses' | translate }}</h2></div>
+    <h2 class="mt-6 mb-4 text-lg font-extrabold tracking-snug">{{ 'account.addresses' | translate }}</h2>
     @if (addresses().length) {
-      <ion-list class="addrs hm-card" lines="full">
+      <ion-list class="addrs overflow-hidden rounded-lg border border-edge shadow-sm" lines="full">
         @for (addr of addresses(); track addr.id) {
-          <ion-item class="hm-tap">
+          <ion-item class="min-h-11">
             <ion-icon slot="start" name="location-outline" aria-hidden="true"></ion-icon>
             <ion-label>
-              <b>{{ addr.label }}</b>
-              <p class="hm-muted">{{ addr.line }}</p>
+              <b class="text-md">{{ addr.label }}</b>
+              <p class="mt-0.5 mb-0 text-xs text-content-muted">{{ addr.line }}</p>
             </ion-label>
           </ion-item>
         }
         <!-- This row had no click handler at all, and nothing else in the app created an address —
              so an on-site job, which the DB requires one for, could not be posted by a real user. -->
-        <ion-item button="true" detail="false" class="hm-tap add" (click)="addAddress()">
+        <ion-item button="true" detail="false" class="add min-h-11" (click)="addAddress()">
           <ion-icon slot="start" name="add" aria-hidden="true"></ion-icon>
           <ion-label>{{ 'account.add_address' | translate }}</ion-label>
         </ion-item>
@@ -61,24 +62,24 @@
       ></app-empty-state>
     }
 
-    <div class="hm-section-head"><h2>{{ 'account.language' | translate }}</h2></div>
+    <h2 class="mt-6 mb-4 text-lg font-extrabold tracking-snug">{{ 'account.language' | translate }}</h2>
     <ion-segment class="choice" [value]="locale()">
       @for (code of supported; track code) {
-        <ion-segment-button class="hm-tap" [value]="code" (click)="setLocale(code)">
+        <ion-segment-button [value]="code" (click)="setLocale(code)">
           <ion-label>{{ (code === 'fr' ? 'language.french' : 'language.english') | translate }}</ion-label>
         </ion-segment-button>
       }
     </ion-segment>
 
-    <div class="hm-section-head"><h2>{{ 'account.appearance' | translate }}</h2></div>
+    <h2 class="mt-6 mb-4 text-lg font-extrabold tracking-snug">{{ 'account.appearance' | translate }}</h2>
     <ion-segment class="choice" [value]="theme()">
-      <ion-segment-button class="hm-tap" value="system" (click)="setTheme('system')">
+      <ion-segment-button value="system" (click)="setTheme('system')">
         <ion-label>{{ 'account.theme_system' | translate }}</ion-label>
       </ion-segment-button>
-      <ion-segment-button class="hm-tap" value="light" (click)="setTheme('light')">
+      <ion-segment-button value="light" (click)="setTheme('light')">
         <ion-label>{{ 'account.theme_light' | translate }}</ion-label>
       </ion-segment-button>
-      <ion-segment-button class="hm-tap" value="dark" (click)="setTheme('dark')">
+      <ion-segment-button value="dark" (click)="setTheme('dark')">
         <ion-label>{{ 'account.theme_dark' | translate }}</ion-label>
       </ion-segment-button>
     </ion-segment>
@@ -86,38 +87,38 @@
     <!-- These two sat under a "Help & support" heading, and neither is help or support. Becoming a
          provider is the biggest decision on this screen and now reads as one; logging out is a
          plain account action and needs no heading of its own. -->
-    <div class="hm-section-head"><h2>{{ 'account.work_heading' | translate }}</h2></div>
-    <ion-list class="hm-card" lines="full">
-      <ion-item button="true" detail="true" class="hm-tap" (click)="offerServices()">
+    <h2 class="mt-6 mb-4 text-lg font-extrabold tracking-snug">{{ 'account.work_heading' | translate }}</h2>
+    <ion-list class="overflow-hidden rounded-lg border border-edge shadow-sm" lines="full">
+      <ion-item button="true" detail="true" class="min-h-11" (click)="offerServices()">
         <ion-icon slot="start" name="hammer-outline" aria-hidden="true"></ion-icon>
         <ion-label>
-          <b>{{ 'nav.provider' | translate }}</b>
-          <p class="hm-muted">{{ 'account.work_hint' | translate }}</p>
+          <b class="text-md">{{ 'nav.provider' | translate }}</b>
+          <p class="mt-0.5 mb-0 text-xs text-content-muted">{{ 'account.work_hint' | translate }}</p>
         </ion-label>
       </ion-item>
     </ion-list>
 
     <!-- Safety sits above the sign-out, on its own, because it is the one row here that somebody
          may need to find in a hurry rather than browse to. -->
-    <ion-list class="hm-card" lines="full">
-      <ion-item button="true" detail="true" class="hm-tap" (click)="openSafety()">
+    <ion-list class="mt-4 overflow-hidden rounded-lg border border-edge shadow-sm" lines="full">
+      <ion-item button="true" detail="true" class="min-h-11" (click)="openSafety()">
         <ion-icon slot="start" name="shield-outline" aria-hidden="true"></ion-icon>
         <ion-label>
-          <b>{{ 'safety.title' | translate }}</b>
-          <p class="hm-muted">{{ 'safety.account_hint' | translate }}</p>
+          <b class="text-md">{{ 'safety.title' | translate }}</b>
+          <p class="mt-0.5 mb-0 text-xs text-content-muted">{{ 'safety.account_hint' | translate }}</p>
         </ion-label>
       </ion-item>
-      <ion-item button="true" detail="true" class="hm-tap" (click)="openPrivacy()">
+      <ion-item button="true" detail="true" class="min-h-11" (click)="openPrivacy()">
         <ion-icon slot="start" name="lock-closed-outline" aria-hidden="true"></ion-icon>
         <ion-label>
-          <b>{{ 'rights.title' | translate }}</b>
-          <p class="hm-muted">{{ 'rights.account_hint' | translate }}</p>
+          <b class="text-md">{{ 'rights.title' | translate }}</b>
+          <p class="mt-0.5 mb-0 text-xs text-content-muted">{{ 'rights.account_hint' | translate }}</p>
         </ion-label>
       </ion-item>
     </ion-list>
 
-    <ion-list class="signout hm-card" lines="none">
-      <ion-item button="true" detail="false" class="hm-tap" (click)="logout()">
+    <ion-list class="signout mt-4 overflow-hidden rounded-lg border border-edge shadow-sm" lines="none">
+      <ion-item button="true" detail="false" class="min-h-11" (click)="logout()">
         <ion-icon slot="start" name="log-out-outline" aria-hidden="true"></ion-icon>
         <ion-label>{{ 'auth.logout' | translate }}</ion-label>
       </ion-item>

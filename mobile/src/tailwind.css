@@ -1,0 +1,158 @@
+/* Tailwind for the app, imported LAYER BY LAYER rather than as `@import 'tailwindcss'`.
+   That form pulls in Preflight, and Preflight is the one part that must not run here: Ionic ships
+   its own normalize, and Preflight's `button { background: transparent }`, `*  { margin: 0 }` and
+   `img { display: block }` reach inside Ionic's shadow-less host elements and undo it. Omitting the
+   base layer leaves Ionic's components exactly as they were and gives us the utilities.
+
+   So the division of labour on this surface is:
+     · Ionic components (ion-button, ion-card, ion-item …) are styled through their --custom
+       properties, in theme/ionic-tokens.css, because Tailwind classes cannot reach inside them.
+     · Everything AROUND them — layout, spacing, type, the plain divs and spans that make up most
+       of each page — is Tailwind utilities. */
+@layer theme;
+
+@import 'tailwindcss/theme.css' layer(theme);
+
+/* The utilities are imported WITHOUT a layer, and that is deliberate.
+
+   Ionic's core.css carries `button { padding: 0; border: 0; border-radius: 0 }` unlayered, and an
+   unlayered rule beats a layered one whatever the specificity says. With the utilities inside
+   @layer utilities, a card written as `<button class="rounded-lg border p-4 shadow-sm">` came out
+   square, borderless and flush — padding, border, radius and shadow all silently dropped, once per
+   tappable card in the app.
+
+   Unlayered, the comparison goes back to specificity, where a class (0,1,0) beats an element
+   (0,0,1) and Ionic's reset does what a reset is supposed to do. It also leaves every component's
+   own .scss — Angular scopes those to (0,2,0) with its _ngcontent attribute — still winning over a
+   utility, which is what lets pages move across one at a time.
+
+   (Wrapping Ionic's stylesheets in a layer instead does not work: Sass hoists a plain `.css`
+   @import out of any block it is written in, so the layer comes out empty and Ionic's structure
+   CSS goes missing — the app renders as three empty rectangles.) */
+@import 'tailwindcss/utilities.css';
+
+/* The same generated @theme mapping the marketing site uses, so `bg-surface-raised` means one
+   thing across both surfaces. It points at the --hm-* variables rather than copying them, which is
+   what lets a single dark-mode switch move the app and the web together. */
+@import './theme/tailwind-theme.css';
+
+/* Angular templates are the only source of class names here. Without this Tailwind scans from this
+   file's own directory and would also crawl node_modules and the Capacitor platform folders. */
+@source './app/**/*.html';
+@source './app/**/*.ts';
+
+@theme {
+    --font-sans: var(--ion-font-family);
+}
+
+/* ---------------------------------------------------------------------------
+   Custom utilities.
+
+   Three things, and only three, that a chain of stock utilities cannot express: a keyframed
+   pseudo-element, a percentage-of-font-size minimum, and a mask. Everything else on this surface —
+   every card, row, pill, avatar and stack — is written inline at the point of use, because a class
+   invented here is a second vocabulary the next screen has to learn before it can be read.
+
+   `@utility` (not a class in @layer components) so these compose with variants and lose to a
+   conflicting utility the same way the built-ins do.
+   --------------------------------------------------------------------------- */
+
+/* The loading placeholder. It stands in for TEXT, so its floor is a share of the current font size
+   rather than a fixed pixel height — which is what lets one utility serve a title, a code and an
+   amount at three different sizes without three variants. */
+@utility hm-skel {
+    position: relative;
+    overflow: hidden;
+    min-height: 0.85em;
+    border-radius: var(--radius-sm);
+    background: var(--color-surface-sunken);
+
+    &::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        transform: translateX(-100%);
+        background: linear-gradient(
+            90deg,
+            transparent,
+            color-mix(in srgb, var(--color-surface-raised) 70%, transparent),
+            transparent
+        );
+        animation: hm-skel-sweep 1.4s ease-in-out infinite;
+    }
+
+    /* Nobody should be made ill by a loading state. Without motion the block is still clearly a
+       placeholder — it just sits there. */
+    @media (prefers-reduced-motion: reduce) {
+        &::after { animation: none; }
+    }
+}
+
+@keyframes hm-skel-sweep {
+    to { transform: translateX(100%); }
+}
+
+/* The status pill, and the tones it comes in.
+   These are here rather than inline for a reason that is not brevity: half the pills in the app get
+   their tone from a method — `[class]="'hm-pill ' + tone(job.status)"` — so the tone is a NAME
+   chosen at runtime, not a set of classes a template can spell out. A name needs a definition.
+
+   The dot is `::before` so the label stays the element's only text node; screen readers announce
+   "Completed", not "• Completed". */
+@utility hm-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.18rem 0.55rem;
+    border-radius: var(--radius-pill);
+    font-size: var(--text-xs);
+    font-weight: 600;
+    white-space: nowrap;
+
+    &::before {
+        content: '';
+        flex: none;
+        width: 0.36rem;
+        height: 0.36rem;
+        border-radius: 50%;
+        background: currentColor;
+    }
+}
+
+/* A wash of the tone's own colour rather than a fixed tint, so each pill stays legible against it
+   in both themes without six more tokens. */
+@utility tone-info {
+    color: var(--color-info);
+    background: color-mix(in srgb, var(--color-info) 14%, transparent);
+}
+
+@utility tone-warning {
+    color: var(--color-warning);
+    background: color-mix(in srgb, var(--color-warning) 14%, transparent);
+}
+
+@utility tone-success {
+    color: var(--color-success);
+    background: color-mix(in srgb, var(--color-success) 14%, transparent);
+}
+
+@utility tone-danger {
+    color: var(--color-danger);
+    background: color-mix(in srgb, var(--color-danger) 14%, transparent);
+}
+
+@utility tone-brand {
+    color: var(--color-brand);
+    background: color-mix(in srgb, var(--color-brand) 12%, transparent);
+}
+
+@utility tone-neutral {
+    color: var(--color-content-muted);
+    background: var(--color-surface-sunken);
+}
+
+/* Accent avatars, same story: the accent is picked in TypeScript from whatever the row is about. */
+@utility accent-brand { background: var(--color-brand); }
+@utility accent-info { background: var(--color-info); }
+@utility accent-warning { background: var(--color-warning); }
+@utility accent-muted { background: var(--color-content-muted); }

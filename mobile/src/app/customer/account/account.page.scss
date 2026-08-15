@@ -1,55 +1,37 @@
-// Shared primitives load once globally — see angular.json styles.
+// Ionic's own components only — everything else on this page is a Tailwind utility in the template.
+// This screen is almost entirely ion-list/ion-item/ion-segment, so almost all of it lives here:
+// their surfaces, borders and label colours are custom properties on shadow hosts.
 
 ion-toolbar {
   --background: var(--hm-color-surface-base);
   --border-width: 0;
 }
 
-ion-title {
-  font-weight: 800;
-  letter-spacing: -0.02em;
+ion-list {
+  padding: 0;
+  background: var(--hm-color-surface-raised);
 }
 
-.page {
-  padding: 0 var(--hm-space-md) var(--hm-space-xl);
-  max-width: 720px;
-  margin: 0 auto;
+ion-item {
+  --background: var(--hm-color-surface-raised);
+  --color: var(--hm-color-text-primary);
+  --border-color: var(--hm-color-border-subtle);
+  font-size: var(--hm-text-md);
 }
 
-// ---- Profile header ----------------------------------------------------
-.ident {
-  display: flex;
-  align-items: center;
-  gap: var(--hm-space-md);
-  padding: var(--hm-space-md) 0 var(--hm-space-sm);
-
-  .id-av {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    font-size: 1.2rem;
-    text-transform: uppercase;
-
-    // The fallback when we don't know who you are yet — a glyph, never someone else's initials.
-    ion-icon { font-size: 1.6rem; }
-  }
-  .id-info { min-width: 0; }
-  .id-info b { font-size: 1.15rem; font-weight: 800; letter-spacing: -0.02em; }
-  .id-info small { display: block; font-size: var(--hm-text-sm); margin-top: 0.1rem; font-variant-numeric: tabular-nums; }
+ion-list ion-icon[slot='start'] {
+  color: var(--hm-color-text-muted);
+  font-size: 1.2rem;
 }
 
-ion-list ion-icon[slot='start'] { color: var(--hm-color-text-muted); font-size: 1.2rem; }
+.add ion-icon { color: var(--hm-color-brand-primary); }
+
+// Sign-out is the one destructive row on the screen; it says so in its own colour rather than in a
+// heading above it.
 .signout {
-  margin-top: var(--hm-space-md);
-
   ion-icon[slot='start'] { color: var(--hm-color-status-danger); }
   ion-label { color: var(--hm-color-status-danger); font-weight: 600; }
 }
-
-.addrs ion-icon { color: var(--hm-color-text-muted); font-size: 1.2rem; }
-.addrs b { font-size: var(--hm-text-md); }
-.addrs p { font-size: var(--hm-text-xs); margin: 0.1rem 0 0; }
-.add ion-icon { color: var(--hm-color-brand-primary); }
 
 .choice {
   --background: var(--hm-color-surface-sunken);
@@ -65,17 +47,4 @@ ion-list ion-icon[slot='start'] { color: var(--hm-color-text-muted); font-size: 
     text-transform: none;
     min-height: 42px;
   }
-}
-
-ion-list {
-  padding: 0;
-  overflow: hidden;
-  background: var(--hm-color-surface-raised);
-}
-
-ion-item {
-  --background: var(--hm-color-surface-raised);
-  --color: var(--hm-color-text-primary);
-  --border-color: var(--hm-color-border-subtle);
-  font-size: var(--hm-text-md);
 }

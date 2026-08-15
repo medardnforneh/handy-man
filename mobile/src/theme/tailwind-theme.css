@@ -1,0 +1,50 @@
+/* GENERATED from tokens/tokens.json — do not edit by hand. Run `npm run tokens:build`. */
+
+/* Tailwind v4 reads its theme from CSS. Import this after the tailwindcss import. */
+@theme {
+  --color-surface: var(--hm-color-surface-base);
+  --color-surface-raised: var(--hm-color-surface-raised);
+  --color-surface-sunken: var(--hm-color-surface-sunken);
+  --color-surface-inverse: var(--hm-color-surface-inverse);
+  --color-content: var(--hm-color-text-primary);
+  --color-content-muted: var(--hm-color-text-muted);
+  --color-content-inverse: var(--hm-color-text-onInverse);
+  --color-edge: var(--hm-color-border-subtle);
+  --color-edge-strong: var(--hm-color-border-strong);
+  --color-brand: var(--hm-color-brand-primary);
+  --color-brand-strong: var(--hm-color-brand-strong);
+  --color-brand-tint: var(--hm-color-brand-tint);
+  --color-brand-contrast: var(--hm-color-brand-onPrimary);
+  --color-success: var(--hm-color-status-success);
+  --color-warning: var(--hm-color-status-warning);
+  --color-danger: var(--hm-color-status-danger);
+  --color-info: var(--hm-color-status-info);
+
+  --radius-sm: var(--hm-radius-sm);
+  --radius-md: var(--hm-radius-md);
+  --radius-lg: var(--hm-radius-lg);
+  --radius-pill: var(--hm-radius-pill);
+
+  --shadow-sm: var(--hm-shadow-sm);
+  --shadow-md: var(--hm-shadow-md);
+  --shadow-lg: var(--hm-shadow-lg);
+
+  --text-2xs: var(--hm-text-2xs);
+  --text-xs: var(--hm-text-xs);
+  --text-sm: var(--hm-text-sm);
+  --text-md: var(--hm-text-md);
+  --text-lg: var(--hm-text-lg);
+  --text-xl: var(--hm-text-xl);
+  --text-2xl: var(--hm-text-2xl);
+  --text-3xl: var(--hm-text-3xl);
+
+  --leading-tight: var(--hm-leading-tight);
+  --leading-snug: var(--hm-leading-snug);
+  --leading-normal: var(--hm-leading-normal);
+  --leading-relaxed: var(--hm-leading-relaxed);
+
+  --tracking-tight: var(--hm-tracking-tight);
+  --tracking-snug: var(--hm-tracking-snug);
+  --tracking-normal: var(--hm-tracking-normal);
+  --tracking-wide: var(--hm-tracking-wide);
+}

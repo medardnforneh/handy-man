@@ -10,62 +10,72 @@
   <!-- Exactly ONE way to post a request in each state: the FAB while there are jobs to scroll past,
        the empty state's own button when there are none. There used to be three (a toolbar icon, a
        button and the FAB), all calling the same method. -->
-  <div class="page hm-page-fill">
+  <div class="flex min-h-full flex-col mx-auto max-w-3xl px-4 pt-2 pb-10">
     @for (job of jobs(); track job.id) {
-      <button class="hm-card job hm-tap" type="button" (click)="open(job)">
-        <div class="row">
+      <button
+        class="mb-2 block w-full cursor-pointer rounded-lg border border-edge bg-surface-raised p-4 text-start text-inherit [font:inherit] shadow-sm transition active:scale-[0.995]"
+        type="button"
+        (click)="open(job)"
+      >
+        <div class="flex flex-wrap items-center justify-between gap-2">
           <!-- The TITLE leads and the reference sits under it. Nobody scanning their own jobs is
                looking for JOB-7K2M9; they are looking for the leak under the sink. The reference is
                what you read out to support, so it stays — quietly. -->
-          <div class="ref">
-            <b>{{ job.title }}</b>
-            <span class="code">{{ job.reference }}</span>
+          <div class="min-w-0">
+            <b class="block text-md leading-snug tracking-snug">{{ job.title }}</b>
+            <!-- Tabular figures and a wider track: this is a code to be read out character by
+                 character, and spacing it apart from the title is what stops it reading as part of
+                 the sentence above it. -->
+            <span class="mt-0.5 block text-xs tabular-nums tracking-wide text-content-muted">{{ job.reference }}</span>
           </div>
           <span [class]="'hm-pill ' + tone(job.status)">{{ 'status.' + job.status | translate }}</span>
         </div>
 
-        <div class="row meta">
+        <div class="mt-2 flex flex-wrap items-center justify-between gap-2">
           <!-- An open job has no provider yet, and an empty cell here left the money pill floating
                alone on its own line. Say what is actually happening instead. -->
-          <span class="hm-muted">{{ job.providerName || ('jobs.no_provider' | translate) }}</span>
+          <span class="text-content-muted">{{ job.providerName || ('jobs.no_provider' | translate) }}</span>
           <!-- Nothing agreed and no budget named is not "0 FCFA". A job you have just posted
                without a figure would read as one worth nothing — the same mistake as showing an
                unrated provider a bare 0 (P6-09), which this app already refuses to make. -->
           @if (job.amountMinor > 0) {
-            <span class="amount">{{ job.amountMinor | money }} <small>{{ 'money.currency' | translate }}</small></span>
+            <span class="font-bold tabular-nums">
+              {{ job.amountMinor | money }}
+              <small class="ms-0.5 text-2xs font-semibold text-content-muted">{{ 'money.currency' | translate }}</small>
+            </span>
           } @else {
             <span class="hm-pill tone-neutral">{{ 'jobs.no_budget' | translate }}</span>
           }
         </div>
 
         @if (job.milestonesTotal > 0) {
-          <div class="row">
-            <div class="bars" aria-hidden="true">
+          <div class="mt-2 flex flex-wrap items-center justify-between gap-2">
+            <div class="flex gap-[3px]" aria-hidden="true">
               @for (i of slots(job); track i) {
-                <i [class.done]="i < job.milestonesDone"></i>
+                <i class="h-[5px] w-[26px] rounded-[3px]" [class]="i < job.milestonesDone ? 'bg-brand' : 'bg-edge-strong'"></i>
               }
             </div>
-            <small class="hm-muted">{{ job.milestonesDone }}/{{ job.milestonesTotal }} {{ 'jobs.milestones' | translate }}</small>
+            <small class="text-content-muted">{{ job.milestonesDone }}/{{ job.milestonesTotal }} {{ 'jobs.milestones' | translate }}</small>
           </div>
         }
       </button>
     } @empty {
       <!-- "No jobs yet" is a claim, and it is wrong for the second or two before the list answers.
            This list used to fill that gap with five invented jobs and their money; it draws the
-           shape of the cards instead. -->
+           shape of the cards instead. Varying widths keep it reading as text rather than a barcode. -->
       @if (!loaded()) {
         @for (i of [1, 2, 3]; track i) {
-          <div class="hm-card job skel" aria-hidden="true">
-            <div class="row">
-              <div class="ref">
-                <span class="hm-skel sk-title"></span>
-                <span class="hm-skel sk-code"></span>
+          <div class="mb-2 rounded-lg border border-edge bg-surface-raised p-4 shadow-sm" aria-hidden="true">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <div class="min-w-0">
+                <span class="hm-skel block h-[0.95em] w-[62%]"></span>
+                <span class="hm-skel mt-1 block h-[0.72em] w-22"></span>
               </div>
-              <span class="hm-skel sk-pill"></span>
+              <span class="hm-skel h-[1.15rem] w-20 flex-none rounded-pill"></span>
             </div>
-            <div class="row meta">
-              <span class="hm-skel sk-prov"></span>
-              <span class="hm-skel sk-amt"></span>
+            <div class="mt-2 flex flex-wrap items-center justify-between gap-2">
+              <span class="hm-skel h-[0.85em] w-2/5"></span>
+              <span class="hm-skel ms-auto h-[0.9em] w-22"></span>
             </div>
           </div>
         }
@@ -86,7 +96,7 @@
   @if (jobs().length) {
     <ion-fab slot="fixed" vertical="bottom" horizontal="end">
       <ion-fab-button class="fab" (click)="postRequest()">
-        <ion-icon name="add" aria-hidden="true"></ion-icon>
+        <ion-icon name="add" aria-hidden="true" class="text-[1.5rem]"></ion-icon>
         <span class="sr-only">{{ 'newjob.title' | translate }}</span>
       </ion-fab-button>
     </ion-fab>

@@ -236,6 +236,10 @@ write(join(root, 'backend', 'config', 'tokens.php'), buildFilamentPhp());
 if (existsSync(join(root, 'mobile'))) {
   write(join(root, 'mobile', 'src', 'theme', 'tokens.css'), tokensCss);
   write(join(root, 'mobile', 'src', 'theme', 'ionic-tokens.css'), ionicCss);
+  // The app writes its layout in the same utility vocabulary as the marketing site, so it needs the
+  // same @theme mapping. One generated file, two surfaces: `bg-surface-raised` cannot come to mean
+  // different things in the app and on the web.
+  write(join(root, 'mobile', 'src', 'theme', 'tailwind-theme.css'), tailwindTheme);
 
   // The install manifest keeps its generated icon list; only the identity and colours come from here.
   const manifestPath = join(root, 'mobile', 'public', 'manifest.webmanifest');
