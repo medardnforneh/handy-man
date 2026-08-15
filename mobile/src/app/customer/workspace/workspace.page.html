@@ -136,8 +136,12 @@
                      any money moves. These were two buttons wired to nothing — a "Counter" the
                      product has no endpoint for (you negotiate in this thread, and the composer is
                      right below) and an "Accept & pay" that accepted nothing. -->
-                <div class="flex gap-2 max-[380px]:flex-col [&>ion-button]:m-0 [&>ion-button]:flex-1">
-                  <ion-button expand="block" (click)="openJob()">
+                <!-- A row that stacks on the narrowest phones, so neither button is ever squeezed
+                     if a second one joins it. The flex-1 sits on the button rather than being
+                     selected from the parent: an arbitrary child selector puts a ">" inside a class
+                     attribute, which the bare-string lint reads as a closing tag. -->
+                <div class="flex gap-2 max-[380px]:flex-col">
+                  <ion-button class="m-0 flex-1" expand="block" (click)="openJob()">
                     {{ 'workspace.see_quote' | translate }}
                   </ion-button>
                 </div>
