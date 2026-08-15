@@ -106,3 +106,17 @@ ion-searchbar {
   margin-top: 0.1rem;
   font-size: var(--hm-text-2xs);
 }
+
+// The loading state draws the row it is about to replace, so nothing jumps when the answer lands.
+// Widths differ per line because a column of identical bars reads as a pattern rather than as text.
+.chat.skel {
+  cursor: default;
+
+  .chat-av { width: 44px; height: 44px; border-radius: var(--hm-radius-md); }
+  .line { align-items: center; }
+
+  .sk-name { width: 42%; height: 0.9em; }
+  .sk-time { width: 2.6rem; height: 0.75em; margin-inline-start: auto; }
+  .sk-prev { width: 68%; height: 0.8em; }
+  .sk-ref { display: block; width: 5.5rem; height: 0.7em; margin-top: 0.35rem; }
+}

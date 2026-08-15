@@ -25,7 +25,7 @@ export class ChatsPage {
   private readonly customers = inject(CustomerService);
   private readonly router = inject(Router);
 
-  private readonly all = signal<ChatSummary[]>(this.customers.listChats());
+  private readonly all = signal<ChatSummary[]>([]);
   readonly query = signal('');
   readonly loaded = signal(false);
 

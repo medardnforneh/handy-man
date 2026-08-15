@@ -312,6 +312,30 @@ found four real defects.
 
 ## What was done, most recent first
 
+- **The app opened on five jobs that were not yours.** Found while adding loading states: the
+  `jobs` signal was seeded with five fabricated jobs — real-looking references, provider names and
+  amounts ("Fuite sous l'évier · Atelier Nkeng · 900 000 FCFA") — and `chats` with three invented
+  conversations, complete with an unread badge of 2. `loadJobs()` only assigned on a successful
+  read, so a customer on a slow network, or one whose fetch failed, was shown four other people's
+  jobs and a sum of money as their own, indefinitely.
+  - The rule was already written in this codebase, one signal down, where the addresses list had
+    been emptied for exactly this reason: **"illustrative content is a demo aid, a claim about the
+    user is not."** Jobs, money and an inbox are the strongest claims the app makes about anyone.
+    Both start empty now.
+  - **That is what made loading states necessary rather than decorative**: with the fixtures gone,
+    "You have no jobs yet" flashes at someone who has four. So `jobsLoaded` distinguishes "still
+    asking" from "you have none" — a distinction an empty array cannot carry — and both lists draw
+    the SHAPE of what is coming (`.hm-skel`, a swept placeholder that respects
+    `prefers-reduced-motion`). On the networks this product is built for, that wait is long enough
+    to be worth drawing, and it is the only option that does not move the content when it lands.
+  - Verified all three states at 390px: signed out gives the honest empty state, the held loading
+    state draws job cards and chat rows, and a real session fills them with Jean Mbarga's ACTUAL
+    jobs — `JOB-GWRLP` and `JOB-IPTP4`, not the `JOB-7K2M9` the fixture invented.
+  - Left as fixtures deliberately: the Discover provider list and the category rail. Those are
+    illustrative marketplace content rather than claims about the user, which is the line the rule
+    draws. Noted rather than assumed — a provider fixture that cannot be opened is still worth
+    revisiting.
+
 - **The other two UIs.** "Rework the UIs" meant all three surfaces, and the first pass had only
   touched the Ionic app. The public site and the Filament admin were reviewed the same way.
   - **Public site**: in good shape — the hero, the three-step explainer, the dark professionals

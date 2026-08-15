@@ -306,6 +306,9 @@ export class CustomerService {
    */
   private async loadJobs(): Promise<void> {
     const { value: jobs } = await this.cache.through('jobs', () => this.api.jobs());
+    // Marked answered either way. A failed read with nothing cached is still an answer as far as
+    // the screen is concerned — it should show its empty state, not spin forever.
+    this.jobsLoaded.set(true);
     if (jobs !== null) {
       this.jobs.set(jobs.map((j) => ({
         id: j.id,
@@ -376,14 +379,26 @@ export class CustomerService {
     { id: 'p5', name: 'Fresh Design Studio', initials: 'FD', skill: 'Design graphique', rating: 4.5, mode: 'remote', distanceKm: null, verified: false, accent: 'info' },
   ];
 
-  /** The customer's jobs — real (GET /jobs) once loaded, the demo fixtures until then / when offline. */
-  readonly jobs = signal<JobSummary[]>([
-    { id: 'j1', reference: 'JOB-7K2M9', title: 'Fuite sous l’évier', status: 'in_progress', providerName: 'Atelier Nkeng', amountMinor: 900000, milestonesDone: 1, milestonesTotal: 2 },
-    { id: 'j2', reference: 'JOB-Q4T1A', title: 'Identité visuelle', status: 'work_submitted', providerName: 'Marie Fotso', amountMinor: 450000, milestonesDone: 1, milestonesTotal: 1 },
-    { id: 'j3', reference: 'JOB-9BZ3C', title: 'Installation split', status: 'engaged', providerName: 'Douala Cool Services', amountMinor: 1250000, milestonesDone: 0, milestonesTotal: 2 },
-    { id: 'j4', reference: 'JOB-5RN8K', title: 'Tableau électrique', status: 'completed', providerName: 'Yaoundé Élec', amountMinor: 3100000, milestonesDone: 3, milestonesTotal: 3 },
-    { id: 'j5', reference: 'JOB-2HW6P', title: 'Étagères sur mesure', status: 'open', providerName: null, amountMinor: 620000, milestonesDone: 0, milestonesTotal: 0 },
-  ]);
+  /**
+   * The customer's jobs (GET /jobs).
+   *
+   * Starts EMPTY, for the same reason the addresses list does — and with more at stake. It used to
+   * open on five fabricated jobs with real-looking references, provider names and amounts ("Fuite
+   * sous l'évier · Atelier Nkeng · 900 000 FCFA"), which meant a customer on a slow network, or one
+   * whose fetch failed, was shown four other people's jobs and a sum of money as if they were their
+   * own. `loadJobs()` only assigns on a successful read, so a failure left them there indefinitely.
+   *
+   * Illustrative content is a demo aid; a claim about the user is not. Jobs and money are the
+   * strongest claim this app makes about anyone.
+   */
+  readonly jobs = signal<JobSummary[]>([]);
+
+  /**
+   * False until the jobs list has actually been answered — the difference between "still asking"
+   * and "you have none", which an empty array alone cannot express. Without it, emptying the
+   * fixtures above would flash "no jobs yet" at someone who has four.
+   */
+  readonly jobsLoaded = signal(false);
 
   /**
    * The customer's saved addresses (GET /addresses).
@@ -396,13 +411,10 @@ export class CustomerService {
    */
   readonly addresses = signal<SavedAddress[]>([]);
 
-  // Demo rows, shown until GET /conversations answers (and when there is no session). `null`
-  // conversation ids are what keep them inert: a fixture row can't be marked read on the server.
-  private readonly chats: ChatSummary[] = [
-    { id: 'j1', conversationId: null, providerName: 'Atelier Nkeng', initials: 'AN', reference: 'JOB-7K2M9', preview: 'Je peux passer demain matin.', time: '09:22', unread: 2, accent: 'brand' },
-    { id: 'j2', conversationId: null, providerName: 'Marie Fotso', initials: 'MF', reference: 'JOB-Q4T1A', preview: 'Les maquettes sont prêtes.', time: 'Hier', unread: 0, accent: 'info' },
-    { id: 'j3', conversationId: null, providerName: 'Douala Cool Services', initials: 'DC', reference: 'JOB-9BZ3C', preview: 'Bien reçu, merci.', time: 'Lun', unread: 0, accent: 'warning' },
-  ];
+  // The messages tab starts EMPTY and shows its loading state until GET /conversations answers.
+  // It used to open on three fabricated conversations — named providers, quoted messages and an
+  // unread badge of 2 — which is the same lie the jobs list told, in the one place a person is
+  // most likely to believe it: nobody doubts their own inbox. See the note on `jobs`.
 
   private readonly threads: Record<string, WorkspaceThread> = {
     j1: {
@@ -872,13 +884,10 @@ export class CustomerService {
     return id;
   }
 
-  listChats(): ChatSummary[] {
-    return this.chats;
-  }
-
   /**
    * The real messages tab (GET /conversations), cached so it opens populated with no network.
-   * Returns null on failure so the caller keeps the demo rows.
+   * Returns null on failure, which the caller shows as an empty inbox rather than as someone
+   * else's — there are no demo rows to fall back to any more.
    */
   async fetchChats(): Promise<ChatSummary[] | null> {
     const { value } = await this.cache.through('conversations', () => this.api.conversations());

@@ -49,9 +49,23 @@
         </div>
       </button>
     } @empty {
-      <!-- Two different emptinesses: a search that matched nothing (the fix is to change the
-           search) and an account with no conversations at all (the fix is to book someone). -->
-      @if (hasChats()) {
+      <!-- THREE emptinesses, not two. The third is "we have not been told yet", and it is the one
+           that used to be papered over with three fabricated conversations. Saying "no messages
+           yet" to someone who has messages is the same lie in a quieter voice, so the shape of the
+           list is drawn until the server answers. -->
+      @if (!loaded()) {
+        @for (i of [1, 2, 3]; track i) {
+          <div class="chat skel" aria-hidden="true">
+            <div class="hm-avatar chat-av hm-skel"></div>
+            <div class="body">
+              <div class="line"><span class="hm-skel sk-name"></span><span class="hm-skel sk-time"></span></div>
+              <div class="line"><span class="hm-skel sk-prev"></span></div>
+              <span class="hm-skel sk-ref"></span>
+            </div>
+          </div>
+        }
+        <p class="sr-only">{{ 'common.loading' | translate }}</p>
+      } @else if (hasChats()) {
         <app-empty-state
           icon="search-outline"
           heading="chats.no_match_title"

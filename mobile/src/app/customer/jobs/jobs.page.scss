@@ -91,3 +91,15 @@ ion-title {
   --background: var(--hm-color-brand-primary);
   --color: var(--hm-color-brand-onPrimary);
 }
+
+// The loading state draws the card it is about to become, so the list does not jump when the
+// answer lands. Varying widths keep it reading as text rather than as a barcode.
+.job.skel {
+  cursor: default;
+
+  .sk-title { display: block; width: 62%; height: 0.95em; }
+  .sk-code { display: block; width: 5.5rem; height: 0.72em; margin-top: 0.3rem; }
+  .sk-pill { width: 5rem; height: 1.15rem; border-radius: var(--hm-radius-pill); flex: none; }
+  .sk-prov { width: 40%; height: 0.85em; }
+  .sk-amt { width: 5.5rem; height: 0.9em; margin-inline-start: auto; }
+}

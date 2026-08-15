@@ -50,14 +50,36 @@
         }
       </button>
     } @empty {
-      <app-empty-state
-        icon="briefcase-outline"
-        heading="jobs.empty_title"
-        body="jobs.empty_body"
-        actionLabel="newjob.title"
-        actionIcon="add"
-        (action)="postRequest()"
-      ></app-empty-state>
+      <!-- "No jobs yet" is a claim, and it is wrong for the second or two before the list answers.
+           This list used to fill that gap with five invented jobs and their money; it draws the
+           shape of the cards instead. -->
+      @if (!loaded()) {
+        @for (i of [1, 2, 3]; track i) {
+          <div class="hm-card job skel" aria-hidden="true">
+            <div class="row">
+              <div class="ref">
+                <span class="hm-skel sk-title"></span>
+                <span class="hm-skel sk-code"></span>
+              </div>
+              <span class="hm-skel sk-pill"></span>
+            </div>
+            <div class="row meta">
+              <span class="hm-skel sk-prov"></span>
+              <span class="hm-skel sk-amt"></span>
+            </div>
+          </div>
+        }
+        <p class="sr-only">{{ 'common.loading' | translate }}</p>
+      } @else {
+        <app-empty-state
+          icon="briefcase-outline"
+          heading="jobs.empty_title"
+          body="jobs.empty_body"
+          actionLabel="newjob.title"
+          actionIcon="add"
+          (action)="postRequest()"
+        ></app-empty-state>
+      }
     }
   </div>
 

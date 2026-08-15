@@ -169,6 +169,52 @@ ion-title {
 }
 
 // ---------------------------------------------------------------------------
+// Skeletons.
+//
+// A list that is still loading has three honest things it can show: a spinner, nothing, or the
+// SHAPE of what is coming. On the networks this product is built for the wait is long enough that
+// the shape is worth drawing — and it is the only one of the three that does not move the content
+// when it arrives.
+//
+// It exists here for a second reason: the jobs and chats lists used to open on fabricated rows, so
+// there was never an empty moment to fill. Emptying those (a claim about the user must not be a
+// fixture) is what made a loading state necessary rather than decorative — without one, "you have
+// no jobs yet" flashes at someone who has four.
+// ---------------------------------------------------------------------------
+.hm-skel {
+  position: relative;
+  overflow: hidden;
+  background: var(--hm-color-surface-sunken);
+  border-radius: var(--hm-radius-sm);
+  // It stands in for text, so it should be the height of text rather than an arbitrary bar.
+  min-height: 0.85em;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(
+      90deg,
+      transparent,
+      color-mix(in srgb, var(--hm-color-surface-raised) 70%, transparent),
+      transparent
+    );
+    animation: hm-skel-sweep 1.4s ease-in-out infinite;
+  }
+}
+
+@keyframes hm-skel-sweep {
+  to { transform: translateX(100%); }
+}
+
+// Nobody should be made ill by a loading state. Without motion the block is still clearly a
+// placeholder — it just sits there.
+@media (prefers-reduced-motion: reduce) {
+  .hm-skel::after { animation: none; }
+}
+
+// ---------------------------------------------------------------------------
 // Disabled buttons.
 //
 // Ionic disables a button by dropping the whole element to `opacity: .5`. On a solid brand button

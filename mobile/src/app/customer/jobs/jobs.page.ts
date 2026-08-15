@@ -21,6 +21,8 @@ export class JobsPage {
   private readonly router = inject(Router);
 
   readonly jobs = this.customers.jobs;
+  /** "Still asking" vs "you have none" — an empty list alone cannot tell them apart. */
+  readonly loaded = this.customers.jobsLoaded;
 
   tone(status: JobStatus): string {
     switch (status) {
