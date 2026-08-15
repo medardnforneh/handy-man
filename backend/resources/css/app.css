@@ -146,24 +146,6 @@
         }
         .band-tint { background: var(--hm-color-brand-tint); }
 
-        /* ── Footer ─────────────────────────────────────────────────────────────────────────── */
-        .site-footer {
-            border-top: 1px solid var(--hm-color-border-subtle);
-            background: var(--hm-color-surface-raised);
-            padding-block: var(--hm-space-2xl) var(--hm-space-lg);
-        }
-        .footer-grid { display: grid; gap: var(--hm-space-lg); grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr)); }
-        .footer-grid h3 { font-size: 0.8rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--hm-color-text-muted); font-weight: 700; }
-        .footer-links { list-style: none; margin: var(--hm-space-sm) 0 0; padding: 0; display: grid; gap: 0.45rem; }
-        .footer-links a { color: var(--hm-color-text-muted); text-decoration: none; font-size: 0.9rem; }
-        .footer-links a:hover { color: var(--hm-color-text-primary); }
-        .footer-bottom {
-            margin-top: var(--hm-space-xl); padding-top: var(--hm-space-md);
-            border-top: 1px solid var(--hm-color-border-subtle);
-            display: flex; flex-wrap: wrap; gap: var(--hm-space-sm); justify-content: space-between;
-            font-size: 0.85rem; color: var(--hm-color-text-muted);
-        }
-
         /* ── Misc shared ────────────────────────────────────────────────────────────────────── */
         .crumbs { font-size: 0.85rem; color: var(--hm-color-text-muted); }
         .crumbs a { color: var(--hm-color-text-muted); text-decoration: none; }
@@ -265,11 +247,4 @@
             background: var(--hm-color-brand-primary); color: var(--hm-color-brand-onPrimary);
             font-weight: 650; font-size: 0.92rem;
         }
-
-        .skip-link {
-            position: absolute; left: -9999px; top: 0;
-            background: var(--hm-color-brand-primary); color: var(--hm-color-brand-onPrimary);
-            padding: var(--hm-space-sm) var(--hm-space-md); border-radius: var(--hm-radius-md); z-index: 30;
-        }
-        .skip-link:focus { left: var(--hm-space-md); top: var(--hm-space-md); }
 }

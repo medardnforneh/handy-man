@@ -34,7 +34,9 @@
     @vite(['resources/css/app.css'])
 </head>
 <body>
-    <a class="skip-link" href="#main">{{ __('public.skip_to_content') }}</a>
+    {{-- Off-screen until focused, then the first thing a keyboard reaches. --}}
+    <a class="absolute -left-[9999px] top-0 z-30 rounded-md bg-brand px-4 py-2 text-brand-contrast focus:left-4 focus:top-4"
+       href="#main">{{ __('public.skip_to_content') }}</a>
 
     {{-- Sticky, but floating: the chrome is a contained pill rather than a bar welded to the top
          edge, so the page reads as content on a surface. The short fade behind it stops the page
@@ -119,52 +121,57 @@
         @yield('content')
     </main>
 
-    <footer class="site-footer">
-        <div class="wrap">
-            <div class="footer-grid">
+    <footer class="border-t border-edge bg-surface-raised pt-16 pb-6">
+        <div class="w-full max-w-6xl mx-auto px-6">
+            <div class="grid gap-6 grid-cols-[repeat(auto-fit,minmax(min(100%,12rem),1fr))]">
                 <div>
-                    <a class="brand" href="{{ route('home') }}">
-                        <span class="mark" aria-hidden="true">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <a class="inline-flex items-center gap-2 font-extrabold text-lg tracking-tight text-content no-underline" href="{{ route('home') }}">
+                        <span class="grid place-items-center shrink-0 size-7 rounded-md bg-brand text-brand-contrast" aria-hidden="true">
+                            <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M14.7 6.3a4 4 0 0 1-5 5L4 17v3h3l5.7-5.7a4 4 0 0 1 5-5l2.6-2.6-2.6-2.6z"/>
                             </svg>
                         </span>
                         {{ __('app.name') }}
                     </a>
-                    <p class="t-small muted" style="margin-top: var(--hm-space-sm); max-width: 22rem;">
+                    <p class="mt-2 max-w-[22rem] text-sm text-content-muted">
                         {{ __('public.footer_blurb') }}
                     </p>
                 </div>
 
-                <div>
-                    <h3>{{ __('public.footer_customers') }}</h3>
-                    <ul class="footer-links">
-                        <li><a href="{{ route('services.index') }}">{{ __('public.nav_trades') }}</a></li>
-                        <li><a href="{{ route('home') }}#how">{{ __('public.nav_how') }}</a></li>
-                        <li><a href="{{ route('home') }}#trust">{{ __('public.nav_trust') }}</a></li>
-                        <li><a href="{{ route('home') }}#faq">{{ __('public.nav_faq') }}</a></li>
-                    </ul>
-                </div>
+                @foreach ([
+                    ['public.footer_customers', [
+                        ['public.nav_trades', route('services.index')],
+                        ['public.nav_how', route('home').'#how'],
+                        ['public.nav_trust', route('home').'#trust'],
+                        ['public.nav_faq', route('home').'#faq'],
+                    ]],
+                    ['public.footer_providers', [
+                        ['public.footer_join', route('home').'#providers'],
+                        ['public.footer_pricing', route('home').'#providers'],
+                        ['public.footer_safety', route('home').'#trust'],
+                    ]],
+                ] as [$heading, $links])
+                    <div>
+                        <h3 class="text-xs font-bold uppercase tracking-[0.1em] text-content-muted">{{ __($heading) }}</h3>
+                        <ul class="grid gap-1.5 mt-2 list-none p-0">
+                            @foreach ($links as [$key, $href])
+                                <li><a class="text-sm text-content-muted no-underline hover:text-content" href="{{ $href }}">{{ __($key) }}</a></li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endforeach
 
                 <div>
-                    <h3>{{ __('public.footer_providers') }}</h3>
-                    <ul class="footer-links">
-                        <li><a href="{{ route('home') }}#providers">{{ __('public.footer_join') }}</a></li>
-                        <li><a href="{{ route('home') }}#providers">{{ __('public.footer_pricing') }}</a></li>
-                        <li><a href="{{ route('home') }}#trust">{{ __('public.footer_safety') }}</a></li>
-                    </ul>
-                </div>
-
-                <div>
-                    <h3>{{ __('public.footer_language') }}</h3>
-                    <ul class="footer-links">
-                        <li><a href="{{ request()->fullUrlWithQuery(['lang' => 'fr']) }}">{{ __('language.french') }}</a></li>
-                        <li><a href="{{ request()->fullUrlWithQuery(['lang' => 'en']) }}">{{ __('language.english') }}</a></li>
+                    <h3 class="text-xs font-bold uppercase tracking-[0.1em] text-content-muted">{{ __('public.footer_language') }}</h3>
+                    <ul class="grid gap-1.5 mt-2 list-none p-0">
+                        @foreach (['fr' => 'language.french', 'en' => 'language.english'] as $code => $label)
+                            <li><a class="text-sm text-content-muted no-underline hover:text-content" href="{{ request()->fullUrlWithQuery(['lang' => $code]) }}">{{ __($label) }}</a></li>
+                        @endforeach
                     </ul>
                 </div>
             </div>
 
-            <div class="footer-bottom">
+            <div class="flex flex-wrap justify-between gap-2 mt-10 pt-4 border-t border-edge text-sm text-content-muted">
                 <span>{{ __('public.footer_rights', ['year' => now()->year, 'name' => __('app.name')]) }}</span>
                 <span>{{ __('public.footer_country') }}</span>
             </div>
