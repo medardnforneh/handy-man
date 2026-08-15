@@ -249,6 +249,46 @@ export class ProviderWorkDetailPage implements OnInit {
     }
   }
 
+  // --- Cash settlement (P3-15) -----------------------------------------------------------------
+  //
+  // The one money action a provider takes alone. It exists because plenty of this work is paid in
+  // notes at the door, and an unrecorded cash job leaves no history behind — no completed count, no
+  // rating, nothing to show the next customer. Recording it is the provider's own interest, which
+  // is why it is an offer on their screen rather than a demand.
+
+  readonly cashOpen = signal(false);
+  readonly cashAmount = signal(0);
+  readonly cashTouched = signal(false);
+
+  readonly cashAmountMissing = computed(() => this.cashTouched() && this.cashAmount() <= 0);
+
+  openCash(): void {
+    this.cashTouched.set(false);
+    this.cashOpen.set(true);
+  }
+
+  closeCash(): void {
+    this.cashOpen.set(false);
+  }
+
+  async recordCash(): Promise<void> {
+    this.cashTouched.set(true);
+    const amount = Math.trunc(this.cashAmount());
+    if (amount <= 0) {
+      return;
+    }
+
+    const ok = await this.run(
+      () => this.provider.recordCashSettlement(this.id, amount),
+      'work.cash_toast',
+    );
+    if (ok) {
+      this.cashOpen.set(false);
+      this.cashAmount.set(0);
+      this.cashTouched.set(false);
+    }
+  }
+
   /**
    * The workspace thread is keyed by the JOB (`GET /jobs/{job}/messages`), not the engagement — so
    * this must navigate with `jobId`. Passing the engagement id 404s the read and drops the screen

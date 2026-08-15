@@ -897,6 +897,25 @@ export class ApiService {
   }
 
   /**
+   * Record work that was settled in CASH (P3-15). Provider-only: they are the one who was handed
+   * the money, and self-reporting is strictly in their interest — it is what turns an off-platform
+   * job into on-platform history and reputation. The platform books its commission from it.
+   *
+   * `milestoneId` attaches the settlement to one slice of the work; omitted, it settles against the
+   * engagement as a whole.
+   */
+  async recordCashSettlement(engagementId: string, amountMinor: number, milestoneId?: string) {
+    const { data, error } = await api.POST('/engagements/{engagement}/cash-settlements', {
+      params: { path: { engagement: engagementId }, header: { 'Idempotency-Key': uuid() } },
+      body: { amount_minor: amountMinor, milestone_id: milestoneId ?? null },
+    });
+    if (error) {
+      throw error;
+    }
+    return data.data;
+  }
+
+  /**
    * Submit a priced quotation for a job (P2.5-01). Only `open`/`offered` jobs accept one (409
    * otherwise). The subtotal is computed server-side from the lines and the terms freeze on submit —
    * a revision is a NEW version, never an in-place edit.

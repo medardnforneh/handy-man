@@ -131,6 +131,21 @@
       </button>
       <p class="mt-2 text-xs leading-snug text-content-muted">{{ 'work.deliverable_hint' | translate }}</p>
     }
+
+    <!-- Paid in cash (P3-15). Plenty of this work is settled in notes at the door, and an
+         unrecorded cash job leaves nothing behind — no completed count, no rating, nothing to show
+         the next customer. So it is offered here rather than demanded, and the reason is stated. -->
+    <h2 class="mt-6 mb-4 text-lg font-extrabold tracking-snug">{{ 'work.cash_heading' | translate }}</h2>
+    <button
+      type="button"
+      class="flex w-full min-h-11 cursor-pointer items-center justify-center gap-2 rounded-md border border-dashed border-edge-strong bg-transparent p-4 text-sm font-semibold text-content-muted [font:inherit] disabled:opacity-50"
+      [disabled]="busy()"
+      (click)="openCash()"
+    >
+      <ion-icon name="cash-outline" class="text-[1.25rem] text-brand" aria-hidden="true"></ion-icon>
+      <span>{{ 'work.cash_record' | translate }}</span>
+    </button>
+    <p class="mt-2 text-xs leading-snug text-content-muted">{{ 'work.cash_hint' | translate }}</p>
   </div>
 </ion-content>
 
@@ -272,6 +287,55 @@
       <div class="mx-auto max-w-3xl border-t border-t-edge px-4 py-2">
         <ion-button expand="block" [disabled]="busy()" (click)="submitReport()">
           {{ 'work.send_report' | translate }}
+        </ion-button>
+      </div>
+    </ion-footer>
+  </ng-template>
+</ion-modal>
+
+<!-- Cash settlement (P3-15). One number, because that is all the endpoint takes and all the provider
+     knows: what they were actually handed. The commission is the server's arithmetic and is said
+     plainly before they confirm rather than discovered afterwards. -->
+<ion-modal [isOpen]="cashOpen()" (didDismiss)="closeCash()">
+  <ng-template>
+    <ion-header class="ion-no-border">
+      <ion-toolbar>
+        <ion-buttons slot="start">
+          <ion-button (click)="closeCash()">{{ 'work.cancel' | translate }}</ion-button>
+        </ion-buttons>
+        <ion-title>{{ 'work.cash_record' | translate }}</ion-title>
+      </ion-toolbar>
+    </ion-header>
+
+    <ion-content>
+      <div class="mx-auto max-w-3xl px-4 pt-4 pb-10">
+        <label class="mb-4 block">
+          <span class="mb-1.5 block text-sm font-bold text-content-muted">{{ 'work.cash_amount' | translate }}</span>
+          <input
+            class="finput"
+            type="number"
+            inputmode="numeric"
+            min="1"
+            [ngModel]="cashAmount()"
+            (ngModelChange)="cashAmount.set(+$event)"
+          />
+          <small class="mt-1 block text-xs leading-snug text-content-muted">{{ 'work.cash_amount_hint' | translate }}</small>
+        </label>
+        @if (cashAmountMissing()) {
+          <p class="-mt-3.5 mb-4 text-sm font-semibold text-danger">{{ 'work.cash_amount_required' | translate }}</p>
+        }
+
+        <p class="mt-6 mb-0 flex items-start gap-2 text-xs leading-relaxed text-content-muted">
+          <ion-icon name="information-circle-outline" class="mt-0.5 flex-none text-md" aria-hidden="true"></ion-icon>
+          <span class="min-w-0 flex-1">{{ 'work.cash_note' | translate }}</span>
+        </p>
+      </div>
+    </ion-content>
+
+    <ion-footer class="ion-no-border">
+      <div class="mx-auto max-w-3xl border-t border-t-edge px-4 py-2">
+        <ion-button expand="block" [disabled]="busy()" (click)="recordCash()">
+          {{ 'work.cash_confirm' | translate }}
         </ion-button>
       </div>
     </ion-footer>

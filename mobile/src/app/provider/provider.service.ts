@@ -842,6 +842,24 @@ export class ProviderService {
   }
 
   /**
+   * Record a cash-settled amount (POST /engagements/{id}/cash-settlements, P3-15).
+   *
+   * The marketing site promises this in as many words — "Settled in cash? Record it. Your completed
+   * work and your reputation still build up instead of disappearing" — and until now the app could
+   * not keep that promise: the endpoint existed and nothing called it.
+   *
+   * Provider-only, because the provider is the one who was handed the money. Nothing about it is
+   * enforcement; it is an offer, and the incentive is real — an unrecorded cash job leaves no
+   * history behind, and history is what wins the next customer.
+   */
+  async recordCashSettlement(id: string, amountMinor: number): Promise<MutationResult> {
+    if (!this.realWork.has(id)) {
+      return { ok: true };
+    }
+    return this.attempt(() => this.api.recordCashSettlement(id, amountMinor));
+  }
+
+  /**
    * Run one mutation, surfacing the server's problem+json `detail` on failure — a refusal here is
    * usually a real rule (remote check-in, a session already open), and the worker deserves to read
    * it rather than a generic error.
