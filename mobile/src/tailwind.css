@@ -52,6 +52,22 @@
 
 @theme {
     --font-sans: var(--ion-font-family);
+
+    /* The connectivity strip slides in rather than appearing — a bar that pops into existence reads
+       as a layout bug — and its state mark breathes so "sending" is legible without a spinner
+       asset. Declared here so both are ordinary `animate-*` utilities. */
+    --animate-strip-in: strip-in 180ms ease-out;
+    --animate-mark-pulse: mark-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes strip-in {
+    from { opacity: 0; transform: translateY(-100%); }
+    to { opacity: 1; transform: none; }
+}
+
+@keyframes mark-pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.35; transform: scale(0.72); }
 }
 
 /* ---------------------------------------------------------------------------

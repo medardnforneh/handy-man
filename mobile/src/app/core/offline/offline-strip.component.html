@@ -7,33 +7,63 @@
   lazily-loaded chunk, which is precisely what a dead network cannot deliver — an offline banner
   whose icon fails to load is a self-defeating design (observed: ChunkLoadError for ion-spinner the
   moment the connection dropped).
+
+  Each strip paints its tint as a gradient layer over an OPAQUE surface. The pages that host this
+  use a translucent header over fullscreen content, so a purely tinted background let scrolled
+  message bubbles show through the warning and made it unreadable (observed).
+
+  On the narrowest phones the actions drop under the message rather than squeezing the text.
 -->
 @if (failedCount() > 0) {
-  <div class="strip danger" role="status" aria-live="polite">
-    <i class="mark solid" aria-hidden="true"></i>
-    <span class="msg">{{ 'offline.failed' | translate:{ count: failedCount() } }}</span>
-    <button type="button" class="act hm-tap" (click)="retryFailed()">{{ 'offline.retry' | translate }}</button>
-    <button type="button" class="act ghost hm-tap" (click)="discardFailed()">{{ 'offline.discard' | translate }}</button>
+  <div
+    class="flex max-[360px]:flex-wrap items-center gap-2 border-b border-b-edge bg-surface-raised bg-[linear-gradient(color-mix(in_srgb,var(--color-danger)_16%,transparent)_0_100%)] px-4 py-1.5 text-xs leading-tight text-danger animate-strip-in motion-reduce:animate-none"
+    role="status"
+    aria-live="polite"
+  >
+    <i class="size-[9px] flex-none rounded-full bg-current" aria-hidden="true"></i>
+    <span class="flex min-w-0 flex-wrap items-baseline gap-x-1.5 gap-y-0.5">{{ 'offline.failed' | translate:{ count: failedCount() } }}</span>
+    <!-- A 44px floor would make the strip tall, so the touch area is widened with padding instead
+         and the visual height stays slim. -->
+    <button
+      type="button"
+      class="ms-auto max-[360px]:ms-0 flex-none cursor-pointer rounded-pill border border-current bg-transparent px-2.5 py-1 font-bold text-inherit [font:inherit]"
+      (click)="retryFailed()"
+    >{{ 'offline.retry' | translate }}</button>
+    <button
+      type="button"
+      class="flex-none cursor-pointer rounded-pill border border-transparent bg-transparent px-2.5 py-1 font-bold text-inherit underline opacity-75 [font:inherit]"
+      (click)="discardFailed()"
+    >{{ 'offline.discard' | translate }}</button>
   </div>
 }
 
 @if (!online()) {
-  <div class="strip warning" role="status" aria-live="polite">
-    <i class="mark hollow" aria-hidden="true"></i>
-    <span class="msg">
-      <b>{{ 'offline.title' | translate }}</b>
+  <div
+    class="flex max-[360px]:flex-wrap items-center gap-2 border-b border-b-edge bg-surface-raised bg-[linear-gradient(color-mix(in_srgb,var(--color-warning)_16%,transparent)_0_100%)] px-4 py-1.5 text-xs leading-tight text-warning animate-strip-in motion-reduce:animate-none"
+    role="status"
+    aria-live="polite"
+  >
+    <!-- Offline: hollow — nothing is moving. -->
+    <i class="size-[9px] flex-none rounded-full bg-transparent shadow-[inset_0_0_0_2px_currentColor]" aria-hidden="true"></i>
+    <span class="flex min-w-0 flex-wrap items-baseline gap-x-1.5 gap-y-0.5">
+      <b class="font-bold">{{ 'offline.title' | translate }}</b>
       @if (pendingCount() > 0) {
-        <small>{{ 'offline.waiting' | translate:{ count: pendingCount() } }}</small>
+        <small class="opacity-85">{{ 'offline.waiting' | translate:{ count: pendingCount() } }}</small>
       } @else {
-        <small>{{ 'offline.showing_saved' | translate }}</small>
+        <small class="opacity-85">{{ 'offline.showing_saved' | translate }}</small>
       }
     </span>
   </div>
 }
 
 @if (catchingUp()) {
-  <div class="strip info" role="status" aria-live="polite">
-    <i class="mark pulse" aria-hidden="true"></i>
-    <span class="msg">{{ 'offline.sending' | translate:{ count: pendingCount() } }}</span>
+  <div
+    class="flex max-[360px]:flex-wrap items-center gap-2 border-b border-b-edge bg-surface-raised bg-[linear-gradient(color-mix(in_srgb,var(--color-info)_16%,transparent)_0_100%)] px-4 py-1.5 text-xs leading-tight text-info animate-strip-in motion-reduce:animate-none"
+    role="status"
+    aria-live="polite"
+  >
+    <!-- Catching up: a slow breath, so "sending" is legible without a spinner asset. -->
+    <i class="size-[9px] flex-none rounded-full bg-current animate-mark-pulse motion-reduce:animate-none" aria-hidden="true"></i>
+    <span class="flex min-w-0 flex-wrap items-baseline gap-x-1.5 gap-y-0.5">{{ 'offline.sending' | translate:{ count: pendingCount() } }}</span>
   </div>
 }

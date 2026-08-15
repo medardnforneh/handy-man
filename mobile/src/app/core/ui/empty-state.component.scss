@@ -1,112 +1,17 @@
-// SEMANTIC TOKENS ONLY — never a literal colour (enforced by `npm run lint:colors`).
+// The host element and the Ionic button — the two things a utility in the template cannot reach.
 
-// The host stretches so the `full` variant can claim the leftover height of a `.hm-page-fill`
-// column and centre inside it. Without this the block sits at the top and the rest of the screen
-// is a void.
+// The host stretches so the full-height variant can claim the leftover height of its column and
+// centre inside it. Without this the block sits at the top and the rest of the screen is a void.
 :host {
   display: flex;
   flex: 1 1 auto;
   min-height: 0;
 }
 
-.es {
-  display: flex;
-  flex: 1 1 auto;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.55rem;
-  padding: var(--hm-space-xl) var(--hm-space-md);
-  text-align: center;
-
-  .txt {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.3rem;
-    min-width: 0;
-  }
-
-  h2 {
-    margin: 0;
-    font-size: var(--hm-text-lg);
-    font-weight: 700;
-    letter-spacing: -0.01em;
-    color: var(--hm-color-text-primary);
-  }
-
-  p {
-    margin: 0;
-    max-width: 30ch;
-    font-size: var(--hm-text-sm);
-    line-height: 1.45;
-    color: var(--hm-color-text-muted);
-  }
-}
-
-// The illustration: a soft tinted disc, not a bare grey glyph floating on the background.
-.ic {
-  display: grid;
-  place-items: center;
-  width: 64px;
-  height: 64px;
-  margin-bottom: 0.35rem;
-  border-radius: var(--hm-radius-pill);
-  background: color-mix(in srgb, var(--hm-color-brand-primary) 10%, transparent);
-  color: var(--hm-color-brand-primary);
-
-  ion-icon {
-    font-size: 1.75rem;
-  }
-}
-
 .cta {
-  margin-top: 0.5rem;
   --border-radius: var(--hm-radius-md);
   --padding-start: var(--hm-space-md);
   --padding-end: var(--hm-space-md);
   font-weight: 700;
-}
-
-// One empty section inside a populated page: compact, aligned with the content around it, and
-// quiet enough not to compete with the sections that DO have something in them.
-.es.inline {
-  flex-direction: row;
-  // Wrap rather than squeeze. The button keeps its natural width and the text is allowed to shrink
-  // to about 12rem; below that the button drops to its own line. This is decided by the space the
-  // component actually has, not by the viewport — the same inline state sits inside cards of very
-  // different widths, so a breakpoint was always measuring the wrong box (and the one that was here
-  // fired below 380px, which left 390px — the commonest phone width there is — squeezing the text
-  // to two words a line and pushing the button out through the side of its card).
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 0.7rem;
-  padding: var(--hm-space-md);
-  text-align: start;
-  border: 1px dashed var(--hm-color-border-subtle);
-  border-radius: var(--hm-radius-lg);
-
-  .txt {
-    flex: 1 1 12rem;
-    align-items: flex-start;
-    gap: 0.15rem;
-  }
-
-  .ic {
-    width: 38px;
-    height: 38px;
-    margin-bottom: 0;
-    border-radius: var(--hm-radius-md);
-
-    ion-icon { font-size: 1.15rem; }
-  }
-
-  h2 { font-size: var(--hm-text-md); }
-  p { font-size: var(--hm-text-sm); max-width: none; }
-
-  .cta {
-    margin: 0 0 0 auto;
-    flex: none;
-  }
+  min-height: 44px;
 }

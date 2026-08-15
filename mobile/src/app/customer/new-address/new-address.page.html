@@ -8,29 +8,46 @@
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <div class="page">
-    <p class="lead hm-muted">{{ 'address.lead' | translate }}</p>
+  <div class="mx-auto max-w-3xl px-4 pb-10">
+    <p class="mt-2 text-md leading-snug text-content-muted">{{ 'address.lead' | translate }}</p>
 
     <!-- The pin first: it is the field that decides whether this address can be matched to a
-         provider at all, and the only one we cannot ask the user to type. -->
-    <div class="hm-section-head"><h2>{{ 'address.pin' | translate }}</h2></div>
-    <div class="pin hm-card" [class.done]="fix() !== null">
+         provider at all, and the only one we cannot ask the user to type.
+
+         Outlined until a fix lands, then it wears the success tint — the one field on this form the
+         user can't correct by typing, so its state has to be unmistakable at a glance.
+
+         It WRAPS rather than squeezes. "Utiliser ma position" is a wide button, and holding the row
+         on one line left the explanation at about eleven characters a line — five lines of it — on
+         a 390px phone. The text asks for 11rem and the button drops beneath it when that will not
+         fit, which is decided by the row's own width rather than by a viewport breakpoint. -->
+    <h2 class="mt-6 mb-4 text-lg font-extrabold tracking-snug">{{ 'address.pin' | translate }}</h2>
+    <div
+      class="flex flex-wrap items-center gap-2 rounded-lg border p-4 shadow-sm"
+      [class]="fix() !== null
+        ? 'border-success/45 bg-[color-mix(in_srgb,var(--color-success)_8%,var(--color-surface-raised))]'
+        : 'border-edge bg-surface-raised'"
+    >
       @if (fix(); as f) {
-        <span class="ic ok" aria-hidden="true"><ion-icon name="checkmark-circle"></ion-icon></span>
-        <span class="pt">
-          <b>{{ 'address.pin_captured' | translate }}</b>
-          <small class="hm-muted">{{ 'address.pin_hint' | translate }}</small>
+        <span class="grid size-[38px] flex-none place-items-center rounded-md bg-success/15 text-[1.1rem] text-success" aria-hidden="true">
+          <ion-icon name="checkmark-circle"></ion-icon>
         </span>
-        <ion-button fill="clear" size="small" class="hm-tap" (click)="locate()">
+        <span class="min-w-0 flex-[1_1_11rem]">
+          <b class="block text-md">{{ 'address.pin_captured' | translate }}</b>
+          <small class="mt-0.5 block text-xs leading-snug text-content-muted">{{ 'address.pin_hint' | translate }}</small>
+        </span>
+        <ion-button fill="clear" size="small" class="pin-cta" (click)="locate()">
           {{ 'address.pin_again' | translate }}
         </ion-button>
       } @else {
-        <span class="ic" aria-hidden="true"><ion-icon name="location-outline"></ion-icon></span>
-        <span class="pt">
-          <b>{{ 'address.pin_needed' | translate }}</b>
-          <small class="hm-muted">{{ 'address.pin_consent' | translate }}</small>
+        <span class="grid size-[38px] flex-none place-items-center rounded-md bg-brand/12 text-[1.1rem] text-brand" aria-hidden="true">
+          <ion-icon name="location-outline"></ion-icon>
         </span>
-        <ion-button size="small" class="hm-tap" [disabled]="locating()" (click)="locate()">
+        <span class="min-w-0 flex-[1_1_11rem]">
+          <b class="block text-md">{{ 'address.pin_needed' | translate }}</b>
+          <small class="mt-0.5 block text-xs leading-snug text-content-muted">{{ 'address.pin_consent' | translate }}</small>
+        </span>
+        <ion-button size="small" class="pin-cta" [disabled]="locating()" (click)="locate()">
           @if (locating()) {
             <ion-spinner name="crescent"></ion-spinner>
           } @else {
@@ -43,16 +60,16 @@
     @if (locationRefused()) {
       <!-- Refusal is a state with a way forward, not an error toast. We say what it costs rather
            than saving a made-up point that would quietly never match anyone. -->
-      <p class="refused">
-        <ion-icon name="alert-circle-outline" aria-hidden="true"></ion-icon>
+      <p class="mt-2 flex items-start gap-1.5 text-sm leading-snug text-warning">
+        <ion-icon name="alert-circle-outline" class="mt-0.5 flex-none text-md" aria-hidden="true"></ion-icon>
         {{ 'address.pin_refused' | translate }}
       </p>
     }
 
-    <div class="hm-section-head"><h2>{{ 'address.details' | translate }}</h2></div>
+    <h2 class="mt-6 mb-4 text-lg font-extrabold tracking-snug">{{ 'address.details' | translate }}</h2>
 
     <ion-input
-      class="field hm-tap"
+      class="field"
       [value]="label()"
       (ionInput)="onLabel($any($event.target).value)"
       [label]="'address.label' | translate"
@@ -62,7 +79,7 @@
     ></ion-input>
 
     <ion-input
-      class="field hm-tap"
+      class="field"
       [value]="line1()"
       (ionInput)="onLine1($any($event.target).value)"
       [label]="'address.line1' | translate"
@@ -73,7 +90,7 @@
     ></ion-input>
 
     <ion-input
-      class="field hm-tap"
+      class="field"
       [value]="quarter()"
       (ionInput)="onQuarter($any($event.target).value)"
       [label]="'address.quarter' | translate"
@@ -83,7 +100,7 @@
     ></ion-input>
 
     <ion-input
-      class="field hm-tap"
+      class="field"
       [value]="city()"
       (ionInput)="onCity($any($event.target).value)"
       [label]="'address.city' | translate"
@@ -96,7 +113,7 @@
     <!-- Landmarks are how addresses actually work here: "en face de la pharmacie" gets a provider
          to the door where a street number does not. -->
     <ion-input
-      class="field hm-tap"
+      class="field"
       [value]="landmark()"
       (ionInput)="onLandmark($any($event.target).value)"
       [label]="'address.landmark' | translate"
@@ -108,8 +125,8 @@
 </ion-content>
 
 <ion-footer class="ion-no-border">
-  <div class="cta">
-    <ion-button expand="block" class="hm-tap" [disabled]="!canSave()" (click)="save()">
+  <div class="mx-auto max-w-3xl border-t border-t-edge px-4 py-2">
+    <ion-button expand="block" [disabled]="!canSave()" (click)="save()">
       @if (saving()) {
         <ion-spinner name="crescent"></ion-spinner>
       } @else {

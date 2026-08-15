@@ -1,17 +1,42 @@
-<div class="es" [class.inline]="inline">
-  <span class="ic" aria-hidden="true">
+<!-- Two shapes from one component.
+
+     Full: centred in whatever height is left over, for a screen with nothing on it yet.
+
+     Inline: one empty SECTION inside a populated page — compact, aligned with the content around
+     it, and quiet enough not to compete with the sections that do have something in them. It wraps
+     rather than squeezes: the button keeps its natural width and the text may shrink to about 12rem,
+     below which the button drops to its own line. That is decided by the space this component
+     actually has, not by the viewport — the same inline state sits inside cards of very different
+     widths, so a breakpoint was always measuring the wrong box (and the one that used to be here
+     fired below 380px, which left 390px — the commonest phone width there is — squeezing the text
+     to two words a line and pushing the button out through the side of its card). -->
+<div
+  class="flex flex-auto items-center"
+  [class]="inline
+    ? 'flex-row flex-wrap justify-start gap-3 rounded-lg border border-dashed border-edge p-4 text-start'
+    : 'flex-col justify-center gap-2 px-4 py-8 text-center'"
+>
+  <!-- The illustration: a soft tinted disc, not a bare grey glyph floating on the background. -->
+  <span
+    class="grid flex-none place-items-center bg-brand/10 text-brand"
+    [class]="inline ? 'size-[38px] rounded-md text-[1.15rem]' : 'mb-1.5 size-16 rounded-pill text-[1.75rem]'"
+    aria-hidden="true"
+  >
     <ion-icon [name]="icon"></ion-icon>
   </span>
 
-  <div class="txt">
-    <h2>{{ heading | translate }}</h2>
+  <div
+    class="flex min-w-0 flex-col"
+    [class]="inline ? 'flex-[1_1_12rem] items-start gap-0.5' : 'items-center gap-1'"
+  >
+    <h2 class="font-bold tracking-snug text-content" [class]="inline ? 'text-md' : 'text-lg'">{{ heading | translate }}</h2>
     @if (body) {
-      <p>{{ body | translate }}</p>
+      <p class="text-sm leading-snug text-content-muted" [class]="inline ? '' : 'max-w-[30ch]'">{{ body | translate }}</p>
     }
   </div>
 
   @if (actionLabel) {
-    <ion-button class="cta hm-tap" (click)="action.emit()">
+    <ion-button class="cta" [class]="inline ? 'ms-auto flex-none' : 'mt-2'" (click)="action.emit()">
       @if (actionIcon) {
         <ion-icon [name]="actionIcon" slot="start" aria-hidden="true"></ion-icon>
       }

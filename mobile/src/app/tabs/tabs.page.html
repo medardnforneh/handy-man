@@ -4,17 +4,17 @@
 <ion-split-pane contentId="tabs-content" when="(min-width: 768px)">
   <ion-menu contentId="tabs-content" type="overlay" [swipeGesture]="false">
     <ion-content class="hm-rail">
-      <div class="brand">
-        <span class="mark" aria-hidden="true">
+      <div class="flex items-center gap-2 px-2 pt-2 pb-6">
+        <span class="grid size-[38px] flex-none place-items-center rounded-md bg-brand text-[1.15rem] text-brand-contrast" aria-hidden="true">
           <ion-icon name="hammer-outline"></ion-icon>
         </span>
-        <span class="brand-text">
-          <strong>{{ 'app.name' | translate }}</strong>
-          <small>{{ 'app.tagline' | translate }}</small>
+        <span class="flex min-w-0 flex-col">
+          <strong class="text-md font-bold tracking-snug text-content">{{ 'app.name' | translate }}</strong>
+          <small class="text-2xs leading-tight text-content-muted">{{ 'app.tagline' | translate }}</small>
         </span>
       </div>
 
-      <p class="rail-label">{{ 'nav.customer' | translate }}</p>
+      <p class="mt-0 mb-1 px-2 text-2xs font-bold uppercase tracking-[0.09em] text-content-muted">{{ 'nav.customer' | translate }}</p>
 
       <ion-list lines="none">
         @for (item of items; track item.tab) {
