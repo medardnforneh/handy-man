@@ -13,7 +13,7 @@ ion-toolbar {
 
 .lead {
   margin: var(--hm-space-sm) 0 var(--hm-space-md);
-  font-size: 0.9rem;
+  font-size: var(--hm-text-md);
   line-height: 1.4;
   text-wrap: pretty;
 }
@@ -35,7 +35,7 @@ ion-toolbar {
   .pro-av {
     width: 52px;
     height: 52px;
-    font-size: 1rem;
+    font-size: var(--hm-text-md);
     flex: none;
   }
 
@@ -47,7 +47,7 @@ ion-toolbar {
     gap: 0.3rem;
 
     b {
-      font-size: 0.95rem;
+      font-size: var(--hm-text-md);
       letter-spacing: -0.01em;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -57,7 +57,7 @@ ion-toolbar {
 
   .verified {
     color: var(--hm-color-brand-primary);
-    font-size: 0.9rem;
+    font-size: var(--hm-text-md);
     flex: none;
   }
 
@@ -68,7 +68,7 @@ ion-toolbar {
     flex-wrap: wrap;
     margin-top: 0.15rem;
     color: var(--hm-color-text-muted);
-    font-size: 0.78rem;
+    font-size: var(--hm-text-xs);
   }
 
   .rating {

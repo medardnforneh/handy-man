@@ -19,7 +19,7 @@ ion-title {
 
 .lead {
   margin: var(--hm-space-sm) 0 0;
-  font-size: 0.9rem;
+  font-size: var(--hm-text-md);
   line-height: 1.45;
 }
 
@@ -34,7 +34,7 @@ ion-title {
     display: flex;
     align-items: flex-start;
     gap: var(--hm-space-sm);
-    font-size: 0.85rem;
+    font-size: var(--hm-text-sm);
     line-height: 1.4;
     color: var(--hm-color-text-muted);
 
@@ -49,7 +49,7 @@ ion-title {
       border-radius: 999px;
       background: var(--hm-color-surface-sunken);
       color: var(--hm-color-text-muted);
-      font-size: 0.75rem;
+      font-size: var(--hm-text-xs);
     }
 
     .what { flex: 1; min-width: 0; }
@@ -68,7 +68,7 @@ ion-title {
     margin-top: var(--hm-space-md);
     padding-top: var(--hm-space-sm);
     border-top: 1px solid var(--hm-color-border-subtle);
-    font-size: 0.78rem;
+    font-size: var(--hm-text-xs);
     font-weight: 700;
     color: var(--hm-color-text-muted);
   }
@@ -80,18 +80,18 @@ ion-title {
   flex-wrap: wrap;
   gap: 0.4rem;
   margin: var(--hm-space-sm) 0 0;
-  font-size: 0.8rem;
+  font-size: var(--hm-text-sm);
   line-height: 1.4;
   color: var(--hm-color-status-danger);
 
-  ion-icon { flex: none; font-size: 1rem; }
+  ion-icon { flex: none; font-size: var(--hm-text-md); }
   span { flex: 1; min-width: 0; }
   ion-button { flex: none; --color: var(--hm-color-status-danger); font-weight: 700; }
 }
 
 .gnote {
   margin: calc(var(--hm-space-xs) * -1) 0 var(--hm-space-sm);
-  font-size: 0.8rem;
+  font-size: var(--hm-text-sm);
   line-height: 1.4;
 }
 
@@ -137,7 +137,7 @@ ion-title {
 
     b {
       display: block;
-      font-size: 0.9rem;
+      font-size: var(--hm-text-md);
       line-height: 1.3;
     }
 
@@ -156,7 +156,7 @@ ion-title {
     flex-basis: 100%;
     padding-top: var(--hm-space-sm);
     border-top: 1px solid var(--hm-color-border-subtle);
-    font-size: 0.78rem;
+    font-size: var(--hm-text-xs);
     line-height: 1.4;
     color: var(--hm-color-status-danger);
   }
@@ -167,11 +167,11 @@ ion-title {
   align-items: flex-start;
   gap: 0.5rem;
   margin: var(--hm-space-lg) 0 0;
-  font-size: 0.76rem;
+  font-size: var(--hm-text-xs);
   line-height: 1.5;
   color: var(--hm-color-text-muted);
 
-  ion-icon { flex: none; margin-top: 0.15rem; font-size: 0.95rem; }
+  ion-icon { flex: none; margin-top: 0.15rem; font-size: var(--hm-text-md); }
   span { flex: 1; min-width: 0; }
 }
 

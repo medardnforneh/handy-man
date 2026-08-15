@@ -54,7 +54,7 @@ ion-searchbar {
 .chat-av {
   width: 48px;
   height: 48px;
-  font-size: 0.95rem;
+  font-size: var(--hm-text-md);
 }
 
 .body {
@@ -69,19 +69,19 @@ ion-searchbar {
   gap: 0.5rem;
 
   b {
-    font-size: 0.92rem;
+    font-size: var(--hm-text-md);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
 
-  small { flex: none; font-size: 0.7rem; }
+  small { flex: none; font-size: var(--hm-text-2xs); }
 }
 
 .preview {
   flex: 1;
   min-width: 0;
-  font-size: 0.8rem;
+  font-size: var(--hm-text-sm);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -95,7 +95,7 @@ ion-searchbar {
   border-radius: var(--hm-radius-pill);
   background: var(--hm-color-brand-primary);
   color: var(--hm-color-brand-onPrimary);
-  font-size: 0.68rem;
+  font-size: var(--hm-text-2xs);
   font-weight: 700;
   display: grid;
   place-items: center;
@@ -104,5 +104,5 @@ ion-searchbar {
 .ref {
   display: block;
   margin-top: 0.1rem;
-  font-size: 0.68rem;
+  font-size: var(--hm-text-2xs);
 }

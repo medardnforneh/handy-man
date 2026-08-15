@@ -7,7 +7,7 @@ ion-toolbar {
 }
 
 ion-title {
-  font-size: 0.95rem;
+  font-size: var(--hm-text-md);
   font-weight: 700;
 }
 
@@ -48,8 +48,8 @@ ion-title {
   color: inherit;
   cursor: pointer;
 
-  .prov-av { width: 44px; height: 44px; border-radius: 50%; font-size: 0.85rem; }
-  .prov-info { flex: 1; min-width: 0; b { font-size: 0.95rem; } small { display: block; font-size: 0.76rem; } }
+  .prov-av { width: 44px; height: 44px; border-radius: 50%; font-size: var(--hm-text-sm); }
+  .prov-info { flex: 1; min-width: 0; b { font-size: var(--hm-text-md); } small { display: block; font-size: var(--hm-text-xs); } }
   .chev { color: var(--hm-color-text-muted); font-size: 1.1rem; flex: none; }
 
   &[disabled] { opacity: 1; cursor: default; }
@@ -65,15 +65,15 @@ ion-title {
   align-items: center;
   justify-content: space-between;
   gap: var(--hm-space-sm);
-  font-size: 0.88rem;
+  font-size: var(--hm-text-md);
 
   & + .mrow { margin-top: 0.6rem; }
 
   .hm-muted { display: inline-flex; align-items: center; gap: 0.35rem; }
-  ion-icon { font-size: 0.95rem; }
+  ion-icon { font-size: var(--hm-text-md); }
 
   span:last-child { font-weight: 700; font-variant-numeric: tabular-nums; }
-  small { color: var(--hm-color-text-muted); font-weight: 600; font-size: 0.7rem; margin-inline-start: 0.15rem; }
+  small { color: var(--hm-color-text-muted); font-weight: 600; font-size: var(--hm-text-2xs); margin-inline-start: 0.15rem; }
 
   &.big {
     padding-bottom: 0.6rem;
@@ -96,7 +96,7 @@ ion-title {
     justify-content: space-between;
     gap: var(--hm-space-sm);
 
-    b { font-size: 0.92rem; }
+    b { font-size: var(--hm-text-md); }
   }
 
   .ms-bottom {
@@ -107,7 +107,7 @@ ion-title {
     margin-top: 0.5rem;
 
     .amt { font-weight: 700; font-variant-numeric: tabular-nums; }
-    small { color: var(--hm-color-text-muted); font-weight: 600; font-size: 0.7rem; margin-inline-start: 0.15rem; }
+    small { color: var(--hm-color-text-muted); font-weight: 600; font-size: var(--hm-text-2xs); margin-inline-start: 0.15rem; }
 
     ion-button { --border-radius: var(--hm-radius-md); font-weight: 700; margin: 0; }
   }
@@ -120,7 +120,7 @@ ion-title {
   gap: 0.5rem;
   margin: 0;
   padding: var(--hm-space-md);
-  font-size: 0.88rem;
+  font-size: var(--hm-text-md);
 
   ion-icon { color: var(--hm-color-brand-primary); font-size: 1.1rem; flex: none; }
 
@@ -157,8 +157,8 @@ ion-footer {
   margin-top: var(--hm-space-md);
 
   .wt { flex: 1; min-width: 12rem; }
-  .wt b { display: block; font-size: 0.95rem; }
-  .wt small { display: block; font-size: 0.78rem; margin-top: 0.1rem; line-height: 1.4; }
+  .wt b { display: block; font-size: var(--hm-text-md); }
+  .wt small { display: block; font-size: var(--hm-text-xs); margin-top: 0.1rem; line-height: 1.4; }
 
   ion-button {
     --border-radius: var(--hm-radius-md);
@@ -200,7 +200,7 @@ ion-footer {
   margin: var(--hm-space-sm) 0;
   border: 1px solid var(--hm-color-border-subtle);
   border-radius: var(--hm-radius-md);
-  font-size: 0.9rem;
+  font-size: var(--hm-text-md);
 }
 
 .reviewed {
@@ -208,9 +208,9 @@ ion-footer {
   align-items: center;
   gap: 0.4rem;
   margin-top: var(--hm-space-md);
-  font-size: 0.85rem;
+  font-size: var(--hm-text-sm);
 
-  ion-icon { color: var(--hm-color-status-success); font-size: 1.05rem; }
+  ion-icon { color: var(--hm-color-status-success); font-size: var(--hm-text-lg); }
 }
 
 // ---- Quotes received ---------------------------------------------------
@@ -219,7 +219,7 @@ ion-footer {
 // to be paid now — before it earns the right to ask for a commitment.
 .qnote {
   margin: calc(var(--hm-space-xs) * -1) 0 var(--hm-space-sm);
-  font-size: 0.8rem;
+  font-size: var(--hm-text-sm);
   line-height: 1.4;
 }
 
@@ -243,8 +243,8 @@ ion-footer {
     flex: 1;
     min-width: 0;
 
-    b { display: block; font-size: 0.95rem; line-height: 1.3; }
-    small { display: block; font-size: 0.75rem; margin-top: 0.15rem; }
+    b { display: block; font-size: var(--hm-text-md); line-height: 1.3; }
+    small { display: block; font-size: var(--hm-text-xs); margin-top: 0.15rem; }
   }
 
   .q-badge {
@@ -263,7 +263,7 @@ ion-footer {
       display: flex;
       align-items: baseline;
       gap: var(--hm-space-sm);
-      font-size: 0.8rem;
+      font-size: var(--hm-text-sm);
 
       + li { margin-top: 0.3rem; }
     }
@@ -283,14 +283,14 @@ ion-footer {
     align-items: baseline;
     justify-content: space-between;
     gap: var(--hm-space-sm);
-    font-size: 0.85rem;
+    font-size: var(--hm-text-sm);
 
     + .q-row { margin-top: 0.25rem; }
 
-    small { color: var(--hm-color-text-muted); font-weight: 600; font-size: 0.7rem; margin-inline-start: 0.15rem; }
+    small { color: var(--hm-color-text-muted); font-weight: 600; font-size: var(--hm-text-2xs); margin-inline-start: 0.15rem; }
 
     &.big {
-      font-size: 1.05rem;
+      font-size: var(--hm-text-lg);
       font-weight: 800;
 
       .val { font-variant-numeric: tabular-nums; }
@@ -299,7 +299,7 @@ ion-footer {
 
   .q-notes {
     margin: var(--hm-space-sm) 0 0;
-    font-size: 0.8rem;
+    font-size: var(--hm-text-sm);
     line-height: 1.45;
     color: var(--hm-color-text-muted);
   }
@@ -309,10 +309,10 @@ ion-footer {
     align-items: center;
     gap: 0.4rem;
     margin: var(--hm-space-md) 0 0;
-    font-size: 0.78rem;
+    font-size: var(--hm-text-xs);
     color: var(--hm-color-status-warning);
 
-    ion-icon { flex: none; font-size: 1rem; }
+    ion-icon { flex: none; font-size: var(--hm-text-md); }
   }
 
   .q-accept {

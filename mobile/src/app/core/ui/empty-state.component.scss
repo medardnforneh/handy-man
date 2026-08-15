@@ -29,7 +29,7 @@
 
   h2 {
     margin: 0;
-    font-size: 1.05rem;
+    font-size: var(--hm-text-lg);
     font-weight: 700;
     letter-spacing: -0.01em;
     color: var(--hm-color-text-primary);
@@ -38,7 +38,7 @@
   p {
     margin: 0;
     max-width: 30ch;
-    font-size: 0.86rem;
+    font-size: var(--hm-text-sm);
     line-height: 1.45;
     color: var(--hm-color-text-muted);
   }
@@ -102,8 +102,8 @@
     ion-icon { font-size: 1.15rem; }
   }
 
-  h2 { font-size: 0.9rem; }
-  p { font-size: 0.8rem; max-width: none; }
+  h2 { font-size: var(--hm-text-md); }
+  p { font-size: var(--hm-text-sm); max-width: none; }
 
   .cta {
     margin: 0 0 0 auto;

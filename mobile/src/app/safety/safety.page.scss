@@ -16,7 +16,7 @@ ion-title { font-weight: 800; letter-spacing: -0.02em; }
 
 .lead {
   margin: var(--hm-space-sm) 0 0;
-  font-size: 0.9rem;
+  font-size: var(--hm-text-md);
   line-height: 1.45;
 }
 
@@ -53,7 +53,7 @@ ion-title { font-weight: 800; letter-spacing: -0.02em; }
   // "Hold for help" did at 168px, and what any translation longer than a word would do again.
   .plabel {
     max-width: 74%;
-    font-size: 0.82rem;
+    font-size: var(--hm-text-sm);
     font-weight: 800;
     line-height: 1.15;
     letter-spacing: 0.02em;
@@ -84,7 +84,7 @@ ion-title { font-weight: 800; letter-spacing: -0.02em; }
 
 .phint {
   margin: var(--hm-space-sm) 0 0;
-  font-size: 0.8rem;
+  font-size: var(--hm-text-sm);
   text-align: center;
   line-height: 1.4;
 }
@@ -97,17 +97,17 @@ ion-title { font-weight: 800; letter-spacing: -0.02em; }
   padding: var(--hm-space-sm) var(--hm-space-md);
   border-radius: var(--hm-radius-md);
   background: color-mix(in srgb, var(--hm-color-status-success) 10%, transparent);
-  font-size: 0.82rem;
+  font-size: var(--hm-text-sm);
   line-height: 1.45;
 
-  ion-icon { flex: none; margin-top: 0.1rem; font-size: 1.05rem; color: var(--hm-color-status-success); }
+  ion-icon { flex: none; margin-top: 0.1rem; font-size: var(--hm-text-lg); color: var(--hm-color-status-success); }
   span { flex: 1; min-width: 0; }
 }
 
 // ---- Contacts ----------------------------------------------------------
 .gnote {
   margin: calc(var(--hm-space-xs) * -1) 0 var(--hm-space-sm);
-  font-size: 0.8rem;
+  font-size: var(--hm-text-sm);
   line-height: 1.4;
 }
 
@@ -117,10 +117,10 @@ ion-title { font-weight: 800; letter-spacing: -0.02em; }
   flex-wrap: wrap;
   gap: 0.4rem;
   margin: var(--hm-space-sm) 0 0;
-  font-size: 0.8rem;
+  font-size: var(--hm-text-sm);
   color: var(--hm-color-status-danger);
 
-  ion-icon { flex: none; font-size: 1rem; }
+  ion-icon { flex: none; font-size: var(--hm-text-md); }
   span { flex: 1; min-width: 0; }
   ion-button { flex: none; --color: var(--hm-color-status-danger); font-weight: 700; }
 }
@@ -141,7 +141,7 @@ ion-title { font-weight: 800; letter-spacing: -0.02em; }
     border-radius: 50%;
     background: color-mix(in srgb, var(--hm-color-brand-primary) 12%, transparent);
     color: var(--hm-color-brand-primary);
-    font-size: 1.05rem;
+    font-size: var(--hm-text-lg);
 
     // A block is a boundary, not a contact — it does not wear the brand tint.
     &.blk {
@@ -154,8 +154,8 @@ ion-title { font-weight: 800; letter-spacing: -0.02em; }
     flex: 1;
     min-width: 0;
 
-    b { display: block; font-size: 0.9rem; }
-    small { display: block; font-size: 0.76rem; font-variant-numeric: tabular-nums; }
+    b { display: block; font-size: var(--hm-text-md); }
+    small { display: block; font-size: var(--hm-text-xs); font-variant-numeric: tabular-nums; }
   }
 
   .crm {
@@ -178,7 +178,7 @@ ion-title { font-weight: 800; letter-spacing: -0.02em; }
 .flabel {
   display: block;
   margin-bottom: 0.35rem;
-  font-size: 0.8rem;
+  font-size: var(--hm-text-sm);
   font-weight: 700;
   color: var(--hm-color-text-muted);
 }
@@ -190,7 +190,7 @@ ion-title { font-weight: 800; letter-spacing: -0.02em; }
   border: 1.5px solid var(--hm-color-border-subtle);
   border-radius: var(--hm-radius-md);
   color: var(--hm-color-text-primary);
-  font-size: 1rem;
+  font-size: var(--hm-text-md);
 
   &:focus { outline: none; border-color: var(--hm-color-brand-primary); }
 }
@@ -198,13 +198,13 @@ ion-title { font-weight: 800; letter-spacing: -0.02em; }
 .fhelp {
   display: block;
   margin-top: 0.3rem;
-  font-size: 0.74rem;
+  font-size: var(--hm-text-xs);
   line-height: 1.35;
 }
 
 .err {
   margin: calc(var(--hm-space-md) * -1 + 0.1rem) 0 var(--hm-space-md);
-  font-size: 0.76rem;
+  font-size: var(--hm-text-xs);
   color: var(--hm-color-status-danger);
 }
 
@@ -213,11 +213,11 @@ ion-title { font-weight: 800; letter-spacing: -0.02em; }
   align-items: flex-start;
   gap: 0.5rem;
   margin: var(--hm-space-lg) 0 0;
-  font-size: 0.76rem;
+  font-size: var(--hm-text-xs);
   line-height: 1.5;
   color: var(--hm-color-text-muted);
 
-  ion-icon { flex: none; margin-top: 0.15rem; font-size: 0.95rem; }
+  ion-icon { flex: none; margin-top: 0.15rem; font-size: var(--hm-text-md); }
   span { flex: 1; min-width: 0; }
 }
 

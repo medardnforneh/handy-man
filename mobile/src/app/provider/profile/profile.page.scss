@@ -39,7 +39,7 @@ ion-title { font-weight: 800; letter-spacing: -0.02em; }
     gap: 0.35rem;
 
     b { font-size: 1.2rem; font-weight: 800; letter-spacing: -0.02em; }
-    .verified { color: var(--hm-color-brand-primary); font-size: 1rem; }
+    .verified { color: var(--hm-color-brand-primary); font-size: var(--hm-text-md); }
   }
 
   .rating {
@@ -48,7 +48,7 @@ ion-title { font-weight: 800; letter-spacing: -0.02em; }
     gap: 0.2rem;
     color: var(--hm-color-status-warning);
     font-weight: 700;
-    font-size: 0.9rem;
+    font-size: var(--hm-text-md);
   }
 }
 
@@ -60,14 +60,14 @@ ion-title { font-weight: 800; letter-spacing: -0.02em; }
   padding: var(--hm-space-md);
 
   ion-icon { font-size: 1.6rem; flex: none; }
-  .v-text { flex: 1; min-width: 0; b { font-size: 0.92rem; } small { display: block; font-size: 0.78rem; margin-top: 0.1rem; } }
+  .v-text { flex: 1; min-width: 0; b { font-size: var(--hm-text-md); } small { display: block; font-size: var(--hm-text-xs); margin-top: 0.1rem; } }
 
   &.ok ion-icon { color: var(--hm-color-status-success); }
   &.warn ion-icon { color: var(--hm-color-status-warning); }
 
   // The affordance on the verified card — it still opens the screen, because tier 3 is above
   // tier 2. Sized and coloured as a chevron, not as a second status glyph.
-  .chev { font-size: 1rem; color: var(--hm-color-text-muted); }
+  .chev { font-size: var(--hm-text-md); color: var(--hm-color-text-muted); }
   &.ok .chev { color: var(--hm-color-text-muted); }
 
   ion-button { --border-radius: var(--hm-radius-md); font-weight: 700; flex: none; }
@@ -82,8 +82,8 @@ ion-title { font-weight: 800; letter-spacing: -0.02em; }
   border-radius: var(--hm-radius-lg);
 
   ion-icon { color: var(--hm-color-brand-primary); font-size: 1.3rem; }
-  b { font-size: 0.92rem; }
-  p { font-size: 0.78rem; margin: 0.1rem 0 0; }
+  b { font-size: var(--hm-text-md); }
+  p { font-size: var(--hm-text-xs); margin: 0.1rem 0 0; }
   ion-toggle { --track-background-checked: var(--hm-color-brand-primary); }
 }
 
@@ -96,7 +96,7 @@ ion-title { font-weight: 800; letter-spacing: -0.02em; }
   background: var(--hm-color-surface-sunken);
   border: 1px solid var(--hm-color-border-subtle);
   color: var(--hm-color-text-primary);
-  font-size: 0.78rem;
+  font-size: var(--hm-text-xs);
   font-weight: 600;
 }
 
@@ -107,7 +107,7 @@ ion-title { font-weight: 800; letter-spacing: -0.02em; }
   gap: 0.5rem;
   margin: 0;
   padding: var(--hm-space-md);
-  font-size: 0.88rem;
+  font-size: var(--hm-text-md);
 
   ion-icon { color: var(--hm-color-brand-primary); font-size: 1.1rem; flex: none; }
 }
@@ -122,7 +122,7 @@ ion-title { font-weight: 800; letter-spacing: -0.02em; }
     --color-checked: var(--hm-color-text-primary);
     --indicator-color: var(--hm-color-surface-raised);
     --border-radius: var(--hm-radius-sm);
-    font-size: 0.85rem;
+    font-size: var(--hm-text-sm);
     font-weight: 600;
     text-transform: none;
     min-height: 42px;

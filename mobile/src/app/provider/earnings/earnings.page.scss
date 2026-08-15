@@ -22,7 +22,7 @@ ion-title { font-weight: 800; letter-spacing: -0.02em; }
   color: var(--hm-color-brand-onPrimary);
   margin-bottom: var(--hm-space-md);
 
-  .wl { font-size: 0.8rem; font-weight: 600; opacity: 0.85; }
+  .wl { font-size: var(--hm-text-sm); font-weight: 600; opacity: 0.85; }
 
   .bal {
     font-size: 2rem;
@@ -30,10 +30,10 @@ ion-title { font-weight: 800; letter-spacing: -0.02em; }
     letter-spacing: -0.03em;
     margin-top: 0.1rem;
 
-    small { font-size: 0.85rem; font-weight: 600; opacity: 0.85; margin-inline-start: 0.25rem; }
+    small { font-size: var(--hm-text-sm); font-weight: 600; opacity: 0.85; margin-inline-start: 0.25rem; }
   }
 
-  .pending { display: block; font-size: 0.78rem; opacity: 0.85; margin-top: 0.2rem; }
+  .pending { display: block; font-size: var(--hm-text-xs); opacity: 0.85; margin-top: 0.2rem; }
 
   .withdraw {
     margin-top: var(--hm-space-md);
@@ -67,17 +67,17 @@ ion-title { font-weight: 800; letter-spacing: -0.02em; }
     flex: 1;
     min-width: 0;
 
-    b { display: block; font-size: 0.9rem; }
-    small { display: block; font-size: 0.74rem; line-height: 1.35; margin-top: 0.1rem; }
+    b { display: block; font-size: var(--hm-text-md); }
+    small { display: block; font-size: var(--hm-text-xs); line-height: 1.35; margin-top: 0.1rem; }
   }
 
   .c-amount {
     flex: none;
-    font-size: 1rem;
+    font-size: var(--hm-text-md);
     font-weight: 800;
     font-variant-numeric: tabular-nums;
 
-    small { color: var(--hm-color-text-muted); font-weight: 600; font-size: 0.7rem; margin-inline-start: 0.15rem; }
+    small { color: var(--hm-color-text-muted); font-weight: 600; font-size: var(--hm-text-2xs); margin-inline-start: 0.15rem; }
   }
 }
 
@@ -96,7 +96,7 @@ ion-title { font-weight: 800; letter-spacing: -0.02em; }
 .flabel {
   display: block;
   margin-bottom: 0.35rem;
-  font-size: 0.8rem;
+  font-size: var(--hm-text-sm);
   font-weight: 700;
   color: var(--hm-color-text-muted);
 }
@@ -108,7 +108,7 @@ ion-title { font-weight: 800; letter-spacing: -0.02em; }
   border: 1.5px solid var(--hm-color-border-subtle);
   border-radius: var(--hm-radius-md);
   color: var(--hm-color-text-primary);
-  font-size: 1rem;
+  font-size: var(--hm-text-md);
   font-variant-numeric: tabular-nums;
 
   &:focus {
@@ -131,13 +131,13 @@ ion-title { font-weight: 800; letter-spacing: -0.02em; }
 .fhelp {
   display: block;
   margin-top: 0.3rem;
-  font-size: 0.74rem;
+  font-size: var(--hm-text-xs);
   line-height: 1.35;
 }
 
 .err {
   margin: calc(var(--hm-space-md) * -1 + 0.1rem) 0 var(--hm-space-md);
-  font-size: 0.76rem;
+  font-size: var(--hm-text-xs);
   color: var(--hm-color-status-danger);
 }
 
@@ -146,11 +146,11 @@ ion-title { font-weight: 800; letter-spacing: -0.02em; }
   align-items: flex-start;
   gap: 0.5rem;
   margin: var(--hm-space-lg) 0 0;
-  font-size: 0.76rem;
+  font-size: var(--hm-text-xs);
   line-height: 1.5;
   color: var(--hm-color-text-muted);
 
-  ion-icon { flex: none; margin-top: 0.15rem; font-size: 0.95rem; }
+  ion-icon { flex: none; margin-top: 0.15rem; font-size: var(--hm-text-md); }
   span { flex: 1; min-width: 0; }
 }
 
@@ -194,9 +194,9 @@ ion-footer {
     flex: 1;
     min-width: 0;
 
-    b { font-size: 0.95rem; font-variant-numeric: tabular-nums; }
-    small.hm-muted { display: block; font-size: 0.74rem; }
-    b small { color: var(--hm-color-text-muted); font-weight: 600; font-size: 0.7rem; margin-inline-start: 0.15rem; }
+    b { font-size: var(--hm-text-md); font-variant-numeric: tabular-nums; }
+    small.hm-muted { display: block; font-size: var(--hm-text-xs); }
+    b small { color: var(--hm-color-text-muted); font-weight: 600; font-size: var(--hm-text-2xs); margin-inline-start: 0.15rem; }
   }
 
   .hm-pill { flex: none; }

@@ -6,7 +6,7 @@ ion-toolbar {
 }
 
 ion-title {
-  font-size: 0.95rem;
+  font-size: var(--hm-text-md);
   font-weight: 700;
 }
 
@@ -17,7 +17,7 @@ ion-title {
 }
 
 .hm-section-head h2 {
-  font-size: 0.95rem;
+  font-size: var(--hm-text-md);
 }
 
 // ---- Text fields
@@ -59,7 +59,7 @@ ion-textarea.field {
   transition: border-color 0.12s ease, color 0.12s ease, background 0.12s ease;
 
   ion-icon { font-size: 1.4rem; color: var(--hm-color-brand-primary); }
-  span { font-size: 0.72rem; font-weight: 600; }
+  span { font-size: var(--hm-text-xs); font-weight: 600; }
 
   &.selected {
     border-color: var(--hm-color-brand-primary);
@@ -81,7 +81,7 @@ ion-textarea.field {
   background: var(--hm-color-surface-raised);
   border: 1.5px solid var(--hm-color-border-subtle);
   color: var(--hm-color-text-muted);
-  font-size: 0.82rem;
+  font-size: var(--hm-text-sm);
   font-weight: 600;
   cursor: pointer;
   transition: border-color 0.12s ease, color 0.12s ease, background 0.12s ease;
@@ -103,7 +103,7 @@ ion-textarea.field {
     --color-checked: var(--hm-color-text-primary);
     --indicator-color: var(--hm-color-surface-raised);
     --border-radius: var(--hm-radius-sm);
-    font-size: 0.8rem;
+    font-size: var(--hm-text-sm);
     font-weight: 600;
     text-transform: none;
     min-height: 40px;
@@ -130,11 +130,11 @@ ion-textarea.field {
   background: none;
   color: var(--hm-color-brand-primary);
   font: inherit;
-  font-size: 0.85rem;
+  font-size: var(--hm-text-sm);
   font-weight: 700;
   cursor: pointer;
 
-  ion-icon { font-size: 1.05rem; }
+  ion-icon { font-size: var(--hm-text-lg); }
 }
 
 .addr {
@@ -153,8 +153,8 @@ ion-textarea.field {
     flex: 1;
     min-width: 0;
 
-    b { font-size: 0.9rem; }
-    small { display: block; font-size: 0.78rem; margin-top: 0.1rem; }
+    b { font-size: var(--hm-text-md); }
+    small { display: block; font-size: var(--hm-text-xs); margin-top: 0.1rem; }
   }
 
   .tick { font-size: 1.25rem; color: var(--hm-color-border-strong); flex: none; }
@@ -175,7 +175,7 @@ ion-textarea.field {
   padding: var(--hm-space-md);
   border: 1px dashed var(--hm-color-border-strong);
   border-radius: var(--hm-radius-md);
-  font-size: 0.82rem;
+  font-size: var(--hm-text-sm);
 
   ion-icon { color: var(--hm-color-brand-primary); font-size: 1.1rem; flex: none; }
 }
@@ -192,7 +192,7 @@ ion-textarea.field {
   border: 1px dashed var(--hm-color-border-strong);
   border-radius: var(--hm-radius-md);
   color: var(--hm-color-text-muted);
-  font-size: 0.85rem;
+  font-size: var(--hm-text-sm);
   font-weight: 600;
   cursor: pointer;
 
@@ -208,7 +208,7 @@ ion-textarea.field {
   ion-input { flex: 1; }
 
   .cur {
-    font-size: 0.8rem;
+    font-size: var(--hm-text-sm);
     font-weight: 700;
     color: var(--hm-color-text-muted);
     flex: none;

@@ -21,11 +21,11 @@ ion-toolbar {
     background: color-mix(in srgb, var(--hm-color-brand-primary) 14%, transparent);
     color: var(--hm-color-brand-primary);
 
-    ion-icon { font-size: 1rem; }
+    ion-icon { font-size: var(--hm-text-md); }
   }
 
   b {
-    font-size: 0.95rem;
+    font-size: var(--hm-text-md);
     letter-spacing: -0.01em;
   }
 }
@@ -34,12 +34,12 @@ ion-toolbar {
   width: 34px;
   height: 34px;
   border-radius: 50%;
-  font-size: 0.72rem;
+  font-size: var(--hm-text-xs);
   margin-inline-end: var(--hm-space-md);
   text-transform: uppercase;
 
   // A glyph until we know who is signed in — never a stand-in person's initials.
-  ion-icon { font-size: 1.05rem; }
+  ion-icon { font-size: var(--hm-text-lg); }
 }
 
 .page {
@@ -77,7 +77,7 @@ ion-searchbar {
     --color-checked: var(--hm-color-text-primary);
     --indicator-color: var(--hm-color-surface-raised);
     --border-radius: var(--hm-radius-sm);
-    font-size: 0.8rem;
+    font-size: var(--hm-text-sm);
     font-weight: 600;
     text-transform: none;
     min-height: 40px;
@@ -202,7 +202,7 @@ ion-searchbar {
   .cat-label {
     display: block;
     min-height: 2.4em;
-    font-size: 0.7rem;
+    font-size: var(--hm-text-2xs);
     line-height: 1.2;
     font-weight: 600;
     color: var(--hm-color-text-muted);
@@ -234,7 +234,7 @@ ion-searchbar {
   .pro-av {
     width: 46px;
     height: 46px;
-    font-size: 0.9rem;
+    font-size: var(--hm-text-md);
   }
 
   .pro-info { flex: 1; min-width: 0; }
@@ -248,7 +248,7 @@ ion-searchbar {
     // 24h"). Clipping them to one line cut most of them off at the second word; two lines names
     // the business, and the clamp still stops a very long one from pushing the row apart.
     b {
-      font-size: 0.9rem;
+      font-size: var(--hm-text-md);
       line-height: 1.25;
       letter-spacing: -0.01em;
       display: -webkit-box;
@@ -261,7 +261,7 @@ ion-searchbar {
   // Sits on the first line of the name rather than floating in the middle of a two-line one.
   .verified {
     color: var(--hm-color-brand-primary);
-    font-size: 0.9rem;
+    font-size: var(--hm-text-md);
     flex: none;
     margin-top: 0.1rem;
   }
@@ -275,7 +275,7 @@ ion-searchbar {
     flex-wrap: nowrap;
     margin-top: 0.15rem;
     color: var(--hm-color-text-muted);
-    font-size: 0.78rem;
+    font-size: var(--hm-text-xs);
 
     > span:not(.hm-pill):not(.dot):not(.rating) {
       min-width: 0;
@@ -316,7 +316,7 @@ ion-searchbar {
     --border-width: 1px;
     --padding-start: 0.7rem;
     --padding-end: 0.7rem;
-    font-size: 0.75rem;
+    font-size: var(--hm-text-xs);
     font-weight: 700;
     flex: none;
     margin: 0;
@@ -332,7 +332,7 @@ ion-searchbar {
 
   .pro {
     .pro-av { width: 42px; height: 42px; }
-    .pro-name b { font-size: 0.86rem; }
-    .quote { --padding-start: 0.55rem; --padding-end: 0.55rem; font-size: 0.72rem; }
+    .pro-name b { font-size: var(--hm-text-sm); }
+    .quote { --padding-start: 0.55rem; --padding-end: 0.55rem; font-size: var(--hm-text-xs); }
   }
 }

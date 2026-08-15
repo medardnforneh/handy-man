@@ -7,7 +7,7 @@ ion-toolbar {
 }
 
 ion-title {
-  font-size: 0.95rem;
+  font-size: var(--hm-text-md);
   font-weight: 700;
 }
 
@@ -46,7 +46,7 @@ ion-title {
 
     .verified {
       color: var(--hm-color-brand-primary);
-      font-size: 1rem;
+      font-size: var(--hm-text-md);
     }
   }
 
@@ -57,11 +57,11 @@ ion-title {
     flex-wrap: wrap;
     gap: 0.4rem;
     margin-top: 0.25rem;
-    font-size: 0.85rem;
+    font-size: var(--hm-text-sm);
     font-weight: 600;
 
     ion-icon {
-      font-size: 0.85rem;
+      font-size: var(--hm-text-sm);
       vertical-align: -1px;
       margin-inline-end: 0.15rem;
     }
@@ -85,11 +85,11 @@ ion-title {
   .stars {
     display: inline-flex;
     color: var(--hm-color-status-warning);
-    font-size: 0.95rem;
+    font-size: var(--hm-text-md);
   }
 
-  .score { font-size: 0.95rem; font-weight: 800; }
-  .count { font-size: 0.8rem; }
+  .score { font-size: var(--hm-text-md); font-weight: 800; }
+  .count { font-size: var(--hm-text-sm); }
 }
 
 // ---- Metrics -----------------------------------------------------------
@@ -113,13 +113,13 @@ ion-title {
     letter-spacing: -0.02em;
 
     &.pending {
-      font-size: 0.9rem;
+      font-size: var(--hm-text-md);
       color: var(--hm-color-text-muted);
       font-weight: 700;
     }
   }
 
-  small { font-size: 0.7rem; }
+  small { font-size: var(--hm-text-2xs); }
 }
 
 .floor-note {
@@ -127,9 +127,9 @@ ion-title {
   align-items: center;
   gap: 0.4rem;
   margin: var(--hm-space-sm) 0 0;
-  font-size: 0.78rem;
+  font-size: var(--hm-text-xs);
 
-  ion-icon { color: var(--hm-color-brand-primary); font-size: 0.95rem; flex: none; }
+  ion-icon { color: var(--hm-color-brand-primary); font-size: var(--hm-text-md); flex: none; }
 }
 
 // ---- Skills ------------------------------------------------------------
@@ -145,21 +145,21 @@ ion-title {
   background: var(--hm-color-surface-sunken);
   border: 1px solid var(--hm-color-border-subtle);
   color: var(--hm-color-text-primary);
-  font-size: 0.78rem;
+  font-size: var(--hm-text-xs);
   font-weight: 600;
 }
 
 // ---- About -------------------------------------------------------------
 .about {
   margin: 0;
-  font-size: 0.9rem;
+  font-size: var(--hm-text-md);
   line-height: 1.5;
   color: var(--hm-color-text-primary);
 }
 
 .since {
   margin: 0.4rem 0 0;
-  font-size: 0.78rem;
+  font-size: var(--hm-text-xs);
 }
 
 // ---- Reviews -----------------------------------------------------------
@@ -172,7 +172,7 @@ ion-title {
   .rev-av {
     width: 40px;
     height: 40px;
-    font-size: 0.8rem;
+    font-size: var(--hm-text-sm);
     border-radius: 50%;
   }
 
@@ -184,19 +184,19 @@ ion-title {
     justify-content: space-between;
     gap: var(--hm-space-sm);
 
-    b { font-size: 0.9rem; }
+    b { font-size: var(--hm-text-md); }
   }
 
   .rev-stars {
     display: inline-flex;
     color: var(--hm-color-status-warning);
-    font-size: 0.8rem;
+    font-size: var(--hm-text-sm);
     flex: none;
   }
 
   .rev-text {
     margin: 0.35rem 0 0.5rem;
-    font-size: 0.85rem;
+    font-size: var(--hm-text-sm);
     line-height: 1.45;
   }
 
@@ -204,7 +204,7 @@ ion-title {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    font-size: 0.75rem;
+    font-size: var(--hm-text-xs);
   }
 }
 
@@ -236,7 +236,7 @@ ion-footer {
 .flabel {
   display: block;
   margin-bottom: 0.35rem;
-  font-size: 0.8rem;
+  font-size: var(--hm-text-sm);
   font-weight: 700;
   color: var(--hm-color-text-muted);
 }
@@ -256,7 +256,7 @@ ion-footer {
   border-radius: 999px;
   background: transparent;
   color: var(--hm-color-text-primary);
-  font-size: 0.8rem;
+  font-size: var(--hm-text-sm);
   font-weight: 600;
   cursor: pointer;
 
@@ -277,7 +277,7 @@ ion-footer {
   border-radius: var(--hm-radius-md);
   color: var(--hm-color-text-primary);
   font-family: inherit;
-  font-size: 0.95rem;
+  font-size: var(--hm-text-md);
   line-height: 1.45;
   resize: vertical;
 
@@ -286,7 +286,7 @@ ion-footer {
 
 .err {
   margin: calc(var(--hm-space-md) * -1 + 0.1rem) 0 var(--hm-space-md);
-  font-size: 0.76rem;
+  font-size: var(--hm-text-xs);
   color: var(--hm-color-status-danger);
 }
 
@@ -295,10 +295,10 @@ ion-footer {
   align-items: flex-start;
   gap: 0.5rem;
   margin: var(--hm-space-lg) 0 0;
-  font-size: 0.76rem;
+  font-size: var(--hm-text-xs);
   line-height: 1.5;
   color: var(--hm-color-text-muted);
 
-  ion-icon { flex: none; margin-top: 0.15rem; font-size: 0.95rem; }
+  ion-icon { flex: none; margin-top: 0.15rem; font-size: var(--hm-text-md); }
   span { flex: 1; min-width: 0; }
 }

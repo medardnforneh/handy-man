@@ -19,13 +19,13 @@ ion-title {
 
 .lead {
   margin: var(--hm-space-sm) 0 0;
-  font-size: 0.9rem;
+  font-size: var(--hm-text-md);
   line-height: 1.45;
 }
 
 .hint {
   margin: calc(var(--hm-space-sm) * -1) 0 var(--hm-space-sm);
-  font-size: 0.8rem;
+  font-size: var(--hm-text-sm);
 }
 
 .field {
@@ -46,14 +46,14 @@ ion-title {
     align-items: center;
     gap: 0.4rem;
     margin: 0 0 0.45rem;
-    font-size: 0.82rem;
+    font-size: var(--hm-text-sm);
     font-weight: 700;
     letter-spacing: 0.01em;
     color: var(--hm-color-text-muted);
 
     ion-icon {
       color: var(--hm-color-brand-primary);
-      font-size: 1rem;
+      font-size: var(--hm-text-md);
     }
   }
 }
@@ -73,7 +73,7 @@ ion-title {
   background: var(--hm-color-surface-raised);
   color: var(--hm-color-text-primary);
   font: inherit;
-  font-size: 0.82rem;
+  font-size: var(--hm-text-sm);
   font-weight: 600;
   cursor: pointer;
 
@@ -93,7 +93,7 @@ ion-title {
     --color-checked: var(--hm-color-text-primary);
     --indicator-color: var(--hm-color-surface-raised);
     --border-radius: var(--hm-radius-sm);
-    font-size: 0.8rem;
+    font-size: var(--hm-text-sm);
     font-weight: 600;
     text-transform: none;
     min-height: 42px;
@@ -106,7 +106,7 @@ ion-title {
 
   p {
     margin: 0 0 var(--hm-space-sm);
-    font-size: 0.82rem;
+    font-size: var(--hm-text-sm);
     line-height: 1.45;
   }
 }
@@ -123,7 +123,7 @@ ion-title {
   align-items: flex-start;
   gap: 0.35rem;
   margin-top: var(--hm-space-sm);
-  font-size: 0.75rem;
+  font-size: var(--hm-text-xs);
   line-height: 1.4;
 
   ion-icon {

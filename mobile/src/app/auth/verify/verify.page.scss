@@ -26,7 +26,7 @@ h1 {
 
 .sent {
   margin: 0 0 var(--hm-space-xl);
-  font-size: 0.9rem;
+  font-size: var(--hm-text-md);
 }
 
 // ---- Code cells --------------------------------------------------------
@@ -75,14 +75,14 @@ h1 {
 .error {
   margin: var(--hm-space-sm) 0 0;
   color: var(--hm-color-status-danger);
-  font-size: 0.82rem;
+  font-size: var(--hm-text-sm);
   font-weight: 600;
 }
 
 .resend {
   margin-top: var(--hm-space-lg);
   text-align: center;
-  font-size: 0.85rem;
+  font-size: var(--hm-text-sm);
 
   .link {
     background: none;
@@ -90,7 +90,7 @@ h1 {
     padding: 0.4rem 0.6rem;
     color: var(--hm-color-brand-primary);
     font-weight: 700;
-    font-size: 0.85rem;
+    font-size: var(--hm-text-sm);
     cursor: pointer;
   }
 }
@@ -119,14 +119,14 @@ h1 {
     border-radius: var(--hm-radius-sm);
     background: var(--hm-color-status-warning);
     color: var(--hm-color-text-inverse);
-    font-size: 0.62rem;
+    font-size: var(--hm-text-2xs);
     font-weight: 800;
     letter-spacing: 0.06em;
     text-transform: uppercase;
   }
 
   b {
-    font-size: 1.05rem;
+    font-size: var(--hm-text-lg);
     font-weight: 800;
     letter-spacing: 0.16em;
     font-variant-numeric: tabular-nums;
@@ -135,7 +135,7 @@ h1 {
   small {
     margin-inline-start: auto;
     color: var(--hm-color-text-muted);
-    font-size: 0.72rem;
+    font-size: var(--hm-text-xs);
   }
 }
 

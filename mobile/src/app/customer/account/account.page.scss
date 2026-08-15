@@ -35,7 +35,7 @@ ion-title {
   }
   .id-info { min-width: 0; }
   .id-info b { font-size: 1.15rem; font-weight: 800; letter-spacing: -0.02em; }
-  .id-info small { display: block; font-size: 0.85rem; margin-top: 0.1rem; font-variant-numeric: tabular-nums; }
+  .id-info small { display: block; font-size: var(--hm-text-sm); margin-top: 0.1rem; font-variant-numeric: tabular-nums; }
 }
 
 ion-list ion-icon[slot='start'] { color: var(--hm-color-text-muted); font-size: 1.2rem; }
@@ -47,8 +47,8 @@ ion-list ion-icon[slot='start'] { color: var(--hm-color-text-muted); font-size: 
 }
 
 .addrs ion-icon { color: var(--hm-color-text-muted); font-size: 1.2rem; }
-.addrs b { font-size: 0.92rem; }
-.addrs p { font-size: 0.78rem; margin: 0.1rem 0 0; }
+.addrs b { font-size: var(--hm-text-md); }
+.addrs p { font-size: var(--hm-text-xs); margin: 0.1rem 0 0; }
 .add ion-icon { color: var(--hm-color-brand-primary); }
 
 .choice {
@@ -60,7 +60,7 @@ ion-list ion-icon[slot='start'] { color: var(--hm-color-text-muted); font-size: 
     --color-checked: var(--hm-color-text-primary);
     --indicator-color: var(--hm-color-surface-raised);
     --border-radius: var(--hm-radius-sm);
-    font-size: 0.8rem;
+    font-size: var(--hm-text-sm);
     font-weight: 600;
     text-transform: none;
     min-height: 42px;
@@ -77,5 +77,5 @@ ion-item {
   --background: var(--hm-color-surface-raised);
   --color: var(--hm-color-text-primary);
   --border-color: var(--hm-color-border-subtle);
-  font-size: 0.9rem;
+  font-size: var(--hm-text-md);
 }

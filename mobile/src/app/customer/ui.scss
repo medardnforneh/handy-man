@@ -2,6 +2,32 @@
 // SEMANTIC TOKENS ONLY — never a literal colour (doc 08; enforced by `npm run lint:colors`).
 // Tinted surfaces use color-mix() against a token so light/dark both stay correct.
 
+// ---------------------------------------------------------------------------
+// Type.
+//
+// The app had grown twenty-five distinct font sizes — 0.76, 0.78, 0.8, 0.82, 0.85, 0.88, 0.9, 0.92,
+// 0.95rem — because every screen picked its own. Sizes a hair apart do not read as a decision; they
+// read as no decision, which is most of why a carefully-built product looked unconsidered.
+//
+// There is a scale in the tokens now (`--hm-text-*`, with `--hm-leading-*` and `--hm-tracking-*`),
+// eight steps, and it regenerates every surface at once like the rest of them. Use a step; if none
+// fits, the scale is wrong and should change here rather than being worked around on one screen.
+// ---------------------------------------------------------------------------
+
+// The document baseline. Ionic's own default is 16px Roboto, which on a phone makes body copy
+// slightly larger than the interface around it and pushes everything else up to compensate.
+ion-content {
+  font-size: var(--hm-text-md);
+  line-height: var(--hm-leading-normal);
+}
+
+// Page titles, once, instead of the same three declarations at the top of a dozen page stylesheets.
+ion-title {
+  font-size: var(--hm-text-xl);
+  font-weight: 800;
+  letter-spacing: var(--hm-tracking-tight);
+}
+
 // A raised surface should look raised. The token set has carried a shadow scale from the start and
 // the cards used a hairline border alone — and `surface.raised` sits barely a step above
 // `surface.base` in light mode, so that hairline was doing all the work and every screen read as
@@ -25,13 +51,13 @@
 
   h2 {
     margin: 0;
-    font-size: 1rem;
-    letter-spacing: -0.01em;
+    font-size: var(--hm-text-lg);
+    letter-spacing: var(--hm-tracking-snug);
   }
 
   a {
     color: var(--hm-color-brand-primary);
-    font-size: 0.82rem;
+    font-size: var(--hm-text-sm);
     font-weight: 600;
     text-decoration: none;
   }
@@ -63,7 +89,7 @@
   gap: 0.35rem;
   padding: 0.18rem 0.55rem;
   border-radius: var(--hm-radius-pill);
-  font-size: 0.72rem;
+  font-size: var(--hm-text-xs);
   font-weight: 600;
   white-space: nowrap;
 
@@ -109,7 +135,7 @@
 .hm-empty {
   text-align: center;
   color: var(--hm-color-text-muted);
-  font-size: 0.9rem;
+  font-size: var(--hm-text-md);
   padding: var(--hm-space-xl) var(--hm-space-md);
 }
 
@@ -272,9 +298,9 @@ ion-searchbar {
     padding: 0.65rem 0.85rem;
     border-bottom: 1px solid var(--hm-color-border-subtle);
     color: var(--hm-color-brand-primary);
-    font-size: 0.7rem;
+    font-size: var(--hm-text-2xs);
     font-weight: 700;
-    letter-spacing: 0.05em;
+    letter-spacing: var(--hm-tracking-wide);
     text-transform: uppercase;
 
     .ver { margin-inline-start: auto; opacity: 0.75; }
@@ -291,12 +317,12 @@ ion-searchbar {
   margin-bottom: var(--hm-space-sm);
 
   .big {
-    font-size: 1.35rem;
+    font-size: var(--hm-text-2xl);
     font-weight: 800;
-    letter-spacing: -0.02em;
+    letter-spacing: var(--hm-tracking-tight);
 
     small {
-      font-size: 0.72rem;
+      font-size: var(--hm-text-xs);
       color: var(--hm-color-text-muted);
       font-weight: 600;
       margin-inline-start: 0.25rem;
@@ -315,7 +341,7 @@ ion-searchbar {
   display: flex;
   align-items: center;
   gap: 0.55rem;
-  font-size: 0.85rem;
+  font-size: var(--hm-text-sm);
 
   .dot {
     display: grid;
@@ -326,7 +352,7 @@ ion-searchbar {
     border-radius: 50%;
     border: 2px solid var(--hm-color-border-strong);
     color: var(--hm-color-text-muted);
-    font-size: 0.6rem;
+    font-size: var(--hm-text-2xs);
     font-weight: 700;
   }
 
@@ -361,8 +387,8 @@ ion-searchbar {
     background: color-mix(in srgb, var(--hm-color-status-success) 14%, transparent);
   }
 
-  b { font-size: 0.88rem; }
-  p { margin: 0.1rem 0 0; font-size: 0.76rem; }
+  b { font-size: var(--hm-text-md); }
+  p { margin: 0.1rem 0 0; font-size: var(--hm-text-xs); }
 }
 
 // Narrow phones: stack the quote actions so neither button is squeezed.

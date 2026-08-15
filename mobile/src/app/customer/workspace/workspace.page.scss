@@ -12,7 +12,7 @@ ion-toolbar {
   padding-inline-end: var(--hm-space-md);
   min-width: 0;
 
-  .ws-av { width: 36px; height: 36px; font-size: 0.8rem; }
+  .ws-av { width: 36px; height: 36px; font-size: var(--hm-text-sm); }
 
   .ws-title {
     flex: 1;
@@ -21,13 +21,13 @@ ion-toolbar {
 
     b {
       display: block;
-      font-size: 0.92rem;
+      font-size: var(--hm-text-md);
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
     }
 
-    small { color: var(--hm-color-text-muted); font-size: 0.7rem; }
+    small { color: var(--hm-color-text-muted); font-size: var(--hm-text-2xs); }
   }
 }
 
@@ -45,7 +45,7 @@ ion-toolbar {
 .day {
   align-self: center;
   color: var(--hm-color-text-muted);
-  font-size: 0.7rem;
+  font-size: var(--hm-text-2xs);
   font-weight: 600;
 }
 
@@ -57,7 +57,7 @@ ion-toolbar {
   border-bottom-left-radius: var(--hm-radius-sm);
   background: var(--hm-color-surface-raised);
   border: 1px solid var(--hm-color-border-subtle);
-  font-size: 0.88rem;
+  font-size: var(--hm-text-md);
   line-height: 1.45;
 
   &.mine {
@@ -75,7 +75,7 @@ ion-toolbar {
     justify-content: flex-end;
     gap: 0.25rem;
     margin-top: 0.2rem;
-    font-size: 0.65rem;
+    font-size: var(--hm-text-2xs);
     opacity: 0.7;
 
     // Delivery mark: a hollow ring while the write is still owed, filled once it has been refused.
@@ -138,11 +138,11 @@ ion-toolbar {
   border-radius: var(--hm-radius-pill);
   background: var(--hm-color-surface-sunken);
   color: var(--hm-color-text-muted);
-  font-size: 0.72rem;
+  font-size: var(--hm-text-xs);
   font-weight: 600;
   text-align: center;
 
-  ion-icon { color: var(--hm-color-brand-primary); font-size: 0.85rem; flex: none; }
+  ion-icon { color: var(--hm-color-brand-primary); font-size: var(--hm-text-sm); flex: none; }
 }
 
 // Structured-message card styles (.scard/.total/.mlist/.acts/.released) live in the global
@@ -160,7 +160,7 @@ ion-toolbar {
     --padding-start: 0.9rem;
     --padding-end: 0.9rem;
     border-radius: var(--hm-radius-pill);
-    font-size: 0.88rem;
+    font-size: var(--hm-text-md);
   }
 
   .send {
@@ -186,7 +186,7 @@ ion-toolbar {
   border-radius: var(--hm-radius-pill);
   background: var(--hm-color-surface-sunken);
   color: var(--hm-color-text-muted);
-  font-size: 0.75rem;
+  font-size: var(--hm-text-xs);
   font-weight: 600;
 }
 

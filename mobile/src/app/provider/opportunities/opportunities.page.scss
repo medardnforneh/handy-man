@@ -27,7 +27,7 @@ ion-title { font-weight: 800; letter-spacing: -0.02em; }
   .lead-av { width: 44px; height: 44px; border-radius: var(--hm-radius-md); ion-icon { font-size: 1.2rem; } }
   .lead-info { flex: 1; min-width: 0; }
 
-  b { font-size: 0.95rem; display: block; }
+  b { font-size: var(--hm-text-md); display: block; }
 
   .lead-meta {
     display: flex;
@@ -35,7 +35,7 @@ ion-title { font-weight: 800; letter-spacing: -0.02em; }
     gap: 0.4rem;
     flex-wrap: wrap;
     margin-top: 0.2rem;
-    font-size: 0.78rem;
+    font-size: var(--hm-text-xs);
 
     ion-icon { vertical-align: -1px; margin-inline-end: 0.1rem; }
   }
@@ -48,8 +48,8 @@ ion-title { font-weight: 800; letter-spacing: -0.02em; }
     margin-top: 0.5rem;
 
     .budget { font-weight: 700; font-variant-numeric: tabular-nums; }
-    small { color: var(--hm-color-text-muted); font-weight: 600; font-size: 0.7rem; margin-inline-start: 0.15rem; }
-    .ago { font-size: 0.72rem; }
+    small { color: var(--hm-color-text-muted); font-weight: 600; font-size: var(--hm-text-2xs); margin-inline-start: 0.15rem; }
+    .ago { font-size: var(--hm-text-xs); }
   }
 }
 

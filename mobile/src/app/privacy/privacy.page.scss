@@ -16,7 +16,7 @@ ion-title { font-weight: 800; letter-spacing: -0.02em; }
 
 .intro {
   margin: var(--hm-space-sm) 0 0;
-  font-size: 0.9rem;
+  font-size: var(--hm-text-md);
   line-height: 1.5;
   color: var(--hm-color-text-muted);
 }
@@ -34,7 +34,7 @@ ion-title { font-weight: 800; letter-spacing: -0.02em; }
 
   h3 {
     margin: 0 0 0.6rem;
-    font-size: 0.95rem;
+    font-size: var(--hm-text-md);
     font-weight: 800;
     letter-spacing: -0.01em;
   }
@@ -42,7 +42,7 @@ ion-title { font-weight: 800; letter-spacing: -0.02em; }
 
 .cnt {
   margin: 0;
-  font-size: 0.85rem;
+  font-size: var(--hm-text-sm);
   color: var(--hm-color-text-muted);
 }
 
@@ -57,7 +57,7 @@ dl { margin: 0; }
   &:first-child { border-top: 0; padding-top: 0; }
 
   dt {
-    font-size: 0.72rem;
+    font-size: var(--hm-text-xs);
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.03em;
@@ -66,7 +66,7 @@ dl { margin: 0; }
 
   dd {
     margin: 0.1rem 0 0;
-    font-size: 0.9rem;
+    font-size: var(--hm-text-md);
     line-height: 1.4;
     overflow-wrap: anywhere;
   }
@@ -84,13 +84,13 @@ dl { margin: 0; }
 
   p {
     margin: 0 0 0.6rem;
-    font-size: 0.88rem;
+    font-size: var(--hm-text-md);
     line-height: 1.5;
   }
 
   .keeps {
     margin-bottom: var(--hm-space-md);
-    font-size: 0.8rem;
+    font-size: var(--hm-text-sm);
     color: var(--hm-color-text-muted);
   }
 }

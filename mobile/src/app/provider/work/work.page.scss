@@ -25,7 +25,7 @@ ion-title { font-weight: 800; letter-spacing: -0.02em; }
   color: inherit;
   cursor: pointer;
 
-  .work-av { width: 40px; height: 40px; border-radius: 50%; font-size: 0.85rem; text-transform: uppercase; }
-  .work-info { flex: 1; min-width: 0; b { font-size: 0.9rem; } small { display: block; font-size: 0.76rem; } }
+  .work-av { width: 40px; height: 40px; border-radius: 50%; font-size: var(--hm-text-sm); text-transform: uppercase; }
+  .work-info { flex: 1; min-width: 0; b { font-size: var(--hm-text-md); } small { display: block; font-size: var(--hm-text-xs); } }
   .hm-pill { flex: none; }
 }

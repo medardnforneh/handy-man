@@ -68,3 +68,9 @@ testem.log
 # System files
 .DS_Store
 Thumbs.db
+
+# Local UI review harness. `ng serve` serves src/assets/ same-origin, so a page here can iframe the
+# app's own routes at a real phone width (an iframe gets its OWN viewport, so media queries resolve
+# honestly) with the signed-in session carried along. Reviewing at the desktop window's width is how
+# a screenful of Material defaults went unnoticed for weeks. Never committed — it would ship.
+src/assets/__preview.html
