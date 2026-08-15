@@ -141,6 +141,84 @@ final class SkillsSeeder extends Seeder
                 ['Confection sur mesure', 'Custom tailoring', 1],
                 ['Broderie', 'Embroidery', 1],
             ]],
+
+            // ── Added because the first thirteen categories were a starting sample, not the trade
+            // list of a Cameroonian city. A directory that cannot name solar, boreholes, welding,
+            // roofing or generators is missing the work people here actually pay for, and every
+            // trade absent from this list is a search that returns nothing and a provider who
+            // cannot say what they do.
+            ['Énergie solaire', 'Solar energy', [
+                ['Installation de panneaux solaires', 'Solar panel installation', 3, true],
+                ['Batteries et onduleurs', 'Batteries and inverters', 3, true],
+                ['Entretien de système solaire', 'Solar system maintenance', 2],
+            ]],
+            ['Sécurité', 'Security', [
+                ['Vidéosurveillance', 'CCTV installation', 2],
+                ['Alarme et détection', 'Alarms and detection', 2],
+                ['Portail automatique', 'Automatic gates', 3],
+                ['Serrurerie', 'Locksmithing', 2],
+            ]],
+            ['Toiture', 'Roofing', [
+                ['Pose de toiture', 'Roof installation', 3],
+                ['Réparation de toiture', 'Roof repair', 3],
+                ['Gouttières', 'Gutters', 2],
+                ['Étanchéité', 'Waterproofing', 2],
+            ]],
+            ['Métallerie et aluminium', 'Metalwork and aluminium', [
+                ['Soudure', 'Welding', 3],
+                ['Portails et grilles', 'Gates and grilles', 2],
+                ['Menuiserie aluminium', 'Aluminium joinery', 2],
+                ['Vitrerie', 'Glazing', 2],
+            ]],
+            ['Électroménager', 'Appliance repair', [
+                ['Machine à laver', 'Washing machine', 2],
+                ['Cuisinière et four', 'Cooker and oven', 2],
+                ['Télévision et audio', 'TV and audio', 1],
+            ]],
+            ['Téléphonie', 'Phone repair', [
+                ['Écran de téléphone', 'Phone screen', 1],
+                ['Batterie de téléphone', 'Phone battery', 1],
+                ['Déblocage et logiciel', 'Unlocking and software', 1],
+            ]],
+            ['Eau et forage', 'Water and boreholes', [
+                ['Forage', 'Borehole drilling', 3, true],
+                ['Pompe à eau', 'Water pump', 2],
+                ['Château d’eau et citerne', 'Water tank', 2],
+                ['Filtration et traitement', 'Filtration and treatment', 2],
+            ]],
+            ['Déménagement et transport', 'Moving and transport', [
+                ['Déménagement', 'House moving', 1],
+                ['Livraison', 'Delivery', 1],
+                ['Montage de meubles', 'Furniture assembly', 1],
+                ['Évacuation de gravats', 'Rubble removal', 1],
+            ]],
+            ['Événementiel', 'Events', [
+                ['Traiteur', 'Catering', 1],
+                ['Décoration d’événement', 'Event decoration', 1],
+                ['Sonorisation et lumière', 'Sound and lighting', 2],
+                ['Photographie et vidéo', 'Photography and video', 1],
+            ]],
+            ['Décoration intérieure', 'Interior decoration', [
+                ['Rideaux et stores', 'Curtains and blinds', 1],
+                ['Tapisserie et ameublement', 'Upholstery', 1],
+                ['Faux plafond', 'False ceiling', 2],
+                ['Revêtement de sol', 'Flooring', 2],
+            ]],
+            ['Dératisation et désinsectisation', 'Pest control', [
+                ['Traitement anti-nuisibles', 'Pest treatment', 2, true],
+                ['Fumigation', 'Fumigation', 3, true],
+            ]],
+            ['Services professionnels', 'Professional services', [
+                ['Comptabilité', 'Accounting', 1],
+                ['Traduction', 'Translation', 1],
+                ['Secrétariat et saisie', 'Secretarial and data entry', 1],
+                ['Rédaction et administratif', 'Admin and paperwork', 1],
+            ]],
+            ['Design et communication', 'Design and communication', [
+                ['Design graphique', 'Graphic design', 1],
+                ['Community management', 'Community management', 1],
+                ['Impression et signalétique', 'Printing and signage', 1],
+            ]],
         ];
 
         return array_map(function (array $category): array {
