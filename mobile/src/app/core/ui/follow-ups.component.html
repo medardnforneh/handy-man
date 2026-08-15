@@ -1,0 +1,35 @@
+<!-- Nothing owed renders nothing. An empty "you're all caught up" panel is furniture, and it costs a
+     screenful on the phones this is built for. -->
+@if (rows().length > 0) {
+  <section class="mb-4">
+    <h2 class="mt-6 mb-4 text-lg font-extrabold tracking-snug">{{ 'followup.section' | translate }}</h2>
+
+    @for (row of rows(); track row.id) {
+      <div class="mb-2 flex items-center gap-2 rounded-lg border border-edge bg-surface-raised p-4 shadow-sm">
+        <span class="grid size-[38px] flex-none place-items-center rounded-md bg-brand/12 text-[1.1rem] text-brand" aria-hidden="true">
+          <ion-icon name="notifications-outline"></ion-icon>
+        </span>
+        <div class="min-w-0 flex-1">
+          <!-- The kind is a KEY, not a sentence: the server composes nothing a person reads, so the
+               wording is the client's and follows the reader's language (rule #11). -->
+          <b class="block text-md leading-snug">{{ 'followup.kind.' + row.kind | translate }}</b>
+        </div>
+
+        @if (row.route !== null) {
+          <ion-button size="small" fill="outline" [disabled]="busy() !== null" (click)="open(row)">
+            {{ 'followup.open' | translate }}
+          </ion-button>
+        }
+        <button
+          type="button"
+          class="grid size-9 flex-none cursor-pointer place-items-center rounded-md border border-edge bg-transparent text-content-muted disabled:opacity-50"
+          [disabled]="busy() !== null"
+          [attr.aria-label]="'followup.dismiss' | translate"
+          (click)="dismiss(row)"
+        >
+          <ion-icon name="close" aria-hidden="true"></ion-icon>
+        </button>
+      </div>
+    }
+  </section>
+}

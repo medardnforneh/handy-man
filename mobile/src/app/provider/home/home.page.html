@@ -50,6 +50,11 @@
       </button>
     }
 
+    <!-- What is waiting on this provider (P7-02) — a quote about to expire, a payout ready to take.
+         Above the wallet because it is the part with a deadline; renders nothing when nothing is
+         owed. -->
+    <app-follow-ups></app-follow-ups>
+
     <!-- Wallet -->
     <div class="hm-on-brand mb-4 rounded-lg bg-brand px-4 py-6 text-brand-contrast">
       <span class="text-sm font-semibold opacity-85">{{ 'pro.available' | translate }}</span>

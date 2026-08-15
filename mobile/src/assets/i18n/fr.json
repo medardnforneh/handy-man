@@ -736,6 +736,27 @@
     "payout_ready": {
       "title": "Votre argent est disponible",
       "body": "Vous avez un solde disponible. Retirez-le sur votre compte mobile money quand vous le souhaitez."
+    },
+    "section": "En attente de vous",
+    "open": "Ouvrir",
+    "dismiss": "Ignorer",
+    "kind": {
+      "quote_pending_customer": "Un devis attend votre réponse.",
+      "quote_expiring": "Un devis reçu va bientôt expirer.",
+      "job_unquoted": "Votre demande n'a encore aucun devis.",
+      "site_visit_reminder": "Une visite sur place approche.",
+      "job_starting_soon": "Le travail doit bientôt commencer.",
+      "check_in_overdue": "Personne n'a pointé son arrivée sur cette mission.",
+      "awaiting_approval": "Le travail est terminé et attend votre validation.",
+      "auto_approve_warning": "Ceci sera validé automatiquement bientôt, sauf avis contraire.",
+      "review_request": "Comment s'est passé le travail ?",
+      "review_reminder": "Votre avis manque toujours.",
+      "payment_due": "Un paiement est dû.",
+      "payout_ready": "De l'argent est prêt à être retiré.",
+      "warranty_expiring": "Une garantie va bientôt expirer.",
+      "maintenance_due": "Un entretien est dû sur un travail passé.",
+      "reengagement": "Un prestataire que vous avez engagé est de nouveau disponible.",
+      "abandoned_draft": "Vous avez laissé une demande inachevée."
     }
   },
   "provider": {

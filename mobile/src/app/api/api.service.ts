@@ -69,6 +69,19 @@ export type VerificationDocKind =
 export type DisputeCategory = 'quality' | 'payment' | 'no_show' | 'scope' | 'safety' | 'other';
 
 /**
+ * What somebody did about a follow-up (P7-02). A closed set the server validates, because these are
+ * the measurements that decide which nudges survive — a free-text answer would count as nothing.
+ */
+export type FollowUpAction =
+  | 'quote_accepted'
+  | 'review_submitted'
+  | 'warranty_claimed'
+  | 'rebooked'
+  | 'approved'
+  | 'dismissed'
+  | 'opened';
+
+/**
  * The DI surface for real API calls — a thin, typed wrapper over the generated `openapi-fetch`
  * client. Screens keep talking to their fixture services for now; those services will delegate to
  * this one method-by-method as endpoints are wired, so the migration is incremental and no screen
@@ -897,6 +910,40 @@ export class ApiService {
     const { data, error } = await api.POST('/engagements/{engagement}/deliverables', {
       params: { path: { engagement: engagementId }, header: { 'Idempotency-Key': uuid() } },
       body: { title, media_url: mediaUrl ?? null },
+    });
+    if (error) {
+      throw error;
+    }
+    return data.data;
+  }
+
+  /**
+   * The follow-ups waiting on this person (P7-02) — the nudges the server schedules when something
+   * is owed: a quote about to expire, work waiting to be approved, a review not yet written.
+   *
+   * Both sides get them; which kinds you see depends on which side you are. The list is the same
+   * one the SMS and push channels draw from, so what the app shows and what the phone buzzed about
+   * cannot disagree.
+   */
+  async followUps() {
+    const { data, error } = await api.GET('/follow-ups');
+    if (error) {
+      throw error;
+    }
+    return data.data;
+  }
+
+  /**
+   * Record what someone did about a follow-up (P7-02).
+   *
+   * This is not bookkeeping for its own sake: `response_action` is how a nudge's effectiveness is
+   * measured, and how the ones that never earn a tap get killed rather than left to annoy people
+   * forever. `dismissed` is as useful an answer as `opened`.
+   */
+  async respondToFollowUp(followUpId: string, action: FollowUpAction) {
+    const { data, error } = await api.POST('/follow-ups/{followUp}/respond', {
+      params: { path: { followUp: followUpId }, header: { 'Idempotency-Key': uuid() } },
+      body: { response_action: action },
     });
     if (error) {
       throw error;

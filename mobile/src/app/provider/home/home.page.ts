@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { IonicModule, ToastController } from '@ionic/angular';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { EmptyStateComponent } from '../../core/ui/empty-state.component';
+import { FollowUpsComponent } from '../../core/ui/follow-ups.component';
 import { MoneyPipe } from '../../customer/money.pipe';
 import { CustomerService } from '../../customer/customer.service';
 import { JobStatus } from '../../customer/customer.models';
@@ -24,7 +25,7 @@ import { ProviderService } from '../provider.service';
   selector: 'app-provider-home',
   templateUrl: './home.page.html',
   styleUrls: ['./home.page.scss'],
-  imports: [CommonModule, IonicModule, TranslatePipe, MoneyPipe, EmptyStateComponent],
+  imports: [CommonModule, IonicModule, TranslatePipe, MoneyPipe, EmptyStateComponent, FollowUpsComponent],
 })
 export class ProviderHomePage {
   private readonly provider = inject(ProviderService);

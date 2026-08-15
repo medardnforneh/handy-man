@@ -736,6 +736,27 @@
     "payout_ready": {
       "title": "Your money is ready to withdraw",
       "body": "You have a balance available. Withdraw it to your mobile money account whenever you like."
+    },
+    "section": "Waiting on you",
+    "open": "Open",
+    "dismiss": "Dismiss",
+    "kind": {
+      "quote_pending_customer": "A quote is waiting for your answer.",
+      "quote_expiring": "A quote you were sent is about to expire.",
+      "job_unquoted": "Your request has no quotes yet.",
+      "site_visit_reminder": "A site visit is coming up.",
+      "job_starting_soon": "Work is due to start soon.",
+      "check_in_overdue": "Nobody has checked in for this job.",
+      "awaiting_approval": "Work is finished and waiting for your approval.",
+      "auto_approve_warning": "This will approve itself soon unless you say otherwise.",
+      "review_request": "How did the work go?",
+      "review_reminder": "Your review is still missing.",
+      "payment_due": "A payment is due.",
+      "payout_ready": "Money is ready to withdraw.",
+      "warranty_expiring": "A warranty is about to run out.",
+      "maintenance_due": "Maintenance is due on past work.",
+      "reengagement": "A provider you used is available again.",
+      "abandoned_draft": "You left a request unfinished."
     }
   },
   "provider": {
