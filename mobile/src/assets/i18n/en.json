@@ -666,7 +666,19 @@
     "status_on_site": "On site",
     "status_completed": "Completed",
     "expires": "This link expires :time.",
-    "reassurance": "Shared with you for peace of mind."
+    "reassurance": "Shared with you for peace of mind.",
+    "section": "Let someone follow this",
+    "create": "Create a link to share",
+    "create_hint": "A link anyone can open — no app needed. It shows who is coming, the status and the quarter. Never your street address.",
+    "create_failed": "The link could not be created. Try again.",
+    "ready": "Send this to someone you trust. Anyone with the link can see the status until it expires.",
+    "expires_at": "Expires {time}.",
+    "copy": "Copy link",
+    "copied": "Link copied",
+    "copy_failed": "Could not copy. Select the link above instead.",
+    "revoke": "Revoke",
+    "revoked": "Link revoked",
+    "revoke_failed": "The link could not be revoked. Try again."
   },
   "followup": {
     "generic": {

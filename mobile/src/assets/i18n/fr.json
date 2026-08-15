@@ -666,7 +666,19 @@
     "status_on_site": "Sur place",
     "status_completed": "Termine",
     "expires": "Ce lien expire :time.",
-    "reassurance": "Partage avec vous pour votre tranquillite."
+    "reassurance": "Partage avec vous pour votre tranquillite.",
+    "section": "Laisser quelqu'un suivre cette intervention",
+    "create": "Créer un lien à partager",
+    "create_hint": "Un lien que n'importe qui peut ouvrir, sans application. Il montre qui vient, l'état et le quartier. Jamais votre adresse exacte.",
+    "create_failed": "Le lien n'a pas pu être créé. Réessayez.",
+    "ready": "Envoyez ceci à une personne de confiance. Toute personne ayant le lien voit l'état jusqu'à son expiration.",
+    "expires_at": "Expire {time}.",
+    "copy": "Copier le lien",
+    "copied": "Lien copié",
+    "copy_failed": "Copie impossible. Sélectionnez le lien ci-dessus.",
+    "revoke": "Révoquer",
+    "revoked": "Lien révoqué",
+    "revoke_failed": "Le lien n'a pas pu être révoqué. Réessayez."
   },
   "followup": {
     "generic": {

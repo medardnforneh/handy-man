@@ -805,6 +805,38 @@ export class CustomerService {
     }
   }
 
+  /**
+   * Mint a share link for a live engagement (P6-05) — "someone is coming to my house, here is who
+   * and when", for a family member who is not in the app and should not have to be.
+   *
+   * Never queued. The link is a thing the person is about to send to somebody, so it either exists
+   * now or it does not; a share minted an hour later, from a queue, is a link to a visit that has
+   * already happened. The raw token comes back exactly once and is not readable again — so a link
+   * that is lost is re-minted, never recovered.
+   */
+  async createShare(engagementId: string): Promise<{ ok: boolean; id?: string; url?: string; expiresAt?: string; detail?: string }> {
+    try {
+      const share = await this.api.createEngagementShare(engagementId);
+      return { ok: true, id: share.id, url: share.url, expiresAt: share.expires_at };
+    } catch (e) {
+      const problem = e as { detail?: unknown; title?: unknown };
+      const detail = [problem.detail, problem.title]
+        .find((v): v is string => typeof v === 'string' && v.trim() !== '');
+
+      return { ok: false, detail };
+    }
+  }
+
+  /** Revoke a share link (P6-05) — the page stops resolving at once, ahead of its own expiry. */
+  async revokeShare(shareId: string): Promise<boolean> {
+    try {
+      await this.api.revokeEngagementShare(shareId);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
   /** Review the other side of a finished engagement (P6-08) — hidden until both have, or 14 days. */
   async submitReview(engagementId: string, rating: number, body: string): Promise<boolean> {
     try {

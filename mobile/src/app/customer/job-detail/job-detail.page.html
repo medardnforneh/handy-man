@@ -221,6 +221,44 @@
       </p>
     }
 
+    <!-- Share this visit (P6-05). Someone the customer trusts can watch a stranger's visit without
+         installing anything: the link opens a plain page with the provider's first name, the status
+         and the quarter — never the street address. -->
+    @if (canShare()) {
+      <h2 class="mt-6 mb-4 text-lg font-extrabold tracking-snug">{{ 'share.section' | translate }}</h2>
+      @if (shareUrl(); as url) {
+        <div class="rounded-lg border border-edge bg-surface-raised p-4 shadow-sm">
+          <p class="mt-0 mb-2 text-sm leading-snug text-content-muted">{{ 'share.ready' | translate }}</p>
+          <!-- Shown in full, not hidden behind a Copy button: the token comes back once and cannot
+               be read again, so a clipboard the browser refuses must not be the only way out. -->
+          <p class="m-0 rounded-md bg-surface-sunken px-3 py-2 text-xs [overflow-wrap:anywhere]">{{ url }}</p>
+          @if (shareExpires(); as expires) {
+            <p class="mt-2 mb-0 text-xs text-content-muted">{{ 'share.expires_at' | translate:{ time: expires } }}</p>
+          }
+          <div class="mt-4 flex flex-wrap gap-2">
+            <ion-button size="small" [disabled]="sharing()" (click)="copyShare()">
+              <ion-icon name="copy-outline" slot="start" aria-hidden="true"></ion-icon>
+              {{ 'share.copy' | translate }}
+            </ion-button>
+            <ion-button size="small" fill="outline" color="danger" [disabled]="sharing()" (click)="revokeShare()">
+              {{ 'share.revoke' | translate }}
+            </ion-button>
+          </div>
+        </div>
+      } @else {
+        <button
+          type="button"
+          class="flex w-full min-h-11 cursor-pointer items-center justify-center gap-2 rounded-md border border-dashed border-edge-strong bg-transparent p-4 text-sm font-semibold text-content-muted [font:inherit] disabled:opacity-50"
+          [disabled]="sharing()"
+          (click)="createShare()"
+        >
+          <ion-icon name="share-social-outline" class="text-[1.25rem] text-brand" aria-hidden="true"></ion-icon>
+          <span>{{ 'share.create' | translate }}</span>
+        </button>
+        <p class="mt-2 text-xs leading-snug text-content-muted">{{ 'share.create_hint' | translate }}</p>
+      }
+    }
+
     <!-- Location -->
     <h2 class="mt-6 mb-4 text-lg font-extrabold tracking-snug">{{ 'jobdetail.location' | translate }}</h2>
     @if (job().mode === 'remote') {

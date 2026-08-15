@@ -230,6 +230,86 @@ export class JobDetailPage {
     await toast.present();
   }
 
+  // --- Share this visit (P6-05) ------------------------------------------------------------------
+  //
+  // A stranger is coming to someone's home. The person most likely to want to know about it — a
+  // sister, a neighbour, whoever is asked to "check on me at four" — is not in this app and should
+  // not have to be, so what they get is a plain web page: the provider's first name, the status,
+  // the quarter, and when the link dies. Never the street address (P6-05).
+  //
+  // The raw token is returned exactly once and cannot be read back, so it is held here for as long
+  // as the screen lives. A link that is lost is re-minted, never recovered — which is also why the
+  // URL is shown in full rather than hidden behind a "Copy" that could silently fail.
+
+  readonly shareUrl = signal<string | null>(null);
+  readonly shareId = signal<string | null>(null);
+  readonly shareExpires = signal<string | null>(null);
+  readonly sharing = signal(false);
+
+  /** Only a live engagement can be shared: before one exists there is no visit to tell anyone about. */
+  readonly canShare = computed(() => this.job().engagementId !== null);
+
+  async createShare(): Promise<void> {
+    const engagementId = this.job().engagementId;
+    if (engagementId === null || this.sharing()) {
+      return;
+    }
+
+    this.sharing.set(true);
+    const result = await this.customers.createShare(engagementId);
+    this.sharing.set(false);
+
+    if (!result.ok) {
+      await this.toast(result.detail ?? this.translate.instant('share.create_failed'), 'danger', result.detail !== undefined);
+      return;
+    }
+
+    this.shareId.set(result.id ?? null);
+    this.shareUrl.set(result.url ?? null);
+    this.shareExpires.set(result.expiresAt ?? null);
+  }
+
+  /**
+   * Copy, rather than send. The app never sends this on someone's behalf — where it goes and to whom
+   * is exactly the decision the person is making, and it is theirs.
+   */
+  async copyShare(): Promise<void> {
+    const url = this.shareUrl();
+    if (url === null) {
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(url);
+      await this.toast('share.copied', 'success');
+    } catch {
+      // The link is on screen in full, so a clipboard the browser refuses is an inconvenience
+      // rather than a dead end. Say which one happened instead of claiming success.
+      await this.toast('share.copy_failed', 'danger');
+    }
+  }
+
+  async revokeShare(): Promise<void> {
+    const id = this.shareId();
+    if (id === null || this.sharing()) {
+      return;
+    }
+
+    this.sharing.set(true);
+    const ok = await this.customers.revokeShare(id);
+    this.sharing.set(false);
+
+    if (!ok) {
+      await this.toast('share.revoke_failed', 'danger');
+      return;
+    }
+
+    this.shareId.set(null);
+    this.shareUrl.set(null);
+    this.shareExpires.set(null);
+    await this.toast('share.revoked', 'success');
+  }
+
   openChat(): void {
     void this.router.navigate(['/workspace', this.id]);
   }

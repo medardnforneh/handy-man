@@ -897,6 +897,35 @@ export class ApiService {
   }
 
   /**
+   * Mint a share link for an engagement (P6-05) — "someone is coming to my house, here is who and
+   * when". Signed, expiring and revocable; the page it opens carries the provider's first name, the
+   * status and the quarter, and never the street address.
+   *
+   * The raw token comes back exactly ONCE, in this response. It is not stored server-side in a form
+   * that can be read back, so a link that is not kept here cannot be recovered — only revoked and
+   * re-minted.
+   */
+  async createEngagementShare(engagementId: string) {
+    const { data, error } = await api.POST('/engagements/{engagement}/share', {
+      params: { path: { engagement: engagementId }, header: { 'Idempotency-Key': uuid() } },
+    });
+    if (error) {
+      throw error;
+    }
+    return data.data;
+  }
+
+  /** Revoke a share link (P6-05). The page stops resolving immediately, before its expiry. */
+  async revokeEngagementShare(shareId: string): Promise<void> {
+    const { error } = await api.DELETE('/engagement-shares/{share}', {
+      params: { path: { share: shareId }, header: { 'Idempotency-Key': uuid() } },
+    });
+    if (error) {
+      throw error;
+    }
+  }
+
+  /**
    * Record work that was settled in CASH (P3-15). Provider-only: they are the one who was handed
    * the money, and self-reporting is strictly in their interest — it is what turns an off-platform
    * job into on-platform history and reputation. The platform books its commission from it.
