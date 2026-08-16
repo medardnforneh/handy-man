@@ -36,7 +36,14 @@ class JobOffersTable
                         'withdrawn', 'expired', 'superseded' => 'gray',
                         default => 'gray',
                     }),
-                TextColumn::make('amount_minor')->label('Amount')->money('XAF', divideBy: 100)->sortable(),
+                // Same hundredfold understatement as the engagements list had — see the note there.
+                TextColumn::make('amount_minor')
+                    ->label('Amount')
+                    ->formatStateUsing(fn (mixed $state): string => number_format((int) $state, 0, ',', ' '))
+                    ->suffix(' '.__('money.currency'))
+                    ->placeholder('—')
+                    ->alignEnd()
+                    ->sortable(),
                 TextColumn::make('expires_at')->dateTime()->sortable(),
                 TextColumn::make('responded_at')->dateTime()->placeholder('—')->toggleable(),
                 TextColumn::make('created_at')->dateTime()->sortable()->toggleable(isToggledHiddenByDefault: true),

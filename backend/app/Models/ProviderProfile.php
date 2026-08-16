@@ -75,4 +75,16 @@ final class ProviderProfile extends Model
     {
         return $this->hasMany(ServiceArea::class);
     }
+
+    /**
+     * The work they have taken on. Keyed through the PARTY, not the profile: engagements belong to
+     * a party, because the money and the ledger do, and a provider profile is a description of a
+     * party rather than the thing that gets hired.
+     *
+     * @return HasMany<Engagement, $this>
+     */
+    public function engagements(): HasMany
+    {
+        return $this->hasMany(Engagement::class, 'provider_party_id', 'party_id');
+    }
 }

@@ -1299,5 +1299,16 @@
   "admin.customers.identity_link": "Fiche d'identité complète et consentements",
   "status.en_route": "En route",
   "status.disputed": "En litige",
-  "status.closed": "Clôturée"
+  "status.closed": "Clôturée",
+  "admin.provider.jobs_heading": "Chantiers, un par un",
+  "admin.provider.n_of_m": ":n / :m",
+  "admin.provider.not_booked": "Non planifié",
+  "admin.provider.late": "En retard",
+  "admin.provider.on_time_yes": "À l'heure",
+  "admin.provider.in_progress_short": "En cours",
+  "admin.provider.poorly_rated": "Noté 2★ ou moins",
+  "admin.provider.unpaid_only": "Terminé mais pas entièrement payé",
+  "account.preferences": "Préférences",
+  "account.more_heading": "Plus",
+  "referral.row_hint": "Partagez votre code, vous y gagnez tous les deux"
 }

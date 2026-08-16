@@ -79,6 +79,26 @@ final class Engagement extends Model
     }
 
     /**
+     * @return HasMany<Dispute, $this>
+     */
+    public function disputes(): HasMany
+    {
+        return $this->hasMany(Dispute::class);
+    }
+
+    /**
+     * Both directions. A review here may be the customer's verdict on the provider or the provider's
+     * on the customer (P6-09 is two-way and blind), so anything reading this must say which side it
+     * means rather than assume.
+     *
+     * @return HasMany<Review, $this>
+     */
+    public function reviews(): HasMany
+    {
+        return $this->hasMany(Review::class);
+    }
+
+    /**
      * @return HasMany<Milestone, $this>
      */
     public function milestones(): HasMany

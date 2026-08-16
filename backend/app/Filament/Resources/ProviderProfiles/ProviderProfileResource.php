@@ -8,6 +8,7 @@ use App\Filament\Resources\ProviderProfiles\Pages\CreateProviderProfile;
 use App\Filament\Resources\ProviderProfiles\Pages\EditProviderProfile;
 use App\Filament\Resources\ProviderProfiles\Pages\ListProviderProfiles;
 use App\Filament\Resources\ProviderProfiles\Pages\ViewProviderProfile;
+use App\Filament\Resources\ProviderProfiles\RelationManagers\EngagementsRelationManager;
 use App\Filament\Resources\ProviderProfiles\Schemas\ProviderProfileForm;
 use App\Filament\Resources\ProviderProfiles\Schemas\ProviderProfileInfolist;
 use App\Filament\Resources\ProviderProfiles\Tables\ProviderProfilesTable;
@@ -60,6 +61,19 @@ class ProviderProfileResource extends Resource
     public static function table(Table $table): Table
     {
         return ProviderProfilesTable::configure($table);
+    }
+
+    /**
+     * The per-job detail under the aggregates. An average cannot name a job, and "which one went
+     * wrong" is the question actually being asked whenever a provider is opened from a complaint.
+     *
+     * @return array<int, class-string>
+     */
+    public static function getRelations(): array
+    {
+        return [
+            EngagementsRelationManager::class,
+        ];
     }
 
     public static function getNavigationLabel(): string
