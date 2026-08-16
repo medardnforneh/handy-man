@@ -32,6 +32,23 @@
          used to live in this file: the palette still comes from tokens/tokens.json, but the styling
          is utilities in the markup. --}}
     @vite(['resources/css/app.css'])
+
+    {{-- Applied BEFORE the stylesheet paints, and inline for the same reason: a saved dark choice
+         restored after first paint is a white flash on every navigation, which is worst for exactly
+         the person who chose dark. No attribute at all means "follow the device", which the tokens
+         already handle through prefers-color-scheme — so the untouched default costs nothing. --}}
+    <script>
+        (function () {
+            try {
+                var saved = localStorage.getItem('hm-theme');
+                if (saved === 'dark' || saved === 'light') {
+                    document.documentElement.setAttribute('data-theme', saved);
+                }
+            } catch (e) {
+                // Private mode with storage denied. The device preference still applies.
+            }
+        })();
+    </script>
 </head>
 <body>
     {{-- Off-screen until focused, then the first thing a keyboard reaches. --}}
@@ -105,6 +122,27 @@
                         @endforeach
                     </span>
 
+                    {{-- Theme. Three states, like the app's own setting: follow the device, or
+                         override it either way. One button that cycles rather than three controls —
+                         the header is already carrying a language switch and a call to action, and
+                         at 390px a third segmented control would not fit beside them.
+
+                         Rendered with BOTH glyphs, one hidden per theme by CSS, so the icon is right
+                         on the very first paint. Deciding it in JS would show the wrong one until the
+                         script ran, which is the flash this whole arrangement exists to avoid. --}}
+                    <button type="button"
+                            data-theme-toggle
+                            class="grid size-9 flex-none place-items-center rounded-pill border border-edge bg-surface-raised text-content-muted cursor-pointer transition-colors hover:text-content"
+                            title="{{ __('public.theme_toggle') }}"
+                            aria-label="{{ __('public.theme_toggle') }}">
+                        <svg class="size-4 dark:hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>
+                        </svg>
+                        <svg class="size-4 hidden dark:block" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>
+                        </svg>
+                    </button>
+
                     {{-- The header's own call to action. Without one, a reader convinced by what they
                          just read has to scroll back up to the hero to act on it. --}}
                     <a class="hidden lg:inline-flex items-center gap-1.5 px-4 py-2.5 rounded-pill bg-brand text-brand-contrast text-sm font-bold no-underline shadow-sm transition-colors hover:bg-brand-strong active:translate-y-px"
@@ -177,5 +215,50 @@
             </div>
         </div>
     </footer>
+
+    {{-- The toggle's behaviour. Inline rather than a bundle: this is the only script the marketing
+         site has, and a whole JS request to cycle one attribute is a poor trade on a slow
+         connection.
+
+         It cycles through three states in the order someone actually wants them — from wherever you
+         are, one tap gives you the other appearance, and a third returns you to following the
+         device. `system` is stored as the ABSENCE of the attribute, so it can never drift from what
+         the tokens' media query already decides. --}}
+    <script>
+        (function () {
+            var button = document.querySelector('[data-theme-toggle]');
+            if (!button) {
+                return;
+            }
+
+            var root = document.documentElement;
+
+            button.addEventListener('click', function () {
+                var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                var current = root.getAttribute('data-theme');
+                // Starting from "follow the device", the useful first tap is the opposite of what
+                // they are looking at — not a fixed direction that would appear to do nothing.
+                var next = current === null
+                    ? (prefersDark ? 'light' : 'dark')
+                    : (current === (prefersDark ? 'light' : 'dark') ? (prefersDark ? 'dark' : 'light') : null);
+
+                if (next === null) {
+                    root.removeAttribute('data-theme');
+                } else {
+                    root.setAttribute('data-theme', next);
+                }
+
+                try {
+                    if (next === null) {
+                        localStorage.removeItem('hm-theme');
+                    } else {
+                        localStorage.setItem('hm-theme', next);
+                    }
+                } catch (e) {
+                    // Storage denied — the choice still applies to this page, it just won't persist.
+                }
+            });
+        })();
+    </script>
 </body>
 </html>

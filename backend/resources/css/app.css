@@ -17,6 +17,23 @@
    the self-hosted Instrument Sans this used to ship (six files, ~116kB), and it cannot flash
    unstyled text because there is nothing to wait for. */
 
+/* `dark:` has to mean exactly what the PALETTE means by dark, or the two disagree and the theme
+   toggle's icon contradicts the colours around it. Tailwind's stock variant only reads
+   prefers-color-scheme, while tokens.css resolves three states: an explicit choice on the root wins
+   in either direction, and the device preference applies when there is none. This mirrors that
+   rule — do not simplify one without the other. */
+@custom-variant dark {
+    @media (prefers-color-scheme: dark) {
+        :root:not([data-theme='light']) & {
+            @slot;
+        }
+    }
+
+    :root[data-theme='dark'] & {
+        @slot;
+    }
+}
+
 /* ---------------------------------------------------------------------------
    Element-level defaults. Every class the public site uses is now a utility; what remains here is
    only what has no class to hang off — the document itself, and the brand mark.

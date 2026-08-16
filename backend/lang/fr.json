@@ -1200,5 +1200,6 @@
   "pro.visit_close_note": "Clôturer la visite n'envoie pas de prix. Chiffrez la mission depuis l'opportunité quand vous serez prêt.",
   "pro.visit_close_confirm": "Clôturer la visite",
   "pro.visit_closed": "Visite clôturée",
-  "pro.visit_close_failed": "La visite n'a pas pu être clôturée. Réessayez."
+  "pro.visit_close_failed": "La visite n'a pas pu être clôturée. Réessayez.",
+  "public.theme_toggle": "Changer l'apparence"
 }

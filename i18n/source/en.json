@@ -1200,5 +1200,6 @@
   "pro.visit_close_note": "Closing the visit does not send a price. Quote the job from the opportunity when you are ready.",
   "pro.visit_close_confirm": "Close visit",
   "pro.visit_closed": "Visit closed",
-  "pro.visit_close_failed": "The visit could not be closed. Try again."
+  "pro.visit_close_failed": "The visit could not be closed. Try again.",
+  "public.theme_toggle": "Switch appearance"
 }
