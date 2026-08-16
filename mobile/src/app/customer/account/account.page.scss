@@ -7,6 +7,19 @@ ion-toolbar {
   --border-width: 0;
 }
 
+// A settings group label, not a headline. Six of these were `text-lg font-extrabold` — the same
+// weight as the content under them — so the eye had nothing to skim by and the page read as one
+// long shout. Small, muted and quiet is the whole job: it names a group you are already looking at.
+// The tighter rhythm is the other half of why this screen scrolled so far for eight settings.
+.acc-group {
+  margin: 20px 0 8px;
+  font-size: var(--hm-text-xs);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--hm-color-text-muted);
+}
+
 ion-list {
   padding: 0;
   background: var(--hm-color-surface-raised);

@@ -191,3 +191,13 @@
 @utility accent-info { background: var(--color-info); }
 @utility accent-warning { background: var(--color-warning); }
 @utility accent-muted { background: var(--color-content-muted); }
+
+/* Room for the floating tab bar.
+   The bar is absolutely positioned 60px tall with a gap under it (see tabs.page.scss), so it hangs
+   OVER the scroll content rather than reserving space in it. Every tab page ended `pb-10` — 40px,
+   less than the bar is tall — so the last thing on each of them sat underneath it: the sign-out row
+   on Account, the final job on Jobs. Scrolling to the bottom did not help, because the bottom was
+   already there. Sized from the same values the bar positions itself with, plus a breathing gap. */
+@utility pb-tabbar {
+    padding-bottom: calc(60px + env(safe-area-inset-bottom) + var(--hm-space-sm) + 1.25rem);
+}

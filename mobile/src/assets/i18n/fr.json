@@ -259,7 +259,9 @@
     "theme_dark": "Sombre",
     "details_unavailable": "Vos informations ne sont pas chargées",
     "work_heading": "Travailler sur HandyMan",
-    "work_hint": "Référencez vos métiers et recevez les demandes des clients près de chez vous."
+    "work_hint": "Référencez vos métiers et recevez les demandes des clients près de chez vous.",
+    "preferences": "Préférences",
+    "more_heading": "Plus"
   },
   "workspace": {
     "today": "Aujourd'hui",
@@ -598,7 +600,15 @@
       "verification": "Vérification",
       "no_documents": "Aucune pièce envoyée — ce prestataire ne peut pas dépasser le niveau 1.",
       "listed_trades": "Métiers référencés",
-      "no_skills": "Aucun métier référencé. Ce prestataire ne peut être associé à aucune demande tant qu'il n'en ajoute pas."
+      "no_skills": "Aucun métier référencé. Ce prestataire ne peut être associé à aucune demande tant qu'il n'en ajoute pas.",
+      "jobs_heading": "Chantiers, un par un",
+      "n_of_m": ":n / :m",
+      "not_booked": "Non planifié",
+      "late": "En retard",
+      "on_time_yes": "À l'heure",
+      "in_progress_short": "En cours",
+      "poorly_rated": "Noté 2★ ou moins",
+      "unpaid_only": "Terminé mais pas entièrement payé"
     },
     "trade": {
       "names": "Noms et place dans la taxonomie",
@@ -1492,7 +1502,8 @@
     "claim_ph": "Son code",
     "claim_send": "Utiliser le code",
     "claimed": "Code accepté",
-    "claim_failed": "Ce code n'a pas pu être utilisé."
+    "claim_failed": "Ce code n'a pas pu être utilisé.",
+    "row_hint": "Partagez votre code, vous y gagnez tous les deux"
   },
   "fund": {
     "action": "Payer sur le séquestre",

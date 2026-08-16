@@ -259,7 +259,9 @@
     "theme_dark": "Dark",
     "details_unavailable": "Your details have not loaded",
     "work_heading": "Work on HandyMan",
-    "work_hint": "List your trades and receive requests from customers near you."
+    "work_hint": "List your trades and receive requests from customers near you.",
+    "preferences": "Preferences",
+    "more_heading": "More"
   },
   "workspace": {
     "today": "Today",
@@ -598,7 +600,15 @@
       "verification": "Verification",
       "no_documents": "No documents sent yet — this provider cannot pass tier 1.",
       "listed_trades": "Listed trades",
-      "no_skills": "No trades listed. This provider cannot be matched to any request until one is added."
+      "no_skills": "No trades listed. This provider cannot be matched to any request until one is added.",
+      "jobs_heading": "Jobs, one by one",
+      "n_of_m": ":n / :m",
+      "not_booked": "Not booked",
+      "late": "Late",
+      "on_time_yes": "On time",
+      "in_progress_short": "Running",
+      "poorly_rated": "Rated 2★ or less",
+      "unpaid_only": "Finished but not fully paid"
     },
     "trade": {
       "names": "Names and place in the taxonomy",
@@ -1492,7 +1502,8 @@
     "claim_ph": "Their code",
     "claim_send": "Use code",
     "claimed": "Code accepted",
-    "claim_failed": "That code could not be used."
+    "claim_failed": "That code could not be used.",
+    "row_hint": "Share your code — you both benefit"
   },
   "fund": {
     "action": "Pay into escrow",

@@ -5,33 +5,34 @@
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <div class="mx-auto max-w-3xl px-4 pb-10">
-    <!-- Profile header -->
-    <div class="flex items-center gap-4 pt-4 pb-2">
-      <div class="grid size-15 flex-none place-items-center rounded-full bg-brand text-[1.2rem] font-bold uppercase text-brand-contrast" aria-hidden="true">
+  <div class="mx-auto max-w-3xl px-4 pb-tabbar">
+    <!-- Who you are. In a card like everything else on the screen: it used to float bare above a
+         column of cards, which read as a stray fragment rather than as the top of a settings list. -->
+    <div class="mt-4 flex items-center gap-4 rounded-lg border border-edge bg-surface-raised p-4 shadow-sm">
+      <div class="grid size-14 flex-none place-items-center rounded-full bg-brand text-[1.1rem] font-bold uppercase text-brand-contrast" aria-hidden="true">
         @if (me().initials) {
           {{ me().initials }}
         } @else {
           <!-- The fallback when we don't know who you are yet — a glyph, never someone else's initials. -->
-          <ion-icon name="person-outline" class="text-[1.6rem]"></ion-icon>
+          <ion-icon name="person-outline" class="text-[1.5rem]"></ion-icon>
         }
       </div>
       <div class="min-w-0">
         <!-- Never a placeholder person: a name if the server sent one, else the phone you signed in
              with, else an honest line saying the details have not loaded. -->
         @if (displayName()) {
-          <b class="text-[1.15rem] font-extrabold tracking-tight">{{ displayName() }}</b>
+          <b class="block truncate text-[1.05rem] font-extrabold tracking-tight">{{ displayName() }}</b>
           @if (knowsName()) {
             <small class="mt-0.5 block text-sm tabular-nums text-content-muted">{{ me().phone }}</small>
           }
         } @else {
-          <b class="text-[1.15rem] font-extrabold tracking-tight text-content-muted">{{ 'account.details_unavailable' | translate }}</b>
+          <b class="block text-[1.05rem] font-extrabold tracking-tight text-content-muted">{{ 'account.details_unavailable' | translate }}</b>
         }
       </div>
     </div>
 
     <!-- Saved addresses -->
-    <h2 class="mt-6 mb-4 text-lg font-extrabold tracking-snug">{{ 'account.addresses' | translate }}</h2>
+    <h2 class="acc-group">{{ 'account.addresses' | translate }}</h2>
     @if (addresses().length) {
       <ion-list class="addrs overflow-hidden rounded-lg border border-edge shadow-sm" lines="full">
         @for (addr of addresses(); track addr.id) {
@@ -62,58 +63,41 @@
       ></app-empty-state>
     }
 
-    <!-- Referrals (P8-01). Word of mouth is how this product actually spreads — a plumber
-         recommended by a neighbour — so both halves are here: the code you give, and the box for
-         one you were given. -->
-    <h2 class="mt-6 mb-4 text-lg font-extrabold tracking-snug">{{ 'referral.section' | translate }}</h2>
-    <div class="rounded-lg border border-edge bg-surface-raised p-4 shadow-sm">
-      @if (referralCode(); as code) {
-        <p class="mt-0 mb-2 text-sm leading-snug text-content-muted">{{ 'referral.your_code_hint' | translate }}</p>
-        <p class="m-0 rounded-md bg-surface-sunken px-3 py-2 text-center text-lg font-extrabold tracking-[0.12em] tabular-nums">{{ code }}</p>
-        <ion-button class="mt-4" size="small" expand="block" (click)="copyReferral()">
-          <ion-icon name="copy-outline" slot="start" aria-hidden="true"></ion-icon>
-          {{ 'referral.copy' | translate }}
-        </ion-button>
-      } @else {
-        <p class="mt-0 mb-4 text-sm leading-snug text-content-muted">{{ 'referral.hint' | translate }}</p>
-        <ion-button size="small" expand="block" fill="outline" (click)="showReferral()">
-          {{ 'referral.show' | translate }}
-        </ion-button>
-      }
-
-      <button
-        type="button"
-        class="mt-2 min-h-11 w-full cursor-pointer border-0 bg-transparent px-2 py-1.5 text-sm font-bold text-brand [font:inherit]"
-        (click)="claimReferral()"
-      >{{ 'referral.have_code' | translate }}</button>
+    <!-- Language and appearance are one thought — "how this app presents itself to me" — and were
+         two headings with two loose segments between them, which is most of why this screen scrolled
+         as far as it did. One card, two labelled rows. -->
+    <h2 class="acc-group">{{ 'account.preferences' | translate }}</h2>
+    <div class="overflow-hidden rounded-lg border border-edge bg-surface-raised shadow-sm">
+      <div class="p-4">
+        <span class="mb-2 block text-sm font-semibold">{{ 'account.language' | translate }}</span>
+        <ion-segment class="choice" [value]="locale()">
+          @for (code of supported; track code) {
+            <ion-segment-button [value]="code" (click)="setLocale(code)">
+              <ion-label>{{ (code === 'fr' ? 'language.french' : 'language.english') | translate }}</ion-label>
+            </ion-segment-button>
+          }
+        </ion-segment>
+      </div>
+      <div class="border-t border-edge p-4">
+        <span class="mb-2 block text-sm font-semibold">{{ 'account.appearance' | translate }}</span>
+        <ion-segment class="choice" [value]="theme()">
+          <ion-segment-button value="system" (click)="setTheme('system')">
+            <ion-label>{{ 'account.theme_system' | translate }}</ion-label>
+          </ion-segment-button>
+          <ion-segment-button value="light" (click)="setTheme('light')">
+            <ion-label>{{ 'account.theme_light' | translate }}</ion-label>
+          </ion-segment-button>
+          <ion-segment-button value="dark" (click)="setTheme('dark')">
+            <ion-label>{{ 'account.theme_dark' | translate }}</ion-label>
+          </ion-segment-button>
+        </ion-segment>
+      </div>
     </div>
 
-    <h2 class="mt-6 mb-4 text-lg font-extrabold tracking-snug">{{ 'account.language' | translate }}</h2>
-    <ion-segment class="choice" [value]="locale()">
-      @for (code of supported; track code) {
-        <ion-segment-button [value]="code" (click)="setLocale(code)">
-          <ion-label>{{ (code === 'fr' ? 'language.french' : 'language.english') | translate }}</ion-label>
-        </ion-segment-button>
-      }
-    </ion-segment>
-
-    <h2 class="mt-6 mb-4 text-lg font-extrabold tracking-snug">{{ 'account.appearance' | translate }}</h2>
-    <ion-segment class="choice" [value]="theme()">
-      <ion-segment-button value="system" (click)="setTheme('system')">
-        <ion-label>{{ 'account.theme_system' | translate }}</ion-label>
-      </ion-segment-button>
-      <ion-segment-button value="light" (click)="setTheme('light')">
-        <ion-label>{{ 'account.theme_light' | translate }}</ion-label>
-      </ion-segment-button>
-      <ion-segment-button value="dark" (click)="setTheme('dark')">
-        <ion-label>{{ 'account.theme_dark' | translate }}</ion-label>
-      </ion-segment-button>
-    </ion-segment>
-
-    <!-- These two sat under a "Help & support" heading, and neither is help or support. Becoming a
-         provider is the biggest decision on this screen and now reads as one; logging out is a
-         plain account action and needs no heading of its own. -->
-    <h2 class="mt-6 mb-4 text-lg font-extrabold tracking-snug">{{ 'account.work_heading' | translate }}</h2>
+    <!-- Becoming a provider is the biggest decision on this screen, and safety is the row somebody
+         may need to find in a hurry rather than browse to. Both are rows in one list now: they were
+         two separate cards under two headings, which spaced them apart without distinguishing them. -->
+    <h2 class="acc-group">{{ 'account.more_heading' | translate }}</h2>
     <ion-list class="overflow-hidden rounded-lg border border-edge shadow-sm" lines="full">
       <ion-item button="true" detail="true" class="min-h-11" (click)="offerServices()">
         <ion-icon slot="start" name="hammer-outline" aria-hidden="true"></ion-icon>
@@ -122,11 +106,6 @@
           <p class="mt-0.5 mb-0 text-xs text-content-muted">{{ 'account.work_hint' | translate }}</p>
         </ion-label>
       </ion-item>
-    </ion-list>
-
-    <!-- Safety sits above the sign-out, on its own, because it is the one row here that somebody
-         may need to find in a hurry rather than browse to. -->
-    <ion-list class="mt-4 overflow-hidden rounded-lg border border-edge shadow-sm" lines="full">
       <ion-item button="true" detail="true" class="min-h-11" (click)="openSafety()">
         <ion-icon slot="start" name="shield-outline" aria-hidden="true"></ion-icon>
         <ion-label>
@@ -140,6 +119,33 @@
           <b class="text-md">{{ 'rights.title' | translate }}</b>
           <p class="mt-0.5 mb-0 text-xs text-content-muted">{{ 'rights.account_hint' | translate }}</p>
         </ion-label>
+      </ion-item>
+
+      <!-- Referrals (P8-01). Word of mouth is how this product actually spreads — a plumber
+           recommended by a neighbour — so both halves stay reachable: the code you give, and the box
+           for one you were given. It was a permanently-open panel the size of three settings,
+           sitting above the language switch; it is a row that opens when asked. -->
+      <ion-item button="true" detail="false" class="min-h-11" (click)="showReferral()">
+        <ion-icon slot="start" name="gift-outline" aria-hidden="true"></ion-icon>
+        <ion-label>
+          <b class="text-md">{{ 'referral.section' | translate }}</b>
+          <!-- A row's subtitle, not a paragraph: the full pitch ran to three lines here, making one
+               row twice the height of the three above it. -->
+          <p class="mt-0.5 mb-0 text-xs text-content-muted">{{ 'referral.row_hint' | translate }}</p>
+        </ion-label>
+      </ion-item>
+      @if (referralCode(); as code) {
+        <div class="border-t border-edge bg-surface-sunken px-4 py-3">
+          <p class="m-0 rounded-md bg-surface-raised px-3 py-2 text-center text-lg font-extrabold tracking-[0.12em] tabular-nums">{{ code }}</p>
+          <ion-button class="mt-3" size="small" expand="block" (click)="copyReferral()">
+            <ion-icon name="copy-outline" slot="start" aria-hidden="true"></ion-icon>
+            {{ 'referral.copy' | translate }}
+          </ion-button>
+        </div>
+      }
+      <ion-item button="true" detail="false" class="min-h-11" (click)="claimReferral()">
+        <ion-icon slot="start" name="ticket-outline" aria-hidden="true"></ion-icon>
+        <ion-label>{{ 'referral.have_code' | translate }}</ion-label>
       </ion-item>
     </ion-list>
 

@@ -1299,5 +1299,16 @@
   "admin.customers.identity_link": "Full identity record and consents",
   "status.en_route": "On the way",
   "status.disputed": "Disputed",
-  "status.closed": "Closed"
+  "status.closed": "Closed",
+  "admin.provider.jobs_heading": "Jobs, one by one",
+  "admin.provider.n_of_m": ":n / :m",
+  "admin.provider.not_booked": "Not booked",
+  "admin.provider.late": "Late",
+  "admin.provider.on_time_yes": "On time",
+  "admin.provider.in_progress_short": "Running",
+  "admin.provider.poorly_rated": "Rated 2★ or less",
+  "admin.provider.unpaid_only": "Finished but not fully paid",
+  "account.preferences": "Preferences",
+  "account.more_heading": "More",
+  "referral.row_hint": "Share your code — you both benefit"
 }
