@@ -17,6 +17,8 @@ use App\Models\Quotation;
 use App\Models\SiteVisit;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 /**
  * Site visits (build plan P2.5-04). A provider schedules a visit for a job and later completes it,
@@ -25,6 +27,39 @@ use Illuminate\Http\JsonResponse;
  */
 final class SiteVisitController extends Controller
 {
+    /**
+     * The caller's own site visits, still open ones first (P2.5-04).
+     *
+     * This read did not exist, and its absence is what made `complete` unreachable rather than
+     * merely unbuilt: a visit is never narrated into a thread and appears in no list, so its id
+     * survived only inside the session that scheduled it. A provider who scheduled a visit on
+     * Monday had, by Tuesday, no way to close it.
+     *
+     * Narrating it — the fix warranties got — is not available here. A site visit happens BEFORE
+     * any engagement, and a conversation enrols both parties, so it would introduce the provider to
+     * a customer who is not yet entitled to identify them (P2-03). A self-scoped read discloses
+     * nothing new in either direction: the provider reads their own rows, and the embedded job
+     * carries whatever `JobResource` already decides a pre-engagement provider may see — the coarse
+     * quarter and city, never the exact address.
+     */
+    public function mine(Request $request): AnonymousResourceCollection
+    {
+        /** @var User $user */
+        $user = $request->user();
+
+        $visits = SiteVisit::query()
+            ->where('provider_party_id', $user->party_id)
+            ->with(['job.address', 'job.skill'])
+            // Scheduled before completed, then soonest first: this list is a to-do, and the visit
+            // that still has to happen outranks the one that already did.
+            ->orderByRaw("case when status = 'scheduled' then 0 else 1 end")
+            ->orderBy('scheduled_for')
+            ->limit(50)
+            ->get();
+
+        return SiteVisitResource::collection($visits);
+    }
+
     public function store(ScheduleSiteVisitRequest $request, Job $job, ScheduleSiteVisit $action): JsonResponse
     {
         /** @var User $user */

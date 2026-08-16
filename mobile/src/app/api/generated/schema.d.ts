@@ -1294,6 +1294,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/provider/site-visits": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The caller's own site visits (provider)
+         * @description Scheduled visits first, soonest first — a to-do list. This read is what makes completing a visit possible: a visit is narrated into no thread and listed nowhere else, so without it the id existed only for as long as the session that scheduled it.
+         *
+         *     Self-scoped, which is also why it is safe. Narrating a visit into the job's conversation — the way a warranty is — would introduce the provider to a customer not yet entitled to identify them (P2-03); reading one's own rows discloses nothing new in either direction.
+         */
+        get: operations["providerSiteVisits"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/jobs/{job}/site-visits": {
         parameters: {
             query?: never;
@@ -1781,6 +1803,8 @@ export interface components {
             outcome_notes?: string | null;
             /** Format: uuid */
             resulting_quotation_id?: string | null;
+            /** @description Present on the provider's own list. Minimised by the same rules as anywhere else — a pre-engagement provider sees the coarse quarter and city, never the exact address. */
+            job?: components["schemas"]["Job"];
         };
         Milestone: {
             /** Format: uuid */
@@ -4812,6 +4836,29 @@ export interface operations {
             401: components["responses"]["Problem"];
             409: components["responses"]["Problem"];
             422: components["responses"]["ValidationProblem"];
+        };
+    };
+    providerSiteVisits: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description This provider's site visits. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["SiteVisit"][];
+                    };
+                };
+            };
+            401: components["responses"]["Problem"];
         };
     };
     scheduleSiteVisit: {

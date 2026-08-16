@@ -162,7 +162,7 @@
               <div class="p-3.5">
                 <b class="block text-md leading-snug">{{ 'workspace.warranty_covered' | translate }}</b>
                 <p class="mt-1 mb-0 text-sm text-content-muted">
-                  {{ 'workspace.warranty_until' | translate:{ date: (m.warranty?.expiresAt | date:'longDate') } }}
+                  {{ 'workspace.warranty_until' | translate:{ date: m.warranty?.expiresOn } }}
                 </p>
 
                 @if (m.warranty?.claimed) {

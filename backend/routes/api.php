@@ -268,6 +268,9 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
         Route::post('/quotations/{quotation}/accept', [QuotationController::class, 'accept'])->name('quotations.accept');
 
         // Site visits (P2.5-04). A provider schedules a visit and completes it (fee creditable).
+        // The self-scoped read is what makes completing one possible at all: a visit is narrated
+        // nowhere and listed nowhere else, so without it the id died with the session that made it.
+        Route::get('/provider/site-visits', [SiteVisitController::class, 'mine'])->name('provider.site-visits');
         Route::post('/jobs/{job}/site-visits', [SiteVisitController::class, 'store'])->name('jobs.site-visits.store');
         Route::post('/site-visits/{siteVisit}/complete', [SiteVisitController::class, 'complete'])->name('site-visits.complete');
 

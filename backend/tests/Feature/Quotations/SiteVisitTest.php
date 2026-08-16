@@ -164,3 +164,84 @@ it('does not double-count a scheduled (not completed) visit fee', function () {
         ->assertJsonPath('data.agreed_amount.amount_minor', 500000)
         ->assertJsonPath('data.visit_credit.amount_minor', 0);
 });
+
+/**
+ * The self-scoped read (P2.5-04). It exists because completing a visit was otherwise unreachable:
+ * a visit is narrated into no thread and appears in no other list, so its id survived only inside
+ * the session that scheduled it.
+ */
+it('lists the caller’s own site visits, open ones first', function () {
+    $provider = User::factory()->create();
+    $other = User::factory()->create();
+
+    $soon = SiteVisit::factory()->create([
+        'job_id' => openJobForVisit()->id,
+        'provider_party_id' => $provider->party_id,
+        'scheduled_for' => now()->addDay(),
+        'status' => SiteVisitStatus::Scheduled->value,
+    ]);
+    $done = SiteVisit::factory()->create([
+        'job_id' => openJobForVisit()->id,
+        'provider_party_id' => $provider->party_id,
+        'scheduled_for' => now()->subDay(),
+        'status' => SiteVisitStatus::Completed->value,
+    ]);
+    // Somebody else's visit must not appear, whoever asks.
+    SiteVisit::factory()->create([
+        'job_id' => openJobForVisit()->id,
+        'provider_party_id' => $other->party_id,
+        'status' => SiteVisitStatus::Scheduled->value,
+    ]);
+
+    Sanctum::actingAs($provider);
+    $response = $this->getJson('/api/v1/provider/site-visits')
+        ->assertOk()
+        ->assertJsonCount(2, 'data');
+
+    // Scheduled outranks completed: the list is a to-do, not a history.
+    expect($response->json('data.0.id'))->toBe($soon->id)
+        ->and($response->json('data.1.id'))->toBe($done->id);
+});
+
+it('minimises the embedded job’s location for a pre-engagement provider', function () {
+    $customer = User::factory()->create();
+    $job = Job::factory()->status(JobStatus::Open)->create(['customer_party_id' => $customer->party_id]);
+    $provider = User::factory()->create();
+
+    SiteVisit::factory()->create([
+        'job_id' => $job->id,
+        'provider_party_id' => $provider->party_id,
+        'status' => SiteVisitStatus::Scheduled->value,
+    ]);
+
+    Sanctum::actingAs($provider);
+    $location = $this->getJson('/api/v1/provider/site-visits')
+        ->assertOk()
+        ->json('data.0.job.location');
+
+    // Booking a visit does not buy the street: the coarse area is all a pre-engagement provider
+    // sees anywhere else, and this list inherits that rather than deciding it again (P2-03).
+    expect($location)->toHaveKey('city')
+        ->and($location)->not->toHaveKey('line1')
+        ->and($location)->not->toHaveKey('latitude');
+});
+
+it('completes a visit found through that list', function () {
+    $provider = User::factory()->create();
+    $visit = SiteVisit::factory()->create([
+        'job_id' => openJobForVisit()->id,
+        'provider_party_id' => $provider->party_id,
+        'status' => SiteVisitStatus::Scheduled->value,
+    ]);
+
+    Sanctum::actingAs($provider);
+    $id = $this->getJson('/api/v1/provider/site-visits')->assertOk()->json('data.0.id');
+
+    $this->postJson("/api/v1/site-visits/{$id}/complete",
+        ['outcome_notes' => 'Corroded riser, needs replacing before anything else.'],
+        ['Idempotency-Key' => (string) Str::uuid()])
+        ->assertOk()
+        ->assertJsonPath('data.status', 'completed');
+
+    expect($visit->fresh()->outcome_notes)->toBe('Corroded riser, needs replacing before anything else.');
+});

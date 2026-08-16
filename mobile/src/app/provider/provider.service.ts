@@ -8,7 +8,7 @@ import { OfflineCache } from '../core/offline/offline-cache.service';
 import { WriteQueue, WriteSpec } from '../core/offline/write-queue.service';
 import {
   ActiveWork, Lead, Payout, PayoutStatus, PipelineEntry, PipelineStage, ProviderClient,
-  ProviderIdentity, ProviderStats, QuoteDraft, ReportDraft, SubmittedQuote, VerificationDoc,
+  ProviderIdentity, ProviderSiteVisit, ProviderStats, QuoteDraft, ReportDraft, SubmittedQuote, VerificationDoc,
   WorkDetail, WorkStatus, ProviderWallet,
 } from './provider.models';
 
@@ -519,6 +519,28 @@ export class ProviderService {
     };
   }
 
+  /**
+   * An appointment as a person would say it — weekday, date and time, in the current UI locale.
+   *
+   * `toLocaleString` rather than Angular's `date` pipe: this app registers no Angular locale data,
+   * so the pipe formats everything in en-US and would put "Wed 19 Aug" under French chrome. The
+   * same reasoning as `shortTime` in the customer service.
+   */
+  private appointment(iso: string): string {
+    const at = new Date(iso);
+    if (Number.isNaN(at.getTime())) {
+      // Nothing beats a wrong date on an appointment somebody is meant to keep.
+      return '';
+    }
+    return at.toLocaleString(this.locales.current, {
+      weekday: 'short',
+      day: 'numeric',
+      month: 'short',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  }
+
   /** A localised "x minutes ago" from an ISO timestamp, in the provider's current UI locale. */
   private relativeTime(iso: string): string {
     const at = new Date(iso).getTime();
@@ -871,6 +893,46 @@ export class ProviderService {
    */
   async buyLeadCredits(amountMinor: number, msisdn: string): Promise<MutationResult> {
     return this.attempt(() => this.api.initiatePaymentIntent('lead_credits', amountMinor, msisdn));
+  }
+
+  /**
+   * This provider's own site visits (GET /provider/site-visits, P2.5-04).
+   *
+   * The read that makes closing one possible: before it, a visit's id survived only inside the
+   * session that scheduled it, so `complete` could not be reached the next day, let alone the next
+   * week. The area is the coarse quarter and city the server already decides a pre-engagement
+   * provider may see.
+   */
+  async fetchSiteVisits(): Promise<ProviderSiteVisit[] | null> {
+    try {
+      const rows = await this.api.providerSiteVisits();
+      return rows.map((v) => {
+        const loc = v.job?.location ?? null;
+        return {
+          id: v.id,
+          jobId: v.job_id,
+          reference: v.job?.reference ?? '',
+          title: v.job?.title ?? '',
+          area: loc ? [loc.quarter, loc.city].filter(Boolean).join(', ') : '',
+          when: this.appointment(v.scheduled_for),
+          feeMinor: v.is_chargeable ? v.fee.amount_minor : 0,
+          status: v.status,
+        };
+      });
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Close a site visit (POST /site-visits/{id}/complete, P2.5-04).
+   *
+   * What was found is the point: the provider went to look at something, and the notes are what the
+   * quote that follows will be argued from. Linking that quote makes a chargeable visit's fee
+   * creditable against it, so the customer does not pay twice for the same trip.
+   */
+  async completeSiteVisit(id: string, outcomeNotes?: string, resultingQuotationId?: string): Promise<MutationResult> {
+    return this.attempt(() => this.api.completeSiteVisit(id, outcomeNotes, resultingQuotationId));
   }
 
   /**

@@ -310,7 +310,7 @@
     "deliverable_submitted": "Provider submitted a deliverable",
     "warranty": "Warranty",
     "warranty_covered": "This work is covered.",
-    "warranty_until": "Covered until {date}.",
+    "warranty_until": "Covered until {{date}}.",
     "warranty_claim": "Make a claim",
     "warranty_claim_title": "Make a claim",
     "warranty_claim_body": "Tell us what went wrong. This opens a new job so it can be put right.",
@@ -696,7 +696,7 @@
     "create_hint": "A link anyone can open — no app needed. It shows who is coming, the status and the quarter. Never your street address.",
     "create_failed": "The link could not be created. Try again.",
     "ready": "Send this to someone you trust. Anyone with the link can see the status until it expires.",
-    "expires_at": "Expires {time}.",
+    "expires_at": "Expires {{time}}.",
     "copy": "Copy link",
     "copied": "Link copied",
     "copy_failed": "Could not copy. Select the link above instead.",
@@ -965,7 +965,17 @@
     "visit_note": "The customer sees the day and the fee before agreeing. Nothing is charged until they do.",
     "visit_send": "Propose visit",
     "visit_sent": "Visit proposed",
-    "visit_failed": "That could not be sent. Try again."
+    "visit_failed": "That could not be sent. Try again.",
+    "visits_heading": "Visits you have booked",
+    "visit_close": "Close this visit",
+    "visit_close_for": "Closing the visit for \"{{title}}\".",
+    "visit_outcome": "What did you find?",
+    "visit_outcome_ph": "What the problem is, what it needs, anything that changes the price.",
+    "visit_outcome_hint": "This is what your quote will be argued from later.",
+    "visit_close_note": "Closing the visit does not send a price. Quote the job from the opportunity when you are ready.",
+    "visit_close_confirm": "Close visit",
+    "visit_closed": "Visit closed",
+    "visit_close_failed": "The visit could not be closed. Try again."
   },
   "payout": {
     "paid": "Paid",
@@ -1045,7 +1055,7 @@
     "warranty_offer": "Offer a warranty",
     "warranty_hint": "A warranty only exists on the platform. It is the strongest reason a customer has to come back to you through it.",
     "warranty_length": "How long is it covered?",
-    "warranty_days": "{days} days",
+    "warranty_days": "{{days}} days",
     "warranty_terms": "What does it cover? (optional)",
     "warranty_terms_ph": "Parts and labour on the work done. Does not cover damage from misuse.",
     "warranty_terms_hint": "The customer reads this as you write it.",
@@ -1257,7 +1267,7 @@
   "refund": {
     "action": "Refund what is still held",
     "confirm_title": "Refund the held balance?",
-    "confirm_body": "{amount} {currency} goes back to you. Work already approved stays paid, and nothing more can be released for this job.",
+    "confirm_body": "{{amount}} {{currency}} goes back to you. Work already approved stays paid, and nothing more can be released for this job.",
     "confirm_action": "Refund",
     "done": "Refunded",
     "failed": "The refund could not be made. Try again."
@@ -1357,7 +1367,7 @@
     "done": "You have reviewed this job."
   },
   "rebook": {
-    "action": "Book {name} again",
+    "action": "Book {{name}} again",
     "done": "Request sent to them",
     "failed": "That could not be sent. Try again."
   },

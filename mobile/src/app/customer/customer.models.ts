@@ -221,7 +221,13 @@ export interface MilestonePayload {
  */
 export interface WarrantyPayload {
   id: string;
-  expiresAt: string;
+  /**
+   * When cover ends, already written out in the reader's language.
+   *
+   * Formatted at the mapping boundary rather than by Angular's `date` pipe: this app registers no
+   * Angular locale data, so the pipe renders en-US regardless of the chrome around it.
+   */
+  expiresOn: string;
   claimed?: boolean;
 }
 

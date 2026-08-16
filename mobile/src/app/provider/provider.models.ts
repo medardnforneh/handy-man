@@ -153,6 +153,30 @@ export interface QuoteDraft {
 }
 
 /**
+ * A site visit this provider has booked (P2.5-04), as their own list shows it back to them.
+ *
+ * `area` is the coarse quarter and city, never the street: `JobResource` minimises location for a
+ * pre-engagement provider, and this list inherits that rather than deciding it again.
+ */
+export interface ProviderSiteVisit {
+  id: string;
+  jobId: string;
+  reference: string;
+  title: string;
+  area: string;
+  /**
+   * The appointment, already written out in the reader's language.
+   *
+   * Formatted here rather than by Angular's `date` pipe, which has no locale data registered in
+   * this app and would render "Wed 19 Aug" under French chrome. The rest of the app uses `toLocale*`
+   * for exactly this reason — see `shortTime` in the customer service.
+   */
+  when: string;
+  feeMinor: number;
+  status: 'scheduled' | 'completed' | 'cancelled' | 'no_show';
+}
+
+/**
  * A quotation this provider has already submitted on a job (P2.5-01), as the lead screen shows it
  * back to them.
  *

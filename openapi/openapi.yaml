@@ -1752,6 +1752,32 @@ paths:
         "409": { $ref: "#/components/responses/Problem" }
         "422": { $ref: "#/components/responses/ValidationProblem" }
 
+  /provider/site-visits:
+    get:
+      tags: [Platform]
+      operationId: providerSiteVisits
+      summary: The caller's own site visits (provider)
+      description: >
+        Scheduled visits first, soonest first — a to-do list. This read is what makes completing a
+        visit possible: a visit is narrated into no thread and listed nowhere else, so without it
+        the id existed only for as long as the session that scheduled it.
+
+
+        Self-scoped, which is also why it is safe. Narrating a visit into the job's conversation —
+        the way a warranty is — would introduce the provider to a customer not yet entitled to
+        identify them (P2-03); reading one's own rows discloses nothing new in either direction.
+      responses:
+        "200":
+          description: This provider's site visits.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data: { type: array, items: { $ref: "#/components/schemas/SiteVisit" } }
+        "401": { $ref: "#/components/responses/Problem" }
+
   /jobs/{job}/site-visits:
     post:
       tags: [Platform]
@@ -2321,6 +2347,11 @@ components:
         completed_at: { type: [string, "null"], format: date-time }
         outcome_notes: { type: [string, "null"] }
         resulting_quotation_id: { type: [string, "null"], format: uuid }
+        job:
+          allOf: [{ $ref: "#/components/schemas/Job" }]
+          description: >
+            Present on the provider's own list. Minimised by the same rules as anywhere else — a
+            pre-engagement provider sees the coarse quarter and city, never the exact address.
 
     Milestone:
       type: object

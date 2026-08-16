@@ -92,6 +92,21 @@ function chatPreviewKey(kind: string): string {
 }
 
 /**
+ * A spelled-out date, for something that matters months from now — when a warranty runs out.
+ *
+ * Same reasoning as `shortTime` below, and worth restating because it is easy to reach for Angular's
+ * `date` pipe instead: this app registers no Angular locale data, so that pipe formats in en-US and
+ * would print "November 13, 2026" underneath French chrome.
+ */
+function longDate(iso: string): string {
+  const at = new Date(iso);
+  if (Number.isNaN(at.getTime())) {
+    return '';
+  }
+  return at.toLocaleDateString([], { day: 'numeric', month: 'long', year: 'numeric' });
+}
+
+/**
  * A list timestamp: the clock for today's messages, a short date for anything older. Both come from
  * `toLocale*` so they follow the device's own conventions rather than an English format — and it
  * needs no extra translated strings ("Yesterday" would).
@@ -172,7 +187,7 @@ function mapMessage(m: {
         kind: 'warranty',
         mine,
         time,
-        warranty: { id, expiresAt: typeof expires === 'string' ? expires : '' },
+        warranty: { id, expiresOn: typeof expires === 'string' ? longDate(expires) : '' },
       };
     }
   }

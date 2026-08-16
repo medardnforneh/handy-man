@@ -310,7 +310,7 @@
     "deliverable_submitted": "Le prestataire a soumis un livrable",
     "warranty": "Garantie",
     "warranty_covered": "Ce travail est couvert.",
-    "warranty_until": "Couvert jusqu'au {date}.",
+    "warranty_until": "Couvert jusqu'au {{date}}.",
     "warranty_claim": "Faire jouer la garantie",
     "warranty_claim_title": "Faire jouer la garantie",
     "warranty_claim_body": "Dites-nous ce qui ne va pas. Cela ouvre une nouvelle mission pour y remédier.",
@@ -696,7 +696,7 @@
     "create_hint": "Un lien que n'importe qui peut ouvrir, sans application. Il montre qui vient, l'état et le quartier. Jamais votre adresse exacte.",
     "create_failed": "Le lien n'a pas pu être créé. Réessayez.",
     "ready": "Envoyez ceci à une personne de confiance. Toute personne ayant le lien voit l'état jusqu'à son expiration.",
-    "expires_at": "Expire {time}.",
+    "expires_at": "Expire {{time}}.",
     "copy": "Copier le lien",
     "copied": "Lien copié",
     "copy_failed": "Copie impossible. Sélectionnez le lien ci-dessus.",
@@ -965,7 +965,17 @@
     "visit_note": "Le client voit le jour et les frais avant d'accepter. Rien n'est facturé avant.",
     "visit_send": "Proposer la visite",
     "visit_sent": "Visite proposée",
-    "visit_failed": "L'envoi a échoué. Réessayez."
+    "visit_failed": "L'envoi a échoué. Réessayez.",
+    "visits_heading": "Visites que vous avez prévues",
+    "visit_close": "Clôturer cette visite",
+    "visit_close_for": "Clôture de la visite pour « {{title}} ».",
+    "visit_outcome": "Qu'avez-vous constaté ?",
+    "visit_outcome_ph": "Le problème, ce qu'il faut, tout ce qui change le prix.",
+    "visit_outcome_hint": "C'est sur cette base que votre devis sera défendu plus tard.",
+    "visit_close_note": "Clôturer la visite n'envoie pas de prix. Chiffrez la mission depuis l'opportunité quand vous serez prêt.",
+    "visit_close_confirm": "Clôturer la visite",
+    "visit_closed": "Visite clôturée",
+    "visit_close_failed": "La visite n'a pas pu être clôturée. Réessayez."
   },
   "payout": {
     "paid": "Versé",
@@ -1045,7 +1055,7 @@
     "warranty_offer": "Proposer une garantie",
     "warranty_hint": "Une garantie n'existe que sur la plateforme. C'est la meilleure raison qu'un client a de repasser par elle pour vous retrouver.",
     "warranty_length": "Couvert pendant combien de temps ?",
-    "warranty_days": "{days} jours",
+    "warranty_days": "{{days}} jours",
     "warranty_terms": "Que couvre-t-elle ? (facultatif)",
     "warranty_terms_ph": "Pièces et main-d'œuvre sur le travail effectué. Ne couvre pas les dommages dus à un mauvais usage.",
     "warranty_terms_hint": "Le client lit ce texte tel que vous l'écrivez.",
@@ -1257,7 +1267,7 @@
   "refund": {
     "action": "Rembourser ce qui est encore retenu",
     "confirm_title": "Rembourser le solde retenu ?",
-    "confirm_body": "{amount} {currency} vous sont restitués. Le travail déjà approuvé reste payé, et plus rien ne pourra être libéré pour cette mission.",
+    "confirm_body": "{{amount}} {{currency}} vous sont restitués. Le travail déjà approuvé reste payé, et plus rien ne pourra être libéré pour cette mission.",
     "confirm_action": "Rembourser",
     "done": "Remboursé",
     "failed": "Le remboursement a échoué. Réessayez."
@@ -1357,7 +1367,7 @@
     "done": "Vous avez donné votre avis sur ce travail."
   },
   "rebook": {
-    "action": "Reprendre avec {name}",
+    "action": "Reprendre avec {{name}}",
     "done": "Demande envoyée",
     "failed": "L'envoi a échoué. Réessayez."
   },

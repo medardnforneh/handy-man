@@ -29,6 +29,11 @@ final class SiteVisitResource extends JsonResource
             'completed_at' => $this->completed_at?->toIso8601String(),
             'outcome_notes' => $this->outcome_notes,
             'resulting_quotation_id' => $this->resulting_quotation_id,
+            // Only when asked for (the provider's own list). A bare visit is an id and a timestamp;
+            // the job is what tells them which house they said they would go to. JobResource decides
+            // its own disclosure — a pre-engagement provider gets the coarse quarter and city, never
+            // the exact address — so embedding it adds no new PII judgement here.
+            'job' => $this->whenLoaded('job', fn () => JobResource::make($this->job)),
         ];
     }
 }

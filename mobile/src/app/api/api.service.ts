@@ -1010,16 +1010,40 @@ export class ApiService {
     return data.data;
   }
 
-  // `POST /site-visits/{siteVisit}/complete` is NOT wrapped here, deliberately, and the omission is
-  // load-bearing: a method nobody calls would satisfy `npm run check:uncalled` and hide the fact
-  // that the endpoint is still unreachable, which is worse than the gap it papers over.
-  //
-  // The blocker is not the button. A site visit is never narrated and has no read endpoint, so its
-  // id survives only inside the session that scheduled it. Warranties had the same problem and were
-  // fixed by narrating into the thread — that fix is not safe here as-is, because a site visit
-  // happens PRE-engagement and a conversation enrols both parties, which would disclose a provider
-  // the customer is not yet meant to be able to identify (P2-03). It needs a provider-scoped read,
-  // or a narration that discloses nothing.
+  /**
+   * The provider's own site visits (P2.5-04), scheduled ones first.
+   *
+   * This read is what makes completing a visit possible at all. A visit is narrated into no thread
+   * and listed nowhere else, so before it existed the id lived only for the length of the session
+   * that scheduled it — a provider who booked a visit on Monday could not close it on Tuesday.
+   */
+  async providerSiteVisits() {
+    const { data, error } = await api.GET('/provider/site-visits');
+    if (error) {
+      throw error;
+    }
+    return data.data;
+  }
+
+  /**
+   * Close a site visit (P2.5-04) — what was found, and the quote it produced if there is one.
+   *
+   * Linking the quotation is what makes a chargeable visit's fee creditable against it on
+   * acceptance, so the customer is not billed twice for the same trip.
+   */
+  async completeSiteVisit(siteVisitId: string, outcomeNotes?: string, resultingQuotationId?: string) {
+    const { data, error } = await api.POST('/site-visits/{siteVisit}/complete', {
+      params: { path: { siteVisit: siteVisitId }, header: { 'Idempotency-Key': uuid() } },
+      body: {
+        outcome_notes: outcomeNotes ?? null,
+        resulting_quotation_id: resultingQuotationId ?? null,
+      },
+    });
+    if (error) {
+      throw error;
+    }
+    return data.data;
+  }
 
   /**
    * Issue a warranty on a finished engagement (P6-11). Provider-only, one per engagement.
