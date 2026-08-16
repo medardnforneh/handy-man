@@ -115,7 +115,8 @@
     "hero_card_button": "Approve and release",
     "hero_card_initials": "AN",
     "nav_menu": "Menu",
-    "no_providers_body": "Post the job anyway — professionals in nearby trades can still quote for it, and new ones join every week."
+    "no_providers_body": "Post the job anyway — professionals in nearby trades can still quote for it, and new ones join every week.",
+    "theme_toggle": "Switch appearance"
   },
   "nav": {
     "customer": "Find help",

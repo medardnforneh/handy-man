@@ -1,5 +1,6 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { ApiService, VerificationDocKind } from '../api/api.service';
+import { SessionScope } from '../core/session-scope.service';
 import { Accent } from '../customer/customer.models';
 import { currentPosition, GeoFix } from '../core/geolocation';
 import { uuid } from '../core/uuid';
@@ -120,6 +121,7 @@ const EMPTY_WALLET: ProviderWallet = {
 @Injectable({ providedIn: 'root' })
 export class ProviderService {
   private readonly api = inject(ApiService);
+  private readonly session = inject(SessionScope);
   private readonly locales = inject(LocaleService);
   private readonly queue = inject(WriteQueue);
   private readonly cache = inject(OfflineCache);
@@ -143,6 +145,19 @@ export class ProviderService {
    * Screens read the SIGNAL, not a snapshot, so the real profile replaces this when it lands.
    */
   readonly identity = signal<ProviderIdentity>(EMPTY_IDENTITY);
+
+  constructor() {
+    // This service outlives a session — it is a root singleton, and the web build never reloads the
+    // page between logins. Without dropping this, the next person to sign in on the same device
+    // inherits the previous provider's identity, verification tier and rating: the one class of
+    // placeholder this codebase refuses to show, and here it would be someone else's real data
+    // rather than a fixture.
+    this.session.register(() => {
+      this.identity.set(EMPTY_IDENTITY);
+      this.realLeads.clear();
+      this.realWork.clear();
+    });
+  }
 
   /**
    * The caller's own provider profile (GET /provider/profile). A 404 means they haven't created one

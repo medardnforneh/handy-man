@@ -1,6 +1,7 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import { ApiService, DisputeCategory } from '../api/api.service';
+import { SessionScope } from '../core/session-scope.service';
 import { LocaleService } from '../core/locale.service';
 import { OfflineCache } from '../core/offline/offline-cache.service';
 import { WriteOutcome, WriteQueue } from '../core/offline/write-queue.service';
@@ -253,6 +254,7 @@ const CATEGORY_ICONS: Record<string, string> = {
 @Injectable({ providedIn: 'root' })
 export class CustomerService {
   private readonly api = inject(ApiService);
+  private readonly session = inject(SessionScope);
   private readonly locales = inject(LocaleService);
   /** For the few labels the SERVER names as a key and the client has to say in words. */
   private readonly translate = inject(TranslateService);
@@ -282,6 +284,18 @@ export class CustomerService {
   ]);
 
   constructor() {
+    // Everything below belongs to whoever is signed in. This service is a root singleton and the
+    // web build never reloads the page between sessions, so without this the next person to log in
+    // on the same device sees the last one's name, phone, jobs and saved addresses until each
+    // screen's own fetch replaces them (P5-02 clears the same data from disk for this reason).
+    this.session.register(() => {
+      this.me.set({ id: '', name: '', initials: '', phone: '' });
+      this.jobs.set([]);
+      this.jobsLoaded.set(false);
+      this.addresses.set([]);
+      // Categories are the public taxonomy, not this person's data, so they stay.
+    });
+
     void this.loadMe();
     void this.loadCategories();
     void this.loadJobs();

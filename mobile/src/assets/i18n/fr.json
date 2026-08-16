@@ -115,7 +115,8 @@
     "hero_card_button": "Valider et libérer",
     "hero_card_initials": "AN",
     "nav_menu": "Menu",
-    "no_providers_body": "Publiez quand même votre demande — des professionnels de métiers proches peuvent y répondre, et de nouveaux arrivent chaque semaine."
+    "no_providers_body": "Publiez quand même votre demande — des professionnels de métiers proches peuvent y répondre, et de nouveaux arrivent chaque semaine.",
+    "theme_toggle": "Changer l'apparence"
   },
   "nav": {
     "customer": "Trouver de l'aide",

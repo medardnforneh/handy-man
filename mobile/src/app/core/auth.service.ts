@@ -8,6 +8,7 @@ import { devicePlatform, loadDeviceId } from './device';
 import { OfflineCache } from './offline/offline-cache.service';
 import { WriteQueue } from './offline/write-queue.service';
 import { RealtimeService } from './realtime.service';
+import { SessionScope } from './session-scope.service';
 import { secureStore } from './secure-store';
 import { uuid } from './uuid';
 
@@ -40,6 +41,7 @@ export class AuthService {
   private readonly offline = inject(OfflineCache);
   private readonly queue = inject(WriteQueue);
   private readonly api = inject(ApiService);
+  private readonly session = inject(SessionScope);
 
   readonly authed = signal(false);
 
@@ -220,6 +222,12 @@ export class AuthService {
     // is far worse than losing an unsent message.
     await this.offline.clear();
     await this.queue.clear();
+    // And the copies held in MEMORY. Clearing only the cache left the feature services — root
+    // singletons, on a web build that never reloads between logins — still holding the last
+    // person's name, phone, saved addresses, jobs and provider identity, which then sat on screen
+    // for the next person until each screen's own fetch happened to replace them. Same reasoning as
+    // the cache above, same shared phone.
+    this.session.clear();
     // Close the socket too: it was authorized with the token we just dropped, so leaving it open
     // would keep streaming this user's threads into the next session.
     this.realtime.disconnect();
