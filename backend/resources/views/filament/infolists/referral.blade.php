@@ -76,7 +76,7 @@
                      reversed: a flagged referral is simply not auto-rewarded until a human looks. --}}
                 <p class="hm-sub" style="margin-top:14px">{{ __('admin.referral.flag_meaning') }}</p>
             @else
-                <p class="hm-sub" style="margin:0">{{ __('admin.referral.not_flagged') }}</p>
+                <p class="hm-note">{{ __('admin.referral.not_flagged') }}</p>
             @endif
         </section>
 

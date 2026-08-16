@@ -8,6 +8,7 @@ use Database\Factories\PartyFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Carbon;
 
@@ -84,6 +85,20 @@ final class Party extends Model
     public function providerProfile(): HasOne
     {
         return $this->hasOne(ProviderProfile::class);
+    }
+
+    /**
+     * The jobs this party has posted AS THE CUSTOMER.
+     *
+     * Which is also what makes someone a customer: there is no customer profile to have, the way a
+     * provider has one. A party becomes a customer by asking for work, so the jobs are both the
+     * definition and the whole record.
+     *
+     * @return HasMany<Job, $this>
+     */
+    public function jobs(): HasMany
+    {
+        return $this->hasMany(Job::class, 'customer_party_id');
     }
 
     public function isIndividual(): bool

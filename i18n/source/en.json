@@ -1201,5 +1201,14 @@
   "pro.visit_close_confirm": "Close visit",
   "pro.visit_closed": "Visit closed",
   "pro.visit_close_failed": "The visit could not be closed. Try again.",
-  "public.theme_toggle": "Switch appearance"
+  "public.theme_toggle": "Switch appearance",
+  "admin.party.status_label": "Status",
+  "admin.customers.singular": "Customer",
+  "admin.customers.plural": "Customers",
+  "admin.customers.jobs": "Jobs posted",
+  "admin.customers.spend": "Agreed spend",
+  "admin.customers.last_job": "Last job",
+  "admin.customers.also_provider": "Also a provider",
+  "admin.customers.also_provider_only": "Also providers",
+  "admin.customers.disputed_only": "With an open dispute"
 }

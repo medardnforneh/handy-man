@@ -91,6 +91,16 @@
        safety-alert note) the heading was inset and the text under it ran flush to the card's edge.
        It is the same 16px as the heading above it; `max-width` keeps the measure readable. */
     .hm-dash .hm-body{ margin:0; padding:14px 16px; font-size:13.5px; line-height:1.65; color:var(--hm-text); max-width:64ch; white-space:pre-wrap; overflow-wrap:anywhere; }
+
+    /* A short explanatory line standing in for a section's content — "no provider profile", "not
+       flagged", "no consents recorded". The SAME omission `.hm-body` was added for, one card down:
+       these were written as `<p class="hm-sub" style="margin:0">`, which kills the browser's margin
+       and supplies no padding, so the sentence sat flush against the card's left edge under a
+       heading that was properly inset. Five of them, in three files.
+
+       It takes the same 14px/16px as `.hm-phead` above it, so the text lines up with the heading it
+       belongs to rather than with the card. */
+    .hm-dash .hm-note{ margin:0; padding:14px 16px; font-size:12.5px; line-height:1.6; color:var(--hm-muted); }
     .hm-dash .hm-linkcard{ display:flex; align-items:center; justify-content:space-between; gap:12px;
         padding:14px 16px; border-radius:var(--hm-radius-lg, 14px); border:1px solid var(--hm-border);
         background:var(--hm-raised); color:var(--hm-brand); font-size:13px; font-weight:600; text-decoration:none; }
@@ -164,7 +174,10 @@
         .hm-dash .hm-head .hm-title{ font-size:17px; }
         .hm-dash .hm-phead{ padding:12px 14px; }
         .hm-dash tbody td, .hm-dash thead th{ padding:10px 12px; }
-        .hm-dash .hm-mile, .hm-dash .hm-exc, .hm-dash .hm-metric, .hm-dash .hm-ledger, .hm-dash .hm-kv{ padding-left:14px; padding-right:14px; }
+        /* `.hm-note` and `.hm-body` belong in this list for the same reason as the rest: the heading
+           above them narrows to 14px here, and anything left at 16px stops lining up with it. */
+        .hm-dash .hm-mile, .hm-dash .hm-exc, .hm-dash .hm-metric, .hm-dash .hm-ledger, .hm-dash .hm-kv,
+        .hm-dash .hm-note, .hm-dash .hm-body{ padding-left:14px; padding-right:14px; }
     }
     @media (max-width:380px){
         .hm-dash .hm-grid{ gap:16px; }

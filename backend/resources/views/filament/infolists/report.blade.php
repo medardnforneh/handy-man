@@ -101,7 +101,7 @@
             {{-- Said out loud on the page: a report is a signal for a human, never an automatic
                  penalty. Staff should not assume the platform has already acted. --}}
             <div class="hm-card" style="padding:14px 16px">
-                <p class="hm-sub" style="margin:0">{{ __('admin.report.never_auto_penalises') }}</p>
+                <p class="hm-note">{{ __('admin.report.never_auto_penalises') }}</p>
             </div>
         </div>
     </div>

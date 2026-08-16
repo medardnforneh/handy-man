@@ -1201,5 +1201,14 @@
   "pro.visit_close_confirm": "Clôturer la visite",
   "pro.visit_closed": "Visite clôturée",
   "pro.visit_close_failed": "La visite n'a pas pu être clôturée. Réessayez.",
-  "public.theme_toggle": "Changer l'apparence"
+  "public.theme_toggle": "Changer l'apparence",
+  "admin.party.status_label": "Statut",
+  "admin.customers.singular": "Client",
+  "admin.customers.plural": "Clients",
+  "admin.customers.jobs": "Missions publiées",
+  "admin.customers.spend": "Montant convenu",
+  "admin.customers.last_job": "Dernière mission",
+  "admin.customers.also_provider": "Aussi prestataire",
+  "admin.customers.also_provider_only": "Également prestataires",
+  "admin.customers.disputed_only": "Avec un litige ouvert"
 }

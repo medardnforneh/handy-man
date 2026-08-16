@@ -59,7 +59,7 @@
         {{-- The row survives so ledger FKs stay intact; nothing below it is personal data any more,
              and the key that could decrypt it is gone. Say that rather than showing blank fields. --}}
         <div class="hm-card" style="padding:14px 16px">
-            <p class="hm-sub" style="margin:0">{{ __('admin.party.erased_explainer') }}</p>
+            <p class="hm-note">{{ __('admin.party.erased_explainer') }}</p>
         </div>
     @endif
 
@@ -93,7 +93,7 @@
                     <div class="r"><span class="l">{{ __('admin.party.headline') }}</span><span class="val">{{ $profile->headline ?? '—' }}</span></div>
                 </div>
             @else
-                <p class="hm-sub" style="margin:0">{{ __('admin.party.no_provider_profile') }}</p>
+                <p class="hm-note">{{ __('admin.party.no_provider_profile') }}</p>
             @endif
         </section>
 
@@ -111,7 +111,7 @@
                         </span>
                     </div>
                 @empty
-                    <p class="hm-sub" style="margin:0">{{ __('admin.party.no_consents') }}</p>
+                    <p class="hm-note">{{ __('admin.party.no_consents') }}</p>
                 @endforelse
             </div>
         </section>
