@@ -116,11 +116,17 @@ const authMiddleware: Middleware = {
   },
 
   // On a 401, rotate the access token (P1-03 refresh) once and replay the original request. The
-  // refresh/otp endpoints are exempt so a failing refresh or verify can't loop.
+  // auth endpoints are exempt so a failing refresh, verify or sign-out can't loop.
   async onResponse({ request, response, id }) {
     const original = inFlight.get(id);
     inFlight.delete(id);
-    const isAuthEntry = request.url.includes('/auth/refresh') || request.url.includes('/auth/otp');
+    // `/auth/logout` belongs on this list for a reason that is easy to miss: refreshing a token in
+    // order to throw it away is nonsense, and a 401 there is the desired end state anyway — the
+    // server has already stopped honouring the session. Left off the list, signing out with an
+    // expired token waited on a refresh that was itself waiting on the sign-out.
+    const isAuthEntry = request.url.includes('/auth/refresh')
+      || request.url.includes('/auth/otp')
+      || request.url.includes('/auth/logout');
     if (response.status !== 401 || original === undefined || isAuthEntry) {
       return undefined;
     }

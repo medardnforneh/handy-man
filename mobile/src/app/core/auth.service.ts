@@ -1,4 +1,5 @@
 import { Injectable, inject, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import { Preferences } from '@capacitor/preferences';
 import { environment } from '../../environments/environment';
 import { ApiService } from '../api/api.service';
@@ -42,6 +43,7 @@ export class AuthService {
   private readonly queue = inject(WriteQueue);
   private readonly api = inject(ApiService);
   private readonly session = inject(SessionScope);
+  private readonly router = inject(Router);
 
   readonly authed = signal(false);
 
@@ -139,32 +141,59 @@ export class AuthService {
   /**
    * Rotate the access token on a 401 (P1-03). Deduped so racing 401s share one refresh — the backend
    * detects refresh-token reuse and revokes the family, so the latest token must be used exactly once.
-   * A failed refresh logs out (the session is truly gone).
+   *
+   * NOTHING inside may make an API call other than the refresh itself. This used to call `logout()`
+   * when the refresh was rejected, and `logout()` calls `POST /auth/logout`, which 401s with the very
+   * token that just failed — so the middleware asked for a refresh, got back THIS still-pending
+   * promise, and waited on it while it waited on the logout. One expired session deadlocked the whole
+   * app: every screen span forever, and the Log out button did nothing because it was parked behind
+   * the same promise. Hence `endSessionLocally`, which touches only the device.
    */
   private refreshAccessToken(): Promise<string | null> {
-    this.refreshing ??= (async () => {
-      try {
-        const refresh = await secureStore.get(REFRESH_KEY);
-        if (refresh === null) {
-          return null;
-        }
-        const { data, error } = await api.POST('/auth/refresh', {
-          body: { refresh_token: refresh },
-          params: { header: { 'Idempotency-Key': uuid() } },
-        });
-        if (error !== undefined || data === undefined) {
-          await this.logout();
-          return null;
-        }
-        await this.storeTokens(data.access_token, data.refresh_token);
-        return data.access_token;
-      } catch {
-        return null; // network error — keep the session, let the caller see the 401
-      } finally {
-        this.refreshing = null;
-      }
-    })();
+    this.refreshing ??= this.rotate().finally(() => {
+      this.refreshing = null;
+    });
     return this.refreshing;
+  }
+
+  private async rotate(): Promise<string | null> {
+    try {
+      const refresh = await secureStore.get(REFRESH_KEY);
+      if (refresh === null) {
+        // No refresh token is not an expired session — it is the state of anyone who has not signed
+        // in yet, including someone halfway through the OTP screens. Treating it as an expiry threw
+        // them off the verify page mid-login, because a stray 401 anywhere in the app would have
+        // announced the end of a session that had never begun.
+        return null;
+      }
+      const { data, error } = await api.POST('/auth/refresh', {
+        body: { refresh_token: refresh },
+        params: { header: { 'Idempotency-Key': uuid() } },
+      });
+      if (error !== undefined || data === undefined) {
+        // The server has answered, and the answer is that this session is gone. Telling it again
+        // via /auth/logout would be a second call it has already refused.
+        await this.sessionExpired();
+        return null;
+      }
+      await this.storeTokens(data.access_token, data.refresh_token);
+      return data.access_token;
+    } catch {
+      return null; // network error — keep the session, let the caller see the 401
+    }
+  }
+
+  /**
+   * The session ended without the user asking: the refresh token was rejected, or there is none.
+   *
+   * Sending them to Welcome is the point. Clearing `authed` alone left them standing inside the app
+   * shell with no session — the route guard had already run and does not run again — so the tabs sat
+   * there spinning against an API that would 401 every request, which reads as a broken app rather
+   * than as a finished session. The guard cannot catch this; only the failure itself knows.
+   */
+  private async sessionExpired(): Promise<void> {
+    await this.endSessionLocally();
+    void this.router.navigateByUrl('/welcome', { replaceUrl: true });
   }
 
   /**
@@ -211,6 +240,14 @@ export class AuthService {
       // No network / already-expired token. The local teardown below still happens.
     }
 
+    await this.endSessionLocally();
+  }
+
+  /**
+   * Forget the session on THIS device. No API call — so it is safe to run from inside the 401 path,
+   * where anything that touches the network would re-enter the refresh it was called from.
+   */
+  private async endSessionLocally(): Promise<void> {
     this.authed.set(false);
     this.pendingPhone = '';
     tokenStore.set(null); // drop the bearer so no stale token rides the next request
