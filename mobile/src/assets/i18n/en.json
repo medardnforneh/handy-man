@@ -569,7 +569,33 @@
       "tier_hint": "Raised by approving a verification document, which records who approved what and when. This gates paid on-site work.",
       "rating": "Rating",
       "jobs_completed": "Jobs completed",
-      "derived_hint": "Recomputed from reviews and completed work. The column is a cache, never the source of truth."
+      "derived_hint": "Recomputed from reviews and completed work. The column is a cache, never the source of truth.",
+      "singular": "Provider",
+      "plural": "Providers",
+      "name": "Provider",
+      "joined": "joined",
+      "skills": "Trades",
+      "unrated": "Not yet rated",
+      "unrated_only": "Not yet rated",
+      "below_tier_2": "Cannot take paid on-site work",
+      "completed_total": "Jobs completed",
+      "completed_90d": ":n in the last 90 days",
+      "in_flight": "Work in flight",
+      "reviews_n": "from :n reviews",
+      "earned": "Released to them",
+      "reliability": "Reliability",
+      "on_time": "On time",
+      "too_few": "Too few to say (:n)",
+      "of_n": "of :n booked visits",
+      "repeat_rate": "Repeat customers",
+      "leakage": "Off-platform signal",
+      "leakage_flagged": "Worth a look",
+      "leakage_clear": "Nothing unusual",
+      "open_disputes": "Open disputes",
+      "verification": "Verification",
+      "no_documents": "No documents sent yet — this provider cannot pass tier 1.",
+      "listed_trades": "Listed trades",
+      "no_skills": "No trades listed. This provider cannot be matched to any request until one is added."
     },
     "trade": {
       "names": "Names and place in the taxonomy",
@@ -657,7 +683,8 @@
       "latest_per_purpose": "Current state per purpose",
       "granted": "Granted",
       "revoked": "Revoked",
-      "no_consents": "No consent recorded."
+      "no_consents": "No consent recorded.",
+      "status_label": "Status"
     },
     "audit": {
       "when": "When",
@@ -671,6 +698,56 @@
     },
     "verification": {
       "file_missing": "This document is no longer in storage. Nothing was shown and the attempt was logged."
+    },
+    "customers": {
+      "singular": "Customer",
+      "plural": "Customers",
+      "jobs": "Jobs posted",
+      "spend": "Agreed spend",
+      "last_job": "Last job",
+      "also_provider": "Also a provider",
+      "also_provider_only": "Also providers",
+      "disputed_only": "With an open dispute"
+    },
+    "staff": {
+      "singular": "Staff member",
+      "plural": "Staff access",
+      "roles": "Roles",
+      "you": "This is you",
+      "last_seen": "Last signed in",
+      "never": "Never",
+      "two_factor": "2FA",
+      "no_two_factor": "Without 2FA",
+      "role": {
+        "superadmin": "Superadmin",
+        "support": "Support",
+        "verifier": "Verifier",
+        "finance_admin": "Finance"
+      },
+      "role_hint": {
+        "superadmin": "Everything, including granting and revoking staff access on this page.",
+        "support": "Reads jobs, engagements and messages to answer people, and settles disputes.",
+        "verifier": "Opens identity documents and decides verification tiers. Every document opened is logged.",
+        "finance_admin": "Sees the money: escrow, payouts and reconciliation."
+      },
+      "change_roles": "Change roles",
+      "change_roles_for": "Roles for :name",
+      "change_roles_hint": "Takes effect the next time they load a page.",
+      "revoke": "Revoke access",
+      "revoke_for": "Revoke :name's staff access?",
+      "revoke_hint": "They lose this panel immediately. Their own account on the platform is untouched — they keep their jobs, messages and money.",
+      "grant": "Grant access",
+      "grant_hint": "No account is created here. Find someone who has already signed up, and give them a role.",
+      "grant_confirm": "Grant access",
+      "who": "Person",
+      "who_prompt": "Search by phone or name",
+      "who_none": "Nobody matches. They must sign up in the app first.",
+      "who_hint": "Only active accounts that are not already staff.",
+      "changed_toast": ":name's roles updated",
+      "revoked_toast": ":name no longer has staff access",
+      "error_self": "You cannot change your own access. Ask another superadmin.",
+      "error_last_superadmin": "This is the last superadmin. Grant the role to someone else first, or nobody will be able to manage access.",
+      "error_not_found": "That account is no longer available."
     }
   },
   "push": {

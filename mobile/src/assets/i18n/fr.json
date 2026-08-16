@@ -569,7 +569,33 @@
       "tier_hint": "Relevé en approuvant une pièce justificative, ce qui enregistre qui a approuvé quoi et quand. Ce niveau conditionne le travail rémunéré sur place.",
       "rating": "Note",
       "jobs_completed": "Interventions terminées",
-      "derived_hint": "Recalculé à partir des avis et des missions terminées. La colonne est un cache, jamais la source de vérité."
+      "derived_hint": "Recalculé à partir des avis et des missions terminées. La colonne est un cache, jamais la source de vérité.",
+      "singular": "Prestataire",
+      "plural": "Prestataires",
+      "name": "Prestataire",
+      "joined": "inscrit le",
+      "skills": "Métiers",
+      "unrated": "Pas encore noté",
+      "unrated_only": "Pas encore notés",
+      "below_tier_2": "Ne peut pas accepter de travail rémunéré sur place",
+      "completed_total": "Missions terminées",
+      "completed_90d": ":n sur les 90 derniers jours",
+      "in_flight": "Missions en cours",
+      "reviews_n": "sur :n avis",
+      "earned": "Versé au prestataire",
+      "reliability": "Fiabilité",
+      "on_time": "Ponctualité",
+      "too_few": "Trop peu de données (:n)",
+      "of_n": "sur :n visites planifiées",
+      "repeat_rate": "Clients fidèles",
+      "leakage": "Signal hors plateforme",
+      "leakage_flagged": "À examiner",
+      "leakage_clear": "Rien d'inhabituel",
+      "open_disputes": "Litiges ouverts",
+      "verification": "Vérification",
+      "no_documents": "Aucune pièce envoyée — ce prestataire ne peut pas dépasser le niveau 1.",
+      "listed_trades": "Métiers référencés",
+      "no_skills": "Aucun métier référencé. Ce prestataire ne peut être associé à aucune demande tant qu'il n'en ajoute pas."
     },
     "trade": {
       "names": "Noms et place dans la taxonomie",
@@ -657,7 +683,8 @@
       "latest_per_purpose": "État actuel par finalité",
       "granted": "Accordé",
       "revoked": "Révoqué",
-      "no_consents": "Aucun consentement enregistré."
+      "no_consents": "Aucun consentement enregistré.",
+      "status_label": "Statut"
     },
     "audit": {
       "when": "Quand",
@@ -671,6 +698,56 @@
     },
     "verification": {
       "file_missing": "Ce document n’est plus dans le stockage. Rien n’a été affiché et la tentative a été enregistrée."
+    },
+    "customers": {
+      "singular": "Client",
+      "plural": "Clients",
+      "jobs": "Missions publiées",
+      "spend": "Montant convenu",
+      "last_job": "Dernière mission",
+      "also_provider": "Aussi prestataire",
+      "also_provider_only": "Également prestataires",
+      "disputed_only": "Avec un litige ouvert"
+    },
+    "staff": {
+      "singular": "Membre du personnel",
+      "plural": "Accès du personnel",
+      "roles": "Rôles",
+      "you": "C'est vous",
+      "last_seen": "Dernière connexion",
+      "never": "Jamais",
+      "two_factor": "2FA",
+      "no_two_factor": "Sans 2FA",
+      "role": {
+        "superadmin": "Super-administrateur",
+        "support": "Support",
+        "verifier": "Vérificateur",
+        "finance_admin": "Finance"
+      },
+      "role_hint": {
+        "superadmin": "Tout, y compris accorder et retirer l'accès du personnel sur cette page.",
+        "support": "Consulte les demandes, les engagements et les messages pour répondre aux gens, et tranche les litiges.",
+        "verifier": "Ouvre les pièces d'identité et décide des niveaux de vérification. Chaque document ouvert est journalisé.",
+        "finance_admin": "Voit l'argent : séquestre, versements et rapprochement."
+      },
+      "change_roles": "Modifier les rôles",
+      "change_roles_for": "Rôles de :name",
+      "change_roles_hint": "Prend effet au prochain chargement de page de leur côté.",
+      "revoke": "Retirer l'accès",
+      "revoke_for": "Retirer l'accès du personnel à :name ?",
+      "revoke_hint": "Le panneau leur est immédiatement fermé. Leur compte sur la plateforme reste intact : ils gardent leurs demandes, leurs messages et leur argent.",
+      "grant": "Accorder l'accès",
+      "grant_hint": "Aucun compte n'est créé ici. Trouvez une personne déjà inscrite et donnez-lui un rôle.",
+      "grant_confirm": "Accorder l'accès",
+      "who": "Personne",
+      "who_prompt": "Rechercher par téléphone ou par nom",
+      "who_none": "Aucune correspondance. La personne doit d'abord s'inscrire dans l'application.",
+      "who_hint": "Uniquement les comptes actifs qui ne font pas déjà partie du personnel.",
+      "changed_toast": "Rôles de :name mis à jour",
+      "revoked_toast": ":name n'a plus accès au personnel",
+      "error_self": "Vous ne pouvez pas modifier votre propre accès. Demandez à un autre super-administrateur.",
+      "error_last_superadmin": "C'est le dernier super-administrateur. Accordez d'abord ce rôle à quelqu'un d'autre, sinon plus personne ne pourra gérer les accès.",
+      "error_not_found": "Ce compte n'est plus disponible."
     }
   },
   "push": {

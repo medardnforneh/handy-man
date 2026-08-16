@@ -8,8 +8,11 @@ use App\Domain\Engagements\Policies\EngagementPolicy;
 use App\Domain\Identity\Otp\LogOtpSender;
 use App\Domain\Identity\Otp\OtpSender;
 use App\Domain\Reference\Policies\NotePolicy;
+use App\Listeners\RecordLastLogin;
 use App\Models\Engagement;
 use App\Models\Note;
+use Illuminate\Auth\Events\Login;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
@@ -37,5 +40,8 @@ class AppServiceProvider extends ServiceProvider
         foreach (self::POLICIES as $model => $policy) {
             Gate::policy($model, $policy);
         }
+
+        // Session logins are the admin panel; the app signs in with tokens and stamps its own.
+        Event::listen(Login::class, RecordLastLogin::class);
     }
 }
