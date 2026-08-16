@@ -8,16 +8,16 @@ use Filament\Infolists\Components\ViewEntry;
 use Filament\Schemas\Schema;
 
 /**
- * The same detail screen the Parties resource renders, deliberately.
+ * How this customer has actually behaved — the counterpart of the provider stats page.
  *
- * That blade already answers the question this one would: it shows a party's activity as customer
- * AND as provider, side by side, because "a party is never 'a customer' or 'a provider' in this
- * product (doc 10)". Writing a customer-only version would mean two screens about one person, drifting
- * apart every time either is touched — and it would hide the provider half from staff who arrived
- * from this list, which is exactly the half they need when the same account is both.
+ * This began by rendering the Parties blade, on the reasoning that a party is never "a customer" or
+ * "a provider" in this product (doc 10) and one screen should show both halves. That was right about
+ * identity and wrong about work: the party screen answers "who is this", and staff opening a
+ * customer are asking "how have they been" — do they hire the providers they summon, do they pay,
+ * and do they fight. None of which a count of jobs posted can answer.
  *
- * What Customers adds over Parties is the LIST: who these people are, what they have spent, and
- * which of them have a dispute open. The detail of one of them is just the party.
+ * The two links at the foot keep what the shared screen gave for free: the provider half when the
+ * same account is both, and the full identity record with its consents.
  */
 final class CustomerInfolist
 {
@@ -25,7 +25,7 @@ final class CustomerInfolist
     {
         return $schema->components([
             ViewEntry::make('detail')
-                ->view('filament.infolists.party')
+                ->view('filament.infolists.customer')
                 ->columnSpanFull(),
         ]);
     }

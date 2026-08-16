@@ -148,6 +148,9 @@
     .hm-dash .hm-metric .hm-mk{ font-size:11px; color:var(--hm-muted); font-weight:600; text-transform:uppercase; letter-spacing:.05em; }
     .hm-dash .hm-metric .hm-mv{ font-size:22px; font-weight:700; letter-spacing:-.02em; margin-top:3px; }
     .hm-dash .hm-metric .hm-mv small{ font-size:12px; color:var(--hm-muted); font-weight:600; }
+    /* A second hint on one metric. Inline it would wrap mid-phrase against the first one and leave
+       that card taller than its neighbours, so it takes the line below instead. */
+    .hm-dash .hm-metric .hm-mv small.hm-under{ display:block; margin-top:2px; }
     .hm-dash .hm-mgrid{ display:grid; grid-template-columns:repeat(4,1fr); gap:16px; }
     .hm-dash .hm-tl{ display:flex; flex-direction:column; }
     .hm-dash .hm-mile{ display:flex; align-items:center; gap:14px; padding:12px 16px; border-bottom:1px solid var(--hm-border); }
