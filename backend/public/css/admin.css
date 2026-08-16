@@ -59,13 +59,37 @@
     color: var(--hm-color-brand-primary);
 }
 
-/* ---- topbar ---- */
+/* ---- topbar ----
+   The frosted bar, drawn on a PSEUDO-ELEMENT rather than on the bar itself.
+
+   `backdrop-filter` on an element makes it the containing block for every `position: fixed`
+   descendant. Filament anchors its dropdowns with Floating UI, which measures against the viewport
+   and then applies the result as `position: fixed` — so with the filter on `.fi-topbar-ctn`, those
+   viewport coordinates were resolved against the topbar instead. The profile menu opened with
+   `top: -125px`: off the top of the screen, which reads as a menu that does not open at all.
+
+   Moving the blur to `::before` keeps the effect and takes the topbar out of the containing-block
+   business, because the pseudo-element has no descendants to trap. The translucent background moves
+   with it: the filter samples what is painted BEHIND the pseudo, so leaving an opaque-ish background
+   on the parent would give it nothing but that background to blur.
+
+   Anything added here later — transform, filter, perspective, contain, will-change — has the same
+   effect on the same dropdowns. */
 .fi-topbar > nav,
 .fi-topbar-ctn {
-    background: color-mix(in srgb, var(--hm-color-surface-base) 82%, transparent);
+    background: transparent;
     border-bottom: 1px solid var(--hm-color-border-subtle);
-    backdrop-filter: saturate(1.4) blur(8px);
     box-shadow: none;
+}
+
+.fi-topbar-ctn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: color-mix(in srgb, var(--hm-color-surface-base) 82%, transparent);
+    backdrop-filter: saturate(1.4) blur(8px);
+    pointer-events: none;
 }
 
 /* ---- page ---- */
