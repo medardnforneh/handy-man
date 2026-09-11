@@ -11,6 +11,7 @@
   --color-content-inverse: var(--hm-color-text-onInverse);
   --color-edge: var(--hm-color-border-subtle);
   --color-edge-strong: var(--hm-color-border-strong);
+  --color-edge-inverse: var(--hm-color-border-onInverse);
   --color-brand: var(--hm-color-brand-primary);
   --color-brand-strong: var(--hm-color-brand-strong);
   --color-brand-tint: var(--hm-color-brand-tint);

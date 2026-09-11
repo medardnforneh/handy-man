@@ -13,17 +13,10 @@
          (doc 10) — there is no "sign up as a provider" fork, because the same person is routinely
          both, so the second CTA leads into the same product rather than a separate one.
 
-         The ground: a brand wash fading downward so the fold has a horizon rather than an edge,
-         the header's own tool mark held at four percent, and a hairline where the wash ends. The
-         mark sits top-right, on the same side as the radial, so the headline column stays clean —
-         behind the text it read as a smudge across the first line. Hidden below 48rem, where it
-         would fight the headline for the same pixels. --}}
-    <section class="relative isolate overflow-hidden border-b border-edge py-24
-                    bg-[radial-gradient(60rem_32rem_at_78%_-12%,color-mix(in_srgb,var(--hm-color-brand-primary)_16%,transparent),transparent_65%),linear-gradient(to_bottom,var(--hm-color-brand-tint),color-mix(in_srgb,var(--hm-color-brand-tint)_22%,transparent))]
-                    before:content-[''] before:absolute before:-z-10 before:-top-[20%] before:-right-[8%]
-                    before:size-[40rem] before:bg-current before:text-brand before:opacity-[0.045]
-                    before:[mask:var(--hm-mark)_no-repeat_center/contain] before:pointer-events-none
-                    max-md:before:hidden">
+         The ground is flat. It used to carry a brand wash and the tool mark at four percent; the
+         Modernist system decorates nothing — the fold is the 2px rule where this section ends, and
+         the accent is spent on the two doors, not on the sky behind them. --}}
+    <section class="border-b-2 border-edge-strong py-24">
         <div class="w-full max-w-6xl mx-auto px-6 grid gap-16 items-center lg:grid-cols-[1.05fr_0.95fr]">
             <div class="max-w-[44rem]">
                 <span class="inline-block text-xs font-bold uppercase tracking-[0.12em] text-brand">{{ __('public.hero_eyebrow') }}</span>
@@ -31,12 +24,12 @@
                 <p class="mt-4 text-[clamp(1.02rem,0.96rem+0.35vw,1.2rem)] text-content-muted">{{ __('public.hero_lede') }}</p>
 
                 <div class="flex flex-wrap gap-2 mt-6">
-                    <a class="inline-flex items-center justify-center gap-2 min-h-11 rounded-md border border-transparent bg-brand px-[1.15rem] py-3 text-[0.95rem] font-semibold text-brand-contrast no-underline shadow-sm transition hover:bg-brand-strong hover:-translate-y-px hover:shadow-md"
+                    <a class="inline-flex items-center justify-center gap-2 min-h-11 rounded-md border border-transparent bg-brand px-[1.15rem] py-3 text-[0.95rem] font-extrabold text-brand-contrast no-underline transition-colors hover:bg-brand-strong"
                        href="{{ route('services.index') }}">
                         {{ __('public.hero_cta_primary') }}
                         <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
                     </a>
-                    <a class="inline-flex items-center justify-center gap-2 min-h-11 rounded-md border border-edge bg-surface-raised px-[1.15rem] py-3 text-[0.95rem] font-semibold text-content no-underline transition hover:border-edge-strong hover:-translate-y-px"
+                    <a class="inline-flex items-center justify-center gap-2 min-h-11 rounded-md border border-edge-strong bg-transparent px-[1.15rem] py-3 text-[0.95rem] font-extrabold text-content no-underline transition-colors hover:bg-content/7"
                        href="#providers">{{ __('public.hero_cta_secondary') }}</a>
                 </div>
 
@@ -45,7 +38,7 @@
                     <ul class="flex flex-wrap gap-2 mt-2 list-none p-0 m-0">
                         @foreach ($popularTrades as $trade)
                             <li>
-                                <a class="inline-block rounded-pill border border-edge bg-surface-raised px-3.5 py-2 text-sm text-content no-underline transition-colors hover:border-brand hover:text-brand"
+                                <a class="inline-block bg-surface-raised px-3.5 py-2 text-sm text-content no-underline transition-colors hover:bg-surface-sunken"
                                    href="{{ route('services.show', ['slug' => $trade->slug]) }}">{{ $trade->name($locale) }}</a>
                             </li>
                         @endforeach
@@ -59,10 +52,10 @@
                  read out as a fake job. Hidden entirely on small screens — on a phone the copy and
                  the CTA are what matter, and a decorative panel would just push them down. --}}
             <div class="hidden lg:block" aria-hidden="true">
-                <div class="max-w-96 ms-auto rounded-lg border border-edge bg-surface-raised p-6 shadow-lg">
+                <div class="max-w-96 ms-auto bg-surface-raised p-6">
                     <div class="flex items-center justify-between gap-2">
                         <span class="text-sm font-bold">{{ __('public.hero_card_ref') }}</span>
-                        <span class="inline-flex items-center gap-1 rounded-pill bg-brand-tint px-2.5 py-1 text-xs font-semibold text-brand">{{ __('public.hero_card_status') }}</span>
+                        <span class="inline-flex items-center gap-1 bg-brand-tint px-2.5 py-1 text-xs font-semibold text-brand-strong">{{ __('public.hero_card_status') }}</span>
                     </div>
 
                     <div class="flex items-center gap-2 mt-4">
@@ -104,7 +97,7 @@
                         @endforeach
                     </div>
 
-                    <div class="mt-4 rounded-md bg-brand px-3 py-2.5 text-center text-[0.92rem] font-semibold text-brand-contrast">{{ __('public.hero_card_button') }}</div>
+                    <div class="mt-4 bg-brand px-3 py-2.5 text-[0.92rem] font-extrabold text-brand-contrast">{{ __('public.hero_card_button') }}</div>
                 </div>
             </div>
         </div>
@@ -114,7 +107,7 @@
          Four claims, each of which the platform actually implements. Nothing here is aspirational:
          escrow is the ledger, the tier is an approved ID document, the warranty spawns a real
          remedy job, and MoMo is the only rail we take money on. --}}
-    <section class="py-10 bg-brand-tint" id="trust">
+    <section class="border-b-2 border-edge-strong py-10" id="trust">
         <div class="w-full max-w-6xl mx-auto px-6">
             <div class="grid gap-4 grid-cols-[repeat(auto-fit,minmax(min(100%,13rem),1fr))]">
                 @foreach ([
@@ -123,7 +116,7 @@
                     ['refresh', 'public.trust_warranty_title', 'public.trust_warranty_body'],
                     ['phone', 'public.trust_momo_title', 'public.trust_momo_body'],
                 ] as [$icon, $title, $body])
-                    <div class="space-y-2">
+                    <div class="space-y-2 border-s-2 border-edge-strong ps-4">
                         <span class="grid place-items-center shrink-0 size-10 rounded-md bg-brand-tint text-brand [&_svg]:size-5" aria-hidden="true">
                             @include('public.partials.icon', ['name' => $icon])
                         </span>
@@ -136,9 +129,9 @@
     </section>
 
     {{-- ── How it works ─────────────────────────────────────────────────────────────────────── --}}
-    <section class="py-24" id="how">
+    <section class="border-b-2 border-edge-strong py-24" id="how">
         <div class="w-full max-w-6xl mx-auto px-6">
-            <div class="max-w-[44rem] mx-auto text-center">
+            <div class="max-w-[44rem]">
                 <span class="inline-block text-xs font-bold uppercase tracking-[0.12em] text-brand">{{ __('public.how_eyebrow') }}</span>
                 <h2 class="mt-2 text-[clamp(1.55rem,1.15rem+1.7vw,2.4rem)] font-extrabold leading-[1.15] tracking-[-0.025em]">{{ __('public.how_title') }}</h2>
                 <p class="mt-2 text-[clamp(1.02rem,0.96rem+0.35vw,1.2rem)] text-content-muted">{{ __('public.how_lede') }}</p>
@@ -146,15 +139,15 @@
 
             <ol class="grid gap-4 grid-cols-[repeat(auto-fit,minmax(min(100%,16rem),1fr))] list-none mt-10 p-0">
                 @foreach (['describe', 'compare', 'pay'] as $i => $step)
-                    <li class="space-y-2 rounded-lg border border-edge bg-surface-raised p-6">
-                        <span class="inline-flex items-center gap-1 rounded-pill bg-brand-tint px-2.5 py-1 text-xs font-semibold text-brand">{{ __('public.how_step', ['n' => $i + 1]) }}</span>
+                    <li class="space-y-2 bg-surface-raised p-6">
+                        <span class="inline-flex items-center gap-1 bg-brand-tint px-2.5 py-1 text-xs font-semibold text-brand-strong">{{ __('public.how_step', ['n' => $i + 1]) }}</span>
                         <h3 class="text-[clamp(1.05rem,0.95rem+0.4vw,1.2rem)] font-extrabold leading-tight tracking-[-0.025em]">{{ __('public.how_'.$step.'_title') }}</h3>
                         <p class="m-0 text-sm text-content-muted">{{ __('public.how_'.$step.'_body') }}</p>
                     </li>
                 @endforeach
             </ol>
 
-            <p class="mt-6 text-center text-sm text-content-muted">{{ __('public.how_remote_note') }}</p>
+            <p class="mt-6 text-sm text-content-muted">{{ __('public.how_remote_note') }}</p>
         </div>
     </section>
 
@@ -170,13 +163,13 @@
                         <span class="inline-block text-xs font-bold uppercase tracking-[0.12em] text-brand">{{ __('public.trades_eyebrow') }}</span>
                         <h2 class="mt-2 text-[clamp(1.55rem,1.15rem+1.7vw,2.4rem)] font-extrabold leading-[1.15] tracking-[-0.025em]">{{ __('public.trades_title') }}</h2>
                     </div>
-                    <a class="inline-flex items-center justify-center gap-2 min-h-11 rounded-md border border-edge bg-surface-raised px-[1.15rem] py-3 text-[0.95rem] font-semibold text-content no-underline transition hover:border-edge-strong hover:-translate-y-px"
+                    <a class="inline-flex items-center justify-center gap-2 min-h-11 rounded-md border border-edge-strong bg-transparent px-[1.15rem] py-3 text-[0.95rem] font-extrabold text-content no-underline transition-colors hover:bg-content/7"
                        href="{{ route('services.index') }}">{{ __('public.all_services') }}</a>
                 </div>
 
                 <div class="grid gap-4 mt-6 grid-cols-[repeat(auto-fit,minmax(min(100%,13rem),1fr))]">
                     @foreach ($categories as $category)
-                        <a class="block space-y-2 rounded-lg border border-edge bg-surface-raised p-6 text-inherit no-underline transition hover:-translate-y-0.5 hover:border-brand hover:shadow-md"
+                        <a class="block space-y-2 bg-surface-raised p-6 text-inherit no-underline transition-colors hover:bg-surface-sunken"
                            href="{{ route('services.show', ['slug' => $category->slug]) }}">
                             {{-- The slug doubles as the icon name; an unknown trade falls back to
                                  the generic tool rather than rendering nothing. --}}
@@ -204,7 +197,7 @@
                     <h2 class="mt-2 text-[clamp(1.55rem,1.15rem+1.7vw,2.4rem)] font-extrabold leading-[1.15] tracking-[-0.025em] text-content-inverse">{{ __('public.pro_title') }}</h2>
                     <p class="mt-4 text-[clamp(1.02rem,0.96rem+0.35vw,1.2rem)] text-content-inverse/70">{{ __('public.pro_lede') }}</p>
                     <div class="flex flex-wrap gap-2 mt-6">
-                        <a class="inline-flex items-center justify-center gap-2 min-h-11 rounded-md border border-transparent bg-surface-raised px-[1.15rem] py-3 text-[0.95rem] font-semibold text-content no-underline transition hover:-translate-y-px hover:shadow-md"
+                        <a class="inline-flex items-center justify-center gap-2 min-h-11 rounded-md border border-transparent bg-surface-raised px-[1.15rem] py-3 text-[0.95rem] font-extrabold text-content no-underline transition-colors hover:bg-surface-sunken"
                            href="{{ route('services.index') }}">{{ __('public.pro_cta') }}</a>
                     </div>
                 </div>
@@ -213,7 +206,7 @@
                     @foreach (['leads', 'paid', 'cash', 'tools'] as $benefit)
                         {{-- Transparent on the inverted band: a raised white card here would read as
                              four holes punched in the section. --}}
-                        <div class="flex items-start gap-4 rounded-lg border border-white/15 p-6">
+                        <div class="flex items-start gap-4 border-s-2 border-edge-inverse ps-5 py-1">
                             <span class="grid place-items-center shrink-0 size-10 rounded-md bg-brand-tint text-brand [&_svg]:size-5" aria-hidden="true">
                                 @include('public.partials.icon', ['name' => 'check'])
                             </span>
@@ -233,9 +226,9 @@
          built: panic alerts reach staff and emergency contacts server-side, check-in is recorded
          with a timestamp and a point, the share link expires, and a dispute is decided by a person
          whose name is on the adjustment. --}}
-    <section class="py-24">
+    <section class="border-b-2 border-edge-strong py-24">
         <div class="w-full max-w-6xl mx-auto px-6">
-            <div class="max-w-[44rem] mx-auto text-center">
+            <div class="max-w-[44rem]">
                 <span class="inline-block text-xs font-bold uppercase tracking-[0.12em] text-brand">{{ __('public.safety_eyebrow') }}</span>
                 <h2 class="mt-2 text-[clamp(1.55rem,1.15rem+1.7vw,2.4rem)] font-extrabold leading-[1.15] tracking-[-0.025em]">{{ __('public.safety_title') }}</h2>
                 <p class="mt-2 text-[clamp(1.02rem,0.96rem+0.35vw,1.2rem)] text-content-muted">{{ __('public.safety_lede') }}</p>
@@ -248,7 +241,7 @@
                     ['share', 'share'],
                     ['scale', 'dispute'],
                 ] as [$icon, $item])
-                    <div class="space-y-2 rounded-lg border border-edge bg-surface-raised p-6">
+                    <div class="space-y-2 bg-surface-raised p-6">
                         <span class="grid place-items-center shrink-0 size-10 rounded-md bg-brand-tint text-brand [&_svg]:size-5" aria-hidden="true">
                             @include('public.partials.icon', ['name' => $icon])
                         </span>
@@ -265,14 +258,14 @@
          happens to the money, and what recourse exists. Plain <details> so it works without JS. --}}
     <section class="py-10" id="faq">
         <div class="w-full max-w-6xl mx-auto px-6">
-            <div class="max-w-[44rem] mx-auto text-center">
+            <div class="max-w-[44rem]">
                 <span class="inline-block text-xs font-bold uppercase tracking-[0.12em] text-brand">{{ __('public.faq_eyebrow') }}</span>
                 <h2 class="mt-2 text-[clamp(1.55rem,1.15rem+1.7vw,2.4rem)] font-extrabold leading-[1.15] tracking-[-0.025em]">{{ __('public.faq_title') }}</h2>
             </div>
 
-            <div class="max-w-[44rem] mx-auto mt-10 space-y-4">
+            <div class="max-w-[44rem] mt-10 space-y-4">
                 @foreach (['cost', 'money', 'unhappy', 'cash', 'remote'] as $q)
-                    <details class="rounded-lg border border-edge bg-surface-raised p-6">
+                    <details class="bg-surface-raised p-6">
                         <summary class="cursor-pointer font-semibold">{{ __('public.faq_'.$q.'_q') }}</summary>
                         <p class="mt-2 text-sm text-content-muted">{{ __('public.faq_'.$q.'_a') }}</p>
                     </details>
@@ -281,14 +274,17 @@
         </div>
     </section>
 
-    {{-- ── Closing CTA ───────────────────────────────────────────────────────────────────────── --}}
-    <section class="py-10">
+    {{-- ── Closing CTA ───────────────────────────────────────────────────────────────────────
+         The poster statement. The system keeps the accent for the primary action and small
+         emphasis everywhere else; the one place it runs as a whole field is here, the closing
+         banner, where the type stays display-grade and the red carries the page out. --}}
+    <section class="bg-brand text-brand-contrast">
         <div class="w-full max-w-6xl mx-auto px-6">
-            <div class="rounded-lg border border-edge bg-surface-raised px-6 py-16 text-center">
-                <h2 class="text-[clamp(1.55rem,1.15rem+1.7vw,2.4rem)] font-extrabold leading-[1.15] tracking-[-0.025em]">{{ __('public.cta_title') }}</h2>
-                <p class="max-w-[44rem] mx-auto mt-2 text-[clamp(1.02rem,0.96rem+0.35vw,1.2rem)] text-content-muted">{{ __('public.cta_lede') }}</p>
-                <div class="flex flex-wrap justify-center gap-2 mt-6">
-                    <a class="inline-flex items-center justify-center gap-2 min-h-11 rounded-md border border-transparent bg-brand px-[1.15rem] py-3 text-[0.95rem] font-semibold text-brand-contrast no-underline shadow-sm transition hover:bg-brand-strong hover:-translate-y-px hover:shadow-md"
+            <div class="py-20">
+                <h2 class="text-[clamp(1.9rem,1.2rem+2.6vw,3.4rem)] font-extrabold leading-[1.1] tracking-[-0.025em]">{{ __('public.cta_title') }}</h2>
+                <p class="max-w-[44rem] mt-3 text-[clamp(1.02rem,0.96rem+0.35vw,1.2rem)] text-brand-contrast/80">{{ __('public.cta_lede') }}</p>
+                <div class="flex flex-wrap gap-2 mt-8">
+                    <a class="inline-flex items-center justify-center gap-2 min-h-11 bg-brand-contrast px-[1.15rem] py-3 text-[0.95rem] font-extrabold text-brand no-underline transition-colors hover:bg-surface-sunken"
                        href="{{ route('services.index') }}">{{ __('public.cta_button') }}</a>
                 </div>
             </div>

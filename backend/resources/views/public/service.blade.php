@@ -26,7 +26,7 @@
                     {{ __('public.service_description', ['service' => $skill->name($locale)]) }}
                 </p>
                 <div class="flex flex-wrap gap-2 mt-6">
-                    <a class="inline-flex items-center justify-center gap-2 min-h-11 rounded-md border border-transparent bg-brand px-[1.15rem] py-3 text-[0.95rem] font-semibold text-brand-contrast no-underline shadow-sm transition hover:bg-brand-strong hover:-translate-y-px hover:shadow-md"
+                    <a class="inline-flex items-center justify-center gap-2 min-h-11 rounded-md border border-transparent bg-brand px-[1.15rem] py-3 text-[0.95rem] font-extrabold text-brand-contrast no-underline transition-colors hover:bg-brand-strong"
                        href="{{ route('home') }}#how">{{ __('public.trade_cta') }}</a>
                 </div>
             </div>
@@ -39,7 +39,7 @@
                 <h2 class="text-[clamp(1.05rem,0.95rem+0.4vw,1.2rem)] font-extrabold leading-tight tracking-[-0.025em]">{{ __('public.in_this_category') }}</h2>
                 <div class="grid gap-4 mt-4 grid-cols-[repeat(auto-fit,minmax(min(100%,13rem),1fr))]">
                     @foreach ($children as $leaf)
-                        <a class="block space-y-2 rounded-lg border border-edge bg-surface-raised p-6 text-inherit no-underline transition hover:-translate-y-0.5 hover:border-brand hover:shadow-md"
+                        <a class="block space-y-2 bg-surface-raised p-6 text-inherit no-underline transition-colors hover:bg-surface-sunken"
                            href="{{ route('services.show', ['slug' => $leaf->slug]) }}">
                             <span class="grid place-items-center shrink-0 size-10 rounded-md bg-brand-tint text-brand [&_svg]:size-5" aria-hidden="true">
                                 @include('public.partials.icon', ['name' => 'tool'])
@@ -64,14 +64,14 @@
                 @if ($providers->isNotEmpty())
                     <div class="grid gap-4 mt-6 grid-cols-[repeat(auto-fit,minmax(min(100%,16rem),1fr))]">
                         @foreach ($providers as $provider)
-                            <div class="space-y-2 rounded-lg border border-edge bg-surface-raised p-6">
+                            <div class="space-y-2 bg-surface-raised p-6">
                                 <span class="grid place-items-center shrink-0 size-10 rounded-md bg-brand-tint text-brand [&_svg]:size-5" aria-hidden="true">
                                     @include('public.partials.icon', ['name' => 'badge'])
                                 </span>
                                 <h3 class="text-[clamp(1.05rem,0.95rem+0.4vw,1.2rem)] font-extrabold leading-tight tracking-[-0.025em]">{{ $provider->headline ?: $skill->name($locale) }}</h3>
                                 <div class="flex flex-wrap gap-1.5">
                                     @if ($provider->verification_tier >= 2)
-                                        <span class="inline-flex items-center gap-1 rounded-pill bg-brand-tint px-2.5 py-1 text-xs font-semibold text-brand [&_svg]:size-3.5">
+                                        <span class="inline-flex items-center gap-1 bg-brand-tint px-2.5 py-1 text-xs font-semibold text-brand-strong [&_svg]:size-3.5">
                                             @include('public.partials.icon', ['name' => 'shield'])
                                             {{ __('public.tier_label', ['n' => $provider->verification_tier]) }}
                                         </span>
@@ -94,7 +94,7 @@
                     {{-- An empty trade is not a dead end: the request is what creates supply, so the
                          page asks for one rather than apologising. The CTA is already at the top of
                          this page, so repeating it a screen later would be the same ask twice. --}}
-                    <div class="mt-6 rounded-lg border border-edge bg-surface-raised p-6">
+                    <div class="mt-6 bg-surface-raised p-6">
                         <h3 class="text-[clamp(1.05rem,0.95rem+0.4vw,1.2rem)] font-extrabold leading-tight tracking-[-0.025em]">{{ __('public.no_providers_yet') }}</h3>
                         <p class="mt-2 text-sm text-content-muted">{{ __('public.no_providers_body') }}</p>
                     </div>
@@ -110,7 +110,7 @@
                 <ul class="flex flex-wrap gap-2 mt-4 list-none p-0 m-0">
                     @foreach ($parent->children->where('id', '!=', $skill->id) as $sibling)
                         <li>
-                            <a class="inline-block rounded-pill border border-edge bg-surface-raised px-3.5 py-2 text-sm text-content no-underline transition-colors hover:border-brand hover:text-brand"
+                            <a class="inline-block bg-surface-raised px-3.5 py-2 text-sm text-content no-underline transition-colors hover:bg-surface-sunken"
                                href="{{ route('services.show', ['slug' => $sibling->slug]) }}">{{ $sibling->name($locale) }}</a>
                         </li>
                     @endforeach

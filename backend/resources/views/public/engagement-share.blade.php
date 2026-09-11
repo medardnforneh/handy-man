@@ -14,12 +14,12 @@
         </section>
 
         <section class="grid gap-4 mt-8" id="start">
-            <div class="rounded-lg border border-edge bg-surface-raised p-6">
+            <div class="bg-surface-raised p-6">
                 <h2 class="text-xs font-bold uppercase tracking-[0.1em] text-content-muted">{{ __('share.provider') }}</h2>
                 <p class="mt-1 m-0 text-xl font-semibold text-content">{{ $firstName }}</p>
             </div>
 
-            <div class="rounded-lg border border-edge bg-surface-raised p-6">
+            <div class="bg-surface-raised p-6">
                 <h2 class="text-xs font-bold uppercase tracking-[0.1em] text-content-muted">{{ __('share.status') }}</h2>
                 {{-- On site is the one status worth colouring: it is the answer to "are they there
                      yet", which is why this page was opened. --}}
@@ -36,7 +36,7 @@
             </div>
 
             @if ($address)
-                <div class="rounded-lg border border-edge bg-surface-raised p-6">
+                <div class="bg-surface-raised p-6">
                     <h2 class="text-xs font-bold uppercase tracking-[0.1em] text-content-muted">{{ __('share.location') }}</h2>
                     {{-- Quarter and city only. A share link never carries the street address. --}}
                     <p class="mt-1 m-0 text-content">{{ collect([$address->quarter, $address->city])->filter()->implode(', ') }}</p>

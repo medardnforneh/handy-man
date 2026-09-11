@@ -52,17 +52,17 @@
 </head>
 <body>
     {{-- Off-screen until focused, then the first thing a keyboard reaches. --}}
-    <a class="absolute -left-[9999px] top-0 z-30 rounded-md bg-brand px-4 py-2 text-brand-contrast focus:left-4 focus:top-4"
+    <a class="absolute -left-[9999px] top-0 z-30 bg-brand px-4 py-2 text-brand-contrast focus:left-4 focus:top-4"
        href="#main">{{ __('public.skip_to_content') }}</a>
 
-    {{-- Sticky, but floating: the chrome is a contained pill rather than a bar welded to the top
-         edge, so the page reads as content on a surface. The short fade behind it stops the page
-         showing through the gaps either side of the pill's rounded ends. --}}
-    <header class="sticky top-0 z-20 py-3 bg-linear-to-b from-surface from-55% to-transparent">
+    {{-- Sticky, and welded to the top edge: a bar on the ground colour that ends in the system's
+         2px rule. It used to float as a frosted pill; the Modernist direction is that nothing
+         floats and nothing is decorated, and the rule does the organising the blur was doing. --}}
+    <header class="sticky top-0 z-20 bg-surface border-b-2 border-edge-strong">
         <div class="w-full max-w-6xl mx-auto px-6">
-            <div class="flex items-center gap-4 min-h-14 px-4 rounded-pill border border-edge/85 bg-surface-raised/85 shadow-md backdrop-blur-xl backdrop-saturate-150">
+            <div class="flex items-center gap-4 min-h-16">
                 <a class="inline-flex items-center gap-2 font-extrabold text-lg tracking-tight text-content no-underline" href="{{ route('home') }}">
-                    <span class="grid place-items-center shrink-0 size-7 rounded-md bg-brand text-brand-contrast" aria-hidden="true">
+                    <span class="grid place-items-center shrink-0 size-7 bg-brand text-brand-contrast" aria-hidden="true">
                         <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M14.7 6.3a4 4 0 0 1-5 5L4 17v3h3l5.7-5.7a4 4 0 0 1 5-5l2.6-2.6-2.6-2.6z"/>
                         </svg>
@@ -71,15 +71,15 @@
                 </a>
 
                 <nav class="flex items-center gap-1.5 ms-auto" aria-label="{{ __('public.nav_label') }}">
-                    {{-- The hover target is the pill, not the word. --}}
-                    <span class="hidden lg:flex gap-0.5">
+                    {{-- Ink, and the accent on hover — the system's nav links carry no pill. --}}
+                    <span class="hidden lg:flex gap-1">
                         @foreach ([
                             ['public.nav_trades', route('services.index')],
                             ['public.nav_how', route('home').'#how'],
                             ['public.nav_trust', route('home').'#trust'],
                             ['public.nav_providers', route('home').'#providers'],
                         ] as [$key, $href])
-                            <a class="px-3 py-2 rounded-pill text-sm font-medium text-content-muted no-underline transition-colors hover:text-content hover:bg-brand/10"
+                            <a class="px-3 py-2 text-sm font-medium text-content no-underline transition-colors hover:text-brand"
                                href="{{ $href }}">{{ __($key) }}</a>
                         @endforeach
                     </span>
@@ -88,13 +88,13 @@
                          to reach anything from the header. A <details> disclosure is a real menu with
                          no JavaScript, so it works on the first paint and on a dead connection. --}}
                     <details class="relative lg:hidden group">
-                        <summary class="grid place-items-center size-10 rounded-md border border-edge text-content cursor-pointer list-none [&::-webkit-details-marker]:hidden"
+                        <summary class="grid place-items-center size-10 border border-edge-strong text-content cursor-pointer list-none [&::-webkit-details-marker]:hidden"
                                  aria-label="{{ __('public.nav_menu') }}">
                             <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
                                 <path d="M4 7h16M4 12h16M4 17h16"/>
                             </svg>
                         </summary>
-                        <div class="absolute end-0 top-[calc(100%+0.5rem)] grid gap-0.5 min-w-52 p-2 rounded-lg border border-edge bg-surface-raised shadow-lg">
+                        <div class="absolute end-0 top-[calc(100%+0.5rem)] grid gap-0.5 min-w-52 p-2 border-2 border-edge-strong bg-surface-raised shadow-lg">
                             @foreach ([
                                 ['public.nav_trades', route('services.index')],
                                 ['public.nav_how', route('home').'#how'],
@@ -102,22 +102,24 @@
                                 ['public.nav_providers', route('home').'#providers'],
                                 ['public.nav_faq', route('home').'#faq'],
                             ] as [$key, $href])
-                                <a class="px-3 py-2.5 rounded-sm text-sm font-medium text-content-muted no-underline hover:bg-surface-sunken hover:text-content"
+                                <a class="px-3 py-2.5 text-sm font-medium text-content no-underline hover:bg-surface-sunken hover:text-brand"
                                    href="{{ $href }}">{{ __($key) }}</a>
                             @endforeach
                         </div>
                     </details>
 
                     {{-- A segmented control rather than "FR / EN": two links with a slash between
-                         them read as breadcrumbs, and the slash was the third-loudest glyph here. --}}
-                    <span class="inline-flex items-center p-[3px] rounded-pill bg-surface-sunken text-xs">
+                         them read as breadcrumbs, and the slash was the third-loudest glyph here.
+                         The system's own segment: a ruled box, a divider between the options, the
+                         chosen one filled in the accent. --}}
+                    <span class="inline-flex items-stretch border border-edge-strong text-xs divide-x divide-edge-strong">
                         @foreach (['fr' => 'language.french_short', 'en' => 'language.english_short'] as $code => $label)
                             <a href="{{ request()->fullUrlWithQuery(['lang' => $code]) }}"
                                aria-current="{{ app()->getLocale() === $code ? 'true' : 'false' }}"
                                @class([
-                                   'px-2.5 py-1 rounded-pill font-semibold no-underline transition-colors',
-                                   'text-content bg-surface-raised shadow-sm' => app()->getLocale() === $code,
-                                   'text-content-muted' => app()->getLocale() !== $code,
+                                   'px-2.5 py-1.5 font-semibold no-underline transition-colors',
+                                   'bg-brand text-brand-contrast' => app()->getLocale() === $code,
+                                   'text-content hover:bg-content/7' => app()->getLocale() !== $code,
                                ])>{{ __($label) }}</a>
                         @endforeach
                     </span>
@@ -132,7 +134,7 @@
                          script ran, which is the flash this whole arrangement exists to avoid. --}}
                     <button type="button"
                             data-theme-toggle
-                            class="grid size-9 flex-none place-items-center rounded-pill border border-edge bg-surface-raised text-content-muted cursor-pointer transition-colors hover:text-content"
+                            class="grid size-9 flex-none place-items-center border border-edge-strong bg-transparent text-content cursor-pointer transition-colors hover:bg-content/7"
                             title="{{ __('public.theme_toggle') }}"
                             aria-label="{{ __('public.theme_toggle') }}">
                         <svg class="size-4 dark:hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -145,7 +147,7 @@
 
                     {{-- The header's own call to action. Without one, a reader convinced by what they
                          just read has to scroll back up to the hero to act on it. --}}
-                    <a class="hidden lg:inline-flex items-center gap-1.5 px-4 py-2.5 rounded-pill bg-brand text-brand-contrast text-sm font-bold no-underline shadow-sm transition-colors hover:bg-brand-strong active:translate-y-px"
+                    <a class="hidden lg:inline-flex items-center gap-1.5 px-4 py-2.5 bg-brand text-brand-contrast text-sm font-extrabold no-underline transition-colors hover:bg-brand-strong"
                        href="{{ route('services.index') }}">
                         {{ __('public.hero_cta_primary') }}
                         <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
@@ -159,12 +161,12 @@
         @yield('content')
     </main>
 
-    <footer class="border-t border-edge bg-surface-raised pt-16 pb-6">
+    <footer class="border-t-2 border-edge-strong pt-16 pb-6">
         <div class="w-full max-w-6xl mx-auto px-6">
             <div class="grid gap-6 grid-cols-[repeat(auto-fit,minmax(min(100%,12rem),1fr))]">
                 <div>
                     <a class="inline-flex items-center gap-2 font-extrabold text-lg tracking-tight text-content no-underline" href="{{ route('home') }}">
-                        <span class="grid place-items-center shrink-0 size-7 rounded-md bg-brand text-brand-contrast" aria-hidden="true">
+                        <span class="grid place-items-center shrink-0 size-7 bg-brand text-brand-contrast" aria-hidden="true">
                             <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M14.7 6.3a4 4 0 0 1-5 5L4 17v3h3l5.7-5.7a4 4 0 0 1 5-5l2.6-2.6-2.6-2.6z"/>
                             </svg>
@@ -209,7 +211,7 @@
                 </div>
             </div>
 
-            <div class="flex flex-wrap justify-between gap-2 mt-10 pt-4 border-t border-edge text-sm text-content-muted">
+            <div class="flex flex-wrap justify-between gap-2 mt-10 pt-4 border-t border-edge-strong text-sm text-content-muted">
                 <span>{{ __('public.footer_rights', ['year' => now()->year, 'name' => __('app.name')]) }}</span>
                 <span>{{ __('public.footer_country') }}</span>
             </div>

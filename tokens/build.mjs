@@ -144,6 +144,7 @@ function buildTailwindTheme() {
   color('content-inverse', 'color', 'text.onInverse');
   color('edge', 'color', 'border.subtle');
   color('edge-strong', 'color', 'border.strong');
+  color('edge-inverse', 'color', 'border.onInverse');
   color('brand', 'color', 'brand.primary');
   color('brand-strong', 'color', 'brand.strong');
   color('brand-tint', 'color', 'brand.tint');
