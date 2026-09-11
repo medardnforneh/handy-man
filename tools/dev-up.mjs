@@ -52,14 +52,19 @@ if (ready.status !== 0) {
     fail(`PostgreSQL 16 not found at ${pg}. See docs/BUILD_STATE.md for how this machine is set up.`);
   }
   log('db', 'not running — starting it (portable install, not a Windows service)');
+  // `stdio: 'ignore'`, and it is load-bearing: pg_ctl hands the pipes it inherits to the server it
+  // spawns, so with the default piped stdout `spawnSync` never sees EOF and this script sits here
+  // for ever with Postgres already up and nothing else started. With stdout redirected the script
+  // cannot read the error text out of pg_ctl either, so on failure it points at the log file.
   const started = run(join(pg, 'bin', 'pg_ctl.exe'), [
     '-D', `"${join(pg, 'data')}"`,
     '-l', `"${join(pg, 'data', 'logfile.log')}"`,
     '-o', `"-p ${DB_PORT}"`,
+    '-w',
     'start',
-  ]);
+  ], { stdio: 'ignore' });
   if (started.status !== 0) {
-    fail(`could not start PostgreSQL:\n${started.stderr || started.stdout}`);
+    fail(`could not start PostgreSQL — see ${join(pg, 'data', 'logfile.log')}`);
   }
 } else {
   log('db', 'already up');

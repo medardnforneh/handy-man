@@ -2,7 +2,7 @@
   <ion-toolbar>
     <ion-title>{{ 'pro.title' | translate }}</ion-title>
     <ion-buttons slot="end">
-      <div class="me-4 grid size-9 flex-none place-items-center rounded-full bg-brand text-xs font-bold uppercase text-brand-contrast" aria-hidden="true">
+      <div class="me-4 grid size-9 flex-none place-items-center  bg-brand text-xs font-bold uppercase text-brand-contrast" aria-hidden="true">
         @if (who().initials) {
           {{ who().initials }}
         } @else {
@@ -68,7 +68,7 @@
            produces an error toast reads as a broken app, not as a rule. -->
       <ion-button expand="block" class="withdraw mt-4" [disabled]="wallet().availableMinor <= 0" (click)="withdraw()">
         <ion-icon name="cash-outline" slot="start" aria-hidden="true"></ion-icon>
-        {{ 'pro.withdraw' | translate }}
+        <span class="min-w-0 flex-1 text-start">{{ 'pro.withdraw' | translate }}</span>
       </ion-button>
       @if (wallet().availableMinor <= 0) {
         <span class="mt-0.5 block text-xs opacity-85">{{ 'pro.nothing_to_withdraw' | translate }}</span>
@@ -77,17 +77,17 @@
 
     <!-- Stats -->
     <div class="mb-2 grid grid-cols-3 gap-2">
-      <div class="grid place-items-center gap-0.5 rounded-lg border border-edge bg-surface-raised px-1.5 py-4 text-center shadow-sm">
+      <div class="grid place-items-center gap-0.5 rounded-lg bg-surface-raised px-1.5 py-4 text-center shadow-sm">
         <b class="text-[1.25rem] font-extrabold tracking-tight">{{ stats().activeJobs }}</b>
         <small class="text-2xs text-content-muted">{{ 'pro.active_jobs' | translate }}</small>
       </div>
-      <div class="grid place-items-center gap-0.5 rounded-lg border border-edge bg-surface-raised px-1.5 py-4 text-center shadow-sm">
+      <div class="grid place-items-center gap-0.5 rounded-lg bg-surface-raised px-1.5 py-4 text-center shadow-sm">
         <b class="inline-flex items-center gap-1 text-[1.25rem] font-extrabold tracking-tight text-warning">
           <ion-icon name="star" aria-hidden="true"></ion-icon>{{ stats().rating ?? '—' }}
         </b>
         <small class="text-2xs text-content-muted">{{ 'pro.rating' | translate }}</small>
       </div>
-      <div class="grid place-items-center gap-0.5 rounded-lg border border-edge bg-surface-raised px-1.5 py-4 text-center shadow-sm">
+      <div class="grid place-items-center gap-0.5 rounded-lg bg-surface-raised px-1.5 py-4 text-center shadow-sm">
         @if (hasOnTime()) {
           <b class="text-[1.25rem] font-extrabold tracking-tight">{{ onTimePercent() }}%</b>
         } @else {
@@ -100,7 +100,7 @@
     <!-- The client book (P7-08). One row rather than a preview list: it costs no extra request on a
          slow network, and this is a screen a provider goes to deliberately. -->
     <button
-      class="mt-4 flex w-full min-h-11 cursor-pointer items-center gap-2 rounded-lg border border-edge bg-surface-raised p-4 text-start text-inherit shadow-sm"
+      class="mt-4 flex w-full min-h-11 cursor-pointer items-center gap-2 rounded-lg bg-surface-raised p-4 text-start text-inherit shadow-sm"
       type="button"
       (click)="openClients()"
     >
@@ -121,7 +121,7 @@
     </div>
     @for (lead of topLeads(); track lead.id) {
       <button
-        class="mb-2 flex w-full min-h-11 cursor-pointer gap-2 rounded-lg border border-edge bg-surface-raised p-4 text-start text-inherit shadow-sm"
+        class="mb-2 flex w-full min-h-11 cursor-pointer gap-2 rounded-lg bg-surface-raised p-4 text-start text-inherit shadow-sm"
         type="button"
         (click)="openLead(lead)"
       >
@@ -166,12 +166,12 @@
     </div>
     @for (work of topActive(); track work.id) {
       <button
-        class="mb-2 flex w-full min-h-11 cursor-pointer items-center gap-2 rounded-lg border border-edge bg-surface-raised px-4 py-2 text-start text-inherit shadow-sm"
+        class="mb-2 flex w-full min-h-11 cursor-pointer items-center gap-2 rounded-lg bg-surface-raised px-4 py-2 text-start text-inherit shadow-sm"
         type="button"
         (click)="openWork(work)"
       >
         <div
-          [class]="'grid size-10 flex-none place-items-center rounded-full text-sm font-bold uppercase text-brand-contrast accent-' + work.accent"
+          [class]="'grid size-10 flex-none place-items-center  text-sm font-bold uppercase text-brand-contrast accent-' + work.accent"
           aria-hidden="true"
         >{{ work.customerName.charAt(0) }}</div>
         <div class="min-w-0 flex-1">

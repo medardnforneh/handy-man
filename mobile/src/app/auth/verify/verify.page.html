@@ -47,7 +47,7 @@
     @if (devCode()) {
       <button
         type="button"
-        class="mt-4 flex w-full min-h-11 cursor-pointer items-center gap-2 rounded-md border border-dashed border-warning bg-warning/8 px-4 py-2.5 text-start text-content [font:inherit]"
+        class="mt-4 flex w-full min-h-11 cursor-pointer items-center gap-2 rounded-md border border-warning bg-warning/8 px-4 py-2.5 text-start text-content [font:inherit]"
         (click)="useDevCode()"
       >
         <span class="flex-none rounded-sm bg-warning px-1.5 py-0.5 text-2xs font-extrabold uppercase tracking-wide text-content-inverse">{{ 'auth.dev_code_tag' | translate }}</span>
@@ -73,7 +73,7 @@
 <ion-footer class="ion-no-border">
   <div class="mx-auto max-w-md px-4 pt-2 pb-4">
     <ion-button expand="block" [disabled]="!canVerify()" (click)="verify()">
-      {{ 'auth.verify' | translate }}
+      <span class="min-w-0 flex-1 text-start">{{ 'auth.verify' | translate }}</span>
     </ion-button>
   </div>
 </ion-footer>

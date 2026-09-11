@@ -45,30 +45,17 @@ ion-split-pane {
 
 // ---- tab bar (phones) ----
 
-// A slab welded to the bottom edge is the default and it looks like one. This floats instead —
-// the same move as the public site's header, so the two surfaces share a language: a contained,
-// frosted pill with the content passing behind it rather than stopping at a lid.
-//
-// `position: absolute` + inset rather than margins, because Ionic lays the tab bar out as a fixed
-// footer and margins alone leave its original strip painted underneath.
+// A bar welded to the bottom edge, on the ground colour, above the system's 2px rule. It used to
+// float as a frosted pill with content passing behind it; the Modernist direction is that nothing
+// floats and nothing is decorated, and a rule does the job the blur and the shadow were doing.
 ion-tab-bar {
   // Through `--background`, not `background`: Ionic sets `background: var(--background)` on the
-  // host itself, so a plain declaration here is overridden and the bar renders invisible — it is
-  // laid out in the right place and paints nothing, which looks exactly like a missing tab bar.
-  --background: #{color-mix(in srgb, var(--hm-color-surface-raised) 86%, transparent)};
+  // host itself, so a plain declaration here is overridden and the bar renders invisible.
+  --background: var(--hm-color-surface-base);
   --border: 0;
-  position: absolute;
-  inset-inline: var(--hm-space-md);
-  bottom: calc(env(safe-area-inset-bottom) + var(--hm-space-sm));
-  z-index: 20;
-  width: auto;
-  height: 60px;
-  padding: 4px;
-  border-radius: var(--hm-radius-pill);
-  backdrop-filter: blur(20px) saturate(1.6);
-  border: 1px solid color-mix(in srgb, var(--hm-color-border-subtle) 85%, transparent);
-  box-shadow: var(--hm-shadow-md);
-  overflow: hidden;
+  border-top: var(--hm-rule-strong) solid var(--hm-color-border-strong);
+  height: calc(56px + env(safe-area-inset-bottom));
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
 ion-tab-button {
@@ -80,21 +67,14 @@ ion-tab-button {
   font-weight: 600;
 }
 
-// The selected tab wears a tinted pill rather than only a colour change, so the current place is
-// legible at a glance and in sunlight — the same reasoning as the category tiles on Discover.
-ion-tab-button.tab-selected {
-  --background: color-mix(in srgb, var(--hm-color-brand-primary) 12%, transparent);
-  border-radius: var(--hm-radius-pill);
-}
-
 ion-tab-button ion-label {
   font-size: var(--hm-text-2xs);
   letter-spacing: 0.01em;
 }
 
-// The last row of a list would otherwise end underneath the floating bar.
+// The last row of a list would otherwise end underneath the bar.
 ion-tabs ion-content {
-  --padding-bottom: calc(72px + env(safe-area-inset-bottom));
+  --padding-bottom: calc(56px + env(safe-area-inset-bottom));
 }
 
 // The rail takes over exactly where the split pane activates — never both at once.

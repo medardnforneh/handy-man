@@ -20,13 +20,13 @@
     <!-- Provider -->
     @if (job().providerName) {
       <button
-        class="mb-4 flex w-full min-h-11 cursor-pointer items-center gap-2 rounded-lg border border-edge bg-surface-raised px-4 py-2 text-start text-inherit shadow-sm disabled:cursor-default disabled:opacity-100"
+        class="mb-4 flex w-full min-h-11 cursor-pointer items-center gap-2 rounded-lg bg-surface-raised px-4 py-2 text-start text-inherit shadow-sm disabled:cursor-default disabled:opacity-100"
         type="button"
         [disabled]="!job().providerId"
         (click)="openProvider()"
       >
         <div
-          [class]="'grid size-11 flex-none place-items-center rounded-full text-sm font-bold text-brand-contrast accent-' + job().accent"
+          [class]="'grid size-11 flex-none place-items-center  text-sm font-bold text-brand-contrast accent-' + job().accent"
           aria-hidden="true"
         >{{ job().providerInitials }}</div>
         <div class="min-w-0 flex-1">
@@ -51,7 +51,7 @@
 
       @for (q of liveQuotes(); track q.id) {
         <!-- Run out: readable, but plainly no longer on offer. -->
-        <div class="mb-2 rounded-lg border border-edge bg-surface-raised p-4 shadow-sm" [class]="q.expired ? 'opacity-75' : ''">
+        <div class="mb-2 rounded-lg bg-surface-raised p-4 shadow-sm" [class]="q.expired ? 'opacity-75' : ''">
           <div class="flex items-start gap-2">
             <div class="min-w-0 flex-1">
               <b class="block text-md leading-snug">{{ q.providerHeadline }}</b>
@@ -110,7 +110,7 @@
             </p>
           } @else {
             <ion-button expand="block" class="mt-4" [disabled]="busy()" (click)="accept(q)">
-              {{ 'quote.accept' | translate }}
+              <span class="min-w-0 flex-1 text-start">{{ 'quote.accept' | translate }}</span>
             </ion-button>
           }
         </div>
@@ -120,7 +120,7 @@
     <!-- Money. Only once something has actually been agreed: on a job still collecting quotes,
          "Agreed 0 · In escrow 0 · Released 0" is three zeros pretending to be a statement. -->
     @if (job().engagementId !== null) {
-      <div class="rounded-lg border border-edge bg-surface-raised p-4 shadow-sm">
+      <div class="rounded-lg bg-surface-raised p-4 shadow-sm">
         <div class="mb-0.5 flex items-center justify-between gap-2 border-b border-b-edge pb-2.5 text-md">
           <span class="text-content-muted">{{ 'jobdetail.agreed' | translate }}</span>
           <span class="text-[1.15rem] font-bold tabular-nums">
@@ -145,7 +145,7 @@
         @if (canFund()) {
           <ion-button class="mt-4" expand="block" [disabled]="busy()" (click)="openFund()">
             <ion-icon name="phone-portrait-outline" slot="start" aria-hidden="true"></ion-icon>
-            {{ 'fund.action' | translate }}
+            <span class="min-w-0 flex-1 text-start">{{ 'fund.action' | translate }}</span>
           </ion-button>
         }
 
@@ -169,7 +169,7 @@
       <h2 class="mt-6 mb-4 text-lg font-extrabold tracking-snug">{{ 'jobdetail.milestones' | translate }}</h2>
       <div class="flex flex-col gap-2">
         @for (m of job().milestones; track m.id) {
-          <div class="rounded-lg border border-edge bg-surface-raised p-4 shadow-sm">
+          <div class="rounded-lg bg-surface-raised p-4 shadow-sm">
             <div class="flex items-center justify-between gap-2">
               <b class="text-md">{{ m.title }}</b>
               <span [class]="'hm-pill ' + milestoneTone(m.status)">{{ 'milestone.' + m.status | translate }}</span>
@@ -190,7 +190,7 @@
     <!-- Finishing, and then saying how it went. Two states of one story, so they share a card:
          work that is done but not marked done, and work that is done and not yet reviewed. -->
     @if (canComplete()) {
-      <div class="mt-4 flex flex-wrap items-center gap-2 rounded-lg border border-edge bg-surface-raised p-4 shadow-sm">
+      <div class="mt-4 flex flex-wrap items-center gap-2 rounded-lg bg-surface-raised p-4 shadow-sm">
         <div class="min-w-48 flex-1">
           <b class="block text-md">{{ 'jobdetail.complete_title' | translate }}</b>
           <small class="mt-0.5 block text-xs leading-snug text-content-muted">{{ 'jobdetail.complete_body' | translate }}</small>
@@ -200,7 +200,7 @@
         </ion-button>
       </div>
     } @else if (canReview()) {
-      <div class="mt-4 flex flex-col items-stretch gap-2 rounded-lg border border-edge bg-surface-raised p-4 shadow-sm">
+      <div class="mt-4 flex flex-col items-stretch gap-2 rounded-lg bg-surface-raised p-4 shadow-sm">
         <div class="min-w-48 flex-1">
           <b class="block text-md">{{ 'review.title' | translate }}</b>
           <small class="mt-0.5 block text-xs leading-snug text-content-muted">{{ 'review.blind_note' | translate }}</small>
@@ -233,7 +233,7 @@
         ></ion-textarea>
 
         <ion-button expand="block" [disabled]="rating() === 0 || busy()" (click)="submitReview()">
-          {{ 'review.submit' | translate }}
+          <span class="min-w-0 flex-1 text-start">{{ 'review.submit' | translate }}</span>
         </ion-button>
       </div>
     } @else if (job().reviewed) {
@@ -250,7 +250,7 @@
     @if (job().completedAt !== null && job().providerId) {
       <button
         type="button"
-        class="mt-4 flex w-full min-h-11 cursor-pointer items-center justify-center gap-2 rounded-md border border-edge bg-surface-raised p-4 text-sm font-semibold text-content [font:inherit] shadow-sm disabled:opacity-50"
+        class="mt-4 flex w-full min-h-11 cursor-pointer items-center justify-start gap-2 rounded-md bg-surface-raised p-4 text-sm font-semibold text-content [font:inherit] shadow-sm disabled:opacity-50"
         [disabled]="busy()"
         (click)="rebook()"
       >
@@ -265,7 +265,7 @@
     @if (canDispute()) {
       <h2 class="mt-6 mb-4 text-lg font-extrabold tracking-snug">{{ 'dispute.section' | translate }}</h2>
       @if (dispute(); as d) {
-        <div class="rounded-lg border border-edge bg-surface-raised p-4 shadow-sm">
+        <div class="rounded-lg bg-surface-raised p-4 shadow-sm">
           <div class="flex items-center justify-between gap-2">
             <b class="text-md">{{ 'dispute.cat.' + d.category | translate }}</b>
             <span class="hm-pill tone-warning flex-none">{{ 'dispute.status.' + d.status | translate }}</span>
@@ -280,7 +280,7 @@
       } @else {
         <button
           type="button"
-          class="flex w-full min-h-11 cursor-pointer items-center justify-center gap-2 rounded-md border border-dashed border-edge-strong bg-transparent p-4 text-sm font-semibold text-content-muted [font:inherit] disabled:opacity-50"
+          class="flex w-full min-h-11 cursor-pointer items-center justify-start gap-2 rounded-md border border-edge-strong bg-transparent p-4 text-sm font-semibold text-content-muted [font:inherit] disabled:opacity-50"
           [disabled]="busy()"
           (click)="openDispute()"
         >
@@ -297,7 +297,7 @@
     @if (canShare()) {
       <h2 class="mt-6 mb-4 text-lg font-extrabold tracking-snug">{{ 'share.section' | translate }}</h2>
       @if (shareUrl(); as url) {
-        <div class="rounded-lg border border-edge bg-surface-raised p-4 shadow-sm">
+        <div class="rounded-lg bg-surface-raised p-4 shadow-sm">
           <p class="mt-0 mb-2 text-sm leading-snug text-content-muted">{{ 'share.ready' | translate }}</p>
           <!-- Shown in full, not hidden behind a Copy button: the token comes back once and cannot
                be read again, so a clipboard the browser refuses must not be the only way out. -->
@@ -318,7 +318,7 @@
       } @else {
         <button
           type="button"
-          class="flex w-full min-h-11 cursor-pointer items-center justify-center gap-2 rounded-md border border-dashed border-edge-strong bg-transparent p-4 text-sm font-semibold text-content-muted [font:inherit] disabled:opacity-50"
+          class="flex w-full min-h-11 cursor-pointer items-center justify-start gap-2 rounded-md border border-edge-strong bg-transparent p-4 text-sm font-semibold text-content-muted [font:inherit] disabled:opacity-50"
           [disabled]="sharing()"
           (click)="createShare()"
         >
@@ -332,11 +332,11 @@
     <!-- Location -->
     <h2 class="mt-6 mb-4 text-lg font-extrabold tracking-snug">{{ 'jobdetail.location' | translate }}</h2>
     @if (job().mode === 'remote') {
-      <p class="m-0 flex items-center gap-2 rounded-md border border-dashed border-edge-strong p-4 text-md text-content-muted">
+      <p class="m-0 flex items-center gap-2 rounded-md border border-edge-strong p-4 text-md text-content-muted">
         <ion-icon name="globe-outline" class="flex-none text-[1.1rem] text-brand" aria-hidden="true"></ion-icon>{{ 'jobdetail.remote' | translate }}
       </p>
     } @else {
-      <p class="m-0 flex items-center gap-2 rounded-lg border border-edge bg-surface-raised p-4 text-md shadow-sm">
+      <p class="m-0 flex items-center gap-2 rounded-lg bg-surface-raised p-4 text-md shadow-sm">
         <ion-icon name="location-outline" class="flex-none text-[1.1rem] text-brand" aria-hidden="true"></ion-icon>{{ job().addressLine }}
       </p>
     }
@@ -348,12 +348,12 @@
     @if (job().status === 'open' && !job().providerName) {
       <ion-button expand="block" (click)="findProviders()">
         <ion-icon name="people-outline" slot="start" aria-hidden="true"></ion-icon>
-        {{ 'jobdetail.find_providers' | translate }}
+        <span class="min-w-0 flex-1 text-start">{{ 'jobdetail.find_providers' | translate }}</span>
       </ion-button>
     } @else {
       <ion-button expand="block" fill="outline" (click)="openChat()">
         <ion-icon name="chatbubble-ellipses-outline" slot="start" aria-hidden="true"></ion-icon>
-        {{ 'jobdetail.open_chat' | translate }}
+        <span class="min-w-0 flex-1 text-start">{{ 'jobdetail.open_chat' | translate }}</span>
       </ion-button>
     }
   </div>
@@ -391,7 +391,7 @@
         <label class="mb-4 block">
           <span class="mb-1.5 block text-sm font-bold text-content-muted">{{ 'dispute.body_label' | translate }}</span>
           <textarea
-            class="w-full resize-y rounded-md border-[1.5px] border-edge bg-surface-raised px-3 py-2.5 font-sans text-md leading-snug text-content placeholder:text-content-muted focus:border-brand focus:outline-none"
+            class="w-full resize-y rounded-md border border-edge-strong bg-surface-raised px-3 py-2.5 font-sans text-md leading-snug text-content placeholder:text-content-muted focus:border-brand focus:outline-none"
             rows="5"
             [ngModel]="disputeBody()"
             (ngModelChange)="disputeBody.set($event)"
@@ -413,7 +413,7 @@
     <ion-footer class="ion-no-border">
       <div class="mx-auto max-w-3xl border-t border-t-edge px-4 py-2">
         <ion-button expand="block" [disabled]="busy()" (click)="sendDispute()">
-          {{ 'dispute.send' | translate }}
+          <span class="min-w-0 flex-1 text-start">{{ 'dispute.send' | translate }}</span>
         </ion-button>
       </div>
     </ion-footer>
@@ -440,7 +440,7 @@
         <label class="mb-4 block">
           <span class="mb-1.5 block text-sm font-bold text-content-muted">{{ 'fund.amount' | translate }}</span>
           <input
-            class="w-full rounded-md border-[1.5px] border-edge bg-surface-raised px-3 py-2.5 font-sans text-md tabular-nums text-content focus:border-brand focus:outline-none"
+            class="w-full rounded-md border border-edge-strong bg-surface-raised px-3 py-2.5 font-sans text-md tabular-nums text-content focus:border-brand focus:outline-none"
             type="number"
             inputmode="numeric"
             min="1"
@@ -453,7 +453,7 @@
         <label class="mb-4 block">
           <span class="mb-1.5 block text-sm font-bold text-content-muted">{{ 'fund.msisdn' | translate }}</span>
           <input
-            class="w-full rounded-md border-[1.5px] border-edge bg-surface-raised px-3 py-2.5 font-sans text-md tabular-nums text-content focus:border-brand focus:outline-none"
+            class="w-full rounded-md border border-edge-strong bg-surface-raised px-3 py-2.5 font-sans text-md tabular-nums text-content focus:border-brand focus:outline-none"
             type="tel"
             inputmode="tel"
             [ngModel]="fundMsisdn()"
@@ -475,7 +475,7 @@
     <ion-footer class="ion-no-border">
       <div class="mx-auto max-w-3xl border-t border-t-edge px-4 py-2">
         <ion-button expand="block" [disabled]="busy()" (click)="fund()">
-          {{ 'fund.confirm' | translate }}
+          <span class="min-w-0 flex-1 text-start">{{ 'fund.confirm' | translate }}</span>
         </ion-button>
       </div>
     </ion-footer>

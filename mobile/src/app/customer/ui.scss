@@ -33,6 +33,35 @@ ion-title {
 }
 
 // ---------------------------------------------------------------------------
+// Rules, not shadows.
+//
+// The Modernist system organises a page with strong 2px dividers between its major regions, and a
+// header is the first of those regions. So every header ends in the rule and every footer begins
+// with one — on the ground colour, with none of Material's drop shadow, which is the one thing this
+// system never draws. `ion-no-border` on individual headers keeps working as before: it removes
+// Ionic's own shadow, which this rule removes anyway.
+// ---------------------------------------------------------------------------
+ion-header ion-toolbar,
+ion-footer ion-toolbar {
+  --background: var(--hm-color-surface-base);
+  --border-style: solid;
+  --border-color: var(--hm-color-border-strong);
+}
+
+ion-header ion-toolbar {
+  --border-width: 0 0 var(--hm-rule-strong);
+}
+
+ion-footer ion-toolbar {
+  --border-width: var(--hm-rule-strong) 0 0;
+}
+
+ion-header.header-md::after,
+ion-footer.footer-md::before {
+  display: none;
+}
+
+// ---------------------------------------------------------------------------
 // Disabled buttons.
 //
 // Ionic disables a button by dropping the whole element to `opacity: .5`. On a solid brand button
@@ -80,53 +109,80 @@ ion-back-button,
   letter-spacing: 0;
 }
 
+// Buttons are set in the heading weight — in the Modernist system a label is a small heading, not
+// body copy with emphasis — and carry no radius and no shadow. Nothing on this surface floats.
 ion-button {
-  font-weight: 700;
+  font-weight: 800;
   --border-radius: var(--hm-radius-md);
+  --box-shadow: none;
 }
 
-// The solid button is the loudest thing on most screens; give it the depth to earn that.
-ion-button.button-solid {
-  --box-shadow: var(--hm-shadow-sm);
+// A block button's label starts at the left padding edge, never in the middle. A button wider than
+// its label is a row, and a row's text sits flush left like every other row on the screen; centring
+// it is the one place the app would break its own left edge.
+//
+// There is no rule for it here because there is nowhere to put one: Ionic centres the label in
+// `.button-inner`, which is shadow DOM with no exposed part. What works is in the templates — every
+// `expand="block"` label is wrapped in `<span class="min-w-0 flex-1 text-start">`. A slotted element
+// is laid out by the shadow flex container it lands in, so the span takes the remaining width and
+// the text aligns to its own left edge, after any `slot="start"` icon.
+
+// The secondary button is ink on ground inside a rule — not a tinted copy of the primary. Ionic's
+// outline variant paints border and label in the accent, which makes every "Quote" and "Cancel" as
+// loud as the one action that is meant to be.
+ion-button.button-outline {
+  --border-color: var(--hm-color-border-strong);
+  --border-width: 1px;
+  --color: var(--hm-color-text-primary);
 }
 
-// Segments. Material draws a grey slab with a 2px underline beneath the active item, which on a
-// three-way filter reads as a tab bar — a thing that navigates — rather than as one control holding
-// one value. A pill riding inside a sunken track says "one of these" the way a physical switch does.
+// Segments. One control holding one value, drawn as a ruled box with a divider between the options
+// and the chosen one filled in the accent — the system's own segmented control. Material's slab-
+// with-an-underline reads as a tab bar, and the earlier pill-in-a-track relied on a radius and a
+// shadow that no longer exist.
 ion-segment {
-  background: var(--hm-color-surface-sunken);
-  border-radius: var(--hm-radius-pill);
-  padding: 3px;
+  background: transparent;
+  border: 1px solid var(--hm-color-border-strong);
+  border-radius: var(--hm-radius-md);
+  padding: 0;
 }
 
 ion-segment-button {
   --indicator-color: transparent;
   --indicator-box-shadow: none;
-  --background-checked: var(--hm-color-surface-raised);
-  --color: var(--hm-color-text-muted);
-  --color-checked: var(--hm-color-text-primary);
-  --border-radius: var(--hm-radius-pill);
+  --background-checked: var(--hm-color-brand-primary);
+  --background-hover: color-mix(in srgb, var(--hm-color-text-primary) 7%, transparent);
+  --color: var(--hm-color-text-primary);
+  --color-checked: var(--hm-color-brand-onPrimary);
+  --border-radius: 0;
+  --margin-top: 0;
+  --margin-bottom: 0;
+  --margin-start: 0;
+  --margin-end: 0;
   min-height: 40px;
   font-weight: 600;
 
-  &.segment-button-checked {
-    box-shadow: var(--hm-shadow-sm);
+  & + ion-segment-button {
+    border-inline-start: 1px solid var(--hm-color-border-strong);
   }
 }
 
 // The search field is the first thing touched on Discover and shipped as a grey slab with no edge.
-// Give it the same raised surface and hairline the cards have, so it reads as somewhere to type.
-ion-searchbar {
+// A ruled box on the surface fill, like every other input.
+// Both selectors, because Ionic styles the md variant through a CLASS (.searchbar-md) whose
+// specificity beats a bare element, and its shadow and 8px inset came back through it.
+ion-searchbar,
+ion-searchbar.searchbar-md {
   --background: var(--hm-color-surface-raised);
   --border-radius: var(--hm-radius-md);
   --box-shadow: none;
   --icon-color: var(--hm-color-text-muted);
   --placeholder-color: var(--hm-color-text-muted);
-  padding-inline: 0;
+  padding: 0;
 
   .searchbar-input {
-    border: 1px solid var(--hm-color-border-subtle);
-    box-shadow: var(--hm-shadow-sm);
+    border: 1px solid var(--hm-color-border-strong);
+    box-shadow: none;
   }
 }
 

@@ -21,21 +21,7 @@ ion-title {
   min-height: 44px;
 }
 
-.choice {
-  --background: var(--hm-color-surface-sunken);
-  border-radius: var(--hm-radius-md);
-
-  ion-segment-button {
-    --color: var(--hm-color-text-muted);
-    --color-checked: var(--hm-color-text-primary);
-    --indicator-color: var(--hm-color-surface-raised);
-    --border-radius: var(--hm-radius-sm);
-    font-size: var(--hm-text-sm);
-    font-weight: 600;
-    text-transform: none;
-    min-height: 42px;
-  }
-}
+// The segmented control is the global one (customer/ui.scss); this page adds nothing to it.
 
 ion-footer {
   background: var(--hm-color-surface-base);

@@ -8,8 +8,8 @@
   <div class="mx-auto max-w-3xl px-4 pb-tabbar">
     <!-- Who you are. In a card like everything else on the screen: it used to float bare above a
          column of cards, which read as a stray fragment rather than as the top of a settings list. -->
-    <div class="mt-4 flex items-center gap-4 rounded-lg border border-edge bg-surface-raised p-4 shadow-sm">
-      <div class="grid size-14 flex-none place-items-center rounded-full bg-brand text-[1.1rem] font-bold uppercase text-brand-contrast" aria-hidden="true">
+    <div class="mt-4 flex items-center gap-4 rounded-lg bg-surface-raised p-4 shadow-sm">
+      <div class="grid size-14 flex-none place-items-center  bg-brand text-[1.1rem] font-bold uppercase text-brand-contrast" aria-hidden="true">
         @if (me().initials) {
           {{ me().initials }}
         } @else {
@@ -67,7 +67,7 @@
          two headings with two loose segments between them, which is most of why this screen scrolled
          as far as it did. One card, two labelled rows. -->
     <h2 class="acc-group">{{ 'account.preferences' | translate }}</h2>
-    <div class="overflow-hidden rounded-lg border border-edge bg-surface-raised shadow-sm">
+    <div class="overflow-hidden rounded-lg bg-surface-raised shadow-sm">
       <div class="p-4">
         <span class="mb-2 block text-sm font-semibold">{{ 'account.language' | translate }}</span>
         <ion-segment class="choice" [value]="locale()">
@@ -139,7 +139,7 @@
           <p class="m-0 rounded-md bg-surface-raised px-3 py-2 text-center text-lg font-extrabold tracking-[0.12em] tabular-nums">{{ code }}</p>
           <ion-button class="mt-3" size="small" expand="block" (click)="copyReferral()">
             <ion-icon name="copy-outline" slot="start" aria-hidden="true"></ion-icon>
-            {{ 'referral.copy' | translate }}
+            <span class="min-w-0 flex-1 text-start">{{ 'referral.copy' | translate }}</span>
           </ion-button>
         </div>
       }

@@ -25,7 +25,7 @@
         <div class="hm-skel h-[74px] rounded-md max-[420px]:col-span-full"></div>
       </div>
       @for (n of [1, 2, 3, 4]; track n) {
-        <div class="mb-2 flex items-center gap-2 rounded-lg border border-edge bg-surface-raised p-4 shadow-sm" aria-hidden="true">
+        <div class="mb-2 flex items-center gap-2 rounded-lg bg-surface-raised p-4 shadow-sm" aria-hidden="true">
           <div class="hm-skel size-[42px] flex-none rounded-md"></div>
           <div class="min-w-0 flex-1">
             <span class="hm-skel block h-2.5 w-3/5 rounded-sm"></span>
@@ -40,7 +40,7 @@
              one means "we couldn't ask", the other means "you have no clients yet". -->
         <p class="px-4 py-8 text-center text-md text-content-muted">{{ 'crm.unreachable' | translate }}</p>
         <ion-button expand="block" fill="outline" class="mx-auto max-w-[16rem]" (click)="load()">
-          {{ 'common.retry' | translate }}
+          <span class="min-w-0 flex-1 text-start">{{ 'common.retry' | translate }}</span>
         </ion-button>
       } @else {
         <!-- The CRM surface is two things (P7-08): the funnel of work, and the book of clients.
@@ -109,15 +109,15 @@
                phone — the money tile spans the row so a seven-figure lifetime value never has to
                shrink to fit a third of 360px. -->
           <div class="mb-4 grid grid-cols-3 gap-2 max-[420px]:grid-cols-2">
-            <div class="min-w-0 rounded-lg border border-edge bg-surface-raised px-2 py-4 text-center shadow-sm">
+            <div class="min-w-0 rounded-lg bg-surface-raised px-2 py-4 text-center shadow-sm">
               <b class="block text-[1.35rem] font-extrabold tracking-tight max-[420px]:text-[1.2rem] [overflow-wrap:anywhere]">{{ (clients() ?? []).length }}</b>
               <small class="mt-0.5 block text-xs text-content-muted">{{ 'crm.stat.clients' | translate }}</small>
             </div>
-            <div class="min-w-0 rounded-lg border border-edge bg-surface-raised px-2 py-4 text-center shadow-sm">
+            <div class="min-w-0 rounded-lg bg-surface-raised px-2 py-4 text-center shadow-sm">
               <b class="block text-[1.35rem] font-extrabold tracking-tight max-[420px]:text-[1.2rem] [overflow-wrap:anywhere]">{{ repeatCount() }}</b>
               <small class="mt-0.5 block text-xs text-content-muted">{{ 'crm.stat.repeat' | translate }}</small>
             </div>
-            <div class="min-w-0 rounded-lg border border-edge bg-surface-raised px-2 py-4 text-center shadow-sm max-[420px]:col-span-full">
+            <div class="min-w-0 rounded-lg bg-surface-raised px-2 py-4 text-center shadow-sm max-[420px]:col-span-full">
               <b class="block text-[1.35rem] font-extrabold tracking-tight max-[420px]:text-[1.2rem] [overflow-wrap:anywhere]">
                 {{ lifetimeTotalMinor() | money }} <em class="text-xs font-semibold not-italic opacity-70">{{ 'money.currency' | translate }}</em>
               </b>
@@ -135,7 +135,7 @@
           ></ion-searchbar>
 
           @for (c of filtered(); track c.partyId) {
-            <div class="mb-2 rounded-lg border border-edge bg-surface-raised p-4 shadow-sm max-[360px]:p-2">
+            <div class="mb-2 rounded-lg bg-surface-raised p-4 shadow-sm max-[360px]:p-2">
               <!-- A blocked row stays legible but visibly stands down — it is a row the provider can
                    no longer act on, and it should read that way at a glance without disappearing
                    from their own history. -->

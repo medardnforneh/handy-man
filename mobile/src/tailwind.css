@@ -50,9 +50,9 @@
    'tone-success' and the rest appear as literals in the TypeScript, which is scanned. */
 @source inline("accent-{brand,info,warning,muted}");
 
-/* No --font-sans override: the app takes Tailwind's own default stack. Ionic is pointed AT it from
-   theme/variables.scss rather than the reverse, so --font-sans is the single source of the
-   typeface and Ionic's components follow it. */
+/* The typeface is a token (--hm-font-sans, Archivo, self-hosted — see theme/tokens.css), mapped
+   onto --font-sans by the generated theme block above. Ionic is pointed at the same token from
+   theme/variables.scss, so its components and everything around them take the one face. */
 @theme {
     /* The connectivity strip slides in rather than appearing — a bar that pops into existence reads
        as a layout bug — and its state mark breathes so "sending" is legible without a spinner
@@ -177,7 +177,7 @@
 }
 
 @utility tone-brand {
-    color: var(--color-brand);
+    color: var(--color-brand-strong);
     background: color-mix(in srgb, var(--color-brand) 12%, transparent);
 }
 
@@ -192,12 +192,12 @@
 @utility accent-warning { background: var(--color-warning); }
 @utility accent-muted { background: var(--color-content-muted); }
 
-/* Room for the floating tab bar.
-   The bar is absolutely positioned 60px tall with a gap under it (see tabs.page.scss), so it hangs
-   OVER the scroll content rather than reserving space in it. Every tab page ended `pb-10` — 40px,
+/* Room for the tab bar.
+   The bar is a fixed 56px footer (see tabs.page.scss), so it covers the end of the scroll content
+   rather than reserving space in it. Every tab page ended `pb-10` — 40px,
    less than the bar is tall — so the last thing on each of them sat underneath it: the sign-out row
    on Account, the final job on Jobs. Scrolling to the bottom did not help, because the bottom was
    already there. Sized from the same values the bar positions itself with, plus a breathing gap. */
 @utility pb-tabbar {
-    padding-bottom: calc(60px + env(safe-area-inset-bottom) + var(--hm-space-sm) + 1.25rem);
+    padding-bottom: calc(56px + env(safe-area-inset-bottom) + 1.25rem);
 }

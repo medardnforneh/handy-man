@@ -14,7 +14,7 @@
       <h2 class="mt-2 mb-4 text-lg font-extrabold tracking-snug">{{ 'pro.visits_heading' | translate }}</h2>
 
       @for (visit of visits(); track visit.id) {
-        <div class="mb-2 rounded-lg border border-edge bg-surface-raised p-4 shadow-sm">
+        <div class="mb-2 rounded-lg bg-surface-raised p-4 shadow-sm">
           <div class="flex items-start gap-2">
             <span class="grid size-[38px] flex-none place-items-center rounded-md bg-brand/12 text-[1.1rem] text-brand" aria-hidden="true">
               <ion-icon name="calendar-outline"></ion-icon>
@@ -50,12 +50,12 @@
 
     @for (work of active(); track work.id) {
       <button
-        class="mb-2 flex w-full min-h-11 cursor-pointer items-center gap-2 rounded-lg border border-edge bg-surface-raised px-4 py-2 text-start text-inherit shadow-sm"
+        class="mb-2 flex w-full min-h-11 cursor-pointer items-center gap-2 rounded-lg bg-surface-raised px-4 py-2 text-start text-inherit shadow-sm"
         type="button"
         (click)="open(work)"
       >
         <div
-          [class]="'grid size-10 flex-none place-items-center rounded-full text-sm font-bold uppercase text-brand-contrast accent-' + work.accent"
+          [class]="'grid size-10 flex-none place-items-center  text-sm font-bold uppercase text-brand-contrast accent-' + work.accent"
           aria-hidden="true"
         >{{ work.customerName.charAt(0) || '•' }}</div>
         <div class="min-w-0 flex-1">
@@ -102,7 +102,7 @@
         <label class="mb-4 block">
           <span class="mb-1.5 block text-sm font-bold text-content-muted">{{ 'pro.visit_outcome' | translate }}</span>
           <textarea
-            class="w-full resize-y rounded-md border-[1.5px] border-edge bg-surface-raised px-3 py-2.5 font-sans text-md leading-snug text-content placeholder:text-content-muted focus:border-brand focus:outline-none"
+            class="w-full resize-y rounded-md border border-edge-strong bg-surface-raised px-3 py-2.5 font-sans text-md leading-snug text-content placeholder:text-content-muted focus:border-brand focus:outline-none"
             rows="5"
             [ngModel]="outcome()"
             (ngModelChange)="outcome.set($event)"
@@ -122,7 +122,7 @@
     <ion-footer class="ion-no-border">
       <div class="mx-auto max-w-3xl border-t border-t-edge px-4 py-2">
         <ion-button expand="block" [disabled]="busy()" (click)="completeVisit()">
-          {{ 'pro.visit_close_confirm' | translate }}
+          <span class="min-w-0 flex-1 text-start">{{ 'pro.visit_close_confirm' | translate }}</span>
         </ion-button>
       </div>
     </ion-footer>

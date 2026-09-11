@@ -47,7 +47,7 @@
 <ion-footer class="ion-no-border">
   <div class="mx-auto max-w-md px-4 pt-2 pb-4">
     <ion-button expand="block" [disabled]="!canSend() || sending()" (click)="sendCode()">
-      {{ 'auth.send_code' | translate }}
+      <span class="min-w-0 flex-1 text-start">{{ 'auth.send_code' | translate }}</span>
     </ion-button>
     <p class="mt-2 text-center text-xs text-balance text-content-muted">{{ 'auth.terms' | translate }}</p>
   </div>

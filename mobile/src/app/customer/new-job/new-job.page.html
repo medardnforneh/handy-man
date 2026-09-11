@@ -114,7 +114,7 @@
                path and adding another is the exception. -->
           <button
             type="button"
-            class="flex min-h-11 cursor-pointer items-center justify-center gap-1.5 rounded-lg border border-dashed border-edge-strong bg-transparent p-2.5 text-sm font-bold text-brand [font:inherit]"
+            class="flex min-h-11 cursor-pointer items-center justify-center gap-1.5 rounded-lg border border-edge-strong bg-transparent p-2.5 text-sm font-bold text-brand [font:inherit]"
             (click)="addAddress()"
           >
             <ion-icon name="add" class="text-lg" aria-hidden="true"></ion-icon>
@@ -123,7 +123,7 @@
         }
       </div>
     } @else {
-      <p class="m-0 flex items-center gap-1.5 rounded-md border border-dashed border-edge-strong p-4 text-sm text-content-muted">
+      <p class="m-0 flex items-center gap-1.5 rounded-md border border-edge-strong p-4 text-sm text-content-muted">
         <ion-icon name="globe-outline" class="flex-none text-[1.1rem] text-brand" aria-hidden="true"></ion-icon>
         {{ 'newjob.remote_note' | translate }}
       </p>
@@ -145,7 +145,7 @@
     <h2 class="mt-6 mb-4 text-md font-extrabold tracking-snug">{{ 'newjob.photos' | translate }}</h2>
     <button
       type="button"
-      class="flex w-full min-h-11 cursor-pointer items-center justify-center gap-2 rounded-md border border-dashed border-edge-strong bg-transparent p-4 text-sm font-semibold text-content-muted [font:inherit]"
+      class="flex w-full min-h-11 cursor-pointer items-center justify-start gap-2 rounded-md border border-edge-strong bg-transparent p-4 text-sm font-semibold text-content-muted [font:inherit]"
     >
       <ion-icon name="camera-outline" class="text-[1.25rem] text-brand" aria-hidden="true"></ion-icon>
       <span>{{ 'newjob.add_photo' | translate }}</span>
@@ -170,7 +170,7 @@
 <ion-footer class="ion-no-border">
   <div class="mx-auto max-w-3xl border-t border-t-edge px-4 py-2">
     <ion-button expand="block" [disabled]="!canPost()" (click)="post()">
-      {{ 'newjob.post' | translate }}
+      <span class="min-w-0 flex-1 text-start">{{ 'newjob.post' | translate }}</span>
     </ion-button>
   </div>
 </ion-footer>

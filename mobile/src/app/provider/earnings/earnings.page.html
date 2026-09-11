@@ -18,7 +18,7 @@
         }
         <ion-button expand="block" class="withdraw mt-4" [disabled]="w.availableMinor <= 0" (click)="openSheet()">
           <ion-icon name="cash-outline" slot="start" aria-hidden="true"></ion-icon>
-          {{ 'pro.withdraw' | translate }}
+          <span class="min-w-0 flex-1 text-start">{{ 'pro.withdraw' | translate }}</span>
         </ion-button>
       </div>
     }
@@ -31,7 +31,7 @@
          Top-aligned: the hint wraps on a narrow phone, and centring left the icon and the amount
          floating against the middle of a three-line block. -->
     @if (credits() !== null) {
-      <div class="mb-4 flex items-start gap-2 rounded-lg border border-edge bg-surface-raised p-4 shadow-sm">
+      <div class="mb-4 flex items-start gap-2 rounded-lg bg-surface-raised p-4 shadow-sm">
         <ion-icon name="ticket-outline" class="mt-0.5 flex-none text-[1.4rem] text-brand" aria-hidden="true"></ion-icon>
         <div class="min-w-0 flex-1">
           <b class="block text-md">{{ 'wd.credits' | translate }}</b>
@@ -45,7 +45,7 @@
            was no way to top it up, so running out meant quietly losing the ability to bid. -->
       <button
         type="button"
-        class="mb-4 min-h-11 w-full cursor-pointer rounded-md border border-edge bg-surface-raised px-4 py-2.5 text-sm font-semibold text-content [font:inherit] shadow-sm disabled:opacity-50"
+        class="mb-4 min-h-11 w-full cursor-pointer rounded-md bg-surface-raised px-4 py-2.5 text-sm font-semibold text-content [font:inherit] shadow-sm disabled:opacity-50"
         [disabled]="busy()"
         (click)="openTopUp()"
       >{{ 'credits.top_up' | translate }}</button>
@@ -54,8 +54,8 @@
     <!-- Payout history -->
     <h2 class="mt-6 mb-4 text-lg font-extrabold tracking-snug">{{ 'pro.payout_history' | translate }}</h2>
     @for (p of payouts(); track p.id) {
-      <div class="mb-2 flex items-center gap-2 rounded-lg border border-edge bg-surface-raised px-4 py-2 shadow-sm">
-        <div [class]="'grid size-[38px] flex-none place-items-center rounded-full text-[1.1rem] ' + tone(p.status)" aria-hidden="true">
+      <div class="mb-2 flex items-center gap-2 rounded-lg bg-surface-raised px-4 py-2 shadow-sm">
+        <div [class]="'grid size-[38px] flex-none place-items-center  text-[1.1rem] ' + tone(p.status)" aria-hidden="true">
           <ion-icon [name]="p.status === 'failed' ? 'close' : (p.status === 'paid' ? 'checkmark' : 'time-outline')"></ion-icon>
         </div>
         <div class="min-w-0 flex-1">
@@ -150,7 +150,7 @@
           @if (busy()) {
             <ion-spinner name="crescent"></ion-spinner>
           } @else {
-            {{ 'wd.confirm' | translate }}
+            <span class="min-w-0 flex-1 text-start">{{ 'wd.confirm' | translate }}</span>
           }
         </ion-button>
       </div>
@@ -210,7 +210,7 @@
     <ion-footer class="ion-no-border">
       <div class="mx-auto max-w-3xl border-t border-t-edge px-4 py-2">
         <ion-button expand="block" [disabled]="busy()" (click)="buyCredits()">
-          {{ 'credits.confirm' | translate }}
+          <span class="min-w-0 flex-1 text-start">{{ 'credits.confirm' | translate }}</span>
         </ion-button>
       </div>
     </ion-footer>

@@ -13,7 +13,7 @@
       </div>
     </ion-buttons>
     <ion-buttons slot="end">
-      <div class="me-4 grid size-9 flex-none place-items-center rounded-full bg-brand text-xs font-bold uppercase text-brand-contrast" aria-hidden="true">
+      <div class="me-4 grid size-9 flex-none place-items-center  bg-brand text-xs font-bold uppercase text-brand-contrast" aria-hidden="true">
         @if (userInitials().initials) {
           {{ userInitials().initials }}
         } @else {
@@ -48,7 +48,7 @@
          the very thing it is an alternative to, and on a small screen an overlay that can be
          scrolled behind is a reliable source of mis-taps. -->
     @if (matches().length > 0) {
-      <div class="my-1 mb-2 flex flex-col overflow-hidden rounded-lg border border-edge bg-surface-raised" role="listbox">
+      <div class="my-1 mb-2 flex flex-col overflow-hidden rounded-lg bg-surface-raised" role="listbox">
         @for (m of matches(); track m.id) {
           <button
             class="flex w-full min-h-11 cursor-pointer items-center gap-2.5 border-0 bg-transparent px-4 py-2.5 text-start text-content [font:inherit] not-first:border-t not-first:border-t-edge"
@@ -167,7 +167,7 @@
       <!-- These carry an avatar, a two-line name, a meta line and a call to action. At 8px all four
            were pressed against the card's edges, which is what made the rail read as dense rather
            than as a list of people worth choosing between. -->
-      <div class="mb-2 flex items-center gap-2 rounded-lg border border-edge bg-surface-raised py-4 ps-4 pe-2 shadow-sm">
+      <div class="mb-2 flex items-center gap-2 rounded-lg bg-surface-raised py-4 ps-4 pe-2 shadow-sm">
         <!-- The avatar + info area is a single tap target that opens the profile. -->
         <button
           class="flex min-h-11 min-w-0 flex-1 cursor-pointer items-center gap-2 border-0 bg-transparent p-0 text-start text-inherit"

@@ -1,49 +1,8 @@
 // Ionic's own components only — everything else on this page is a Tailwind utility in the template.
 
-// Discover is the app's front door and it opened on the same flat grey as every other screen, so
-// the product had no moment that looked like itself. The public site's hero carries a brand wash;
-// this is the same idea in the app, so the two read as one product rather than two.
-//
-// The wash lives on ion-content rather than on the page wrapper so it bleeds to the edges — the
-// wrapper is capped at 720px for tablets, which would have left a tinted column floating in grey —
-// and the toolbar takes the same colour at full strength so header and content join with no seam.
-ion-toolbar {
-  --background: var(--hm-color-brand-tint);
-  --border-width: 0;
-}
-
-ion-content {
-  --background: linear-gradient(to bottom, var(--hm-color-brand-tint), transparent 13rem)
-    var(--hm-color-surface-base);
-}
-
-ion-searchbar {
-  --background: var(--hm-color-surface-raised);
-  --color: var(--hm-color-text-primary);
-  --placeholder-color: var(--hm-color-text-muted);
-  --border-radius: var(--hm-radius-md);
-  --box-shadow: none;
-  border: 1px solid var(--hm-color-border-subtle);
-  border-radius: var(--hm-radius-md);
-  padding: 0;
-}
-
-.mode {
-  --background: var(--hm-color-surface-sunken);
-  margin-top: var(--hm-space-md);
-  border-radius: var(--hm-radius-md);
-
-  ion-segment-button {
-    --color: var(--hm-color-text-muted);
-    --color-checked: var(--hm-color-text-primary);
-    --indicator-color: var(--hm-color-surface-raised);
-    --border-radius: var(--hm-radius-sm);
-    font-size: var(--hm-text-sm);
-    font-weight: 600;
-    text-transform: none;
-    min-height: 40px;
-  }
-}
+// Discover used to open on a brand wash that faded down into the page. The Modernist ground is
+// flat: the header ends in the same 2px rule every other header does, and the accent is kept for
+// the one action on the screen rather than spent on the sky behind it.
 
 // A compact outline pill that fits beside the text even at 320px, so the provider row stays a row.
 // It used to wrap its CTA onto a full-width line on the narrowest phones, which made every card

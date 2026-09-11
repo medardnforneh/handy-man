@@ -10,7 +10,7 @@
          as the only thing under a featureless avatar — the screen introduced you as "Building".
          The signed-in person is known either way, so they are named either way. -->
     <div class="grid place-items-center gap-1 pt-4 pb-2 text-center">
-      <div class="mb-1 grid size-18 place-items-center rounded-full bg-brand text-[1.4rem] font-bold uppercase text-brand-contrast" aria-hidden="true">
+      <div class="mb-1 grid size-18 place-items-center  bg-brand text-[1.4rem] font-bold uppercase text-brand-contrast" aria-hidden="true">
         @if (who().initials) {
           {{ who().initials }}
         } @else {
@@ -61,7 +61,7 @@
            tier 3. -->
       <h2 class="mt-6 mb-4 text-lg font-extrabold tracking-snug">{{ 'pro.verification' | translate }}</h2>
       @if (fullyVerified()) {
-        <div class="flex min-h-11 cursor-pointer items-center gap-2 rounded-lg border border-edge bg-surface-raised p-4 shadow-sm" role="button" tabindex="0"
+        <div class="flex min-h-11 cursor-pointer items-center gap-2 rounded-lg bg-surface-raised p-4 shadow-sm" role="button" tabindex="0"
              (click)="openVerification()" (keyup.enter)="openVerification()">
           <ion-icon name="shield-checkmark" class="flex-none text-[1.6rem] text-success" aria-hidden="true"></ion-icon>
           <div class="min-w-0 flex-1">
@@ -73,7 +73,7 @@
           <ion-icon class="flex-none text-md text-content-muted" name="chevron-forward" aria-hidden="true"></ion-icon>
         </div>
       } @else {
-        <div class="flex items-center gap-2 rounded-lg border border-edge bg-surface-raised p-4 shadow-sm">
+        <div class="flex items-center gap-2 rounded-lg bg-surface-raised p-4 shadow-sm">
           <ion-icon name="alert-circle" class="flex-none text-[1.6rem] text-warning" aria-hidden="true"></ion-icon>
           <div class="min-w-0 flex-1">
             <b class="text-md">{{ 'pro.verify_title' | translate }}</b>
@@ -116,12 +116,12 @@
            invent a place name (P1-08 stores a centre point + radius). -->
       <h2 class="mt-6 mb-4 text-lg font-extrabold tracking-snug">{{ 'pro.service_area' | translate }}</h2>
       @if (identity().serviceAreaRadiusKm !== null) {
-        <p class="m-0 flex items-center gap-2 rounded-lg border border-edge bg-surface-raised p-4 text-md shadow-sm">
+        <p class="m-0 flex items-center gap-2 rounded-lg bg-surface-raised p-4 text-md shadow-sm">
           <ion-icon name="map-outline" class="flex-none text-[1.1rem] text-brand" aria-hidden="true"></ion-icon>
           {{ 'pro.service_radius' | translate:{ km: identity().serviceAreaRadiusKm } }}
         </p>
       } @else {
-        <p class="m-0 flex items-center gap-2 rounded-lg border border-edge bg-surface-raised p-4 text-md text-content-muted shadow-sm">
+        <p class="m-0 flex items-center gap-2 rounded-lg bg-surface-raised p-4 text-md text-content-muted shadow-sm">
           <ion-icon name="map-outline" class="flex-none text-[1.1rem] text-brand" aria-hidden="true"></ion-icon>
           {{ 'pro.no_service_area' | translate }}
         </p>

@@ -82,7 +82,7 @@
               [attr.aria-label]="'workspace.play_voice' | translate"
               (click)="playVoice(m)"
             >
-              <span class="grid size-[30px] flex-none place-items-center rounded-full bg-brand/12 text-brand" aria-hidden="true">
+              <span class="grid size-[30px] flex-none place-items-center  bg-brand/12 text-brand" aria-hidden="true">
                 <ion-icon [name]="playingId() === m.id ? 'pause' : 'play'"></ion-icon>
               </span>
               <span class="flex h-[22px] flex-1 items-center gap-[2px]" aria-hidden="true">
@@ -104,7 +104,7 @@
           @case ('quote') {
             <!-- Structured message cards — the chat IS the state machine (doc 06). These are
                  SERVER-narrated (rule #11); the provider workspace renders the same shapes. -->
-            <div class="self-stretch overflow-hidden rounded-lg border border-edge bg-surface-raised shadow-sm">
+            <div class="self-stretch overflow-hidden rounded-lg bg-surface-raised shadow-sm">
               <div class="flex items-center gap-1.5 border-b border-b-edge px-3.5 py-2.5 text-2xs font-bold uppercase tracking-wide text-brand">
                 <ion-icon name="document-text-outline" aria-hidden="true"></ion-icon>
                 <span>{{ 'workspace.quote' | translate }}</span>
@@ -142,7 +142,7 @@
                      attribute, which the bare-string lint reads as a closing tag. -->
                 <div class="flex gap-2 max-[380px]:flex-col">
                   <ion-button class="m-0 flex-1" expand="block" (click)="openJob()">
-                    {{ 'workspace.see_quote' | translate }}
+                    <span class="min-w-0 flex-1 text-start">{{ 'workspace.see_quote' | translate }}</span>
                   </ion-button>
                 </div>
               </div>
@@ -154,7 +154,7 @@
                  endpoint, so if this card is not in the thread, nothing in the product tells the
                  person they are covered — which also made the claim endpoint unreachable, since a
                  claim needs an id nothing else would hand them. -->
-            <div class="self-stretch overflow-hidden rounded-lg border border-edge bg-surface-raised shadow-sm">
+            <div class="self-stretch overflow-hidden rounded-lg bg-surface-raised shadow-sm">
               <div class="flex items-center gap-1.5 border-b border-b-edge px-3.5 py-2.5 text-2xs font-bold uppercase tracking-wide text-success">
                 <ion-icon name="shield-checkmark-outline" aria-hidden="true"></ion-icon>
                 <span>{{ 'workspace.warranty' | translate }}</span>
@@ -172,7 +172,7 @@
                   </p>
                 } @else if (!m.mine) {
                   <ion-button class="mt-3" expand="block" fill="outline" [disabled]="claiming()" (click)="claimWarranty(m)">
-                    {{ 'workspace.warranty_claim' | translate }}
+                    <span class="min-w-0 flex-1 text-start">{{ 'workspace.warranty_claim' | translate }}</span>
                   </ion-button>
                 }
               </div>
@@ -184,7 +184,7 @@
                  customer has to answer: remote jobs have no site visit and no on-site report, so
                  accepting what was delivered is what finishes them. The buttons go the moment a
                  review lands — the server refuses a second one. -->
-            <div class="self-stretch overflow-hidden rounded-lg border border-edge bg-surface-raised shadow-sm">
+            <div class="self-stretch overflow-hidden rounded-lg bg-surface-raised shadow-sm">
               <div class="flex items-center gap-1.5 border-b border-b-edge px-3.5 py-2.5 text-2xs font-bold uppercase tracking-wide text-brand">
                 <ion-icon name="cloud-upload-outline" aria-hidden="true"></ion-icon>
                 <span>{{ 'workspace.deliverable' | translate }}</span>
@@ -206,10 +206,10 @@
                   <p class="mt-1 mb-3 text-sm leading-snug text-content-muted">{{ 'workspace.deliverable_prompt' | translate }}</p>
                   <div class="flex gap-2 max-[380px]:flex-col">
                     <ion-button class="m-0 flex-1" expand="block" [disabled]="reviewing() !== null" (click)="acceptDeliverable(m)">
-                      {{ 'workspace.deliverable_accept' | translate }}
+                      <span class="min-w-0 flex-1 text-start">{{ 'workspace.deliverable_accept' | translate }}</span>
                     </ion-button>
                     <ion-button class="m-0 flex-1" expand="block" fill="outline" [disabled]="reviewing() !== null" (click)="rejectDeliverable(m)">
-                      {{ 'workspace.deliverable_reject' | translate }}
+                      <span class="min-w-0 flex-1 text-start">{{ 'workspace.deliverable_reject' | translate }}</span>
                     </ion-button>
                   </div>
                 } @else {
@@ -221,7 +221,7 @@
           }
 
           @case ('milestone') {
-            <div class="self-stretch overflow-hidden rounded-lg border border-edge bg-surface-raised shadow-sm">
+            <div class="self-stretch overflow-hidden rounded-lg bg-surface-raised shadow-sm">
               <div class="flex items-center gap-1.5 border-b border-b-edge px-3.5 py-2.5 text-2xs font-bold uppercase tracking-wide text-brand">
                 <ion-icon name="checkmark-circle-outline" aria-hidden="true"></ion-icon>
                 <span>{{ 'workspace.milestone_released' | translate }}</span>

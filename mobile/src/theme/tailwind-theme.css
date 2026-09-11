@@ -20,6 +20,8 @@
   --color-danger: var(--hm-color-status-danger);
   --color-info: var(--hm-color-status-info);
 
+  --font-sans: var(--hm-font-sans);
+
   --radius-sm: var(--hm-radius-sm);
   --radius-md: var(--hm-radius-md);
   --radius-lg: var(--hm-radius-lg);
@@ -37,6 +39,7 @@
   --text-xl: var(--hm-text-xl);
   --text-2xl: var(--hm-text-2xl);
   --text-3xl: var(--hm-text-3xl);
+  --text-4xl: var(--hm-text-4xl);
 
   --leading-tight: var(--hm-leading-tight);
   --leading-snug: var(--hm-leading-snug);
@@ -47,4 +50,5 @@
   --tracking-snug: var(--hm-tracking-snug);
   --tracking-normal: var(--hm-tracking-normal);
   --tracking-wide: var(--hm-tracking-wide);
+  --tracking-wider: var(--hm-tracking-wider);
 }

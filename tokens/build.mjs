@@ -34,11 +34,35 @@ function scalarVars(group) {
 
 const header = '/* GENERATED from tokens/tokens.json — do not edit by hand. Run `npm run tokens:build`. */\n';
 
-function buildTokensCss() {
+/**
+ * The typeface, self-hosted.
+ *
+ * The Modernist system is set entirely in Archivo. It is served from OUR origin rather than
+ * fonts.googleapis.com for two reasons that both matter here: the app is an installable PWA that has
+ * to render offline, and a third-party font request is one more thing to wait for on the networks
+ * this product is built for. One variable-weight file (400–800, latin — which covers French) is
+ * ~35kB with `font-display: swap`, so text is never invisible while it loads. The path differs per
+ * surface because each serves its assets from a different place, so the generator takes it as an
+ * argument rather than guessing.
+ */
+function fontFace(fontUrl) {
+  return `@font-face {
+  font-family: "Archivo";
+  font-style: normal;
+  font-weight: 400 800;
+  font-display: swap;
+  src: url("${fontUrl}") format("woff2");
+}
+`;
+}
+
+function buildTokensCss(fontUrl) {
   const light = colorVars('light');
   const dark = colorVars('dark');
   const scalars = [
+    scalarVars('font'),
     scalarVars('radius'),
+    scalarVars('rule'),
     scalarVars('space'),
     scalarVars('shadow'),
     scalarVars('text'),
@@ -47,6 +71,7 @@ function buildTokensCss() {
   ].filter(Boolean).join('\n');
 
   return `${header}
+${fontFace(fontUrl)}
 :root {
 ${light}
 ${scalars}
@@ -127,6 +152,11 @@ function buildTailwindTheme() {
   color('warning', 'color', 'status.warning');
   color('danger', 'color', 'status.danger');
   color('info', 'color', 'status.info');
+
+  // The typeface. Every surface's `font-sans` is the token: the site through this block, the app
+  // through Ionic's --ion-font-family, which theme/variables.scss points at --font-sans.
+  lines.push('');
+  lines.push(`  --font-sans: ${ref('font', 'sans')};`);
 
   lines.push('');
   for (const k of Object.keys(tokens.radius ?? {})) lines.push(`  --radius-${k}: ${ref('radius', k)};`);
@@ -225,16 +255,20 @@ write(join(__dirname, 'generated', 'ionic-tokens.css'), ionicCss);
 write(join(__dirname, 'generated', 'tailwind-theme.css'), tailwindTheme);
 
 // Backend (Blade + Filament share Tailwind + the CSS vars).
-write(join(root, 'backend', 'resources', 'css', 'tokens.css'), tokensCss);
+// Absolute, because the Vite copy and the directly-linked copy both resolve against public/.
+write(join(root, 'backend', 'resources', 'css', 'tokens.css'), buildTokensCss('/fonts/archivo-latin.woff2'));
 write(join(root, 'backend', 'resources', 'css', 'tailwind-theme.css'), tailwindTheme);
 // Also emit a directly-linkable copy so Blade can <link> it without a Vite build.
-write(join(root, 'backend', 'public', 'css', 'tokens.css'), tokensCss);
+write(join(root, 'backend', 'public', 'css', 'tokens.css'), buildTokensCss('/fonts/archivo-latin.woff2'));
 // Filament resolves its ramps in PHP and cannot read a CSS variable — see buildFilamentPhp.
 write(join(root, 'backend', 'config', 'tokens.php'), buildFilamentPhp());
 
 // Mobile (Ionic app) — only if scaffolded.
 if (existsSync(join(root, 'mobile'))) {
-  write(join(root, 'mobile', 'src', 'theme', 'tokens.css'), tokensCss);
+  // Root-relative: Angular's CSS pipeline resolves a relative url() against the importing file (src/
+  // global.scss, not this one) and fails the build; a root-relative path it leaves alone, and the
+  // app is served from a root on every platform (ng serve, the PWA, Capacitor's https://localhost).
+  write(join(root, 'mobile', 'src', 'theme', 'tokens.css'), buildTokensCss('/assets/fonts/archivo-latin.woff2'));
   write(join(root, 'mobile', 'src', 'theme', 'ionic-tokens.css'), ionicCss);
   // The app writes its layout in the same utility vocabulary as the marketing site, so it needs the
   // same @theme mapping. One generated file, two surfaces: `bg-surface-raised` cannot come to mean

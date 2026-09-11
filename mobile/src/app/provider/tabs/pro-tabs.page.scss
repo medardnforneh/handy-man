@@ -51,9 +51,12 @@ ion-split-pane {
 
 // ---- tab bar (phones) ----
 
+// On the ground colour above the system's 2px rule — the same bar the customer shell draws.
 ion-tab-bar {
-  --background: var(--hm-color-surface-raised);
-  --border: 1px solid var(--hm-color-border-subtle);
+  --background: var(--hm-color-surface-base);
+  --border: 0;
+  border-top: var(--hm-rule-strong) solid var(--hm-color-border-strong);
+  height: calc(56px + env(safe-area-inset-bottom));
   padding-bottom: env(safe-area-inset-bottom);
 }
 

@@ -91,7 +91,7 @@
     </ion-segment>
 
     @if (mode() === 'onsite') {
-      <div class="mt-4 rounded-lg border border-edge bg-surface-raised p-4 shadow-sm">
+      <div class="mt-4 rounded-lg bg-surface-raised p-4 shadow-sm">
         <p class="mt-0 mb-2 text-sm leading-snug text-content-muted">{{ 'pro.setup_area_body' | translate }}</p>
         <div class="flex flex-wrap gap-1.5">
           @for (km of radii; track km) {
@@ -125,7 +125,7 @@
       @if (saving()) {
         <ion-spinner name="crescent"></ion-spinner>
       } @else {
-        {{ 'pro.setup_submit' | translate }}
+        <span class="min-w-0 flex-1 text-start">{{ 'pro.setup_submit' | translate }}</span>
       }
     </ion-button>
   </div>

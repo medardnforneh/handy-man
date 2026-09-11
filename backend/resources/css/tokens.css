@@ -1,30 +1,42 @@
 /* GENERATED from tokens/tokens.json — do not edit by hand. Run `npm run tokens:build`. */
 
+@font-face {
+  font-family: "Archivo";
+  font-style: normal;
+  font-weight: 400 800;
+  font-display: swap;
+  src: url("/fonts/archivo-latin.woff2") format("woff2");
+}
+
 :root {
-  --hm-color-surface-base: #f7f8fa;
-  --hm-color-surface-raised: #ffffff;
-  --hm-color-surface-sunken: #eceef1;
-  --hm-color-text-primary: #16181d;
-  --hm-color-text-muted: #5b6472;
-  --hm-color-text-inverse: #ffffff;
-  --hm-color-border-subtle: #e3e6ea;
-  --hm-color-border-strong: #c4c9d0;
-  --hm-color-brand-primary: #0a7d54;
-  --hm-color-brand-onPrimary: #ffffff;
+  --hm-color-surface-base: #f3f2f2;
+  --hm-color-surface-raised: #eae9e9;
+  --hm-color-surface-sunken: #e0dede;
+  --hm-color-text-primary: #201e1d;
+  --hm-color-text-muted: #7a7776;
+  --hm-color-text-inverse: #f3f2f2;
+  --hm-color-border-subtle: #c5c3c3;
+  --hm-color-border-strong: #9f9d9d;
+  --hm-color-brand-primary: #ec3013;
+  --hm-color-brand-onPrimary: #f3f2f2;
   --hm-color-status-success: #1a7f43;
   --hm-color-status-warning: #b3620a;
-  --hm-color-status-danger: #c0392b;
+  --hm-color-status-danger: #ae1800;
   --hm-color-status-info: #1f6feb;
-  --hm-color-brand-strong: #075c3e;
-  --hm-color-brand-tint: #e8f4ef;
-  --hm-color-brand-ring: rgba(10,125,84,0.28);
-  --hm-color-surface-inverse: #0f1216;
-  --hm-color-text-onInverse: #e8eaed;
-  --hm-color-border-onInverse: #262b33;
-  --hm-radius-sm: 6px;
-  --hm-radius-md: 10px;
-  --hm-radius-lg: 16px;
-  --hm-radius-pill: 9999px;
+  --hm-color-brand-strong: #ae1800;
+  --hm-color-brand-tint: #fff2ef;
+  --hm-color-brand-ring: #ec3013;
+  --hm-color-surface-inverse: #201e1d;
+  --hm-color-text-onInverse: #f3f2f2;
+  --hm-color-border-onInverse: #747372;
+  --hm-font-sans: "Archivo", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --hm-font-heading: 800;
+  --hm-radius-sm: 0px;
+  --hm-radius-md: 0px;
+  --hm-radius-lg: 0px;
+  --hm-radius-pill: 0px;
+  --hm-rule-thin: 1px;
+  --hm-rule-strong: 2px;
   --hm-space-xs: 4px;
   --hm-space-sm: 8px;
   --hm-space-md: 16px;
@@ -32,96 +44,98 @@
   --hm-space-xl: 40px;
   --hm-space-2xl: 64px;
   --hm-space-3xl: 96px;
-  --hm-shadow-sm: 0 1px 2px rgba(16,24,40,0.06);
-  --hm-shadow-md: 0 6px 20px -6px rgba(16,24,40,0.14);
-  --hm-shadow-lg: 0 24px 60px -20px rgba(16,24,40,0.28);
+  --hm-shadow-sm: none;
+  --hm-shadow-md: 0 3px 10px rgba(45,43,43,0.16);
+  --hm-shadow-lg: 0 12px 32px rgba(45,43,43,0.22);
   --hm-text-2xs: 0.6875rem;
   --hm-text-xs: 0.75rem;
   --hm-text-sm: 0.8125rem;
   --hm-text-md: 0.9375rem;
   --hm-text-lg: 1.0625rem;
   --hm-text-xl: 1.25rem;
-  --hm-text-2xl: 1.5rem;
-  --hm-text-3xl: 1.875rem;
-  --hm-leading-tight: 1.2;
-  --hm-leading-snug: 1.35;
-  --hm-leading-normal: 1.5;
-  --hm-leading-relaxed: 1.6;
-  --hm-tracking-tight: -0.022em;
-  --hm-tracking-snug: -0.012em;
+  --hm-text-2xl: 1.5625rem;
+  --hm-text-3xl: 2rem;
+  --hm-text-4xl: 2.625rem;
+  --hm-leading-tight: 1.12;
+  --hm-leading-snug: 1.3;
+  --hm-leading-normal: 1.55;
+  --hm-leading-relaxed: 1.65;
+  --hm-tracking-tight: -0.015em;
+  --hm-tracking-snug: -0.01em;
   --hm-tracking-normal: 0;
-  --hm-tracking-wide: 0.04em;
+  --hm-tracking-wide: 0.08em;
+  --hm-tracking-wider: 0.1em;
 }
 
 /* Follow the system when no explicit theme is chosen. */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-  --hm-color-surface-base: #0f1216;
-  --hm-color-surface-raised: #171b21;
-  --hm-color-surface-sunken: #0a0c0f;
-  --hm-color-text-primary: #e8eaed;
-  --hm-color-text-muted: #9aa4b2;
-  --hm-color-text-inverse: #0f1216;
-  --hm-color-border-subtle: #262b33;
-  --hm-color-border-strong: #3a414c;
-  --hm-color-brand-primary: #2ea77d;
-  --hm-color-brand-onPrimary: #05130d;
+  --hm-color-surface-base: #1a1817;
+  --hm-color-surface-raised: #242120;
+  --hm-color-surface-sunken: #2f2b2a;
+  --hm-color-text-primary: #f3f2f2;
+  --hm-color-text-muted: #a8a3a1;
+  --hm-color-text-inverse: #201e1d;
+  --hm-color-border-subtle: #4a4847;
+  --hm-color-border-strong: #716f6f;
+  --hm-color-brand-primary: #ff563c;
+  --hm-color-brand-onPrimary: #1a1817;
   --hm-color-status-success: #35b46a;
   --hm-color-status-warning: #e0912f;
-  --hm-color-status-danger: #e5675a;
+  --hm-color-status-danger: #ff7a63;
   --hm-color-status-info: #4f9dff;
-  --hm-color-brand-strong: #1f8c66;
-  --hm-color-brand-tint: #12241d;
-  --hm-color-brand-ring: rgba(46,167,125,0.34);
-  --hm-color-surface-inverse: #05070a;
-  --hm-color-text-onInverse: #e8eaed;
-  --hm-color-border-onInverse: #1b2027;
+  --hm-color-brand-strong: #ff9783;
+  --hm-color-brand-tint: #4d170e;
+  --hm-color-brand-ring: #ff563c;
+  --hm-color-surface-inverse: #0b0a0a;
+  --hm-color-text-onInverse: #f3f2f2;
+  --hm-color-border-onInverse: #4a4847;
   }
 }
 
 /* Explicit overrides always win (persisted per device via Capacitor Preferences). */
 :root[data-theme="dark"] {
-  --hm-color-surface-base: #0f1216;
-  --hm-color-surface-raised: #171b21;
-  --hm-color-surface-sunken: #0a0c0f;
-  --hm-color-text-primary: #e8eaed;
-  --hm-color-text-muted: #9aa4b2;
-  --hm-color-text-inverse: #0f1216;
-  --hm-color-border-subtle: #262b33;
-  --hm-color-border-strong: #3a414c;
-  --hm-color-brand-primary: #2ea77d;
-  --hm-color-brand-onPrimary: #05130d;
+  --hm-color-surface-base: #1a1817;
+  --hm-color-surface-raised: #242120;
+  --hm-color-surface-sunken: #2f2b2a;
+  --hm-color-text-primary: #f3f2f2;
+  --hm-color-text-muted: #a8a3a1;
+  --hm-color-text-inverse: #201e1d;
+  --hm-color-border-subtle: #4a4847;
+  --hm-color-border-strong: #716f6f;
+  --hm-color-brand-primary: #ff563c;
+  --hm-color-brand-onPrimary: #1a1817;
   --hm-color-status-success: #35b46a;
   --hm-color-status-warning: #e0912f;
-  --hm-color-status-danger: #e5675a;
+  --hm-color-status-danger: #ff7a63;
   --hm-color-status-info: #4f9dff;
-  --hm-color-brand-strong: #1f8c66;
-  --hm-color-brand-tint: #12241d;
-  --hm-color-brand-ring: rgba(46,167,125,0.34);
-  --hm-color-surface-inverse: #05070a;
-  --hm-color-text-onInverse: #e8eaed;
-  --hm-color-border-onInverse: #1b2027;
+  --hm-color-brand-strong: #ff9783;
+  --hm-color-brand-tint: #4d170e;
+  --hm-color-brand-ring: #ff563c;
+  --hm-color-surface-inverse: #0b0a0a;
+  --hm-color-text-onInverse: #f3f2f2;
+  --hm-color-border-onInverse: #4a4847;
 }
 
 :root[data-theme="light"] {
-  --hm-color-surface-base: #f7f8fa;
-  --hm-color-surface-raised: #ffffff;
-  --hm-color-surface-sunken: #eceef1;
-  --hm-color-text-primary: #16181d;
-  --hm-color-text-muted: #5b6472;
-  --hm-color-text-inverse: #ffffff;
-  --hm-color-border-subtle: #e3e6ea;
-  --hm-color-border-strong: #c4c9d0;
-  --hm-color-brand-primary: #0a7d54;
-  --hm-color-brand-onPrimary: #ffffff;
+  --hm-color-surface-base: #f3f2f2;
+  --hm-color-surface-raised: #eae9e9;
+  --hm-color-surface-sunken: #e0dede;
+  --hm-color-text-primary: #201e1d;
+  --hm-color-text-muted: #7a7776;
+  --hm-color-text-inverse: #f3f2f2;
+  --hm-color-border-subtle: #c5c3c3;
+  --hm-color-border-strong: #9f9d9d;
+  --hm-color-brand-primary: #ec3013;
+  --hm-color-brand-onPrimary: #f3f2f2;
   --hm-color-status-success: #1a7f43;
   --hm-color-status-warning: #b3620a;
-  --hm-color-status-danger: #c0392b;
+  --hm-color-status-danger: #ae1800;
   --hm-color-status-info: #1f6feb;
-  --hm-color-brand-strong: #075c3e;
-  --hm-color-brand-tint: #e8f4ef;
-  --hm-color-brand-ring: rgba(10,125,84,0.28);
-  --hm-color-surface-inverse: #0f1216;
-  --hm-color-text-onInverse: #e8eaed;
-  --hm-color-border-onInverse: #262b33;
+  --hm-color-brand-strong: #ae1800;
+  --hm-color-brand-tint: #fff2ef;
+  --hm-color-brand-ring: #ec3013;
+  --hm-color-surface-inverse: #201e1d;
+  --hm-color-text-onInverse: #f3f2f2;
+  --hm-color-border-onInverse: #747372;
 }

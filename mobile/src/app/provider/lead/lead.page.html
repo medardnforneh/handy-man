@@ -35,7 +35,7 @@
         }
       </div>
 
-      <p class="m-0 rounded-lg border border-edge bg-surface-raised p-4 text-md leading-relaxed shadow-sm">{{ l.details }}</p>
+      <p class="m-0 rounded-lg bg-surface-raised p-4 text-md leading-relaxed shadow-sm">{{ l.details }}</p>
 
       <!-- The price already in front of this customer (P2.5-01). Shown because a revision is a new
            VERSION that supersedes the old one, never an in-place edit — so what was last offered,
@@ -67,7 +67,7 @@
       @if (l.jobId) {
         <button
           type="button"
-          class="mt-4 flex w-full min-h-11 cursor-pointer items-center justify-center gap-2 rounded-md border border-dashed border-edge-strong bg-transparent p-4 text-sm font-semibold text-content-muted [font:inherit] disabled:opacity-50"
+          class="mt-4 flex w-full min-h-11 cursor-pointer items-center justify-start gap-2 rounded-md border border-edge-strong bg-transparent p-4 text-sm font-semibold text-content-muted [font:inherit] disabled:opacity-50"
           [disabled]="busy()"
           (click)="openVisit()"
         >
@@ -90,11 +90,11 @@
     <div class="mx-auto grid max-w-3xl grid-cols-2 gap-2 border-t border-t-edge px-4 py-2 max-[420px]:grid-cols-1">
       <ion-button expand="block" fill="outline" [disabled]="busy()" (click)="openQuote()">
         <ion-icon name="document-text-outline" slot="start" aria-hidden="true"></ion-icon>
-        {{ (ownQuote() ? 'pro.revise_quote' : 'pro.send_quote') | translate }}
+        <span class="min-w-0 flex-1 text-start">{{ (ownQuote() ? 'pro.revise_quote' : 'pro.send_quote') | translate }}</span>
       </ion-button>
       <ion-button expand="block" [disabled]="busy()" (click)="accept()">
         <ion-icon name="checkmark-circle-outline" slot="start" aria-hidden="true"></ion-icon>
-        {{ 'pro.accept_offer' | translate }}
+        <span class="min-w-0 flex-1 text-start">{{ 'pro.accept_offer' | translate }}</span>
       </ion-button>
     </div>
   </ion-footer>
@@ -118,7 +118,7 @@
         <h2 class="mt-6 mb-4 text-lg font-extrabold tracking-snug">{{ 'pro.quote_lines' | translate }}</h2>
         @for (line of lines(); track line.id) {
           <!-- One quote line: kind + description on top, quantity/price/total beneath. -->
-          <div class="mb-2 rounded-lg border border-edge bg-surface-raised p-2 shadow-sm">
+          <div class="mb-2 rounded-lg bg-surface-raised p-2 shadow-sm">
             <div class="mb-2 grid grid-cols-[8.5rem_1fr_auto] items-center gap-2 max-[480px]:grid-cols-[1fr_auto]">
               <select
                 class="finput max-[480px]:col-span-full"
@@ -139,7 +139,7 @@
               />
               <button
                 type="button"
-                class="grid size-8 cursor-pointer place-items-center rounded-full border-0 bg-transparent text-[1.1rem] text-content-muted hover:bg-surface-sunken hover:text-danger"
+                class="grid size-8 cursor-pointer place-items-center  border-0 bg-transparent text-[1.1rem] text-content-muted hover:bg-surface-sunken hover:text-danger"
                 [attr.aria-label]="'work.remove' | translate"
                 (click)="removeLine(line.id)"
               ><ion-icon name="close" aria-hidden="true"></ion-icon></button>
@@ -174,7 +174,7 @@
         }
         <button
           type="button"
-          class="mb-4 flex w-full min-h-11 cursor-pointer items-center justify-center gap-1.5 rounded-md border border-dashed border-edge-strong bg-transparent px-4 py-2.5 text-sm font-semibold text-content-muted hover:border-brand hover:text-content"
+          class="mb-4 flex w-full min-h-11 cursor-pointer items-center justify-start gap-1.5 rounded-md border border-edge-strong bg-transparent px-4 py-2.5 text-sm font-semibold text-content-muted hover:border-brand hover:text-content"
           (click)="addLine()"
         >
           <ion-icon name="add" class="text-[1.1rem] text-brand" aria-hidden="true"></ion-icon>
@@ -183,7 +183,7 @@
 
         <!-- The server computes this from the lines; showing it here keeps the price honest. It is
              never an input. -->
-        <div class="mb-4 flex items-baseline justify-between gap-2 rounded-lg border border-edge bg-surface-raised p-4 text-md shadow-sm">
+        <div class="mb-4 flex items-baseline justify-between gap-2 rounded-lg bg-surface-raised p-4 text-md shadow-sm">
           <span>{{ 'pro.subtotal' | translate }}</span>
           <b class="text-[1.15rem] font-extrabold tracking-snug">
             {{ subtotalMinor() | money }} <small class="text-xs font-semibold text-content-muted">{{ 'money.currency' | translate }}</small>
@@ -241,7 +241,7 @@
     <ion-footer class="ion-no-border">
       <div class="mx-auto max-w-3xl border-t border-t-edge px-4 py-2">
         <ion-button expand="block" [disabled]="busy()" (click)="send()">
-          {{ (ownQuote() ? 'pro.send_revision' : 'pro.send_quote') | translate }}
+          <span class="min-w-0 flex-1 text-start">{{ (ownQuote() ? 'pro.send_revision' : 'pro.send_quote') | translate }}</span>
         </ion-button>
       </div>
     </ion-footer>
@@ -310,7 +310,7 @@
     <ion-footer class="ion-no-border">
       <div class="mx-auto max-w-3xl border-t border-t-edge px-4 py-2">
         <ion-button expand="block" [disabled]="busy()" (click)="sendVisit()">
-          {{ 'pro.visit_send' | translate }}
+          <span class="min-w-0 flex-1 text-start">{{ 'pro.visit_send' | translate }}</span>
         </ion-button>
       </div>
     </ion-footer>

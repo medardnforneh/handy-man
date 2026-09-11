@@ -5,12 +5,13 @@
    GENERATED mapping lives in ionic-tokens.css; regenerate via npm run tokens:build. */
 @import "./ionic-tokens.css";
 
-/* The typeface is Tailwind's own default stack, pointed at from Ionic's side rather than the other
-   way round. Ionic ships Roboto for md and applies it through --ion-font-family, so setting only
-   Tailwind's --font-sans would have left the framework's components on one font and everything
-   around them on another. This makes --font-sans the single source, and Ionic follows it.
+/* The typeface is the --hm-font-sans token (Archivo, self-hosted — see tokens.css), pointed at
+   from Ionic's side. Ionic ships Roboto for md and applies it through --ion-font-family, so
+   leaving this alone would have left the framework's components on one font and everything around
+   them on another. Straight at the token rather than at Tailwind's --font-sans, because Tailwind
+   only emits a theme variable that one of its own utilities references — this file is not one.
    Declared here because this file loads after global.scss — Ionic's own :root default has the same
    specificity, so source order is what decides it. */
 :root {
-  --ion-font-family: var(--font-sans);
+  --ion-font-family: var(--hm-font-sans);
 }

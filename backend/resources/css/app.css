@@ -12,10 +12,11 @@
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
 
-/* No --font-sans override: the site takes Tailwind's own default stack, which resolves to whatever
-   the reader's device calls its interface font. That is one less request on a slow connection than
-   the self-hosted Instrument Sans this used to ship (six files, ~116kB), and it cannot flash
-   unstyled text because there is nothing to wait for. */
+/* The typeface is a TOKEN (--hm-font-sans → Archivo, self-hosted as one ~35kB variable file with
+   font-display: swap), mapped onto Tailwind's --font-sans by the generated theme block above. The
+   site briefly took the device's own interface font to save the request; the Modernist system is
+   set in Archivo, and one file that swaps in is an acceptable cost for the app and the site to be
+   one product. The @font-face lives in tokens.css, so the same declaration serves the admin. */
 
 /* `dark:` has to mean exactly what the PALETTE means by dark, or the two disagree and the theme
    toggle's icon contradicts the colours around it. Tailwind's stock variant only reads
