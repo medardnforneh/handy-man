@@ -3,13 +3,9 @@
 > Living tracker for the build. Updated as work progresses. Source of truth for **where we
 > are** and **how this machine is set up**. Read this first when resuming.
 
-_Last updated: 2026-08-15 (the visual pass across ALL THREE UIs — the admin brand name was
-hyphenated and its palette was the one surface the token generator missed; the public site let
-display headings read through its own sticky header; and in the app, Material's uppercase buttons,
-flat cards, slab segments, an empty state that pushed its button through the side of its card at
-390px, and a taxonomy left in the wrong language; before that erasure and data export, the one
-uncalled pair that was a legal obligation, and blocking and reporting a person, the last uncalled
-safety operations)_
+_Last updated: 2026-09-11 (reachability sweep re-run and CLOSED — 0 of 93 uncalled; the tracker
+had said 25 open for a month after the Aug 15–16 commits closed them. Before that: admin
+Customers / Providers / Staff, the token-deadlock fix, and the visual pass across all three UIs)_
 
 ## Environment (this dev machine — Windows 10 Pro, non-admin)
 
@@ -276,39 +272,30 @@ founder-owned legal items in doc 05's launch checklist.
     surfaces (P4-04..07), the offline layer (P5-02) and the PWA/Android build (P5-01) have all
     landed, and native networking on device now works (CapacitorHttp).
 
-## ⚠ Open gap: 25 of 92 API operations are never called by the app
+## API reachability: CLOSED — 0 of 93 operations uncalled (re-verified 2026-09-11)
 
-Found 2026-08-13 by a mechanical sweep of `openapi/openapi.yaml` against every `.ts` file in
-`mobile/src/app` (`operationId` → does any client file contain the literal path?). The check is
-sound: both `api.service.ts` and the offline write queue address the API by its literal templated
-path, so a called endpoint always appears verbatim.
+`npm run check:uncalled` (`tools/find-uncalled-endpoints.mjs`) sweeps `openapi/openapi.yaml`
+against every `.ts` file in `mobile/src/app` (`operationId` → does any client file contain the
+literal templated path?). The check is sound: both `api.service.ts` and the offline write queue
+address the API by its literal path, so a called endpoint always appears verbatim.
 
-**This contradicts "every build-plan task is done, backend and client" further down.** The backend
-is done. The app reaches under half of it. Same pattern the tracker already warns about — check
-what *calls* a thing, not what declares it — but at a scale the earlier audits did not catch,
-because they audited hedged status markers rather than reachability.
+On 2026-08-13 this found **43 of 91** operations unreached — no reviews, no panic button, no
+verification upload, a Withdraw button that requested nothing — while the tracker said "backend
+and client complete". Same pattern the tracker already warns about — check what *calls* a thing,
+not what declares it — at a scale the earlier audits missed because they audited status markers
+rather than reachability. It was closed in three days of commits (2026-08-13 → 08-16): reviews,
+safety (panic, emergency contacts, blocks, reports), verification, deliverable review, quote
+revision, site visits, payouts, refunds, cash settlements, payment intents, follow-ups, referral
+codes, rebooking, warranties, share links, media, disputes, and the rights pair (`DELETE /me`,
+`GET /me/data-export`).
 
-Closed since the sweep: `POST /devices` and `POST /auth/logout` (see the entry below — both were
-unsafe, not merely absent). **Correctly absent** (5): the payment webhook (gateway → server), the
-two `/notes` reference-slice operations (P0-05), worker assignment, which is an org-dispatcher
-function the admin panel performs, and `GET /provider/credits`, whose one number is already in the
-`/provider/earnings` payload the only screen that shows it already fetches. The rest are real gaps, grouped by what they cost:
+**Correctly absent** (6, declared in the script so the sweep stays honest): the payment webhook
+(gateway → server), the two `/notes` reference-slice operations (P0-05), the two worker-assignment
+operations (an org-dispatcher function the admin panel performs), and `GET /provider/credits`,
+whose one number already rides in the `/provider/earnings` payload the only reader fetches.
 
-| Group | Operations | What is impossible in the app today |
-|---|---|---|
-| ~~Reputation~~ | ~~`POST /engagements/{e}/reviews`~~ | **Closed 2026-08-13** — the review form lives on the job detail page |
-| ~~Safety~~ | ~~`/safety/panic`~~, ~~`/emergency-contacts` ×3~~, ~~`/blocks` ×3~~, ~~`/reports`~~ | **Closed 2026-08-14** — the alarm, its contacts, and blocking/reporting a person (P6-07) all have UI |
-| ~~Verification~~ | ~~`/verification-documents` ×2~~ | **Closed 2026-08-14** — the profile's VERIFY button opens a real screen; upload → admin approval → tier rise works end to end |
-| Finishing work | ~~`/engagements/{e}/complete`~~, ~~`/quotations/{q}/accept`~~ (both closed), `/deliverables/{d}/review`, `/quotations/{q}/revise`, `/jobs/{job}/site-visits`, `/site-visits/{v}/complete` | **A quote can be accepted now** (2026-08-14). A deliverable still cannot be reviewed, and a provider cannot revise a submitted quote from the app |
-| Money out | ~~`/provider/payouts`~~, ~~`/provider/credits`~~, `/engagements/{e}/refund`, `/engagements/{e}/cash-settlements` | **Closed 2026-08-14** — Withdraw posts a real payout, and lead credits ride along in the earnings payload. No refund and no cash settlement yet |
-| Money in | `/payment-intents` | Not a blocker for the deposit (P3-13 captures it server-side on `engagement.created`), but the app can initiate no payment of its own |
-| Lifecycle | `/follow-ups` ×2, `/referral-code`, `/referrals/claim`, `/providers/{party}/rebook`, `/engagements/{e}/warranty`, `/warranties/{w}/claims`, `/engagements/{e}/share`, `/engagement-shares/{s}` | Follow-ups cannot be listed or responded to, no referral code, no one-tap rebook, no warranty, no share-my-job link |
-| ~~Rights~~ | ~~`DELETE /me`~~, ~~`GET /me/data-export`~~ | **Closed 2026-08-14** — `/privacy` shows everything held, saves a copy, and erases the account |
-| Media | `GET /media/{media}` | The media access rail is not consumed |
-| Disputes | `GET /disputes`, `POST /engagements/{e}/disputes` | A dispute can only be raised by staff, not by the party in it |
-
-Regenerate the list any time with the sweep script pattern above; it takes seconds and has now
-found four real defects.
+This section stayed at "25 open" for almost a month after the last gap closed — the sweep ran
+green, the tracker did not. Re-run it before believing this paragraph.
 
 ## What was done, most recent first
 
