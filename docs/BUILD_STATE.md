@@ -3,9 +3,9 @@
 > Living tracker for the build. Updated as work progresses. Source of truth for **where we
 > are** and **how this machine is set up**. Read this first when resuming.
 
-_Last updated: 2026-09-11 (reachability sweep re-run and CLOSED — 0 of 93 uncalled; the tracker
-had said 25 open for a month after the Aug 15–16 commits closed them. Before that: admin
-Customers / Providers / Staff, the token-deadlock fix, and the visual pass across all three UIs)_
+_Last updated: 2026-09-12 (the MODERNIST design system landed on all three surfaces — Archivo,
+a red accent, zero radius, 2px rules, flush-left buttons, nothing floats; icons and grayscale
+imagery are the two tracked follow-ups. Before that: the reachability sweep re-run and CLOSED)_
 
 ## Environment (this dev machine — Windows 10 Pro, non-admin)
 
@@ -222,6 +222,21 @@ founder-owned legal items in doc 05's launch checklist.
 
 ## Design debt (tracked)
 
+- **Design system: MODERNIST (claude.ai/design project "Modernist", id
+  `53a2fd5a-4c0d-4bd7-a71b-a1a46608a3dc`), applied 2026-09-12.** Flat and architectural: one
+  accent (#ec3013) on a warm off-white ground, everything in Archivo, no corner rounded anywhere,
+  strong 2px dividers between regions, button labels flush left, nothing floats, photography in
+  black and white. Its light theme is in `tokens/tokens.json` verbatim; the dark theme is ours,
+  designed on the same warm ink. The design's own `readme.md` / `styles.css` are the reference —
+  read them through DesignSync before changing a surface. Two things it asks for are NOT done:
+  - **Icons: the system uses Lucide.** The app is on Ionicons (outline), the site on hand-drawn
+    inline SVGs (`public/partials/icon.blade.php`), the admin on Heroicons. All three are thin
+    outline sets and read close to Lucide at interface sizes; swapping them is a mechanical pass
+    across ~35 names per surface and deserves its own commit with a screen sweep.
+  - **`.grayscale` imagery: deliberately not applied.** The product has no marketing photography.
+    Its only photographs are evidentiary — a deliverable, an ID document, a chat attachment — and
+    colour is information in every one of them. If marketing photography is ever added it goes
+    through the wrapper; the evidentiary ones never do.
 - **UI quality bar (user-mandated): every UI must be beautiful, professional, perfect.** New UI is
   built to that bar from the start on the design-token system (light+dark, semantic colours,
   no-literal-colour lint).
@@ -298,6 +313,45 @@ This section stayed at "25 open" for almost a month after the last gap closed �
 green, the tracker did not. Re-run it before believing this paragraph.
 
 ## What was done, most recent first
+
+- **The Modernist system, on all three surfaces** (2026-09-12; four commits). The founder's new
+  design is a claude.ai/design *design-system* project — tokens, type, components, a readme — not
+  new screens, so it landed as a re-skin through the token layer plus the structure the tokens
+  cannot reach.
+  - **Tokens.** Palette from the design (light verbatim; dark designed to match), radius 0 at every
+    step including the pill, `shadow.sm: none`, a `rule` group (1px/2px), and the typeface as a
+    token: Archivo, **self-hosted** as one ~35kB variable latin woff2 with `font-display: swap`
+    (the PWA has to render offline, and a font CDN is one more thing to wait for). The generator
+    emits the @font-face per surface — root-relative for the app, because Angular's CSS pipeline
+    resolves a relative `url()` against the importing file (global.scss), not the imported one.
+  - **App.** Tab bar un-floated onto a 2px rule; every header ends in one, every footer begins with
+    one; Discover's brand wash gone; cards are fills without a hairline (63 of them, stripped by
+    script); segments are ruled boxes with the chosen option filled; outline buttons are ink in a
+    rule; initials avatars are squares; dashed affordances solid. **Block-button labels are flush
+    left by wrapping each in `<span class="min-w-0 flex-1 text-start">`** — the centring lives in
+    Ionic's `.button-inner`, shadow DOM with no part, and a slotted element takes part in that flex
+    layout. `::part(native)` does nothing here; the comment in `ui.scss` says why.
+    `ion-searchbar.searchbar-md` needed naming explicitly — Ionic's md class outranks a bare element.
+  - **Site.** Header is a bar on the ground with the rule, not a frosted pill; hero flat (wash and
+    the four-percent mark gone, and the `--hm-mark` mask with them); cards fills, no lift; trust
+    strip a ruled grid; sections separated by rules not whitespace; copy flush left; the closing
+    banner is the **poster statement** — the one place red runs as a field. `edge-inverse` added to
+    the Tailwind theme for rules on the inverted band (it was `white/15`).
+  - **Admin.** Filament reads `var(--radius-*)` from a *layered* `:root`; one unlayered block in
+    `admin.css` squares the whole panel. Sections/tables/stats drop ring and shadow; sidebar and
+    topbar on the ground with the rule (the topbar's glass pseudo-element is gone; its Floating-UI
+    caution stays as a comment). Font via `LocalFontProvider` with no URL — no CDN request.
+  - **Verified** from 390px captures of the app (both sections, both themes), the site at 1280/390
+    in both themes, and the admin at 1440 in both themes, against the live API. 492 backend tests,
+    Pint, colour/string lints, uncalled-endpoint sweep all green.
+  - **Harness notes worth keeping** (scratchpad `shot.mjs` / `admin-shot.mjs`, headless Chrome over
+    raw CDP): the Bash tool **mangles backslashes inside heredocs**, so a Windows path or a `\n` in
+    a heredoc'd Node script silently fails to match — write scripts to a file with forward slashes.
+    Navigating to `/welcome` while signed in **revokes the token** (it signs out), so keep signed-out
+    routes in their own run. `artisan serve` is single-threaded, so a page's parallel boot fetches
+    queue behind each other — a screen "not loaded" after 3s is the harness, not the app.
+  - `tools/dev-up.mjs` hung for ever after starting Postgres: pg_ctl hands its inherited stdout to
+    the server and `spawnSync` never sees EOF. `stdio: 'ignore'` + `-w`.
 
 - **"Informatique et réseaux à domicile", filed under Retouches.** Every card in the Discover rail
   named a trade that had nothing to do with its headline — home IT under clothing alterations, an
