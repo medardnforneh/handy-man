@@ -6,6 +6,7 @@ use App\Filament\Widgets\LeakageWatchWidget;
 use App\Filament\Widgets\MarketplaceAnalyticsWidget;
 use App\Filament\Widgets\OverviewWidget;
 use Filament\Auth\MultiFactor\App\AppAuthentication;
+use Filament\FontProviders\LocalFontProvider;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -51,7 +52,9 @@ class AdminPanelProvider extends PanelProvider
                 static fn (string $hex): array => Color::hex($hex),
                 config('tokens.colors'),
             ))
-            ->font('Inter')
+            // Archivo, from the @font-face in the token stylesheet linked below — the LocalFontProvider
+            // with no URL emits no <link>, so the panel makes no request to a font CDN.
+            ->font('Archivo', provider: LocalFontProvider::class)
             ->sidebarCollapsibleOnDesktop()
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')

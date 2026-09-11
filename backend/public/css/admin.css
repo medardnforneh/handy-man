@@ -3,21 +3,50 @@
    tokens.css, which is linked before this file. Both themes follow `data-theme`, mirrored from
    Filament's `.dark` class by AdminPanelProvider. */
 
+/* ---- the system's constants, over Filament's own ----
+   Filament's compiled Tailwind defines its radius scale in a LAYERED :root block and reads it from
+   every component (`.fi-btn { border-radius: var(--radius-lg) }`, and so on). An unlayered
+   declaration on the same element wins whatever the layer says, so this one block squares every
+   corner in the panel — buttons, inputs, badges, modals, sections — without touching a component.
+   Modernist rounds nothing; `--radius-md` is 0 on purpose. */
+:root {
+    --radius-xs: 0px;
+    --radius-sm: 0px;
+    --radius-md: 0px;
+    --radius-lg: 0px;
+    --radius-xl: 0px;
+    --radius-2xl: 0px;
+    --radius-3xl: 0px;
+    --radius-4xl: 0px;
+}
+
 /* ---- canvas ---- */
 .fi-body {
     background: var(--hm-color-surface-base);
     color: var(--hm-color-text-primary);
 }
 
+/* Nothing floats: Filament's sections, tables and cards carry a ring and a shadow by default; the
+   system draws a fill and, where a region needs separating, a rule. */
+.fi-section,
+.fi-ta-ctn,
+.fi-fo-field-wrp-hint,
+.fi-in-entry,
+.fi-wi-stats-overview-stat {
+    box-shadow: none;
+    --tw-ring-shadow: 0 0 #0000;
+    --tw-shadow: 0 0 #0000;
+}
+
 /* ---- sidebar ---- */
 .fi-sidebar {
-    background: var(--hm-color-surface-raised);
-    border-inline-end: 1px solid var(--hm-color-border-subtle);
+    background: var(--hm-color-surface-base);
+    border-inline-end: var(--hm-rule-strong) solid var(--hm-color-border-strong);
 }
 
 .fi-sidebar-header {
-    background: var(--hm-color-surface-raised);
-    border-bottom: 1px solid var(--hm-color-border-subtle);
+    background: var(--hm-color-surface-base);
+    border-bottom: var(--hm-rule-strong) solid var(--hm-color-border-strong);
     box-shadow: none;
 }
 
@@ -46,7 +75,7 @@
     color: var(--hm-color-text-primary);
 }
 
-/* Active item reads as a brand pill, as in the proposal. */
+/* The active item is the accent on a tint — the system's own tag treatment, squared. */
 .fi-sidebar-item.fi-active > .fi-sidebar-item-btn,
 .fi-sidebar-item-btn[aria-current='page'] {
     background: color-mix(in srgb, var(--hm-color-brand-primary) 12%, transparent);
@@ -60,36 +89,18 @@
 }
 
 /* ---- topbar ----
-   The frosted bar, drawn on a PSEUDO-ELEMENT rather than on the bar itself.
+   A bar on the ground colour ending in the system's 2px rule. It used to be frosted glass; the
+   Modernist direction is that nothing floats, and the rule does the organising.
 
-   `backdrop-filter` on an element makes it the containing block for every `position: fixed`
-   descendant. Filament anchors its dropdowns with Floating UI, which measures against the viewport
-   and then applies the result as `position: fixed` — so with the filter on `.fi-topbar-ctn`, those
-   viewport coordinates were resolved against the topbar instead. The profile menu opened with
-   `top: -125px`: off the top of the screen, which reads as a menu that does not open at all.
-
-   Moving the blur to `::before` keeps the effect and takes the topbar out of the containing-block
-   business, because the pseudo-element has no descendants to trap. The translucent background moves
-   with it: the filter samples what is painted BEHIND the pseudo, so leaving an opaque-ish background
-   on the parent would give it nothing but that background to blur.
-
-   Anything added here later — transform, filter, perspective, contain, will-change — has the same
-   effect on the same dropdowns. */
+   One caution kept from the glass days: never put `backdrop-filter` (or transform, filter,
+   perspective, contain, will-change) on `.fi-topbar-ctn` itself. It makes the bar the containing
+   block for every `position: fixed` descendant, and Filament's Floating-UI dropdowns then resolve
+   their viewport coordinates against the bar — the profile menu opened at `top: -125px`. */
 .fi-topbar > nav,
 .fi-topbar-ctn {
-    background: transparent;
-    border-bottom: 1px solid var(--hm-color-border-subtle);
+    background: var(--hm-color-surface-base);
+    border-bottom: var(--hm-rule-strong) solid var(--hm-color-border-strong);
     box-shadow: none;
-}
-
-.fi-topbar-ctn::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    background: color-mix(in srgb, var(--hm-color-surface-base) 82%, transparent);
-    backdrop-filter: saturate(1.4) blur(8px);
-    pointer-events: none;
 }
 
 /* ---- page ---- */
