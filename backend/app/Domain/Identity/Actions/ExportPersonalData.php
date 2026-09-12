@@ -8,6 +8,7 @@ use App\Models\Address;
 use App\Models\Consent;
 use App\Models\Device;
 use App\Models\ProviderProfile;
+use App\Models\UsageDay;
 use App\Models\User;
 
 /**
@@ -57,6 +58,12 @@ final class ExportPersonalData
                 'platform' => $d->platform,
                 'app_version' => $d->app_version,
                 'last_seen_at' => $d->last_seen_at?->toIso8601String(),
+            ])->all(),
+            // Which days the person used the product and from what (doc 08 instrumentation). Held
+            // about them, so shown to them; erased with the user row (cascade).
+            'usage_days' => UsageDay::query()->where('user_id', $user->getKey())->orderBy('day')->get()->map(fn (UsageDay $u): array => [
+                'day' => $u->day->toDateString(),
+                'platform' => $u->platform,
             ])->all(),
             'provider_profile' => ProviderProfile::query()->where('party_id', $party->id)->first()?->only([
                 'headline', 'bio', 'verification_tier', 'jobs_completed',

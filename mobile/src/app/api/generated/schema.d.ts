@@ -2459,6 +2459,8 @@ export interface components {
         IdempotencyKey: string;
         /** @description App build MAJOR.MINOR.PATCH. Builds below the server minimum receive 426. */
         AppVersion: string;
+        /** @description What the person is holding — the packaged app (android, ios) or the web build. Sent by the app on every request; the server records one usage row per person per platform per day (doc 08's switch trigger). A request without it is classified as a browser from its user agent. */
+        ClientPlatform: "android" | "ios" | "web";
     };
     requestBodies: never;
     headers: never;

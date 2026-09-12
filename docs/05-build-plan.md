@@ -282,7 +282,7 @@ the highest-ROI message you will ship.
 - [ ] Workspace tested on a real $70-class Android — smooth after virtualization (doc 08 hot spot)
 - [x] Both themes pass WCAG AA contrast, verified independently — not by inversion — `npm run check:contrast` in CI: every token pair the surfaces draw, per theme, at its use's threshold; **one printed waiver** — the primary button label on the brand red (3.76:1), an open founder decision in BUILD_STATE.md
 - [ ] `pro` app legibility tested outdoors at midday on a physical low-end Android
-- [ ] Mobile-browser share of customer traffic instrumented (the doc 08 switch trigger)
+- [x] Mobile-browser share of customer traffic instrumented (the doc 08 switch trigger) — the app sends `X-Client-Platform` on every request; `RecordUsage` (terminable, cache-throttled) writes one `usage_days` row per person per platform per day, with `web` split into a phone's browser and a desktop's by user agent; `MarketplaceAnalytics::platformShare()` gives the app share of person-days and the web split, shown on the admin dashboard as "In the app (30d)". Exported with the person's data, erased with their row. `UsageInstrumentationTest` (2026-09-12)
 
 **Bilingual**
 - [x] No raw i18n keys reachable in either language (CI gate green) — `npm run i18n:check` in CI + `lint:strings` (no bare user-facing strings)

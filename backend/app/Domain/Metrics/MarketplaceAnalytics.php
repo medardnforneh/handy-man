@@ -49,6 +49,41 @@ final class MarketplaceAnalytics
         ];
     }
 
+    /**
+     * Share of active people by client platform over the window — doc 08's switch trigger #2.
+     *
+     * A person counts once per platform per day (`usage_days`), so the shares are of person-days:
+     * someone who uses the app every morning and the website once a week weighs eleven to one, which
+     * is what "usage dominates" means. `app` is android + ios together, the number the trigger
+     * turns on; the four platforms are kept apart underneath so the answer stays inspectable.
+     *
+     * @return array{person_days: int, app_share: float, shares: array<string, float>}
+     */
+    public function platformShare(int $windowDays = 30): array
+    {
+        $counts = DB::table('usage_days')
+            ->where('day', '>=', now()->subDays($windowDays)->toDateString())
+            ->groupBy('platform')
+            ->selectRaw('platform, count(*) as n')
+            ->pluck('n', 'platform')
+            ->map(fn ($n): int => (int) $n)
+            ->all();
+
+        $total = array_sum($counts);
+        $share = fn (string $platform): float => $total > 0 ? round(($counts[$platform] ?? 0) / $total, 4) : 0.0;
+
+        return [
+            'person_days' => $total,
+            'app_share' => $total > 0 ? round((($counts['android'] ?? 0) + ($counts['ios'] ?? 0)) / $total, 4) : 0.0,
+            'shares' => [
+                'android' => $share('android'),
+                'ios' => $share('ios'),
+                'web_mobile' => $share('web_mobile'),
+                'web_desktop' => $share('web_desktop'),
+            ],
+        ];
+    }
+
     private function avgTimeToOffer(\DateTimeInterface $since): ?int
     {
         $avg = DB::table('service_jobs as j')

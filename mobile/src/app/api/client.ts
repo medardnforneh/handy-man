@@ -104,6 +104,11 @@ const authMiddleware: Middleware = {
       request.headers.set('Authorization', `Bearer ${token}`);
     }
     request.headers.set('X-App-Version', environment.appVersion);
+    // What the person is holding: the packaged app (android / ios) or this code in a browser
+    // (web). Doc 08's switch trigger #2 — "mobile-app usage proven to dominate" — is decided from
+    // this, so it has to be sent from launch rather than reconstructed later. The server splits
+    // `web` into a phone's browser and a desktop's from the user agent.
+    request.headers.set('X-Client-Platform', Capacitor.getPlatform());
     // Identifies the INSTALL, not the person (see core/device.ts). The OTP limiter counts against
     // it — 5 per hour per device, the limit that catches one handset working through a list of
     // numbers — and it was never being sent, so that limit did nothing.

@@ -2155,6 +2155,17 @@ components:
       schema:
         type: string
         pattern: '^\d+\.\d+\.\d+$'
+    ClientPlatform:
+      name: X-Client-Platform
+      in: header
+      required: false
+      description: >-
+        What the person is holding — the packaged app (android, ios) or the web build. Sent by the
+        app on every request; the server records one usage row per person per platform per day (doc
+        08's switch trigger). A request without it is classified as a browser from its user agent.
+      schema:
+        type: string
+        enum: [android, ios, web]
 
   schemas:
     Money:

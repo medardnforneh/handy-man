@@ -4,6 +4,7 @@ use App\Domain\Access\PreconditionUnmetException;
 use App\Http\Middleware\CompressResponse;
 use App\Http\Middleware\EnforceAppVersion;
 use App\Http\Middleware\Idempotency;
+use App\Http\Middleware\RecordUsage;
 use App\Http\Middleware\SetLocale;
 use App\Support\Problem;
 use App\Support\ProblemAware;
@@ -40,7 +41,8 @@ return Application::configure(basePath: dirname(__DIR__))
         // idempotency guard wraps mutating requests (P0-06, CLAUDE.md rule #3).
         $middleware->api(
             prepend: [EnforceAppVersion::class],
-            append: [Idempotency::class],
+            // RecordUsage is terminable and writes after the response — doc 08's switch trigger.
+            append: [Idempotency::class, RecordUsage::class],
         );
 
         // Never redirect a guest to a login page. Laravel's default sends anyone who fails `auth`
