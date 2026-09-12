@@ -149,6 +149,7 @@ function buildTailwindTheme() {
   color('brand-strong', 'color', 'brand.strong');
   color('brand-tint', 'color', 'brand.tint');
   color('brand-contrast', 'color', 'brand.onPrimary');
+  color('brand-on-inverse', 'color', 'brand.onInverse');
   color('success', 'color', 'status.success');
   color('warning', 'color', 'status.warning');
   color('danger', 'color', 'status.danger');

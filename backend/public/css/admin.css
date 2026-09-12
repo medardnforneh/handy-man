@@ -79,7 +79,7 @@
 .fi-sidebar-item.fi-active > .fi-sidebar-item-btn,
 .fi-sidebar-item-btn[aria-current='page'] {
     background: color-mix(in srgb, var(--hm-color-brand-primary) 12%, transparent);
-    color: var(--hm-color-brand-primary);
+    color: var(--hm-color-brand-strong);
     font-weight: 600;
 }
 

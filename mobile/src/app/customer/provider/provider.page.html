@@ -191,7 +191,7 @@
             <button
               type="button"
               class="min-h-11 cursor-pointer rounded-pill border-[1.5px] bg-transparent px-3 py-1.5 text-sm font-semibold"
-              [class]="category() === c ? 'border-brand bg-brand/12 text-brand' : 'border-edge text-content'"
+              [class]="category() === c ? 'border-brand bg-brand/12 text-brand-strong' : 'border-edge text-content'"
               (click)="category.set(c)"
             >{{ ('report.cat.' + c) | translate }}</button>
           }

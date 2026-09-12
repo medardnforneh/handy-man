@@ -35,7 +35,7 @@
                         </span>
                         <div>
                             <h2 class="text-[clamp(1.05rem,0.95rem+0.4vw,1.2rem)] font-extrabold leading-tight tracking-[-0.025em]">
-                                <a class="text-inherit no-underline hover:text-brand" href="{{ route('services.show', ['slug' => $category->slug]) }}">{{ $category->name($locale) }}</a>
+                                <a class="text-inherit no-underline hover:text-brand-strong" href="{{ route('services.show', ['slug' => $category->slug]) }}">{{ $category->name($locale) }}</a>
                             </h2>
                             <span class="text-sm text-content-muted">{{ trans_choice('public.trades_count', $category->children->count(), ['count' => $category->children->count()]) }}</span>
                         </div>
@@ -65,7 +65,7 @@
                 <h2 class="text-[clamp(1.9rem,1.2rem+2.6vw,3.4rem)] font-extrabold leading-[1.1] tracking-[-0.025em]">{{ __('public.cta_title') }}</h2>
                 <p class="max-w-[44rem] mt-3 text-[clamp(1.02rem,0.96rem+0.35vw,1.2rem)] text-brand-contrast/80">{{ __('public.cta_lede') }}</p>
                 <div class="flex flex-wrap gap-2 mt-8">
-                    <a class="inline-flex items-center justify-center gap-2 min-h-11 bg-brand-contrast px-[1.15rem] py-3 text-[0.95rem] font-extrabold text-brand no-underline transition-colors hover:bg-surface-sunken"
+                    <a class="inline-flex items-center justify-center gap-2 min-h-11 bg-brand-contrast px-[1.15rem] py-3 text-[0.95rem] font-extrabold text-brand-strong no-underline transition-colors hover:bg-surface-sunken"
                        href="{{ route('home') }}#how">{{ __('public.trade_cta') }}</a>
                 </div>
             </div>

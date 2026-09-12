@@ -117,7 +117,7 @@
     <!-- Opportunities -->
     <div class="mt-6 mb-4 flex items-center justify-between gap-2">
       <h2 class="text-lg font-extrabold tracking-snug">{{ 'pro.opportunities' | translate }}</h2>
-      <a class="cursor-pointer text-sm font-semibold text-brand no-underline" (click)="seeOpportunities()">{{ 'discover.see_all' | translate }} ({{ leadCount() }})</a>
+      <a class="cursor-pointer text-sm font-semibold text-brand-strong no-underline" (click)="seeOpportunities()">{{ 'discover.see_all' | translate }} ({{ leadCount() }})</a>
     </div>
     @for (lead of topLeads(); track lead.id) {
       <button
@@ -162,7 +162,7 @@
     <!-- Active work -->
     <div class="mt-6 mb-4 flex items-center justify-between gap-2">
       <h2 class="text-lg font-extrabold tracking-snug">{{ 'pro.active_work' | translate }}</h2>
-      <a class="cursor-pointer text-sm font-semibold text-brand no-underline" (click)="seeWork()">{{ 'discover.see_all' | translate }}</a>
+      <a class="cursor-pointer text-sm font-semibold text-brand-strong no-underline" (click)="seeWork()">{{ 'discover.see_all' | translate }}</a>
     </div>
     @for (work of topActive(); track work.id) {
       <button

@@ -381,7 +381,7 @@
             <button
               type="button"
               class="min-h-11 cursor-pointer rounded-pill border-[1.5px] bg-transparent px-3 py-1.5 text-sm font-semibold"
-              [class]="disputeCategory() === c ? 'border-brand bg-brand/12 text-brand' : 'border-edge text-content'"
+              [class]="disputeCategory() === c ? 'border-brand bg-brand/12 text-brand-strong' : 'border-edge text-content'"
               [attr.aria-pressed]="disputeCategory() === c"
               (click)="disputeCategory.set(c)"
             >{{ 'dispute.cat.' + c | translate }}</button>

@@ -124,6 +124,11 @@ jobs:
       - name: No hard-coded user strings
         run: npm run lint:strings
 
+      # Launch checklist (doc 05): both themes pass WCAG AA, verified independently. Every token
+      # pair the surfaces draw, at the threshold its use demands; waivers are printed, never hidden.
+      - name: WCAG contrast, both themes
+        run: npm run check:contrast
+
       # Warns while NATIVE_API_ORIGIN is still the placeholder; the store-build pipeline sets
       # HM_RELEASE=1, which turns the same check into a hard gate. It is deliberately not a gate
       # here — no domain is registered yet, and failing every CI run on that would block work

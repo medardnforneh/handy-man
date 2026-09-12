@@ -61,7 +61,8 @@
         line-height: 1.6;
         -webkit-font-smoothing: antialiased;
     }
-    a { color: var(--hm-color-brand-primary); text-underline-offset: 3px; }
+    /* The strong step: a link is body-size text, and the accent itself only reaches chrome contrast. */
+    a { color: var(--hm-color-brand-strong); text-underline-offset: 3px; }
     /* The system's focus treatment: a 2px accent ring, never the browser's blue. */
     :focus-visible { outline: 2px solid var(--hm-color-brand-ring); outline-offset: 2px; }
     ::selection { background: color-mix(in srgb, var(--hm-color-brand-primary) 30%, transparent); }

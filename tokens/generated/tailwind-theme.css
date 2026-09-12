@@ -16,6 +16,7 @@
   --color-brand-strong: var(--hm-color-brand-strong);
   --color-brand-tint: var(--hm-color-brand-tint);
   --color-brand-contrast: var(--hm-color-brand-onPrimary);
+  --color-brand-on-inverse: var(--hm-color-brand-onInverse);
   --color-success: var(--hm-color-status-success);
   --color-warning: var(--hm-color-status-warning);
   --color-danger: var(--hm-color-status-danger);

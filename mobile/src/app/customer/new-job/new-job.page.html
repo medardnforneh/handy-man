@@ -47,7 +47,7 @@
             type="button"
             class="min-h-11 cursor-pointer rounded-pill border-[1.5px] px-3.5 py-2 text-sm font-semibold transition-colors"
             [class]="skillId() === leaf.id
-              ? 'border-brand bg-brand/12 text-brand'
+              ? 'border-brand bg-brand/12 text-brand-strong'
               : 'border-edge bg-surface-raised text-content-muted'"
             [attr.aria-pressed]="skillId() === leaf.id"
             (click)="skillId.set(leaf.id)"
@@ -114,7 +114,7 @@
                path and adding another is the exception. -->
           <button
             type="button"
-            class="flex min-h-11 cursor-pointer items-center justify-center gap-1.5 rounded-lg border border-edge-strong bg-transparent p-2.5 text-sm font-bold text-brand [font:inherit]"
+            class="flex min-h-11 cursor-pointer items-center justify-center gap-1.5 rounded-lg border border-edge-strong bg-transparent p-2.5 text-sm font-bold text-brand-strong [font:inherit]"
             (click)="addAddress()"
           >
             <ion-icon name="add" class="text-lg" aria-hidden="true"></ion-icon>

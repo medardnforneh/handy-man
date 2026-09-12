@@ -85,7 +85,7 @@
     <div class="mt-6 mb-4 flex items-center justify-between gap-2">
       <h2 class="text-lg font-extrabold tracking-snug">{{ 'discover.categories' | translate }}</h2>
       <a
-        class="cursor-pointer text-sm font-semibold text-brand no-underline"
+        class="cursor-pointer text-sm font-semibold text-brand-strong no-underline"
         role="button"
         tabindex="0"
         [attr.aria-expanded]="allCategories()"
@@ -136,7 +136,7 @@
                baseline wanders. -->
           <span
             class="block min-h-[2.4em] text-2xs font-semibold leading-tight"
-            [class]="category() === cat.id ? 'text-brand' : 'text-content-muted'"
+            [class]="category() === cat.id ? 'text-brand-strong' : 'text-content-muted'"
           >{{ cat.label }}</span>
         </button>
       }
@@ -152,7 +152,7 @@
            find someone through search, categories and the ranked rail. -->
       @if (category() !== null) {
         <a
-          class="cursor-pointer text-sm font-semibold text-brand no-underline"
+          class="cursor-pointer text-sm font-semibold text-brand-strong no-underline"
           role="button"
           tabindex="0"
           (click)="toggleCategory(category()!)"

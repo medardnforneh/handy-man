@@ -12,6 +12,7 @@
         --hm-border: var(--hm-color-border-subtle);
         --hm-border-strong: var(--hm-color-border-strong);
         --hm-brand: var(--hm-color-brand-primary);
+        --hm-brand-text: var(--hm-color-brand-strong);
         --hm-on-brand: var(--hm-color-brand-onPrimary);
         --hm-success: var(--hm-color-status-success);
         --hm-warning: var(--hm-color-status-warning);
@@ -48,7 +49,7 @@
     .hm-dash .hm-cols > *{ min-width:0; }
     .hm-dash .hm-phead{ display:flex; align-items:center; justify-content:space-between; padding:14px 16px; border-bottom:var(--hm-rule); }
     .hm-dash .hm-phead h2{ margin:0; font-size:14px; letter-spacing:-.01em; font-weight:800; }
-    .hm-dash .hm-phead a{ font-size:12.5px; color:var(--hm-brand); font-weight:600; text-decoration:none; }
+    .hm-dash .hm-phead a{ font-size:12.5px; color:var(--hm-brand-text); font-weight:600; text-decoration:none; }
     .hm-dash table{ width:100%; min-width:640px; border-collapse:collapse; font-size:13px; }
     .hm-dash thead th{ text-align:left; font-size:10.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--hm-muted); font-weight:700; padding:10px 16px; border-bottom:var(--hm-rule); }
     .hm-dash tbody td{ padding:12px 16px; border-bottom:1px solid var(--hm-border); vertical-align:middle; }
@@ -103,7 +104,7 @@
        belongs to rather than with the card. */
     .hm-dash .hm-note{ margin:0; padding:14px 16px; font-size:12.5px; line-height:1.6; color:var(--hm-muted); }
     .hm-dash .hm-linkcard{ display:flex; align-items:center; justify-content:space-between; gap:12px;
-        padding:14px 16px; background:var(--hm-surface); color:var(--hm-brand); font-size:13px; font-weight:700; text-decoration:none; }
+        padding:14px 16px; background:var(--hm-surface); color:var(--hm-brand-text); font-size:13px; font-weight:700; text-decoration:none; }
     .hm-dash .hm-linkcard:hover{ background:var(--hm-sunken); }
     .hm-dash .hm-exc{ display:flex; gap:12px; padding:14px 16px; border-bottom:1px solid var(--hm-border); }
     .hm-dash .hm-exc:last-child{ border-bottom:0; }

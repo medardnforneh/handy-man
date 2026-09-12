@@ -79,7 +79,7 @@
                             ['public.nav_trust', route('home').'#trust'],
                             ['public.nav_providers', route('home').'#providers'],
                         ] as [$key, $href])
-                            <a class="px-3 py-2 text-sm font-medium text-content no-underline transition-colors hover:text-brand"
+                            <a class="px-3 py-2 text-sm font-medium text-content no-underline transition-colors hover:text-brand-strong"
                                href="{{ $href }}">{{ __($key) }}</a>
                         @endforeach
                     </span>
@@ -102,7 +102,7 @@
                                 ['public.nav_providers', route('home').'#providers'],
                                 ['public.nav_faq', route('home').'#faq'],
                             ] as [$key, $href])
-                                <a class="px-3 py-2.5 text-sm font-medium text-content no-underline hover:bg-surface-sunken hover:text-brand"
+                                <a class="px-3 py-2.5 text-sm font-medium text-content no-underline hover:bg-surface-sunken hover:text-brand-strong"
                                    href="{{ $href }}">{{ __($key) }}</a>
                             @endforeach
                         </div>

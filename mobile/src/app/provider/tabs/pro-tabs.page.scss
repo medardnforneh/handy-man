@@ -39,7 +39,7 @@ ion-split-pane {
 
 .hm-rail ion-item.active {
   --background: color-mix(in srgb, var(--hm-color-brand-primary) 12%, transparent);
-  --color: var(--hm-color-brand-primary);
+  --color: var(--hm-color-brand-strong);
   font-weight: 600;
 }
 
@@ -62,7 +62,8 @@ ion-tab-bar {
 
 ion-tab-button {
   --color: var(--hm-color-text-muted);
-  --color-selected: var(--hm-color-brand-primary);
+  // The strong step: a selected label is small text, and the accent itself is chrome-grade only.
+  --color-selected: var(--hm-color-brand-strong);
   font-weight: 600;
 }
 

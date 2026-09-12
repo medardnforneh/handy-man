@@ -13,22 +13,23 @@
   --hm-color-surface-raised: #eae9e9;
   --hm-color-surface-sunken: #e0dede;
   --hm-color-text-primary: #201e1d;
-  --hm-color-text-muted: #7a7776;
+  --hm-color-text-muted: #676463;
   --hm-color-text-inverse: #f3f2f2;
   --hm-color-border-subtle: #c5c3c3;
-  --hm-color-border-strong: #9f9d9d;
+  --hm-color-border-strong: #858382;
   --hm-color-brand-primary: #ec3013;
   --hm-color-brand-onPrimary: #f3f2f2;
-  --hm-color-status-success: #1a7f43;
-  --hm-color-status-warning: #b3620a;
+  --hm-color-status-success: #14703b;
+  --hm-color-status-warning: #965106;
   --hm-color-status-danger: #ae1800;
-  --hm-color-status-info: #1f6feb;
+  --hm-color-status-info: #1a5fcf;
   --hm-color-brand-strong: #ae1800;
   --hm-color-brand-tint: #fff2ef;
   --hm-color-brand-ring: #ec3013;
   --hm-color-surface-inverse: #201e1d;
   --hm-color-text-onInverse: #f3f2f2;
   --hm-color-border-onInverse: #747372;
+  --hm-color-brand-onInverse: #ff9783;
   --hm-font-sans: "Archivo", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --hm-font-heading: 800;
   --hm-radius-sm: 0px;
@@ -90,6 +91,7 @@
   --hm-color-surface-inverse: #0b0a0a;
   --hm-color-text-onInverse: #f3f2f2;
   --hm-color-border-onInverse: #4a4847;
+  --hm-color-brand-onInverse: #ff9783;
   }
 }
 
@@ -115,6 +117,7 @@
   --hm-color-surface-inverse: #0b0a0a;
   --hm-color-text-onInverse: #f3f2f2;
   --hm-color-border-onInverse: #4a4847;
+  --hm-color-brand-onInverse: #ff9783;
 }
 
 :root[data-theme="light"] {
@@ -122,20 +125,21 @@
   --hm-color-surface-raised: #eae9e9;
   --hm-color-surface-sunken: #e0dede;
   --hm-color-text-primary: #201e1d;
-  --hm-color-text-muted: #7a7776;
+  --hm-color-text-muted: #676463;
   --hm-color-text-inverse: #f3f2f2;
   --hm-color-border-subtle: #c5c3c3;
-  --hm-color-border-strong: #9f9d9d;
+  --hm-color-border-strong: #858382;
   --hm-color-brand-primary: #ec3013;
   --hm-color-brand-onPrimary: #f3f2f2;
-  --hm-color-status-success: #1a7f43;
-  --hm-color-status-warning: #b3620a;
+  --hm-color-status-success: #14703b;
+  --hm-color-status-warning: #965106;
   --hm-color-status-danger: #ae1800;
-  --hm-color-status-info: #1f6feb;
+  --hm-color-status-info: #1a5fcf;
   --hm-color-brand-strong: #ae1800;
   --hm-color-brand-tint: #fff2ef;
   --hm-color-brand-ring: #ec3013;
   --hm-color-surface-inverse: #201e1d;
   --hm-color-text-onInverse: #f3f2f2;
   --hm-color-border-onInverse: #747372;
+  --hm-color-brand-onInverse: #ff9783;
 }

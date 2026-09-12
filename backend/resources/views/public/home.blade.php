@@ -19,7 +19,7 @@
     <section class="border-b-2 border-edge-strong py-24">
         <div class="w-full max-w-6xl mx-auto px-6 grid gap-16 items-center lg:grid-cols-[1.05fr_0.95fr]">
             <div class="max-w-[44rem]">
-                <span class="inline-block text-xs font-bold uppercase tracking-[0.12em] text-brand">{{ __('public.hero_eyebrow') }}</span>
+                <span class="inline-block text-xs font-bold uppercase tracking-[0.12em] text-brand-strong">{{ __('public.hero_eyebrow') }}</span>
                 <h1 class="mt-2 text-[clamp(2.1rem,1.35rem+3.2vw,3.9rem)] font-extrabold leading-[1.15] tracking-[-0.025em]">{{ __('public.hero_title') }}</h1>
                 <p class="mt-4 text-[clamp(1.02rem,0.96rem+0.35vw,1.2rem)] text-content-muted">{{ __('public.hero_lede') }}</p>
 
@@ -132,7 +132,7 @@
     <section class="border-b-2 border-edge-strong py-24" id="how">
         <div class="w-full max-w-6xl mx-auto px-6">
             <div class="max-w-[44rem]">
-                <span class="inline-block text-xs font-bold uppercase tracking-[0.12em] text-brand">{{ __('public.how_eyebrow') }}</span>
+                <span class="inline-block text-xs font-bold uppercase tracking-[0.12em] text-brand-strong">{{ __('public.how_eyebrow') }}</span>
                 <h2 class="mt-2 text-[clamp(1.55rem,1.15rem+1.7vw,2.4rem)] font-extrabold leading-[1.15] tracking-[-0.025em]">{{ __('public.how_title') }}</h2>
                 <p class="mt-2 text-[clamp(1.02rem,0.96rem+0.35vw,1.2rem)] text-content-muted">{{ __('public.how_lede') }}</p>
             </div>
@@ -160,7 +160,7 @@
             <div class="w-full max-w-6xl mx-auto px-6">
                 <div class="flex flex-wrap items-end justify-between gap-4">
                     <div class="max-w-[44rem]">
-                        <span class="inline-block text-xs font-bold uppercase tracking-[0.12em] text-brand">{{ __('public.trades_eyebrow') }}</span>
+                        <span class="inline-block text-xs font-bold uppercase tracking-[0.12em] text-brand-strong">{{ __('public.trades_eyebrow') }}</span>
                         <h2 class="mt-2 text-[clamp(1.55rem,1.15rem+1.7vw,2.4rem)] font-extrabold leading-[1.15] tracking-[-0.025em]">{{ __('public.trades_title') }}</h2>
                     </div>
                     <a class="inline-flex items-center justify-center gap-2 min-h-11 rounded-md border border-edge-strong bg-transparent px-[1.15rem] py-3 text-[0.95rem] font-extrabold text-content no-underline transition-colors hover:bg-content/7"
@@ -193,7 +193,7 @@
         <div class="w-full max-w-6xl mx-auto px-6">
             <div class="grid gap-16 items-center grid-cols-[repeat(auto-fit,minmax(min(100%,20rem),1fr))]">
                 <div>
-                    <span class="inline-block text-xs font-bold uppercase tracking-[0.12em] text-brand">{{ __('public.pro_eyebrow') }}</span>
+                    <span class="inline-block text-xs font-bold uppercase tracking-[0.12em] text-brand-on-inverse">{{ __('public.pro_eyebrow') }}</span>
                     <h2 class="mt-2 text-[clamp(1.55rem,1.15rem+1.7vw,2.4rem)] font-extrabold leading-[1.15] tracking-[-0.025em] text-content-inverse">{{ __('public.pro_title') }}</h2>
                     <p class="mt-4 text-[clamp(1.02rem,0.96rem+0.35vw,1.2rem)] text-content-inverse/70">{{ __('public.pro_lede') }}</p>
                     <div class="flex flex-wrap gap-2 mt-6">
@@ -229,7 +229,7 @@
     <section class="border-b-2 border-edge-strong py-24">
         <div class="w-full max-w-6xl mx-auto px-6">
             <div class="max-w-[44rem]">
-                <span class="inline-block text-xs font-bold uppercase tracking-[0.12em] text-brand">{{ __('public.safety_eyebrow') }}</span>
+                <span class="inline-block text-xs font-bold uppercase tracking-[0.12em] text-brand-strong">{{ __('public.safety_eyebrow') }}</span>
                 <h2 class="mt-2 text-[clamp(1.55rem,1.15rem+1.7vw,2.4rem)] font-extrabold leading-[1.15] tracking-[-0.025em]">{{ __('public.safety_title') }}</h2>
                 <p class="mt-2 text-[clamp(1.02rem,0.96rem+0.35vw,1.2rem)] text-content-muted">{{ __('public.safety_lede') }}</p>
             </div>
@@ -259,7 +259,7 @@
     <section class="py-10" id="faq">
         <div class="w-full max-w-6xl mx-auto px-6">
             <div class="max-w-[44rem]">
-                <span class="inline-block text-xs font-bold uppercase tracking-[0.12em] text-brand">{{ __('public.faq_eyebrow') }}</span>
+                <span class="inline-block text-xs font-bold uppercase tracking-[0.12em] text-brand-strong">{{ __('public.faq_eyebrow') }}</span>
                 <h2 class="mt-2 text-[clamp(1.55rem,1.15rem+1.7vw,2.4rem)] font-extrabold leading-[1.15] tracking-[-0.025em]">{{ __('public.faq_title') }}</h2>
             </div>
 
@@ -284,7 +284,7 @@
                 <h2 class="text-[clamp(1.9rem,1.2rem+2.6vw,3.4rem)] font-extrabold leading-[1.1] tracking-[-0.025em]">{{ __('public.cta_title') }}</h2>
                 <p class="max-w-[44rem] mt-3 text-[clamp(1.02rem,0.96rem+0.35vw,1.2rem)] text-brand-contrast/80">{{ __('public.cta_lede') }}</p>
                 <div class="flex flex-wrap gap-2 mt-8">
-                    <a class="inline-flex items-center justify-center gap-2 min-h-11 bg-brand-contrast px-[1.15rem] py-3 text-[0.95rem] font-extrabold text-brand no-underline transition-colors hover:bg-surface-sunken"
+                    <a class="inline-flex items-center justify-center gap-2 min-h-11 bg-brand-contrast px-[1.15rem] py-3 text-[0.95rem] font-extrabold text-brand-strong no-underline transition-colors hover:bg-surface-sunken"
                        href="{{ route('services.index') }}">{{ __('public.cta_button') }}</a>
                 </div>
             </div>
