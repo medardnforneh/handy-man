@@ -276,7 +276,7 @@ the highest-ROI message you will ship.
 - [ ] Workspace state converges after a hard socket kill mid-session
 - [x] Follow-ups: complete a job, submit a review, assert both review follow-ups cancelled — `FollowUpOrchestrationTest` "schedules review follow-ups when an engagement completes, and cancels them on review (P7-02)"
 - [ ] `pro` app performs a check-in with zero connectivity and syncs exactly once on reconnect
-- [ ] Public discovery pages indexable; Lighthouse ≥ 90 on a throttled 3G profile
+- [x] Public discovery pages indexable; Lighthouse ≥ 90 on a throttled 3G profile — Lighthouse 12, mobile, simulated 300 ms RTT / 700 kbps / 4× CPU, against `artisan serve` (no opcache, no web server): `/` **92**, `/services` **95**, `/services/plumbing` **98** performance; 100/100/100 accessibility, best practices, SEO (2026-09-12). The HTML is gzipped by the app's own `CompressResponse`, so the number holds on any host; what remains (the static CSS file, cache TTLs on hashed assets) is nginx's job at deploy time. `PublicServicesTest` covers indexability (robots, sitemap, canonical, hreflang)
 - [ ] **A customer can find a provider and request a quote without loading the app bundle** (Blade)
 - [ ] The Ionic app builds and runs as PWA, Android, and iOS from one codebase
 - [ ] Workspace tested on a real $70-class Android — smooth after virtualization (doc 08 hot spot)

@@ -1,6 +1,7 @@
 <?php
 
 use App\Domain\Access\PreconditionUnmetException;
+use App\Http\Middleware\CompressResponse;
 use App\Http\Middleware\EnforceAppVersion;
 use App\Http\Middleware\Idempotency;
 use App\Http\Middleware\SetLocale;
@@ -29,6 +30,11 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         // Resolve fr/en for every Blade/web request (doc 09).
         $middleware->web(append: [SetLocale::class]);
+
+        // Gzip every text response, on any host (the public pages' 3G budget — see the class).
+        // Prepended, so it wraps everything and encodes the final body.
+        $middleware->web(prepend: [CompressResponse::class]);
+        $middleware->api(prepend: [CompressResponse::class]);
 
         // Force-update kill switch runs first on every API request (build plan P0-08); the
         // idempotency guard wraps mutating requests (P0-06, CLAUDE.md rule #3).
