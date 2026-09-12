@@ -7,6 +7,7 @@ use App\Domain\Verification\SignedDocumentUrl;
 use App\Filament\Resources\VerificationDocuments\VerificationDocumentResource;
 use App\Models\User;
 use App\Models\VerificationDocument;
+use CodeWithDennis\FilamentLucideIcons\Enums\LucideIcon;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Textarea;
 use Filament\Notifications\Notification;
@@ -22,11 +23,11 @@ class ViewVerificationDocument extends ViewRecord
         return [
             Action::make('open')
                 ->label('Open document')
-                ->icon('heroicon-o-eye')
+                ->icon(LucideIcon::Eye)
                 ->url(fn (VerificationDocument $record): string => app(SignedDocumentUrl::class)->for($record))
                 ->openUrlInNewTab(),
             Action::make('approve')
-                ->icon('heroicon-o-check-circle')
+                ->icon(LucideIcon::CircleCheck)
                 ->color('success')
                 ->requiresConfirmation()
                 ->visible(fn (VerificationDocument $record): bool => $record->status->value === 'pending')
@@ -37,7 +38,7 @@ class ViewVerificationDocument extends ViewRecord
                     Notification::make()->title('Document approved')->success()->send();
                 }),
             Action::make('reject')
-                ->icon('heroicon-o-x-circle')
+                ->icon(LucideIcon::CircleX)
                 ->color('danger')
                 ->schema([
                     Textarea::make('reason')->label('Reason')->required()->maxLength(2000),

@@ -9,9 +9,9 @@ use App\Filament\Resources\Engagements\Schemas\EngagementInfolist;
 use App\Filament\Resources\Engagements\Tables\EngagementsTable;
 use App\Models\Engagement;
 use BackedEnum;
+use CodeWithDennis\FilamentLucideIcons\Enums\LucideIcon;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
 use UnitEnum;
@@ -27,7 +27,7 @@ class EngagementResource extends Resource
 {
     protected static ?string $model = Engagement::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedClipboardDocumentCheck;
+    protected static string|BackedEnum|null $navigationIcon = LucideIcon::ClipboardCheck;
 
     protected static string|UnitEnum|null $navigationGroup = 'Marketplace';
 

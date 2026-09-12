@@ -8,9 +8,9 @@ use App\Filament\Resources\JobOffers\Schemas\JobOfferInfolist;
 use App\Filament\Resources\JobOffers\Tables\JobOffersTable;
 use App\Models\JobOffer;
 use BackedEnum;
+use CodeWithDennis\FilamentLucideIcons\Enums\LucideIcon;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
 use UnitEnum;
@@ -23,7 +23,7 @@ class JobOfferResource extends Resource
 {
     protected static ?string $model = JobOffer::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedPaperAirplane;
+    protected static string|BackedEnum|null $navigationIcon = LucideIcon::Send;
 
     protected static string|UnitEnum|null $navigationGroup = 'Marketplace';
 

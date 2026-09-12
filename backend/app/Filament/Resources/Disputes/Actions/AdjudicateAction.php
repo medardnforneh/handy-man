@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Disputes\Actions;
 use App\Domain\Disputes\Actions\AdjudicateDispute;
 use App\Models\Dispute;
 use App\Models\User;
+use CodeWithDennis\FilamentLucideIcons\Enums\LucideIcon;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -24,7 +25,7 @@ final class AdjudicateAction
     public static function make(): Action
     {
         return Action::make('adjudicate')
-            ->icon('heroicon-o-scale')
+            ->icon(LucideIcon::Scale)
             ->visible(fn (Dispute $record): bool => in_array($record->status, ['open', 'reviewing'], true))
             ->schema([
                 Select::make('decision')

@@ -7,6 +7,7 @@ namespace App\Filament\Resources\Staff\Tables;
 use App\Domain\Access\Role;
 use App\Filament\Resources\Staff\Support\StaffRoleField;
 use App\Models\User;
+use CodeWithDennis\FilamentLucideIcons\Enums\LucideIcon;
 use Filament\Actions\Action;
 use Filament\Facades\Filament;
 use Filament\Tables\Columns\IconColumn;
@@ -80,7 +81,7 @@ final class StaffTable
             ->recordActions([
                 Action::make('roles')
                     ->label(__('admin.staff.change_roles'))
-                    ->icon('heroicon-o-key')
+                    ->icon(LucideIcon::Key)
                     ->modalHeading(fn (User $record): string => __('admin.staff.change_roles_for', [
                         'name' => $record->party->display_name,
                     ]))
@@ -94,7 +95,7 @@ final class StaffTable
 
                 Action::make('revoke')
                     ->label(__('admin.staff.revoke'))
-                    ->icon('heroicon-o-no-symbol')
+                    ->icon(LucideIcon::Ban)
                     ->color('danger')
                     ->requiresConfirmation()
                     ->modalHeading(fn (User $record): string => __('admin.staff.revoke_for', [

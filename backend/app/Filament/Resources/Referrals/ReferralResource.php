@@ -8,9 +8,9 @@ use App\Filament\Resources\Referrals\Schemas\ReferralInfolist;
 use App\Filament\Resources\Referrals\Tables\ReferralsTable;
 use App\Models\Referral;
 use BackedEnum;
+use CodeWithDennis\FilamentLucideIcons\Enums\LucideIcon;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
 use UnitEnum;
@@ -23,7 +23,7 @@ class ReferralResource extends Resource
 {
     protected static ?string $model = Referral::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedGift;
+    protected static string|BackedEnum|null $navigationIcon = LucideIcon::Gift;
 
     protected static string|UnitEnum|null $navigationGroup = 'Trust & safety';
 

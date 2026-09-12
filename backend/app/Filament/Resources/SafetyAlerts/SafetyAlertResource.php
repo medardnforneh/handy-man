@@ -8,9 +8,9 @@ use App\Filament\Resources\SafetyAlerts\Schemas\SafetyAlertInfolist;
 use App\Filament\Resources\SafetyAlerts\Tables\SafetyAlertsTable;
 use App\Models\SafetyAlert;
 use BackedEnum;
+use CodeWithDennis\FilamentLucideIcons\Enums\LucideIcon;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
 use UnitEnum;
@@ -24,7 +24,7 @@ class SafetyAlertResource extends Resource
 {
     protected static ?string $model = SafetyAlert::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedExclamationTriangle;
+    protected static string|BackedEnum|null $navigationIcon = LucideIcon::TriangleAlert;
 
     protected static string|UnitEnum|null $navigationGroup = 'Trust & safety';
 

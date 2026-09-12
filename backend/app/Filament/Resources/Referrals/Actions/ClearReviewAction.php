@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Referrals\Actions;
 
 use App\Domain\Referrals\ReferralService;
 use App\Models\Referral;
+use CodeWithDennis\FilamentLucideIcons\Enums\LucideIcon;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
 
@@ -17,7 +18,7 @@ final class ClearReviewAction
     {
         return Action::make('clear')
             ->label(__('admin.referral.clear'))
-            ->icon('heroicon-o-check-circle')
+            ->icon(LucideIcon::CircleCheck)
             ->color('success')
             ->requiresConfirmation()
             ->modalDescription(__('admin.referral.clear_description'))

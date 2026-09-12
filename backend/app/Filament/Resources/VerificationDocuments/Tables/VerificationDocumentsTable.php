@@ -6,6 +6,7 @@ use App\Domain\Verification\Actions\ReviewVerificationDocument;
 use App\Domain\Verification\SignedDocumentUrl;
 use App\Models\User;
 use App\Models\VerificationDocument;
+use CodeWithDennis\FilamentLucideIcons\Enums\LucideIcon;
 use Filament\Actions\Action;
 use Filament\Actions\ViewAction;
 use Filament\Forms\Components\Textarea;
@@ -40,18 +41,18 @@ class VerificationDocumentsTable
                 ViewAction::make(),
                 Action::make('open')
                     ->label('Open document')
-                    ->icon('heroicon-o-eye')
+                    ->icon(LucideIcon::Eye)
                     // Signed short-TTL URL; opening it streams the file through the route that logs the view.
                     ->url(fn (VerificationDocument $record): string => app(SignedDocumentUrl::class)->for($record))
                     ->openUrlInNewTab(),
                 Action::make('approve')
-                    ->icon('heroicon-o-check-circle')
+                    ->icon(LucideIcon::CircleCheck)
                     ->color('success')
                     ->requiresConfirmation()
                     ->visible(fn (VerificationDocument $record): bool => $record->status->value === 'pending')
                     ->action(fn (VerificationDocument $record) => self::approve($record)),
                 Action::make('reject')
-                    ->icon('heroicon-o-x-circle')
+                    ->icon(LucideIcon::CircleX)
                     ->color('danger')
                     ->schema([
                         Textarea::make('reason')->label('Reason')->required()->maxLength(2000),

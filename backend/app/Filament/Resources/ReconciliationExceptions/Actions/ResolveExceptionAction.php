@@ -5,6 +5,7 @@ namespace App\Filament\Resources\ReconciliationExceptions\Actions;
 use App\Domain\Money\Actions\ResolveReconciliationException;
 use App\Models\ReconciliationException;
 use App\Models\User;
+use CodeWithDennis\FilamentLucideIcons\Enums\LucideIcon;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Textarea;
 use Filament\Notifications\Notification;
@@ -24,7 +25,7 @@ final class ResolveExceptionAction
     public static function make(): Action
     {
         return Action::make('resolve')
-            ->icon('heroicon-o-check-circle')
+            ->icon(LucideIcon::CircleCheck)
             ->requiresConfirmation()
             ->modalHeading(__('admin.recon.resolve_heading'))
             ->modalDescription(__('admin.recon.resolve_description'))

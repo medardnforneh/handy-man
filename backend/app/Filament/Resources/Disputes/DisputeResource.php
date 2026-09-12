@@ -8,9 +8,9 @@ use App\Filament\Resources\Disputes\Schemas\DisputeInfolist;
 use App\Filament\Resources\Disputes\Tables\DisputesTable;
 use App\Models\Dispute;
 use BackedEnum;
+use CodeWithDennis\FilamentLucideIcons\Enums\LucideIcon;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
 use UnitEnum;
@@ -23,7 +23,7 @@ class DisputeResource extends Resource
 {
     protected static ?string $model = Dispute::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedScale;
+    protected static string|BackedEnum|null $navigationIcon = LucideIcon::Scale;
 
     protected static string|UnitEnum|null $navigationGroup = 'Trust & safety';
 

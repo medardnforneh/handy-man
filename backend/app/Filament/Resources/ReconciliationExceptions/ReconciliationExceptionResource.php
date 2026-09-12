@@ -8,9 +8,9 @@ use App\Filament\Resources\ReconciliationExceptions\Schemas\ReconciliationExcept
 use App\Filament\Resources\ReconciliationExceptions\Tables\ReconciliationExceptionsTable;
 use App\Models\ReconciliationException;
 use BackedEnum;
+use CodeWithDennis\FilamentLucideIcons\Enums\LucideIcon;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
 use UnitEnum;
@@ -26,7 +26,7 @@ class ReconciliationExceptionResource extends Resource
 {
     protected static ?string $model = ReconciliationException::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedExclamationTriangle;
+    protected static string|BackedEnum|null $navigationIcon = LucideIcon::TriangleAlert;
 
     protected static string|UnitEnum|null $navigationGroup = 'Money';
 

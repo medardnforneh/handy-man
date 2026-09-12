@@ -8,6 +8,7 @@ use App\Filament\Resources\Engagements\EngagementResource;
 use App\Models\Assignment;
 use App\Models\Engagement;
 use App\Models\Review;
+use CodeWithDennis\FilamentLucideIcons\Enums\LucideIcon;
 use Filament\Actions\Action;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables\Columns\TextColumn;
@@ -194,7 +195,7 @@ class EngagementsRelationManager extends RelationManager
             ->recordActions([
                 Action::make('open')
                     ->label(__('admin.details'))
-                    ->icon('heroicon-o-arrow-top-right-on-square')
+                    ->icon(LucideIcon::ExternalLink)
                     ->url(fn (Engagement $record): string => EngagementResource::getUrl('view', ['record' => $record])),
             ]);
     }

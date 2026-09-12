@@ -6,8 +6,8 @@ use App\Filament\Resources\PaymentIntents\Pages\ListPaymentIntents;
 use App\Filament\Resources\PaymentIntents\Tables\PaymentIntentsTable;
 use App\Models\PaymentIntent;
 use BackedEnum;
+use CodeWithDennis\FilamentLucideIcons\Enums\LucideIcon;
 use Filament\Resources\Resource;
-use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
 use UnitEnum;
@@ -24,7 +24,7 @@ class PaymentIntentResource extends Resource
 {
     protected static ?string $model = PaymentIntent::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedArrowDownTray;
+    protected static string|BackedEnum|null $navigationIcon = LucideIcon::Download;
 
     protected static string|UnitEnum|null $navigationGroup = 'Money';
 

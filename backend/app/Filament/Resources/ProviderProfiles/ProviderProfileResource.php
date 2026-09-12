@@ -14,10 +14,10 @@ use App\Filament\Resources\ProviderProfiles\Schemas\ProviderProfileInfolist;
 use App\Filament\Resources\ProviderProfiles\Tables\ProviderProfilesTable;
 use App\Models\ProviderProfile;
 use BackedEnum;
+use CodeWithDennis\FilamentLucideIcons\Enums\LucideIcon;
 use Filament\Resources\Pages\PageRegistration;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -35,7 +35,7 @@ class ProviderProfileResource extends Resource
 {
     protected static ?string $model = ProviderProfile::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedWrenchScrewdriver;
+    protected static string|BackedEnum|null $navigationIcon = LucideIcon::Wrench;
 
     /** Immediately before Customers, so the two halves of the marketplace sit together. */
     protected static ?int $navigationSort = 10;

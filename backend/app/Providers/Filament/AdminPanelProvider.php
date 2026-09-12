@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\LucideChrome;
 use App\Filament\Widgets\LeakageWatchWidget;
 use App\Filament\Widgets\MarketplaceAnalyticsWidget;
 use App\Filament\Widgets\OverviewWidget;
@@ -84,6 +85,9 @@ class AdminPanelProvider extends PanelProvider
 
     public function boot(): void
     {
+        // The Modernist system is set in Lucide; this reaches the chrome the resources do not choose.
+        LucideChrome::register();
+
         // The bespoke admin views consume the SAME generated design tokens as the app and Blade
         // (tokens/tokens.json → public/css/tokens.css) — no palette is ever redeclared here.
         // Filament switches themes with a `dark` class on <html>; the token stylesheet keys off

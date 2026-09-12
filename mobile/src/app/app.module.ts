@@ -11,6 +11,7 @@ import { Capacitor } from '@capacitor/core';
 import { ServiceWorkerModule } from '@angular/service-worker';
 import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
+import { registerIcons } from './core/icons';
 
 @NgModule({
   declarations: [AppComponent],
@@ -55,4 +56,9 @@ import { AppRoutingModule } from './app-routing.module';
   ],
   bootstrap: [AppComponent],
 })
-export class AppModule {}
+export class AppModule {
+  constructor() {
+    // Before the first <ion-icon> renders: every Ionicons name in use resolves to a Lucide glyph.
+    registerIcons();
+  }
+}

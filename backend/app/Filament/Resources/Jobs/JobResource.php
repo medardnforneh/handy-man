@@ -8,9 +8,9 @@ use App\Filament\Resources\Jobs\Schemas\JobInfolist;
 use App\Filament\Resources\Jobs\Tables\JobsTable;
 use App\Models\Job;
 use BackedEnum;
+use CodeWithDennis\FilamentLucideIcons\Enums\LucideIcon;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
 use UnitEnum;
@@ -23,7 +23,7 @@ class JobResource extends Resource
 {
     protected static ?string $model = Job::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBriefcase;
+    protected static string|BackedEnum|null $navigationIcon = LucideIcon::Briefcase;
 
     protected static string|UnitEnum|null $navigationGroup = 'Marketplace';
 

@@ -9,10 +9,10 @@ use App\Filament\Resources\Staff\Pages\ListStaff;
 use App\Filament\Resources\Staff\Tables\StaffTable;
 use App\Models\User;
 use BackedEnum;
+use CodeWithDennis\FilamentLucideIcons\Enums\LucideIcon;
 use Filament\Facades\Filament;
 use Filament\Resources\Pages\PageRegistration;
 use Filament\Resources\Resource;
-use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -35,7 +35,7 @@ class StaffResource extends Resource
 {
     protected static ?string $model = User::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedShieldCheck;
+    protected static string|BackedEnum|null $navigationIcon = LucideIcon::ShieldCheck;
 
     protected static string|UnitEnum|null $navigationGroup = 'Identity';
 

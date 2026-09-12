@@ -6,8 +6,8 @@ use App\Filament\Resources\Payouts\Pages\ListPayouts;
 use App\Filament\Resources\Payouts\Tables\PayoutsTable;
 use App\Models\Payout;
 use BackedEnum;
+use CodeWithDennis\FilamentLucideIcons\Enums\LucideIcon;
 use Filament\Resources\Resource;
-use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
 use UnitEnum;
@@ -24,7 +24,7 @@ class PayoutResource extends Resource
 {
     protected static ?string $model = Payout::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedArrowUpTray;
+    protected static string|BackedEnum|null $navigationIcon = LucideIcon::Upload;
 
     protected static string|UnitEnum|null $navigationGroup = 'Money';
 

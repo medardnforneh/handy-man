@@ -9,9 +9,9 @@ use App\Filament\Resources\VerificationDocuments\Schemas\VerificationDocumentInf
 use App\Filament\Resources\VerificationDocuments\Tables\VerificationDocumentsTable;
 use App\Models\VerificationDocument;
 use BackedEnum;
+use CodeWithDennis\FilamentLucideIcons\Enums\LucideIcon;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
 use UnitEnum;
@@ -26,7 +26,7 @@ class VerificationDocumentResource extends Resource
 {
     protected static ?string $model = VerificationDocument::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedShieldCheck;
+    protected static string|BackedEnum|null $navigationIcon = LucideIcon::ShieldCheck;
 
     protected static string|UnitEnum|null $navigationGroup = 'Trust & safety';
 

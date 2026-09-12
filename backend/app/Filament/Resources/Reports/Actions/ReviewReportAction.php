@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Reports\Actions;
 use App\Domain\Safety\Actions\ReviewReport;
 use App\Models\Report;
 use App\Models\User;
+use CodeWithDennis\FilamentLucideIcons\Enums\LucideIcon;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -22,7 +23,7 @@ final class ReviewReportAction
     {
         return Action::make('review')
             ->label(__('admin.report.decide'))
-            ->icon('heroicon-o-clipboard-document-check')
+            ->icon(LucideIcon::ClipboardCheck)
             ->visible(fn (Report $record): bool => ! in_array($record->status, ['resolved', 'dismissed'], true))
             ->schema([
                 Select::make('decision')

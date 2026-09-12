@@ -5,6 +5,7 @@ namespace App\Filament\Resources\SafetyAlerts\Actions;
 use App\Domain\Safety\Actions\ResolveSafetyAlert;
 use App\Models\SafetyAlert;
 use App\Models\User;
+use CodeWithDennis\FilamentLucideIcons\Enums\LucideIcon;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\Auth;
@@ -21,7 +22,7 @@ final class SettleAlertActions
     {
         return Action::make('acknowledge')
             ->label(__('admin.safety.acknowledge'))
-            ->icon('heroicon-o-eye')
+            ->icon(LucideIcon::Eye)
             // Deliberately not the primary colour: acknowledging is "I have this", resolving is
             // "this person is safe". Two identical green buttons invite the wrong one.
             ->color('gray')
@@ -33,7 +34,7 @@ final class SettleAlertActions
     {
         return Action::make('resolve')
             ->label(__('admin.safety.resolve'))
-            ->icon('heroicon-o-check-circle')
+            ->icon(LucideIcon::CircleCheck)
             ->color('success')
             ->requiresConfirmation()
             ->modalDescription(__('admin.safety.resolve_description'))

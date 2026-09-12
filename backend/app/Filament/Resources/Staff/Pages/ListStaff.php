@@ -6,6 +6,7 @@ namespace App\Filament\Resources\Staff\Pages;
 
 use App\Filament\Resources\Staff\StaffResource;
 use App\Filament\Resources\Staff\Support\StaffRoleField;
+use CodeWithDennis\FilamentLucideIcons\Enums\LucideIcon;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
 use Filament\Resources\Pages\ListRecords;
@@ -23,7 +24,7 @@ class ListStaff extends ListRecords
             // could have typed on their behalf.
             Action::make('grant')
                 ->label(__('admin.staff.grant'))
-                ->icon('heroicon-o-plus')
+                ->icon(LucideIcon::Plus)
                 ->modalHeading(__('admin.staff.grant'))
                 ->modalDescription(__('admin.staff.grant_hint'))
                 ->modalSubmitActionLabel(__('admin.staff.grant_confirm'))

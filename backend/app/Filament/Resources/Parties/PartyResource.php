@@ -8,9 +8,9 @@ use App\Filament\Resources\Parties\Schemas\PartyInfolist;
 use App\Filament\Resources\Parties\Tables\PartiesTable;
 use App\Models\Party;
 use BackedEnum;
+use CodeWithDennis\FilamentLucideIcons\Enums\LucideIcon;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
 use UnitEnum;
@@ -29,7 +29,7 @@ class PartyResource extends Resource
 {
     protected static ?string $model = Party::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedUsers;
+    protected static string|BackedEnum|null $navigationIcon = LucideIcon::Contact;
 
     protected static string|UnitEnum|null $navigationGroup = 'Identity';
 
