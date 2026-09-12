@@ -26,8 +26,11 @@
                     {{ __('public.service_description', ['service' => $skill->name($locale)]) }}
                 </p>
                 <div class="flex flex-wrap gap-2 mt-6">
+                    {{-- A leaf is a thing one can be quoted for, so its button opens the request
+                         form. A category's button explains how it works instead — the request
+                         itself has to name a trade. --}}
                     <a class="inline-flex items-center justify-center gap-2 min-h-11 rounded-md border border-transparent bg-brand px-[1.15rem] py-3 text-[0.95rem] font-extrabold text-brand-contrast no-underline transition-colors hover:bg-brand-strong"
-                       href="{{ route('home') }}#how">{{ __('public.trade_cta') }}</a>
+                       href="{{ $skill->is_leaf ? route('services.request', ['slug' => $skill->slug]) : route('home').'#how' }}">{{ __('public.trade_cta') }}</a>
                 </div>
             </div>
         </div>

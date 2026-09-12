@@ -1,6 +1,7 @@
 <?php
 
 declare(strict_types=1);
+use Database\Seeders\SkillsSeeder;
 
 /**
  * The public pages' 3G budget (launch checklist, doc 05: Lighthouse ≥ 90 on a throttled 3G profile)
@@ -34,7 +35,7 @@ it('compresses JSON from the API too, once it is worth the CPU', function () {
         ->assertOk()
         ->assertHeaderMissing('Content-Encoding');
 
-    $this->seed(\Database\Seeders\SkillsSeeder::class);
+    $this->seed(SkillsSeeder::class);
     $response = $this->getJson('/api/v1/skills', ['Accept-Encoding' => 'gzip']);
 
     $response->assertOk()->assertHeader('Content-Encoding', 'gzip');

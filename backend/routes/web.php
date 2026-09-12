@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Http\Controllers\EngagementShareViewController;
 use App\Http\Controllers\PublicHomeController;
+use App\Http\Controllers\PublicQuoteRequestController;
 use App\Http\Controllers\PublicServiceController;
 use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\VerificationDocumentViewController;
@@ -19,6 +20,14 @@ Route::get('/', PublicHomeController::class)->name('home');
 // headline + reputation only, exactly as the API's pre-engagement match list does).
 Route::get('/services', [PublicServiceController::class, 'index'])->name('services.index');
 Route::get('/services/{slug}', [PublicServiceController::class, 'show'])->name('services.show');
+
+// Requesting a quote without the app (launch checklist, doc 05): form → one-time code → posted.
+// Server-rendered, no JavaScript; the OTP endpoints' own rate limits apply through the action.
+Route::get('/services/{slug}/request', [PublicQuoteRequestController::class, 'create'])->name('services.request');
+Route::post('/services/{slug}/request', [PublicQuoteRequestController::class, 'store'])->name('services.request.store');
+Route::get('/services/{slug}/request/verify', [PublicQuoteRequestController::class, 'verify'])->name('services.request.verify');
+Route::post('/services/{slug}/request/verify', [PublicQuoteRequestController::class, 'confirm'])->name('services.request.confirm');
+Route::get('/services/{slug}/request/posted', [PublicQuoteRequestController::class, 'posted'])->name('services.request.posted');
 
 // Discovery for crawlers. robots.txt disallows the grant URLs (signed documents, share tokens).
 Route::get('/sitemap.xml', [SitemapController::class, 'sitemap'])->name('sitemap');
