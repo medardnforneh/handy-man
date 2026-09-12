@@ -150,3 +150,10 @@ jobs:
       - name: Build the Ionic app (one codebase → web bundle)
         working-directory: mobile
         run: npm run build
+
+      # The app's unit specs — among them P5-02's offline write queue: a write made with no
+      # connectivity is replayed exactly once, under the same Idempotency-Key, when the transport
+      # returns (launch checklist, doc 05). They passed locally for weeks while nothing ran them.
+      - name: Test the Ionic app (Karma, headless Chrome)
+        working-directory: mobile
+        run: npm run test:ci

@@ -38,6 +38,15 @@ module.exports = function (config) {
     logLevel: config.LOG_INFO,
     autoWatch: true,
     browsers: ['Chrome'],
+    // For CI and scripted runs: headless, and without the sandbox that a container (and this
+    // machine's proxy-locked Chrome) cannot provide. `--no-proxy-server` because a system proxy
+    // that swallows 127.0.0.1 makes Karma's own page unreachable and the run hangs, not fails.
+    customLaunchers: {
+      ChromeHeadlessCI: {
+        base: 'ChromeHeadless',
+        flags: ['--no-sandbox', '--disable-gpu', '--no-proxy-server', '--disable-dev-shm-usage']
+      }
+    },
     singleRun: false,
     restartOnFileChange: true
   });
