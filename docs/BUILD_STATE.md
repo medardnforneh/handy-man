@@ -4,8 +4,9 @@
 > are** and **how this machine is set up**. Read this first when resuming.
 
 _Last updated: 2026-09-12 (the MODERNIST design system landed on all three surfaces — Archivo,
-a red accent, zero radius, 2px rules, flush-left buttons, nothing floats; icons and grayscale
-imagery are the two tracked follow-ups. Before that: the reachability sweep re-run and CLOSED)_
+a red accent, zero radius, 2px rules, flush-left buttons, nothing floats — and then its icon set,
+Lucide; grayscale imagery is the one item deliberately not applied. Before that: the
+reachability sweep re-run and CLOSED)_
 
 ## Environment (this dev machine — Windows 10 Pro, non-admin)
 
@@ -228,11 +229,14 @@ founder-owned legal items in doc 05's launch checklist.
   strong 2px dividers between regions, button labels flush left, nothing floats, photography in
   black and white. Its light theme is in `tokens/tokens.json` verbatim; the dark theme is ours,
   designed on the same warm ink. The design's own `readme.md` / `styles.css` are the reference —
-  read them through DesignSync before changing a surface. Two things it asks for are NOT done:
-  - **Icons: the system uses Lucide.** The app is on Ionicons (outline), the site on hand-drawn
-    inline SVGs (`public/partials/icon.blade.php`), the admin on Heroicons. All three are thin
-    outline sets and read close to Lucide at interface sizes; swapping them is a mechanical pass
-    across ~35 names per surface and deserves its own commit with a screen sweep.
+  read them through DesignSync before changing a surface.
+  - **Icons: Lucide, on all three surfaces (2026-09-12).** The app keeps its Ionicons NAMES —
+    `mobile/src/app/core/icons.ts` registers a Lucide glyph under each (Ionicons checks its
+    registry before fetching an SVG), so a new `<ion-icon name>` either maps there or falls
+    through to the Ionicon with a console warning: **add the mapping**. The site's
+    `public/partials/icon.blade.php` is generated from `lucide`'s node data (take nodes, don't
+    draw). The admin uses `LucideIcon::*` (codewithdennis/filament-lucide-icons) at the resource
+    and `App\Filament\LucideChrome` for Filament's own chrome aliases.
   - **`.grayscale` imagery: deliberately not applied.** The product has no marketing photography.
     Its only photographs are evidentiary — a deliverable, an ID document, a chat attachment — and
     colour is information in every one of them. If marketing photography is ever added it goes
@@ -313,6 +317,15 @@ This section stayed at "25 open" for almost a month after the last gap closed �
 green, the tracker did not. Re-run it before believing this paragraph.
 
 ## What was done, most recent first
+
+- **Lucide on all three surfaces** (2026-09-12, `879a7f7`) — the design system's icon set, done
+  the way each surface draws icons so no screen changed: the app registers a Lucide glyph under
+  every Ionicons name in use (71 — Ionicons' registry beats its SVG fetch), the site's inline
+  partial is regenerated from Lucide's node data, and the admin gets `LucideIcon::*` at the
+  resources plus `LucideChrome` for the ~80 aliases Filament draws itself (sort arrows, chevrons,
+  the eye on View, search, pagination, notifications). One harness note: PowerShell's
+  `Get-Content -Raw` → `WriteAllText` round-trip turns em dashes into `â€”` — pass `-Encoding utf8`
+  or edit with the Edit tool.
 
 - **The Modernist system, on all three surfaces** (2026-09-12; four commits). The founder's new
   design is a claude.ai/design *design-system* project — tokens, type, components, a readme — not
