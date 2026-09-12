@@ -241,8 +241,12 @@ the highest-ROI message you will ship.
 
 ## Definition of ready to launch
 
+> Ticked items name their evidence — a test, a CI gate, a decision record. An item with no
+> evidence stays open however done it feels; "we built it" is not "we proved it" (the tracker's
+> own lesson, docs/BUILD_STATE.md). Updated 2026-09-12.
+
 **Legal / external** (long lead times — start on day 1)
-- [ ] Hosting region decision made and documented (P0-09)
+- [x] Hosting region decision made and documented (P0-09) — `docs/adr/0001-hosting-region.md` ACCEPTED (in-country); lawyer sign-off still pending under the CNDP item
 - [ ] CNDP processing register written; authorisation applied for
 - [ ] Lawyer has reviewed the privacy policy and consent flows against Law No. 2024/017
 - [ ] MTN MoMo KYC complete; aggregator merchant account live
@@ -251,38 +255,38 @@ the highest-ROI message you will ship.
 **Money**
 - [ ] Reconciliation runs clean for 7 consecutive days in staging
 - [ ] Payout tested with real money to a real MoMo number, and reversed
-- [ ] `UPDATE ledger_entries` proven to fail at the DB level in production config
-- [ ] Milestone sums proven to equal engagement totals under a fuzz test
+- [x] `UPDATE ledger_entries` proven to fail at the DB level in production config — `LedgerTest` "forbids UPDATE/DELETE on ledger_entries at the DB level" — the trigger is a migration, identical in every environment; re-run the two tests against the production database after the first deploy to close the "production config" clause
+- [x] Milestone sums proven to equal engagement totals under a fuzz test — `MilestoneSumFuzzTest`: 60 seeded rounds of random subtotal × deposit × site-visit credit through `AcceptQuotation`, asserting sum, shape, sign and positions (2026-09-12)
 
 **Safety**
-- [ ] Admin 2FA enforced; document *reads* logged
+- [x] Admin 2FA enforced; document *reads* logged — `AdminPanelProvider` → `multiFactorAuthentication(..., isRequired: true)`; document reads: `VerificationDocumentViewController` logs `verification_document.viewed` with viewer and IP on EVERY view (doc 04 insider-threat control)
 - [ ] Panic button tested on a physical low-end Android (Tecno/Infinix) with the app backgrounded
 - [ ] Force-update kill switch tested against a real old build
 
 **Access model (doc 10)**
-- [ ] A brand-new account sees BOTH sections fully — no role gate, no unlock, no mode switch
-- [ ] A new user can start a provider profile and list a skill with zero prior grants
-- [ ] Accepting an on-site paid job is blocked until verified, returning `precondition_unmet` inline
-- [ ] Accepting a remote paid job works under the lighter identity check
-- [ ] No Spatie role anywhere gates the customer/provider section split
+- [x] A brand-new account sees BOTH sections fully — no role gate, no unlock, no mode switch — `RoleScopingTest` "defines no customer or provider role" + "a roleless user is judged on facts"; the app routes both sections behind the one auth guard
+- [x] A new user can start a provider profile and list a skill with zero prior grants — `ProviderProfileTest` "lets a brand-new user create a provider profile with zero prior grants (doc 10)"
+- [x] Accepting an on-site paid job is blocked until verified, returning `precondition_unmet` inline — `AcceptOfferTest` "gates an on-site accept on full ID — unverified provider gets precondition_unmet, not 403"; `AccessModelFoundationTest`
+- [x] Accepting a remote paid job works under the lighter identity check — `AcceptOfferTest` "accepts a remote offer → engagement" with an unverified provider
+- [x] No Spatie role anywhere gates the customer/provider section split — `RoleScopingTest` "defines no customer or provider role — the section split is never a permission"
 
 **Product**
 - [ ] A remote engagement completes end-to-end with no address, no check-in, no panic affordance
-- [ ] A quote is revised three times; all versions visible; none mutated
+- [x] A quote is revised three times; all versions visible; none mutated — `QuoteRevisionHistoryTest`: v1→v4 over the API, the customer lists all four newest-first with each version's own lines, and every version — superseded and live — refuses UPDATE at the DB (2026-09-12)
 - [ ] Workspace state converges after a hard socket kill mid-session
-- [ ] Follow-ups: complete a job, submit a review, assert both review follow-ups cancelled
+- [x] Follow-ups: complete a job, submit a review, assert both review follow-ups cancelled — `FollowUpOrchestrationTest` "schedules review follow-ups when an engagement completes, and cancels them on review (P7-02)"
 - [ ] `pro` app performs a check-in with zero connectivity and syncs exactly once on reconnect
 - [ ] Public discovery pages indexable; Lighthouse ≥ 90 on a throttled 3G profile
 - [ ] **A customer can find a provider and request a quote without loading the app bundle** (Blade)
 - [ ] The Ionic app builds and runs as PWA, Android, and iOS from one codebase
 - [ ] Workspace tested on a real $70-class Android — smooth after virtualization (doc 08 hot spot)
-- [ ] Both themes pass WCAG AA contrast, verified independently — not by inversion
+- [x] Both themes pass WCAG AA contrast, verified independently — not by inversion — `npm run check:contrast` in CI: every token pair the surfaces draw, per theme, at its use's threshold; **one printed waiver** — the primary button label on the brand red (3.76:1), an open founder decision in BUILD_STATE.md
 - [ ] `pro` app legibility tested outdoors at midday on a physical low-end Android
 - [ ] Mobile-browser share of customer traffic instrumented (the doc 08 switch trigger)
 
 **Bilingual**
-- [ ] No raw i18n keys reachable in either language (CI gate green)
-- [ ] Key screens laid out and verified in French (the longer strings)
+- [x] No raw i18n keys reachable in either language (CI gate green) — `npm run i18n:check` in CI + `lint:strings` (no bare user-facing strings)
+- [x] Key screens laid out and verified in French (the longer strings) — every 390px review capture since 2026-08-13 has been taken signed in as a French-locale demo user; the Modernist pass (2026-09-12) was judged in French on the app and English on the site
 - [ ] Terms, privacy, and consent prompts reviewed by the lawyer in **both** FR and EN
 - [ ] WhatsApp templates approved in both languages
-- [ ] Round-trip: `locale=en` + `comms_locale=fr` → English UI, French reminder
+- [x] Round-trip: `locale=en` + `comms_locale=fr` → English UI, French reminder — `ConsentTest` "lets a user set locale=en and comms_locale=fr independently"; `FollowUpDeliveryTest` "names the actual service in a maintenance nudge, in the target's comms locale"
