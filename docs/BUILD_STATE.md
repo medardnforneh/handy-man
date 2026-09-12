@@ -318,6 +318,16 @@ green, the tracker did not. Re-run it before believing this paragraph.
 
 ## What was done, most recent first
 
+- **WCAG AA contrast as a CI gate** (2026-09-12, `62e3d26`) — launch-checklist item "both themes
+  pass WCAG AA, verified independently". `npm run check:contrast` (`tools/check-contrast.mjs`)
+  measures every token pair the surfaces draw, per theme, at the threshold its use demands. First
+  run: **10 shortfalls, all light theme**; the dark theme designed the day before passed. Fixed by
+  darkening four of our own light values (muted text, success/warning/info, the 2px rule) and by
+  the rule the design itself states: **the accent is chrome-grade (3:1) — small accent text uses
+  `brand-strong`** (26 template/CSS edits across app, site, admin). A new `brand.onInverse`
+  (the ramp's light step) carries the kicker on the dark band. **One waiver, printed on every
+  run: a label on the accent fill is 3.76:1** — see Open decisions.
+
 - **Lucide on all three surfaces** (2026-09-12, `879a7f7`) — the design system's icon set, done
   the way each surface draws icons so no screen changed: the app registers a Lucide glyph under
   every Ionicons name in use (71 — Ionicons' registry beats its SVG fetch), the site's inline
@@ -2156,6 +2166,15 @@ Tailwind/Vite pipeline for Blade (token CSS linked directly for now); the identi
 approval flow that raises `verification_tier` (P6).
 
 ## Open decisions / to confirm with user
+
+- **Primary button label contrast (founder decision, 2026-09-12).** White on the brand red
+  `#ec3013` is 3.76:1; WCAG AA wants 4.5:1 for a 14px label and no label colour gets there on
+  that red (ink is 3.73). It clears the 3:1 large-text bar only. Options: (a) accept — it is the
+  brand, labels are 800-weight, and the checker prints the waiver on every run; (b) move the
+  primary FILL to the ramp's 700 step `#ae1800` (passes at 6.3:1, visibly darker, the accent
+  stays `#ec3013` for icons/rules/the poster band); (c) make primary labels ≥ 18.66px bold.
+  Recommend (a) unless the outdoor-legibility test on a real low-end Android says otherwise —
+  that test is on the same checklist and would settle it with evidence rather than a ratio.
 
 - **P0-09 hosting region: DECIDED → in-country (Cameroon)**, Option A. Lawyer sign-off + CNDP
   processing register still pending (founder tasks). Self-managed PostGIS/Redis/MinIO in-country.
