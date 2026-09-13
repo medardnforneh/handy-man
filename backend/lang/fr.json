@@ -738,8 +738,8 @@
   "public.trust_verified_body": "Les professionnels vérifient leur identité avec de vrais documents examinés par notre équipe. Les travaux à risque exigent un niveau plus élevé.",
   "public.trust_warranty_title": "Garantie sur les travaux",
   "public.trust_warranty_body": "Quand un professionnel offre une garantie, une réclamation crée une véritable intervention de reprise avec le même intervenant — sans frais.",
-  "public.trust_momo_title": "Payez par Mobile Money",
-  "public.trust_momo_body": "Payez depuis le téléphone que vous utilisez déjà. Sans carte, et les règlements en espèces peuvent être enregistrés pour garder votre historique.",
+  "public.trust_momo_title": "MTN MoMo, Orange Money ou espèces",
+  "public.trust_momo_body": "Payez depuis le téléphone que vous utilisez déjà, sur l’un ou l’autre réseau. Ni carte, ni banque. Les règlements en espèces sont enregistrés aussi, pour que votre historique compte.",
   "public.how_eyebrow": "Comment ça marche",
   "public.how_title": "Trois étapes, sans surprise",
   "public.how_lede": "Le même parcours, que le professionnel vienne chez vous ou travaille à distance.",
@@ -1361,5 +1361,14 @@
   "upgrade.body": "Quelque chose d’important a changé de notre côté — en général le fonctionnement des paiements ou de la sécurité — et cette version ne peut plus s’en charger. Mettez à jour pour continuer ; rien de ce que vous aviez n’est perdu.",
   "upgrade.versions": "Vous avez la :current ; le minimum est désormais la :min.",
   "upgrade.action_store": "Mettre à jour depuis le store",
-  "upgrade.action_reload": "Recharger pour mettre à jour"
+  "upgrade.action_reload": "Recharger pour mettre à jour",
+  "admin.money.method": "Moyen",
+  "admin.money.methods.mtn_momo": "MTN MoMo",
+  "admin.money.methods.orange_money": "Orange Money",
+  "admin.money.methods.cash": "Espèces",
+  "pay.method": "Payer avec",
+  "pay.method_mtn_momo": "MTN MoMo",
+  "pay.method_orange_money": "Orange Money",
+  "pay.method_hint": "Déduit de votre numéro. Changez-le si votre compte est chez l’autre opérateur.",
+  "pay.receive_method": "Recevoir sur"
 }

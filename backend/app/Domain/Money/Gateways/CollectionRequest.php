@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Money\Gateways;
 
+use App\Domain\Money\PaymentMethod;
+
 /**
  * A request to collect money from a payer via mobile money (USSD push / redirect). `reference` is our
  * own idempotent id (the payment intent's id) that the gateway echoes back on its webhook.
@@ -16,5 +18,7 @@ final readonly class CollectionRequest
         public string $currency,
         public string $msisdn,
         public string $description,
+        /** The mobile rail to prompt — MTN or Orange — so the payer's own network asks, not a hosted page. */
+        public PaymentMethod $method,
     ) {}
 }

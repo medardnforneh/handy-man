@@ -7,8 +7,10 @@ namespace App\Domain\Money\Actions;
 use App\Domain\Money\Gateways\CollectionRequest;
 use App\Domain\Money\Gateways\GatewayStatus;
 use App\Domain\Money\Gateways\PaymentGateway;
+use App\Domain\Money\PaymentMethod;
 use App\Domain\Money\PaymentPurpose;
 use App\Domain\Money\PaymentStatus;
+use App\Domain\Money\UnknownMobileRail;
 use App\Models\PaymentIntent;
 use App\Models\User;
 use Illuminate\Database\QueryException;
@@ -32,7 +34,15 @@ final class InitiatePaymentIntent
         string $idempotencyKey,
         ?string $engagementId = null,
         string $currency = 'XAF',
+        ?PaymentMethod $method = null,
     ): PaymentIntent {
+        // The rail: what the caller chose, else what the number's prefix says. A number no operator
+        // claims cannot be collected from — say so before a row exists.
+        $method ??= PaymentMethod::fromMsisdn($msisdn) ?? throw new UnknownMobileRail($msisdn);
+        if (! $method->isMobile()) {
+            throw new \InvalidArgumentException('Cash is recorded as a settlement, not collected.');
+        }
+
         $existing = PaymentIntent::query()->where('idempotency_key', $idempotencyKey)->first();
         if ($existing !== null) {
             return $existing;
@@ -44,6 +54,7 @@ final class InitiatePaymentIntent
                 'engagement_id' => $engagementId,
                 'purpose' => $purpose->value,
                 'gateway' => $this->gateway->name(),
+                'method' => $method->value,
                 'amount_minor' => $amountMinor,
                 'currency' => $currency,
                 'msisdn' => $msisdn,
@@ -64,6 +75,7 @@ final class InitiatePaymentIntent
             currency: $currency,
             msisdn: $msisdn,
             description: "handy-man {$purpose->value}",
+            method: $method,
         ));
 
         return DB::transaction(function () use ($intent, $result): PaymentIntent {

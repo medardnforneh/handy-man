@@ -22,6 +22,7 @@ use Illuminate\Support\Carbon;
  * @property string $currency
  * @property string $msisdn
  * @property string $gateway
+ * @property string|null $method mtn_momo | orange_money (null only on rows older than the column)
  * @property PaymentStatus $status
  * @property string|null $external_ref
  * @property string $idempotency_key
@@ -43,7 +44,7 @@ final class Payout extends Model
     public $incrementing = false;
 
     protected $fillable = [
-        'party_id', 'amount_minor', 'currency', 'msisdn', 'gateway', 'status', 'external_ref',
+        'party_id', 'amount_minor', 'currency', 'msisdn', 'gateway', 'method', 'status', 'external_ref',
         'idempotency_key', 'ledger_transaction_id', 'reversal_transaction_id', 'requested_at',
         'resolved_at', 'reversed_at', 'failure_code', 'raw',
     ];

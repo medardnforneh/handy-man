@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\V1;
 
 use App\Domain\Money\Actions\RequestPayout;
+use App\Domain\Money\PaymentMethod;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\RequestPayoutRequest;
 use App\Http\Resources\Api\V1\PayoutResource;
@@ -26,6 +27,7 @@ final class PayoutController extends Controller
             provider: $user,
             amountMinor: (int) $request->integer('amount_minor'),
             msisdn: $request->string('msisdn')->toString(),
+            method: is_string($request->input('method')) && $request->input('method') !== '' ? PaymentMethod::from($request->input('method')) : null,
             idempotencyKey: (string) $request->header('Idempotency-Key'),
         );
 

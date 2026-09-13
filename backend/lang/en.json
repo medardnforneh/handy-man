@@ -738,8 +738,8 @@
   "public.trust_verified_body": "Professionals verify their identity with real documents reviewed by our team. Higher-risk work requires a higher level of verification.",
   "public.trust_warranty_title": "Warranty on the work",
   "public.trust_warranty_body": "When a professional offers a warranty, a claim creates a real follow-up job with the same worker — at no extra cost to you.",
-  "public.trust_momo_title": "Pay by Mobile Money",
-  "public.trust_momo_body": "Pay from the phone you already use. No card required, and cash settlements can be recorded too so your history still counts.",
+  "public.trust_momo_title": "MTN MoMo, Orange Money, or cash",
+  "public.trust_momo_body": "Pay from the phone you already use, on either network. No card, no bank. Cash settlements are recorded too, so your history still counts.",
   "public.how_eyebrow": "How it works",
   "public.how_title": "Three steps, no surprises",
   "public.how_lede": "The same flow whether someone comes to your home or works with you remotely.",
@@ -1361,5 +1361,14 @@
   "upgrade.body": "Something important changed on our side — usually how payments or safety work — and this build can no longer be trusted with it. Update to keep going; nothing you had is lost.",
   "upgrade.versions": "You have :current; the minimum is now :min.",
   "upgrade.action_store": "Update in the store",
-  "upgrade.action_reload": "Reload to update"
+  "upgrade.action_reload": "Reload to update",
+  "admin.money.method": "Method",
+  "admin.money.methods.mtn_momo": "MTN MoMo",
+  "admin.money.methods.orange_money": "Orange Money",
+  "admin.money.methods.cash": "Cash",
+  "pay.method": "Pay with",
+  "pay.method_mtn_momo": "MTN MoMo",
+  "pay.method_orange_money": "Orange Money",
+  "pay.method_hint": "Chosen from your number. Change it if your wallet is with the other operator.",
+  "pay.receive_method": "Receive on"
 }

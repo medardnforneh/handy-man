@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { type MobileRail, railFor } from '../../core/payment-methods';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AlertController, IonicModule, ToastController } from '@ionic/angular';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
@@ -249,6 +250,9 @@ export class JobDetailPage {
   readonly fundOpen = signal(false);
   readonly fundAmount = signal(0);
   readonly fundMsisdn = signal('');
+  /** The rail the person chose, if they did; else what the number says (core/payment-methods). */
+  readonly fundRailChoice = signal<MobileRail | null>(null);
+  readonly fundRail = computed(() => this.fundRailChoice() ?? railFor(this.fundMsisdn()));
   readonly fundTouched = signal(false);
 
   /** What is agreed but neither held nor released yet — the honest default for the amount field. */
@@ -283,7 +287,7 @@ export class JobDetailPage {
     }
 
     this.busy.set(true);
-    const result = await this.customers.fundEscrow(engagementId, amount, msisdn);
+    const result = await this.customers.fundEscrow(engagementId, amount, msisdn, this.fundRail() ?? undefined);
     this.busy.set(false);
 
     if (!result.ok) {

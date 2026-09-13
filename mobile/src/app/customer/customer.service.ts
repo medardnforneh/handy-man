@@ -1,4 +1,5 @@
 import { Injectable, inject, signal } from '@angular/core';
+import type { MobileRail } from '../core/payment-methods';
 import { TranslateService } from '@ngx-translate/core';
 import { ApiService, DisputeCategory } from '../api/api.service';
 import { SessionScope } from '../core/session-scope.service';
@@ -877,9 +878,9 @@ export class CustomerService {
    * money moves when they answer the USSD prompt on their own phone — this call only starts it,
    * which is why the screen says to check their handset rather than announcing a payment.
    */
-  async fundEscrow(engagementId: string, amountMinor: number, msisdn: string): Promise<{ ok: boolean; detail?: string }> {
+  async fundEscrow(engagementId: string, amountMinor: number, msisdn: string, method?: MobileRail): Promise<{ ok: boolean; detail?: string }> {
     try {
-      await this.api.initiatePaymentIntent('escrow', amountMinor, msisdn, engagementId);
+      await this.api.initiatePaymentIntent('escrow', amountMinor, msisdn, engagementId, method);
       return { ok: true };
     } catch (e) {
       const problem = e as { detail?: unknown; title?: unknown };

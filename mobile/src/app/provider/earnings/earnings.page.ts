@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { type MobileRail, railFor } from '../../core/payment-methods';
 import { IonicModule, ToastController } from '@ionic/angular';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { EmptyStateComponent } from '../../core/ui/empty-state.component';
@@ -45,6 +46,8 @@ export class ProviderEarningsPage {
   readonly sheetOpen = signal(false);
   readonly amount = signal(0);
   readonly msisdn = signal('');
+  readonly payoutRailChoice = signal<MobileRail | null>(null);
+  readonly payoutRail = computed(() => this.payoutRailChoice() ?? railFor(this.msisdn()));
   readonly touched = signal(false);
   readonly busy = signal(false);
 
@@ -103,7 +106,7 @@ export class ProviderEarningsPage {
     }
 
     this.busy.set(true);
-    const result = await this.provider.requestPayout(this.amount(), this.msisdn().trim());
+    const result = await this.provider.requestPayout(this.amount(), this.msisdn().trim(), this.payoutRail() ?? undefined);
     this.busy.set(false);
 
     if (result.ok) {
@@ -136,6 +139,8 @@ export class ProviderEarningsPage {
   readonly topUpOpen = signal(false);
   readonly topUpAmount = signal(0);
   readonly topUpMsisdn = signal('');
+  readonly topUpRailChoice = signal<MobileRail | null>(null);
+  readonly topUpRail = computed(() => this.topUpRailChoice() ?? railFor(this.topUpMsisdn()));
   readonly topUpTouched = signal(false);
 
   readonly topUpInvalid = computed(
@@ -161,7 +166,7 @@ export class ProviderEarningsPage {
     }
 
     this.busy.set(true);
-    const result = await this.provider.buyLeadCredits(amount, msisdn);
+    const result = await this.provider.buyLeadCredits(amount, msisdn, this.topUpRail() ?? undefined);
     this.busy.set(false);
 
     if (result.ok) {

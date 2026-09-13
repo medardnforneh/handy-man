@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Money\Gateways;
 
+use App\Domain\Money\PaymentMethod;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 
@@ -51,6 +52,9 @@ final class CinetPayGateway implements PaymentGateway
             'description' => $request->description,
             'customer_phone_number' => $request->msisdn,
             'channels' => 'MOBILE_MONEY',
+            // The operator, so the push goes to the payer's own network rather than a chooser page.
+            // CinetPay's Cameroon codes; confirm against the live sandbox with the token fields above.
+            'payment_method' => self::operatorCode($request->method),
             'notify_url' => $this->notifyUrl,
             'return_url' => $this->returnUrl,
         ]);
@@ -143,6 +147,16 @@ final class CinetPayGateway implements PaymentGateway
 
         // The callback is a trigger, not the truth: report Pending and let the handler fetchStatus.
         return new GatewayEvent($ref, 'cinetpay.notification', GatewayStatus::Pending, (array) $request->all());
+    }
+
+    /** CinetPay's operator code for a rail (Cameroon). */
+    private static function operatorCode(PaymentMethod $method): string
+    {
+        return match ($method) {
+            PaymentMethod::MtnMomo => 'MTNCM',
+            PaymentMethod::OrangeMoney => 'OMCM',
+            PaymentMethod::Cash => throw new \InvalidArgumentException('Cash never goes through the gateway.'),
+        };
     }
 
     private function mapStatus(string $raw): GatewayStatus

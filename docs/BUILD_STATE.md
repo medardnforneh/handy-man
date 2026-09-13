@@ -2188,6 +2188,12 @@ approval flow that raises `verification_tier` (P6).
 
 ## Open decisions / to confirm with user
 
+- **Payment methods: DECIDED (founder, 2026-09-13) → MTN Mobile Money, Orange Money and cash, only.**
+  Implemented the same day: `PaymentMethod` enum, `method` on payment intents and payouts (inferred
+  from the operator prefix, overridable), the CinetPay adapter names the operator (`MTNCM`/`OMCM` —
+  confirm against the live sandbox), `GET /meta.payment_methods`, a rail choice pre-selected on the
+  app's three money sheets, admin columns, public copy. Cash stays the settlement path (P3-12).
+
 - **Primary button label contrast (founder decision, 2026-09-12).** White on the brand red
   `#ec3013` is 3.76:1; WCAG AA wants 4.5:1 for a 14px label and no label colour gets there on
   that red (ink is 3.73). It clears the 3:1 large-text bar only. Options: (a) accept — it is the

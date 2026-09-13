@@ -13,6 +13,12 @@ FX consequences, not an integration detail.
 Assume local rails. That means:
 
 - You collect via a mobile-money aggregator (MTN MoMo + Orange Money).
+- **Decided 2026-09-13 (founder): the product's payment methods are MTN Mobile Money, Orange
+  Money and cash — and only those.** No cards, no bank transfer, no third-party wallets, for
+  now. The method is named on every collection and payout (`PaymentMethod`, `payment_intents.method`,
+  `payouts.method`), inferred from the number's operator prefix and overridable by the person;
+  cash is recorded after the fact as a cash settlement and never touches the gateway. `GET /meta`
+  publishes the list so the app renders the choice from the server.
 - **The money sits in your own merchant wallet.** There are no per-provider sub-accounts.
 - Therefore *you* are the ledger of record. Nobody else is tracking who is owed what.
 

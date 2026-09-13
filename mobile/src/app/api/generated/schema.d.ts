@@ -1616,6 +1616,8 @@ export interface components {
                 dispatch?: boolean;
                 bidding?: boolean;
             };
+            /** @description The payment methods the product takes — MTN Mobile Money, Orange Money and cash, and only those (founder decision 2026-09-13). The app renders its choice from this list. */
+            payment_methods?: components["schemas"]["PaymentMethod"][];
         };
         Offer: {
             /** Format: uuid */
@@ -1750,11 +1752,18 @@ export interface components {
             /** Format: date-time */
             recorded_at: string;
         };
+        /**
+         * @description mtn_momo and orange_money are the two mobile rails a collection or payout goes out on; cash is recorded after the fact as a cash settlement and never touches the gateway.
+         * @enum {string}
+         */
+        PaymentMethod: "mtn_momo" | "orange_money" | "cash";
         Payout: {
             /** Format: uuid */
             id: string;
             amount: components["schemas"]["Money"];
             msisdn: string;
+            /** @description The rail the money goes out on; null only on rows older than the field. */
+            method?: components["schemas"]["PaymentMethod"] | null;
             /** @enum {string} */
             status: "pending" | "processing" | "succeeded" | "failed" | "expired";
             external_ref?: string | null;
@@ -1775,6 +1784,8 @@ export interface components {
             status: "pending" | "processing" | "succeeded" | "failed" | "expired";
             amount: components["schemas"]["Money"];
             msisdn: string;
+            /** @description The rail the payer is prompted on; null only on rows older than the field. */
+            method?: components["schemas"]["PaymentMethod"] | null;
             external_ref?: string | null;
             payment_url?: string | null;
             /** Format: date-time */
@@ -4368,6 +4379,11 @@ export interface operations {
                 "application/json": {
                     amount_minor: number;
                     msisdn: string;
+                    /**
+                     * @description The rail to pay out on. Optional — absent, the number's prefix decides; a number no operator claims is refused (422 unknown-mobile-rail).
+                     * @enum {string}
+                     */
+                    method?: "mtn_momo" | "orange_money";
                 };
             };
         };
@@ -4529,6 +4545,11 @@ export interface operations {
                     purpose: "escrow" | "lead_credits";
                     amount_minor: number;
                     msisdn: string;
+                    /**
+                     * @description The rail to prompt the payer on. Optional — absent, the number's prefix decides; a number no operator claims is refused (422 unknown-mobile-rail). Cash is never a collection.
+                     * @enum {string}
+                     */
+                    method?: "mtn_momo" | "orange_money";
                     /**
                      * Format: uuid
                      * @description Required when purpose is escrow.

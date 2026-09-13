@@ -22,6 +22,7 @@ final class PayoutResource extends JsonResource
             'id' => $this->id,
             'amount' => ['amount_minor' => $this->amount_minor, 'currency' => $this->currency],
             'msisdn' => $this->msisdn,
+            'method' => $this->method,
             'status' => $this->status->value,
             'external_ref' => $this->external_ref,
             'requested_at' => $this->requested_at->toIso8601String(),

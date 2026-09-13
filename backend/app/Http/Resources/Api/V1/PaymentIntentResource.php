@@ -29,6 +29,7 @@ final class PaymentIntentResource extends JsonResource
             'status' => $this->status->value,
             'amount' => ['amount_minor' => $this->amount_minor, 'currency' => $this->currency],
             'msisdn' => $this->msisdn,
+            'method' => $this->method,
             'external_ref' => $this->external_ref,
             'payment_url' => isset($raw['payment_url']) ? (string) $raw['payment_url'] : null,
             'expires_at' => $this->expires_at->toIso8601String(),

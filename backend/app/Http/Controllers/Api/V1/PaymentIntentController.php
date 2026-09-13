@@ -32,6 +32,7 @@ final class PaymentIntentController extends Controller
             msisdn: $request->string('msisdn')->toString(),
             idempotencyKey: $idempotencyKey,
             engagementId: $request->input('engagement_id'),
+            method: $request->paymentMethod(),
         );
 
         return PaymentIntentResource::make($intent)->response()->setStatusCode(201);

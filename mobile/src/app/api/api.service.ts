@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import type { MobileRail } from '../core/payment-methods';
 import { environment } from '../../environments/environment';
 import { loadDeviceId } from '../core/device';
 import { uuid } from '../core/uuid';
@@ -693,9 +694,9 @@ export class ApiService {
    * unreserved balance is a 422 — which the caller shows in the server's own words, because
    * "insufficient" here has a precise meaning the client cannot restate.
    */
-  async requestPayout(amountMinor: number, msisdn: string) {
+  async requestPayout(amountMinor: number, msisdn: string, method?: MobileRail) {
     const { data, error } = await api.POST('/provider/payouts', {
-      body: { amount_minor: amountMinor, msisdn },
+      body: { amount_minor: amountMinor, msisdn, ...(method !== undefined ? { method } : {}) },
       params: { header: { 'Idempotency-Key': uuid() } },
     });
     if (error) {
@@ -932,6 +933,7 @@ export class ApiService {
     amountMinor: number,
     msisdn: string,
     engagementId?: string,
+    method?: MobileRail,
   ) {
     const { data, error } = await api.POST('/payment-intents', {
       params: { header: { 'Idempotency-Key': uuid() } },
@@ -940,6 +942,9 @@ export class ApiService {
         amount_minor: amountMinor,
         msisdn,
         ...(engagementId !== undefined ? { engagement_id: engagementId } : {}),
+        // The rail (MTN / Orange). Optional on the wire: the server infers it from the number when
+        // absent, so an older build keeps working; a person's explicit choice always wins.
+        ...(method !== undefined ? { method } : {}),
       },
     });
     if (error) {

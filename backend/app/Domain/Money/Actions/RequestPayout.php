@@ -10,7 +10,9 @@ use App\Domain\Money\Gateways\PaymentGateway;
 use App\Domain\Money\Gateways\PayoutRequest;
 use App\Domain\Money\InsufficientPayable;
 use App\Domain\Money\Ledger;
+use App\Domain\Money\PaymentMethod;
 use App\Domain\Money\PaymentStatus;
+use App\Domain\Money\UnknownMobileRail;
 use App\Models\LedgerAccount;
 use App\Models\Payout;
 use App\Models\User;
@@ -37,9 +39,14 @@ final class RequestPayout
         string $msisdn,
         string $idempotencyKey,
         string $currency = 'XAF',
+        ?PaymentMethod $method = null,
     ): Payout {
         if ($amountMinor <= 0) {
             throw new InvalidArgumentException('Payout amount must be positive.');
+        }
+        $method ??= PaymentMethod::fromMsisdn($msisdn) ?? throw new UnknownMobileRail($msisdn);
+        if (! $method->isMobile()) {
+            throw new InvalidArgumentException('A payout goes out on a mobile rail.');
         }
 
         $existing = Payout::query()->where('idempotency_key', $idempotencyKey)->first();
@@ -49,7 +56,7 @@ final class RequestPayout
 
         $payable = $this->ledger->account(AccountKind::ProviderPayable, $provider->party_id, $currency);
 
-        return DB::transaction(function () use ($provider, $payable, $amountMinor, $msisdn, $idempotencyKey, $currency): Payout {
+        return DB::transaction(function () use ($provider, $payable, $amountMinor, $msisdn, $idempotencyKey, $currency, $method): Payout {
             LedgerAccount::query()->whereKey($payable->id)->lockForUpdate()->firstOrFail();
 
             $balance = -$payable->balanceMinor(); // credit-normal → owed to the provider
@@ -70,6 +77,7 @@ final class RequestPayout
                     'currency' => $currency,
                     'msisdn' => $msisdn,
                     'gateway' => $this->gateway->name(),
+                    'method' => $method->value,
                     'status' => PaymentStatus::Pending->value,
                     'idempotency_key' => $idempotencyKey,
                 ]);
@@ -86,6 +94,7 @@ final class RequestPayout
                 currency: $currency,
                 msisdn: $msisdn,
                 description: 'handy-man payout',
+                method: $method,
             ));
 
             $failed = $result->status === GatewayStatus::Failed;

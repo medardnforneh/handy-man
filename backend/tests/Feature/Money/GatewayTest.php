@@ -7,6 +7,7 @@ use App\Domain\Money\Gateways\CollectionRequest;
 use App\Domain\Money\Gateways\FakeGateway;
 use App\Domain\Money\Gateways\GatewayStatus;
 use App\Domain\Money\Gateways\PaymentGateway;
+use App\Domain\Money\PaymentMethod;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 
@@ -29,7 +30,7 @@ it('resolves CinetPay when configured', function () {
 it('drives a collection pending → settled through the Fake gateway', function () {
     $fake = new FakeGateway;
 
-    $result = $fake->requestCollection(new CollectionRequest('R1', 5000, 'XAF', '+237650000000', 'Job'));
+    $result = $fake->requestCollection(new CollectionRequest('R1', 5000, 'XAF', '+237650000000', 'Job', PaymentMethod::MtnMomo));
     expect($result->status)->toBe(GatewayStatus::Pending)
         ->and($result->externalRef)->toBe('R1')
         ->and($fake->fetchStatus('R1')->status)->toBe(GatewayStatus::Pending);
@@ -56,7 +57,7 @@ it('builds a CinetPay collection request and maps code 201 → pending', functio
     ]);
     $gw = new CinetPayGateway('key', 'site', 'secret', 'https://api.test', 'https://notify', 'https://return');
 
-    $result = $gw->requestCollection(new CollectionRequest('TX1', 1000, 'XAF', '+237650000000', 'Job'));
+    $result = $gw->requestCollection(new CollectionRequest('TX1', 1000, 'XAF', '+237650000000', 'Job', PaymentMethod::MtnMomo));
 
     expect($result->status)->toBe(GatewayStatus::Pending)
         ->and($result->externalRef)->toBe('TX1')

@@ -23,6 +23,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $engagement_id
  * @property PaymentPurpose $purpose
  * @property string $gateway
+ * @property string|null $method mtn_momo | orange_money (null only on rows older than the column)
  * @property int $amount_minor
  * @property string $currency
  * @property string $msisdn
@@ -46,7 +47,7 @@ final class PaymentIntent extends Model
     public $incrementing = false;
 
     protected $fillable = [
-        'party_id', 'engagement_id', 'purpose', 'gateway', 'amount_minor', 'currency', 'msisdn',
+        'party_id', 'engagement_id', 'purpose', 'gateway', 'method', 'amount_minor', 'currency', 'msisdn',
         'status', 'external_ref', 'idempotency_key', 'ledger_transaction_id', 'initiated_at',
         'expires_at', 'resolved_at', 'failure_code', 'raw',
     ];

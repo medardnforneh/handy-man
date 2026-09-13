@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Money\Actions;
 
+use App\Domain\Money\PaymentMethod;
 use App\Domain\Money\PaymentPurpose;
 use App\Models\Engagement;
 use App\Models\PaymentIntent;
@@ -35,6 +36,9 @@ final class CaptureDepositOnAgreement
         $customer = $engagement->job->customer->user;
         if ($customer === null) {
             return null; // no reachable payer (e.g. an erased party) — leave it to manual funding
+        }
+        if (PaymentMethod::fromMsisdn($customer->phone_e164) === null) {
+            return null; // a number no operator claims — the app asks which rail; nothing to push to yet
         }
 
         return $this->initiate->handle(

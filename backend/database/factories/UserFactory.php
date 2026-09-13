@@ -22,7 +22,8 @@ class UserFactory extends Factory
     {
         return [
             'party_id' => Party::factory()->individual(),
-            'phone_e164' => '+2376'.fake()->unique()->numerify('########'),
+            // On a real operator prefix (MTN 67x / Orange 69x), so a fixture can be collected from or paid to.
+            'phone_e164' => '+2376'.fake()->randomElement(['7', '9']).fake()->unique()->numerify('#######'),
             'email' => fake()->unique()->safeEmail(),
             'password_hash' => 'password', // hashed by the model cast
             'locale' => 'fr',

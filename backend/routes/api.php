@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Domain\Money\PaymentMethod;
 use App\Http\Controllers\Api\V1\AddressController;
 use App\Http\Controllers\Api\V1\AssignmentController;
 use App\Http\Controllers\Api\V1\Auth\AuthController;
@@ -73,6 +74,9 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
                 'dispatch' => (bool) config('marketplace.dispatch_enabled'),
                 'bidding' => (bool) config('marketplace.bidding_enabled'),
             ],
+            // The payment methods the product takes (founder decision 2026-09-13) — the app renders
+            // its choice from this list rather than carrying its own.
+            'payment_methods' => array_map(fn (PaymentMethod $m): string => $m->value, PaymentMethod::cases()),
         ]);
     })->name('meta');
 

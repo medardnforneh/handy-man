@@ -1,4 +1,5 @@
 import { Injectable, inject, signal } from '@angular/core';
+import type { MobileRail } from '../core/payment-methods';
 import { ApiService, VerificationDocKind } from '../api/api.service';
 import { SessionScope } from '../core/session-scope.service';
 import { Accent } from '../customer/customer.models';
@@ -394,8 +395,8 @@ export class ProviderService {
    * but it is sent explicitly rather than inferred server-side, because paying to a different
    * number is a legitimate thing to do and doing it silently is not.
    */
-  async requestPayout(amountMinor: number, msisdn: string): Promise<MutationResult> {
-    return this.attempt(() => this.api.requestPayout(amountMinor, msisdn));
+  async requestPayout(amountMinor: number, msisdn: string, method?: MobileRail): Promise<MutationResult> {
+    return this.attempt(() => this.api.requestPayout(amountMinor, msisdn, method));
   }
 
   /**
@@ -906,8 +907,8 @@ export class ProviderService {
    *
    * Pending on return: the money moves when they answer the prompt on their handset.
    */
-  async buyLeadCredits(amountMinor: number, msisdn: string): Promise<MutationResult> {
-    return this.attempt(() => this.api.initiatePaymentIntent('lead_credits', amountMinor, msisdn));
+  async buyLeadCredits(amountMinor: number, msisdn: string, method?: MobileRail): Promise<MutationResult> {
+    return this.attempt(() => this.api.initiatePaymentIntent('lead_credits', amountMinor, msisdn, undefined, method));
   }
 
   /**

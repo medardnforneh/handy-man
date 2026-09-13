@@ -37,6 +37,7 @@ class PayoutsTable
                     ->formatStateUsing(fn ($state): string => $state === null ? '—' : __('admin.money.reversed_yes'))
                     ->placeholder('—'),
                 TextColumn::make('msisdn')->label(__('admin.money.msisdn'))->searchable()->toggleable(),
+                TextColumn::make('method')->label(__('admin.money.method'))->formatStateUsing(fn (?string $state): string => $state === null ? '—' : __('admin.money.methods.'.$state))->badge()->color('gray'),
                 TextColumn::make('external_ref')->label(__('admin.money.gateway_ref'))->searchable()->copyable()->placeholder('—'),
                 TextColumn::make('requested_at')->dateTime()->sortable(),
                 TextColumn::make('resolved_at')->dateTime()->placeholder('—')->toggleable(),

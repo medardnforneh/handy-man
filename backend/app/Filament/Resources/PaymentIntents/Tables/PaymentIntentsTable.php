@@ -36,6 +36,7 @@ class PaymentIntentsTable
                     'gray' => PaymentStatus::Expired->value,
                 ]),
                 TextColumn::make('msisdn')->label(__('admin.money.msisdn'))->searchable()->toggleable(),
+                TextColumn::make('method')->label(__('admin.money.method'))->formatStateUsing(fn (?string $state): string => $state === null ? '—' : __('admin.money.methods.'.$state))->badge()->color('gray'),
                 TextColumn::make('external_ref')->label(__('admin.money.gateway_ref'))->searchable()->copyable()->placeholder('—'),
                 // The presence of a ledger transaction is the thing worth scanning for: a succeeded
                 // intent WITHOUT one is exactly what the nightly reconciliation raises an exception

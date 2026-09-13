@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Money\Gateways;
 
+use App\Domain\Money\PaymentMethod;
+
 /**
  * A request to disburse money to a payee's mobile-money wallet. `reference` is our payout id.
  */
@@ -15,5 +17,7 @@ final readonly class PayoutRequest
         public string $currency,
         public string $msisdn,
         public string $description,
+        /** The mobile rail the money goes out on. */
+        public PaymentMethod $method,
     ) {}
 }
