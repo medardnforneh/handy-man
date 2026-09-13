@@ -6,10 +6,10 @@ declare(strict_types=1);
 
 return [
     'colors' => [
-        'primary' => '#ec3013',
-        'info' => '#1a5fcf',
-        'success' => '#14703b',
-        'warning' => '#965106',
-        'danger' => '#ae1800',
+        'primary' => '#25e08c',
+        'info' => '#a8b5af',
+        'success' => '#25e08c',
+        'warning' => '#ffb443',
+        'danger' => '#ff6b5a',
     ],
 ];

@@ -22,11 +22,15 @@ final class PublicHomeController extends Controller
     {
         $locale = app()->getLocale();
 
+        // The eight largest categories, two rows of four (handoff: "Trades"); the whole taxonomy
+        // is one click away on /services. Largest first, so what the home page shows is the
+        // trades most likely to have someone behind them — not the alphabet's accident.
         $categories = Skill::query()
             ->where('is_leaf', false)
             ->withCount(['children' => fn ($q) => $q->where('is_leaf', true)])
             ->get()
-            ->sortBy(fn (Skill $s): string => $s->name($locale))
+            ->sortBy([fn (Skill $a, Skill $b): int => $b->children_count <=> $a->children_count ?: strcmp($a->name($locale), $b->name($locale))])
+            ->take(8)
             ->values();
 
         // A handful of leaves for the hero's quick links. Sorted by name rather than by popularity

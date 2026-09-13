@@ -32,9 +32,9 @@
  * https://ionicframework.com/docs/theming/dark-mode
  */
 
-/* @import "@ionic/angular/css/palettes/dark.always.css"; */
-/* @import "@ionic/angular/css/palettes/dark.class.css"; */
-@import "@ionic/angular/css/palettes/dark.system.css";
+/* The redesign is dark-only (handoff open item 2 is a light theme, undesigned). Always, so the
+   framework's own greys (color-step-*, item borders, placeholders) never come out light. */
+@import "@ionic/angular/css/palettes/dark.always.css";
 
 /* Design tokens — GENERATED from tokens/tokens.json (npm run tokens:build). Provides the
    semantic --hm-* custom properties (light + dark). Ionic's --ion-* vars are mapped onto these

@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>@yield('title', __('app.name'))</title>
     <meta name="description" content="@yield('description', __('app.tagline'))">
+    <meta name="color-scheme" content="dark">
 
     {{-- Canonical without the `lang` parameter: ?lang= selects a translation, it does not create a
          separate page, so leaving it in would split ranking signals across near-identical URLs. --}}
@@ -28,73 +29,53 @@
     @stack('structured-data')
 
     {{-- Tailwind, with the design tokens compiled into it (resources/css/app.css imports
-         tokens.css and the generated @theme block). This replaces the hand-written stylesheet that
-         used to live in this file: the palette still comes from tokens/tokens.json, but the styling
-         is utilities in the markup. --}}
+         tokens.css and the generated @theme block). The palette comes from tokens/tokens.json;
+         the styling is utilities and a few component classes. --}}
     @vite(['resources/css/app.css'])
-
-    {{-- Applied BEFORE the stylesheet paints, and inline for the same reason: a saved dark choice
-         restored after first paint is a white flash on every navigation, which is worst for exactly
-         the person who chose dark. No attribute at all means "follow the device", which the tokens
-         already handle through prefers-color-scheme — so the untouched default costs nothing. --}}
-    <script>
-        (function () {
-            try {
-                var saved = localStorage.getItem('hm-theme');
-                if (saved === 'dark' || saved === 'light') {
-                    document.documentElement.setAttribute('data-theme', saved);
-                }
-            } catch (e) {
-                // Private mode with storage denied. The device preference still applies.
-            }
-        })();
-    </script>
 </head>
 <body>
     {{-- Off-screen until focused, then the first thing a keyboard reaches. --}}
-    <a class="absolute -left-[9999px] top-0 z-30 bg-brand px-4 py-2 text-brand-contrast focus:left-4 focus:top-4"
+    <a class="absolute -left-[9999px] top-0 z-30 rounded-md bg-brand px-4 py-2 text-brand-contrast focus:left-4 focus:top-4"
        href="#main">{{ __('public.skip_to_content') }}</a>
 
-    {{-- Sticky, and welded to the top edge: a bar on the ground colour that ends in the system's
-         2px rule. It used to float as a frosted pill; the Modernist direction is that nothing
-         floats and nothing is decorated, and the rule does the organising the blur was doing. --}}
-    <header class="sticky top-0 z-20 bg-surface border-b-2 border-edge-strong">
-        <div class="w-full max-w-6xl mx-auto px-6">
-            <div class="flex items-center gap-4 min-h-16">
-                <a class="inline-flex items-center gap-2 font-extrabold text-lg tracking-tight text-content no-underline" href="{{ route('home') }}">
-                    <span class="grid place-items-center shrink-0 size-7 bg-brand text-brand-contrast" aria-hidden="true">
-                        <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+    {{-- Sticky, on a 90% ground so the page shows through as it scrolls under, ending in the 1px
+         line that every region in this design is drawn with (handoff: "Shared chrome"). --}}
+    <header class="sticky top-0 z-20 border-b border-edge bg-surface/90 backdrop-blur-md">
+        <div class="mx-auto w-full max-w-[1440px] px-5 sm:px-8 lg:px-16">
+            <div class="flex min-h-[4.75rem] items-center gap-6">
+                <a class="inline-flex items-center gap-2.5 text-lg font-bold tracking-[-0.02em] text-content no-underline hover:text-content" href="{{ route('home') }}">
+                    <span class="grid size-8 shrink-0 place-items-center rounded-[11px] bg-brand text-brand-contrast" aria-hidden="true">
+                        <svg class="size-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M14.7 6.3a4 4 0 0 1-5 5L4 17v3h3l5.7-5.7a4 4 0 0 1 5-5l2.6-2.6-2.6-2.6z"/>
                         </svg>
                     </span>
                     {{ __('app.name') }}
                 </a>
 
-                <nav class="flex items-center gap-1.5 ms-auto" aria-label="{{ __('public.nav_label') }}">
-                    {{-- Ink, and the accent on hover — the system's nav links carry no pill. --}}
-                    <span class="hidden lg:flex gap-1">
+                <nav class="ms-auto flex items-center gap-2 sm:gap-3" aria-label="{{ __('public.nav_label') }}">
+                    <span class="hidden items-center gap-7 me-4 lg:flex">
                         @foreach ([
                             ['public.nav_trades', route('services.index')],
                             ['public.nav_how', route('home').'#how'],
                             ['public.nav_trust', route('home').'#trust'],
                             ['public.nav_providers', route('home').'#providers'],
+                            ['public.nav_faq', route('home').'#faq'],
                         ] as [$key, $href])
-                            <a class="px-3 py-2 text-sm font-medium text-content no-underline transition-colors hover:text-brand-strong"
+                            <a class="text-[0.9rem] font-medium text-content-muted no-underline transition-colors hover:text-content"
                                href="{{ $href }}">{{ __($key) }}</a>
                         @endforeach
                     </span>
 
-                    {{-- Small screens got only the language switch, which left a phone visitor unable
-                         to reach anything from the header. A <details> disclosure is a real menu with
-                         no JavaScript, so it works on the first paint and on a dead connection. --}}
-                    <details class="relative lg:hidden group">
-                        <summary class="grid place-items-center size-10 border border-edge-strong text-content cursor-pointer list-none [&::-webkit-details-marker]:hidden"
+                    {{-- Small screens: a <details> disclosure is a real menu with no JavaScript, so it
+                         works on the first paint and on a dead connection. --}}
+                    <details class="group relative lg:hidden">
+                        <summary class="grid size-10 cursor-pointer list-none place-items-center rounded-[13px] border border-edge bg-surface-raised text-content [&::-webkit-details-marker]:hidden"
                                  aria-label="{{ __('public.nav_menu') }}">
                             <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
                                 <path d="M4 7h16M4 12h16M4 17h16"/>
                             </svg>
                         </summary>
-                        <div class="absolute end-0 top-[calc(100%+0.5rem)] grid gap-0.5 min-w-52 p-2 border-2 border-edge-strong bg-surface-raised shadow-lg">
+                        <div class="absolute end-0 top-[calc(100%+0.5rem)] grid min-w-56 gap-0.5 rounded-lg border border-edge bg-surface-raised p-2">
                             @foreach ([
                                 ['public.nav_trades', route('services.index')],
                                 ['public.nav_how', route('home').'#how'],
@@ -102,55 +83,28 @@
                                 ['public.nav_providers', route('home').'#providers'],
                                 ['public.nav_faq', route('home').'#faq'],
                             ] as [$key, $href])
-                                <a class="px-3 py-2.5 text-sm font-medium text-content no-underline hover:bg-surface-sunken hover:text-brand-strong"
+                                <a class="rounded-sm px-3 py-2.5 text-sm font-medium text-content no-underline hover:bg-surface-sunken hover:text-content"
                                    href="{{ $href }}">{{ __($key) }}</a>
                             @endforeach
                         </div>
                     </details>
 
-                    {{-- A segmented control rather than "FR / EN": two links with a slash between
-                         them read as breadcrumbs, and the slash was the third-loudest glyph here.
-                         The system's own segment: a ruled box, a divider between the options, the
-                         chosen one filled in the accent. --}}
-                    <span class="inline-flex items-stretch border border-edge-strong text-xs divide-x divide-edge-strong">
+                    {{-- FR/EN: a surface-1 shell, the active language on surface-2. --}}
+                    <span class="inline-flex items-center rounded-[12px] border border-edge bg-surface-raised p-1 text-xs">
                         @foreach (['fr' => 'language.french_short', 'en' => 'language.english_short'] as $code => $label)
                             <a href="{{ request()->fullUrlWithQuery(['lang' => $code]) }}"
                                aria-current="{{ app()->getLocale() === $code ? 'true' : 'false' }}"
                                @class([
-                                   'px-2.5 py-1.5 font-semibold no-underline transition-colors',
-                                   'bg-brand text-brand-contrast' => app()->getLocale() === $code,
-                                   'text-content hover:bg-content/7' => app()->getLocale() !== $code,
+                                   'rounded-[9px] px-2.5 py-1.5 font-bold no-underline transition-colors',
+                                   'bg-surface-sunken text-content' => app()->getLocale() === $code,
+                                   'text-content-muted hover:text-content' => app()->getLocale() !== $code,
                                ])>{{ __($label) }}</a>
                         @endforeach
                     </span>
 
-                    {{-- Theme. Three states, like the app's own setting: follow the device, or
-                         override it either way. One button that cycles rather than three controls —
-                         the header is already carrying a language switch and a call to action, and
-                         at 390px a third segmented control would not fit beside them.
-
-                         Rendered with BOTH glyphs, one hidden per theme by CSS, so the icon is right
-                         on the very first paint. Deciding it in JS would show the wrong one until the
-                         script ran, which is the flash this whole arrangement exists to avoid. --}}
-                    <button type="button"
-                            data-theme-toggle
-                            class="grid size-9 flex-none place-items-center border border-edge-strong bg-transparent text-content cursor-pointer transition-colors hover:bg-content/7"
-                            title="{{ __('public.theme_toggle') }}"
-                            aria-label="{{ __('public.theme_toggle') }}">
-                        <svg class="size-4 dark:hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                            <circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>
-                        </svg>
-                        <svg class="size-4 hidden dark:block" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                            <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>
-                        </svg>
-                    </button>
-
-                    {{-- The header's own call to action. Without one, a reader convinced by what they
-                         just read has to scroll back up to the hero to act on it. --}}
-                    <a class="hidden lg:inline-flex items-center gap-1.5 px-4 py-2.5 bg-brand text-brand-contrast text-sm font-extrabold no-underline transition-colors hover:bg-brand-strong"
-                       href="{{ route('services.index') }}">
+                    {{-- The header's own call to action: the one filled button on the bar. --}}
+                    <a class="btn btn-primary hidden min-h-11 py-2.5 lg:inline-flex" href="{{ route('services.index') }}">
                         {{ __('public.hero_cta_primary') }}
-                        <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
                     </a>
                 </nav>
             </div>
@@ -161,19 +115,19 @@
         @yield('content')
     </main>
 
-    <footer class="border-t-2 border-edge-strong pt-16 pb-6">
-        <div class="w-full max-w-6xl mx-auto px-6">
-            <div class="grid gap-6 grid-cols-[repeat(auto-fit,minmax(min(100%,12rem),1fr))]">
+    <footer class="border-t border-edge bg-surface-rail pt-14 pb-7">
+        <div class="mx-auto w-full max-w-[1440px] px-5 sm:px-8 lg:px-16">
+            <div class="grid gap-10 md:grid-cols-[1.4fr_repeat(3,minmax(0,1fr))] md:gap-16">
                 <div>
-                    <a class="inline-flex items-center gap-2 font-extrabold text-lg tracking-tight text-content no-underline" href="{{ route('home') }}">
-                        <span class="grid place-items-center shrink-0 size-7 bg-brand text-brand-contrast" aria-hidden="true">
-                            <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <a class="inline-flex items-center gap-2.5 text-lg font-bold tracking-[-0.02em] text-content no-underline hover:text-content" href="{{ route('home') }}">
+                        <span class="grid size-8 shrink-0 place-items-center rounded-[11px] bg-brand text-brand-contrast" aria-hidden="true">
+                            <svg class="size-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M14.7 6.3a4 4 0 0 1-5 5L4 17v3h3l5.7-5.7a4 4 0 0 1 5-5l2.6-2.6-2.6-2.6z"/>
                             </svg>
                         </span>
                         {{ __('app.name') }}
                     </a>
-                    <p class="mt-2 max-w-[22rem] text-sm text-content-muted">
+                    <p class="mt-3 max-w-[34ch] text-sm leading-relaxed text-content-muted">
                         {{ __('public.footer_blurb') }}
                     </p>
                 </div>
@@ -192,75 +146,30 @@
                     ]],
                 ] as [$heading, $links])
                     <div>
-                        <h3 class="text-xs font-bold uppercase tracking-[0.1em] text-content-muted">{{ __($heading) }}</h3>
-                        <ul class="grid gap-1.5 mt-2 list-none p-0">
+                        <h3 class="micro">{{ __($heading) }}</h3>
+                        <ul class="mt-3 grid list-none gap-2 p-0">
                             @foreach ($links as [$key, $href])
-                                <li><a class="text-sm text-content-muted no-underline hover:text-content" href="{{ $href }}">{{ __($key) }}</a></li>
+                                <li><a class="text-sm text-content-tertiary no-underline hover:text-content" href="{{ $href }}">{{ __($key) }}</a></li>
                             @endforeach
                         </ul>
                     </div>
                 @endforeach
 
                 <div>
-                    <h3 class="text-xs font-bold uppercase tracking-[0.1em] text-content-muted">{{ __('public.footer_language') }}</h3>
-                    <ul class="grid gap-1.5 mt-2 list-none p-0">
+                    <h3 class="micro">{{ __('public.footer_language') }}</h3>
+                    <ul class="mt-3 grid list-none gap-2 p-0">
                         @foreach (['fr' => 'language.french', 'en' => 'language.english'] as $code => $label)
-                            <li><a class="text-sm text-content-muted no-underline hover:text-content" href="{{ request()->fullUrlWithQuery(['lang' => $code]) }}">{{ __($label) }}</a></li>
+                            <li><a class="text-sm text-content-tertiary no-underline hover:text-content" href="{{ request()->fullUrlWithQuery(['lang' => $code]) }}">{{ __($label) }}</a></li>
                         @endforeach
                     </ul>
                 </div>
             </div>
 
-            <div class="flex flex-wrap justify-between gap-2 mt-10 pt-4 border-t border-edge-strong text-sm text-content-muted">
+            <div class="mt-12 flex flex-wrap justify-between gap-2 border-t border-edge pt-6 text-[0.8rem] text-content-muted">
                 <span>{{ __('public.footer_rights', ['year' => now()->year, 'name' => __('app.name')]) }}</span>
                 <span>{{ __('public.footer_country') }}</span>
             </div>
         </div>
     </footer>
-
-    {{-- The toggle's behaviour. Inline rather than a bundle: this is the only script the marketing
-         site has, and a whole JS request to cycle one attribute is a poor trade on a slow
-         connection.
-
-         It cycles through three states in the order someone actually wants them — from wherever you
-         are, one tap gives you the other appearance, and a third returns you to following the
-         device. `system` is stored as the ABSENCE of the attribute, so it can never drift from what
-         the tokens' media query already decides. --}}
-    <script>
-        (function () {
-            var button = document.querySelector('[data-theme-toggle]');
-            if (!button) {
-                return;
-            }
-
-            var root = document.documentElement;
-
-            button.addEventListener('click', function () {
-                var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-                var current = root.getAttribute('data-theme');
-                // Starting from "follow the device", the useful first tap is the opposite of what
-                // they are looking at — not a fixed direction that would appear to do nothing.
-                var next = current === null
-                    ? (prefersDark ? 'light' : 'dark')
-                    : (current === (prefersDark ? 'light' : 'dark') ? (prefersDark ? 'dark' : 'light') : null);
-
-                if (next === null) {
-                    root.removeAttribute('data-theme');
-                } else {
-                    root.setAttribute('data-theme', next);
-                }
-
-                try {
-                    if (next === null) {
-                        localStorage.removeItem('hm-theme');
-                    } else {
-                        localStorage.setItem('hm-theme', next);
-                    }
-                } catch (e) {
-                    // Storage denied — the choice still applies to this page, it just won't persist.
-                }
-            });
-        })();
-    </script>
 </body>
 </html>

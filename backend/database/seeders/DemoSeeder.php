@@ -102,7 +102,9 @@ final class DemoSeeder extends Seeder
         ];
 
         $providers = collect($providerNames)->map(function (string $name, int $i) use ($headlines) {
-            $user = $this->person($name, '+2376'.str_pad((string) (10000000 + $i), 8, '0', STR_PAD_LEFT));
+            // Real operator prefixes (PaymentMethod::fromMsisdn): providers on MTN, customers on Orange,
+            // so every seeded collection and payout has a rail.
+            $user = $this->person($name, '+237'.(650000000 + $i));
             ProviderProfile::factory()->verified(2)->create([
                 'party_id' => $user->party_id,
                 'headline' => $headlines[$i % count($headlines)],
@@ -111,7 +113,7 @@ final class DemoSeeder extends Seeder
             return $user;
         });
 
-        $customers = collect($customerNames)->map(fn (string $name, int $i) => $this->person($name, '+2376'.str_pad((string) (20000000 + $i), 8, '0', STR_PAD_LEFT)));
+        $customers = collect($customerNames)->map(fn (string $name, int $i) => $this->person($name, '+237'.(690000000 + $i)));
 
         // Fully engaged jobs with money flowing (quote → escrow → release), some advanced further.
         // The last flag is on-site vs REMOTE: remote engagements are a headline capability (doc 06)

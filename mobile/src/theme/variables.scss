@@ -5,7 +5,7 @@
    GENERATED mapping lives in ionic-tokens.css; regenerate via npm run tokens:build. */
 @import "./ionic-tokens.css";
 
-/* The typeface is the --hm-font-sans token (Archivo, self-hosted — see tokens.css), pointed at
+/* The typeface is the --hm-font-sans token (Plus Jakarta Sans, self-hosted — see tokens.css), pointed at
    from Ionic's side. Ionic ships Roboto for md and applies it through --ion-font-family, so
    leaving this alone would have left the framework's components on one font and everything around
    them on another. Straight at the token rather than at Tailwind's --font-sans, because Tailwind

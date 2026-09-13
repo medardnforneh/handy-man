@@ -2,8 +2,13 @@
 
 :root {
   --ion-background-color: var(--hm-color-surface-base);
-  --ion-background-color-rgb: 255, 255, 255;
+  --ion-background-color-rgb: 11, 15, 14;
   --ion-text-color: var(--hm-color-text-primary);
+  --ion-text-color-rgb: 242, 246, 244;
+  --ion-toolbar-background: var(--hm-color-surface-base);
+  --ion-item-background: var(--hm-color-surface-raised);
+  --ion-tab-bar-background: var(--hm-color-surface-sunken);
+  --ion-placeholder-color: var(--hm-color-text-muted);
   --ion-card-background: var(--hm-color-surface-raised);
   --ion-border-color: var(--hm-color-border-subtle);
   --ion-color-step-150: var(--hm-color-surface-sunken);

@@ -8,66 +8,73 @@
 @endpush
 
 @section('content')
-    <section class="py-10">
-        <div class="w-full max-w-6xl mx-auto px-6">
-            <nav class="flex flex-wrap items-center gap-1.5 text-sm text-content-muted" aria-label="{{ __('public.nav_label') }}">
-                <a class="text-content-muted no-underline hover:text-content hover:underline" href="{{ route('home') }}">{{ __('app.name') }}</a>
-                <span aria-hidden="true">&rsaquo;</span>
-                <span>{{ __('public.services_title') }}</span>
+    <section class="pt-12 pb-10 lg:pt-16">
+        <div class="mx-auto w-full max-w-[1440px] px-5 sm:px-8 lg:px-16">
+            <nav class="flex flex-wrap items-center gap-2 text-sm text-content-muted" aria-label="{{ __('public.nav_label') }}">
+                <a class="text-content-muted no-underline hover:text-content" href="{{ route('home') }}">{{ __('app.name') }}</a>
+                <span class="text-content-faint" aria-hidden="true">&rsaquo;</span>
+                <span class="text-content-tertiary">{{ __('public.services_title') }}</span>
             </nav>
 
-            <div class="max-w-[44rem] mt-4">
-                <h1 class="text-[clamp(1.55rem,1.15rem+1.7vw,2.4rem)] font-extrabold leading-[1.15] tracking-[-0.025em]">{{ __('public.services_title') }}</h1>
-                <p class="mt-2 text-[clamp(1.02rem,0.96rem+0.35vw,1.2rem)] text-content-muted">{{ __('public.directory_lede') }}</p>
+            <div class="mt-6 max-w-[44rem]">
+                <h1 class="title text-[clamp(2.1rem,1.4rem+2.2vw,2.875rem)] tracking-[-0.038em]">{{ __('public.services_title') }}</h1>
+                <p class="lede mt-4">{{ __('public.directory_lede') }}</p>
             </div>
         </div>
     </section>
 
-    <section class="pb-10">
-        <div class="w-full max-w-6xl mx-auto px-6">
-            @forelse ($categories as $category)
+    <section class="pb-20">
+        <div class="mx-auto w-full max-w-[1440px] px-5 sm:px-8 lg:px-16">
+            @if ($categories->isNotEmpty())
                 {{-- One card per category with its trades as chips: the whole taxonomy stays
                      scannable on one page, and every leaf is a crawlable link in both languages. --}}
-                <section class="mb-4 bg-surface-raised p-6">
-                    <div class="flex items-center gap-4">
-                        <span class="grid place-items-center shrink-0 size-10 rounded-md bg-brand-tint text-brand [&_svg]:size-5" aria-hidden="true">
-                            @include('public.partials.icon', ['name' => 'tool'])
-                        </span>
-                        <div>
-                            <h2 class="text-[clamp(1.05rem,0.95rem+0.4vw,1.2rem)] font-extrabold leading-tight tracking-[-0.025em]">
-                                <a class="text-inherit no-underline hover:text-brand-strong" href="{{ route('services.show', ['slug' => $category->slug]) }}">{{ $category->name($locale) }}</a>
-                            </h2>
-                            <span class="text-sm text-content-muted">{{ trans_choice('public.trades_count', $category->children->count(), ['count' => $category->children->count()]) }}</span>
-                        </div>
-                    </div>
+                <div class="grid gap-4 lg:grid-cols-2">
+                    @foreach ($categories as $category)
+                        <section class="card p-6">
+                            <div class="flex items-center gap-4">
+                                <span class="icon-tile icon-tile-neutral" aria-hidden="true">@include('public.partials.icon', ['name' => $category->slug])</span>
+                                <div class="min-w-0 flex-1">
+                                    <h2 class="text-[1.1875rem] font-bold leading-tight tracking-[-0.02em]">
+                                        <a class="text-inherit no-underline hover:text-brand" href="{{ route('services.show', ['slug' => $category->slug]) }}">{{ $category->name($locale) }}</a>
+                                    </h2>
+                                    <span class="text-[0.8125rem] text-content-muted">{{ trans_choice('public.trades_count', $category->children->count(), ['count' => $category->children->count()]) }}</span>
+                                </div>
+                                <a class="grid size-9 shrink-0 place-items-center rounded-[11px] text-content-muted no-underline hover:bg-surface-sunken hover:text-content [&_svg]:size-[18px]"
+                                   href="{{ route('services.show', ['slug' => $category->slug]) }}" aria-label="{{ $category->name($locale) }}">
+                                    @include('public.partials.icon', ['name' => 'arrow-right'])
+                                </a>
+                            </div>
 
-                    @if ($category->children->isNotEmpty())
-                        <ul class="flex flex-wrap gap-2 mt-4 list-none p-0 m-0">
-                            @foreach ($category->children->sortBy(fn ($leaf) => $leaf->name($locale)) as $leaf)
-                                <li>
-                                    <a class="inline-block bg-surface-raised px-3.5 py-2 text-sm text-content no-underline transition-colors hover:bg-surface-sunken"
-                                       href="{{ route('services.show', ['slug' => $leaf->slug]) }}">{{ $leaf->name($locale) }}</a>
-                                </li>
-                            @endforeach
-                        </ul>
-                    @endif
-                </section>
-            @empty
+                            @if ($category->children->isNotEmpty())
+                                <ul class="mt-5 flex flex-wrap gap-2 list-none p-0 m-0">
+                                    @foreach ($category->children->sortBy(fn ($leaf) => $leaf->name($locale)) as $leaf)
+                                        <li>
+                                            <a class="chip" href="{{ route('services.show', ['slug' => $leaf->slug]) }}">{{ $leaf->name($locale) }}</a>
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            @endif
+                        </section>
+                    @endforeach
+                </div>
+            @else
                 <p class="text-content-muted">{{ __('public.no_services') }}</p>
-            @endforelse
+            @endif
         </div>
     </section>
 
-    {{-- The closing banner — the one place the accent runs as a field (see home.blade.php). --}}
-    <section class="bg-brand text-brand-contrast">
-        <div class="w-full max-w-6xl mx-auto px-6">
-            <div class="py-20">
-                <h2 class="text-[clamp(1.9rem,1.2rem+2.6vw,3.4rem)] font-extrabold leading-[1.1] tracking-[-0.025em]">{{ __('public.cta_title') }}</h2>
-                <p class="max-w-[44rem] mt-3 text-[clamp(1.02rem,0.96rem+0.35vw,1.2rem)] text-brand-contrast">{{ __('public.cta_lede') }}</p>
-                <div class="flex flex-wrap gap-2 mt-8">
-                    <a class="inline-flex items-center justify-center gap-2 min-h-11 bg-brand-contrast px-[1.15rem] py-3 text-[0.95rem] font-extrabold text-brand-strong no-underline transition-colors hover:bg-surface-sunken"
-                       href="{{ route('home') }}#how">{{ __('public.trade_cta') }}</a>
+    {{-- The closing panel — the one place the accent runs as a field (see home.blade.php). --}}
+    <section class="pb-20 lg:pb-24">
+        <div class="mx-auto w-full max-w-[1440px] px-5 sm:px-8 lg:px-16">
+            <div class="flex flex-wrap items-center justify-between gap-8 rounded-[32px] bg-brand px-8 py-14 text-brand-contrast lg:px-16 lg:py-16">
+                <div class="max-w-[50ch]">
+                    <h2 class="text-[clamp(2rem,1.4rem+2.4vw,2.875rem)] font-extrabold leading-[1.05] tracking-[-0.038em] text-brand-contrast">{{ __('public.cta_title') }}</h2>
+                    <p class="mt-4 text-[1.0625rem] leading-relaxed text-brand-contrast/80">{{ __('public.cta_lede') }}</p>
                 </div>
+                <a class="btn btn-on-accent" href="{{ route('home') }}#how">
+                    {{ __('public.trade_cta') }}
+                    <span class="[&_svg]:size-4" aria-hidden="true">@include('public.partials.icon', ['name' => 'arrow-right'])</span>
+                </a>
             </div>
         </div>
     </section>

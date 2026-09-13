@@ -5,28 +5,41 @@
   --color-surface: var(--hm-color-surface-base);
   --color-surface-raised: var(--hm-color-surface-raised);
   --color-surface-sunken: var(--hm-color-surface-sunken);
+  --color-surface-step: var(--hm-color-surface-step);
+  --color-surface-rail: var(--hm-color-surface-rail);
   --color-surface-inverse: var(--hm-color-surface-inverse);
   --color-content: var(--hm-color-text-primary);
+  --color-content-secondary: var(--hm-color-text-secondary);
+  --color-content-tertiary: var(--hm-color-text-tertiary);
   --color-content-muted: var(--hm-color-text-muted);
+  --color-content-faint: var(--hm-color-text-faint);
   --color-content-inverse: var(--hm-color-text-onInverse);
+  --color-edge-soft: var(--hm-color-border-soft);
   --color-edge: var(--hm-color-border-subtle);
   --color-edge-strong: var(--hm-color-border-strong);
   --color-edge-inverse: var(--hm-color-border-onInverse);
   --color-brand: var(--hm-color-brand-primary);
   --color-brand-strong: var(--hm-color-brand-strong);
   --color-brand-tint: var(--hm-color-brand-tint);
+  --color-brand-track: var(--hm-color-brand-track);
   --color-brand-contrast: var(--hm-color-brand-onPrimary);
   --color-brand-on-inverse: var(--hm-color-brand-onInverse);
   --color-success: var(--hm-color-status-success);
   --color-warning: var(--hm-color-status-warning);
   --color-danger: var(--hm-color-status-danger);
   --color-info: var(--hm-color-status-info);
+  --color-success-tint: var(--hm-color-status-successTint);
+  --color-warning-tint: var(--hm-color-status-warningTint);
+  --color-danger-tint: var(--hm-color-status-dangerTint);
+  --color-info-tint: var(--hm-color-status-infoTint);
 
   --font-sans: var(--hm-font-sans);
 
+  --radius-xs: var(--hm-radius-xs);
   --radius-sm: var(--hm-radius-sm);
   --radius-md: var(--hm-radius-md);
   --radius-lg: var(--hm-radius-lg);
+  --radius-xl: var(--hm-radius-xl);
   --radius-pill: var(--hm-radius-pill);
 
   --shadow-sm: var(--hm-shadow-sm);

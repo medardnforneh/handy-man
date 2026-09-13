@@ -37,26 +37,31 @@ const header = '/* GENERATED from tokens/tokens.json — do not edit by hand. Ru
 /**
  * The typeface, self-hosted.
  *
- * The Modernist system is set entirely in Archivo. It is served from OUR origin rather than
+ * The redesign is set entirely in Plus Jakarta Sans. It is served from OUR origin rather than
  * fonts.googleapis.com for two reasons that both matter here: the app is an installable PWA that has
  * to render offline, and a third-party font request is one more thing to wait for on the networks
- * this product is built for. One variable-weight file (400–800, latin — which covers French) is
- * ~35kB with `font-display: swap`, so text is never invisible while it loads. The path differs per
- * surface because each serves its assets from a different place, so the generator takes it as an
- * argument rather than guessing.
+ * this product is built for. Two variable-weight files (200–800; latin covers French's accents,
+ * latin-ext its œ) total ~30kB with `font-display: swap`, so text is never invisible while it
+ * loads. The directory differs per surface because each serves its assets from a different place,
+ * so the generator takes it as an argument rather than guessing.
  */
-function fontFace(fontUrl) {
-  return `@font-face {
-  font-family: "Archivo";
+function fontFace(fontDir) {
+  const face = (file, range) => `@font-face {
+  font-family: "Plus Jakarta Sans";
   font-style: normal;
-  font-weight: 400 800;
+  font-weight: 200 800;
   font-display: swap;
-  src: url("${fontUrl}") format("woff2");
-}
-`;
+  src: url("${fontDir}/${file}") format("woff2");
+  unicode-range: ${range};
+}`;
+
+  return [
+    face('plus-jakarta-sans-latin.woff2', 'U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD'),
+    face('plus-jakarta-sans-latin-ext.woff2', 'U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF'),
+  ].join('\n') + '\n';
 }
 
-function buildTokensCss(fontUrl) {
+function buildTokensCss(fontDir) {
   const light = colorVars('light');
   const dark = colorVars('dark');
   const scalars = [
@@ -71,7 +76,7 @@ function buildTokensCss(fontUrl) {
   ].filter(Boolean).join('\n');
 
   return `${header}
-${fontFace(fontUrl)}
+${fontFace(fontDir)}
 :root {
 ${light}
 ${scalars}
@@ -95,14 +100,22 @@ ${light}
 `;
 }
 
+const rgb = (hex) => hex.replace('#', '').match(/../g).map((h) => parseInt(h, 16)).join(', ');
+
 function buildIonicCss() {
   // Ionic reads its own --ion-* variables; point them at our semantic --hm-* vars so the whole
-  // Ionic surface inherits the theme switch for free.
+  // Ionic surface inherits the theme switch for free. The -rgb pairs (Ionic mixes translucent
+  // overlays from them) cannot be variables, so they are derived from the same tokens here.
   return `${header}
 :root {
   --ion-background-color: var(${cssVar('color', 'surface.base')});
-  --ion-background-color-rgb: 255, 255, 255;
+  --ion-background-color-rgb: ${rgb(tokens.color['surface.base'].dark)};
   --ion-text-color: var(${cssVar('color', 'text.primary')});
+  --ion-text-color-rgb: ${rgb(tokens.color['text.primary'].dark)};
+  --ion-toolbar-background: var(${cssVar('color', 'surface.base')});
+  --ion-item-background: var(${cssVar('color', 'surface.raised')});
+  --ion-tab-bar-background: var(${cssVar('color', 'surface.sunken')});
+  --ion-placeholder-color: var(${cssVar('color', 'text.muted')});
   --ion-card-background: var(${cssVar('color', 'surface.raised')});
   --ion-border-color: var(${cssVar('color', 'border.subtle')});
   --ion-color-step-150: var(${cssVar('color', 'surface.sunken')});
@@ -138,22 +151,33 @@ function buildTailwindTheme() {
   color('surface', 'color', 'surface.base');
   color('surface-raised', 'color', 'surface.raised');
   color('surface-sunken', 'color', 'surface.sunken');
+  color('surface-step', 'color', 'surface.step');
+  color('surface-rail', 'color', 'surface.rail');
   color('surface-inverse', 'color', 'surface.inverse');
   color('content', 'color', 'text.primary');
+  color('content-secondary', 'color', 'text.secondary');
+  color('content-tertiary', 'color', 'text.tertiary');
   color('content-muted', 'color', 'text.muted');
+  color('content-faint', 'color', 'text.faint');
   color('content-inverse', 'color', 'text.onInverse');
+  color('edge-soft', 'color', 'border.soft');
   color('edge', 'color', 'border.subtle');
   color('edge-strong', 'color', 'border.strong');
   color('edge-inverse', 'color', 'border.onInverse');
   color('brand', 'color', 'brand.primary');
   color('brand-strong', 'color', 'brand.strong');
   color('brand-tint', 'color', 'brand.tint');
+  color('brand-track', 'color', 'brand.track');
   color('brand-contrast', 'color', 'brand.onPrimary');
   color('brand-on-inverse', 'color', 'brand.onInverse');
   color('success', 'color', 'status.success');
   color('warning', 'color', 'status.warning');
   color('danger', 'color', 'status.danger');
   color('info', 'color', 'status.info');
+  color('success-tint', 'color', 'status.successTint');
+  color('warning-tint', 'color', 'status.warningTint');
+  color('danger-tint', 'color', 'status.dangerTint');
+  color('info-tint', 'color', 'status.infoTint');
 
   // The typeface. Every surface's `font-sans` is the token: the site through this block, the app
   // through Ionic's --ion-font-family, which theme/variables.scss points at --font-sans.
@@ -185,7 +209,7 @@ ${lines.join('\n')}
  * It is generated here for the same reason every other surface is: a manifest cannot reference a
  * CSS variable, so its two colours would otherwise be the one place in the product where the brand
  * palette is copied by hand — and the splash screen would silently drift from the app. `theme_color`
- * is the brand green and `background_color` is the light surface, because the install splash shows
+ * is the brand green and `background_color` the page ground, because the install splash shows
  * before any code runs and therefore before a theme preference can be read.
  */
 function buildWebManifest(existing) {
@@ -212,7 +236,7 @@ function buildWebManifest(existing) {
  * variable the way Blade, Tailwind and Ionic all can. So the admin panel was the one surface in the
  * product where the brand palette had been copied by hand into a provider, which is exactly the
  * drift this generator exists to prevent: a change here reached three surfaces and quietly missed
- * the fourth. Light values, because the panel is light-only.
+ * the fourth. The panel is dark like every other surface (Filament's dark mode is forced on).
  */
 function buildFilamentPhp() {
   const pick = (name) => tokens.color[name].light;
@@ -258,10 +282,10 @@ write(join(__dirname, 'generated', 'tailwind-theme.css'), tailwindTheme);
 
 // Backend (Blade + Filament share Tailwind + the CSS vars).
 // Absolute, because the Vite copy and the directly-linked copy both resolve against public/.
-write(join(root, 'backend', 'resources', 'css', 'tokens.css'), buildTokensCss('/fonts/archivo-latin.woff2'));
+write(join(root, 'backend', 'resources', 'css', 'tokens.css'), buildTokensCss('/fonts'));
 write(join(root, 'backend', 'resources', 'css', 'tailwind-theme.css'), tailwindTheme);
 // Also emit a directly-linkable copy so Blade can <link> it without a Vite build.
-write(join(root, 'backend', 'public', 'css', 'tokens.css'), buildTokensCss('/fonts/archivo-latin.woff2'));
+write(join(root, 'backend', 'public', 'css', 'tokens.css'), buildTokensCss('/fonts'));
 // Filament resolves its ramps in PHP and cannot read a CSS variable — see buildFilamentPhp.
 write(join(root, 'backend', 'config', 'tokens.php'), buildFilamentPhp());
 
@@ -270,7 +294,7 @@ if (existsSync(join(root, 'mobile'))) {
   // Root-relative: Angular's CSS pipeline resolves a relative url() against the importing file (src/
   // global.scss, not this one) and fails the build; a root-relative path it leaves alone, and the
   // app is served from a root on every platform (ng serve, the PWA, Capacitor's https://localhost).
-  write(join(root, 'mobile', 'src', 'theme', 'tokens.css'), buildTokensCss('/assets/fonts/archivo-latin.woff2'));
+  write(join(root, 'mobile', 'src', 'theme', 'tokens.css'), buildTokensCss('/assets/fonts'));
   write(join(root, 'mobile', 'src', 'theme', 'ionic-tokens.css'), ionicCss);
   // The app writes its layout in the same utility vocabulary as the marketing site, so it needs the
   // same @theme mapping. One generated file, two surfaces: `bg-surface-raised` cannot come to mean
