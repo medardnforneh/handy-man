@@ -326,6 +326,10 @@ green, the tracker did not. Re-run it before believing this paragraph.
   13.20 → 13.31 came with them); audit clean. 557 tests, PHPStan and Pint green; the admin
   captured after the bump (dashboard, jobs, safety alerts at 1366px) still wears the Modernist
   skin — stale Filament font files from the previous publish removed.
+  - The app had nine of its own (`npm audit --omit=dev`): Angular 20.3.25 — an i18n XSS via
+    event-handler attributes, a sanitiser bypass through host bindings, two `HttpTransferCache`
+    leaks. `ng update` to 20.3.31 across the eleven pinned packages; 0 vulnerabilities, lint,
+    Karma (16) and the production build green.
 
 - **A request id that exists, JSON logs, Sentry behind a switch, phones out of the logs**
   (2026-09-13, `RequestId` middleware, `Redact`, `sentry/sentry-laravel`). `Problem` had
