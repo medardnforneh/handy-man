@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Workspace\Actions;
 
+use App\Domain\Jobs\JobProgress;
+use App\Domain\Jobs\JobStatus;
 use App\Domain\Workspace\ConversationManager;
 use App\Domain\Workspace\DeliverableStatus;
 use App\Domain\Workspace\MessageKind;
@@ -24,6 +26,7 @@ final class SubmitDeliverable
         private readonly ConversationManager $conversations,
         private readonly Narrator $narrator,
         private readonly Outbox $outbox,
+        private readonly JobProgress $progress,
     ) {}
 
     public function handle(
@@ -34,6 +37,9 @@ final class SubmitDeliverable
         ?string $milestoneId = null,
     ): Deliverable {
         return DB::transaction(function () use ($provider, $engagement, $title, $mediaUrl, $milestoneId): Deliverable {
+            // A submitted deliverable is the remote path's proof of work: the job waits on the customer.
+            $this->progress->advanceTo($engagement->job()->lockForUpdate()->firstOrFail(), JobStatus::WorkSubmitted);
+
             $deliverable = Deliverable::query()->create([
                 'engagement_id' => $engagement->id,
                 'milestone_id' => $milestoneId,

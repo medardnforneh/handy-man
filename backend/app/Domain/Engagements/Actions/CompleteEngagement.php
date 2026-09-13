@@ -4,19 +4,26 @@ declare(strict_types=1);
 
 namespace App\Domain\Engagements\Actions;
 
+use App\Domain\Jobs\JobProgress;
+use App\Domain\Jobs\JobStatus;
 use App\Models\Engagement;
+use App\Models\Job;
 use App\Support\Outbox;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Marks an engagement complete (build plan P7-02). Sets `completed_at` and announces
- * `engagement.completed` on the outbox — the event the follow-up orchestrator turns into a
- * review_request (+2h) and review_reminder (+3d). Idempotent: completing an already-complete
+ * Marks an engagement complete (build plan P7-02). Sets `completed_at`, moves the job to
+ * `completed` (through whatever intermediate states were never reported — see JobProgress), and
+ * announces `engagement.completed` on the outbox — the event the follow-up orchestrator turns into
+ * a review_request (+2h) and review_reminder (+3d). Idempotent: completing an already-complete
  * engagement is a no-op that re-announces nothing.
  */
 final class CompleteEngagement
 {
-    public function __construct(private readonly Outbox $outbox) {}
+    public function __construct(
+        private readonly Outbox $outbox,
+        private readonly JobProgress $progress,
+    ) {}
 
     public function handle(Engagement $engagement): Engagement
     {
@@ -26,6 +33,9 @@ final class CompleteEngagement
 
         return DB::transaction(function () use ($engagement): Engagement {
             $engagement->update(['completed_at' => now()]);
+
+            $job = Job::query()->whereKey($engagement->job_id)->lockForUpdate()->firstOrFail();
+            $this->progress->advanceTo($job, JobStatus::Completed);
 
             $this->outbox->publish('engagement.completed', [
                 'engagement_id' => $engagement->id,

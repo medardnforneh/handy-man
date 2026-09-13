@@ -6,6 +6,8 @@ namespace App\Domain\Execution\Actions;
 
 use App\Domain\Execution\JobReportNotSupported;
 use App\Domain\Jobs\EngagementModePolicy;
+use App\Domain\Jobs\JobProgress;
+use App\Domain\Jobs\JobStatus;
 use App\Domain\Media\StoreMedia;
 use App\Models\Assignment;
 use App\Models\JobReport;
@@ -26,6 +28,7 @@ final class SubmitJobReport
     public function __construct(
         private readonly StoreMedia $storeMedia,
         private readonly EngagementModePolicy $modePolicy,
+        private readonly JobProgress $progress,
     ) {}
 
     /**
@@ -48,7 +51,10 @@ final class SubmitJobReport
         $ownerPartyId = $assignment->worker()->firstOrFail()->party_id;
         $disk = (string) config('filesystems.default');
 
-        return DB::transaction(function () use ($assignment, $summary, $materials, $extraChargesMinor, $photos, $ownerPartyId, $disk): JobReport {
+        return DB::transaction(function () use ($assignment, $engagement, $summary, $materials, $extraChargesMinor, $photos, $ownerPartyId, $disk): JobReport {
+            // The report is the on-site submission: the job waits on the customer from here.
+            $this->progress->advanceTo($engagement->job, JobStatus::WorkSubmitted);
+
             $report = JobReport::query()->create([
                 'assignment_id' => $assignment->id,
                 'summary' => $summary,

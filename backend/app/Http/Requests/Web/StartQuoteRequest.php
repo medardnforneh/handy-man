@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Web;
 
+use App\Domain\Jobs\EngagementMode;
+use App\Domain\Jobs\EngagementModePolicy;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -25,20 +27,23 @@ final class StartQuoteRequest extends FormRequest
      */
     public function rules(): array
     {
-        $onSite = $this->input('engagement_mode') === 'onsite';
+        // Whether the request needs a place is the mode policy's call (doc 06, P2-02): the form
+        // offers the two modes a browser can post, and asks the policy what each one requires.
+        $mode = EngagementMode::tryFrom((string) $this->input('engagement_mode', ''));
+        $needsPlace = $mode !== null && app(EngagementModePolicy::class)->requiresAddress($mode);
+        $offered = [EngagementMode::Onsite->value, EngagementMode::Remote->value];
 
         return [
             'phone_e164' => ['required', 'string', 'regex:/^\+[1-9]\d{6,14}$/'],
-            'engagement_mode' => ['required', Rule::in(['onsite', 'remote'])],
+            'engagement_mode' => ['required', Rule::in($offered)],
             'title' => ['required', 'string', 'min:4', 'max:120'],
             'description' => ['nullable', 'string', 'max:2000'],
-            'city' => [Rule::requiredIf($onSite), 'nullable', Rule::in(array_keys(config('cities')))],
-            'line1' => [Rule::requiredIf($onSite), 'nullable', 'string', 'max:200'],
+            'city' => [Rule::requiredIf($needsPlace), 'nullable', Rule::in(array_keys(config('cities')))],
+            'line1' => [Rule::requiredIf($needsPlace), 'nullable', 'string', 'max:200'],
             'quarter' => ['nullable', 'string', 'max:120'],
-            // `accepted` is an implicit rule — a missing field fails it — so the on-site consent is
-            // `accepted_if`, which is the same rule made conditional, and remote requests need not
-            // carry the box at all.
-            'consent_location' => ['accepted_if:engagement_mode,onsite'],
+            // `accepted` is an implicit rule — a missing field fails it — so the location consent is
+            // required only when a place is, and a remote request need not carry the box at all.
+            'consent_location' => $needsPlace ? ['accepted'] : ['nullable'],
             'consent_terms' => ['accepted'],
         ];
     }

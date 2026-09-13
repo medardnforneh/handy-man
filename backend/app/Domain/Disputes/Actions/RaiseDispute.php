@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Domain\Disputes\Actions;
 
+use App\Domain\Jobs\JobProgress;
 use App\Models\Dispute;
 use App\Models\Engagement;
+use App\Models\Job;
 use App\Support\Outbox;
 use Illuminate\Support\Facades\DB;
 
@@ -15,7 +17,10 @@ use Illuminate\Support\Facades\DB;
  */
 final class RaiseDispute
 {
-    public function __construct(private readonly Outbox $outbox) {}
+    public function __construct(
+        private readonly Outbox $outbox,
+        private readonly JobProgress $progress,
+    ) {}
 
     public function handle(Engagement $engagement, string $raisedByPartyId, string $category, string $body): Dispute
     {
@@ -27,6 +32,9 @@ final class RaiseDispute
                 'body' => $body,
                 'status' => 'open',
             ]);
+
+            // The job is frozen as disputed until a person decides (JobProgress).
+            $this->progress->dispute(Job::query()->whereKey($engagement->job_id)->lockForUpdate()->firstOrFail());
 
             $this->outbox->publish('dispute.raised', [
                 'dispute_id' => $dispute->id,

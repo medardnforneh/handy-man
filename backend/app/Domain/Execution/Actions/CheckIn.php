@@ -7,6 +7,8 @@ namespace App\Domain\Execution\Actions;
 use App\Domain\Execution\AlreadyCheckedIn;
 use App\Domain\Execution\CheckInNotSupported;
 use App\Domain\Jobs\EngagementModePolicy;
+use App\Domain\Jobs\JobProgress;
+use App\Domain\Jobs\JobStatus;
 use App\Domain\Workspace\ConversationManager;
 use App\Domain\Workspace\MessageKind;
 use App\Domain\Workspace\Narrator;
@@ -34,6 +36,7 @@ final class CheckIn
         private readonly ConversationManager $conversations,
         private readonly Narrator $narrator,
         private readonly Outbox $outbox,
+        private readonly JobProgress $progress,
     ) {}
 
     public function handle(Assignment $assignment, ?float $latitude = null, ?float $longitude = null, ?float $accuracyM = null): WorkSession
@@ -63,6 +66,9 @@ final class CheckIn
                 }
                 throw $e;
             }
+
+            // On site is in progress, whatever was or was not signalled on the way.
+            $this->progress->advanceTo($engagement->job, JobStatus::InProgress);
 
             $conversation = $this->conversations->ensureForEngagement($engagement);
             $this->narrator->narrate($conversation, MessageKind::Arrived, [

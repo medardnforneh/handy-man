@@ -271,7 +271,7 @@ the highest-ROI message you will ship.
 - [x] No Spatie role anywhere gates the customer/provider section split — `RoleScopingTest` "defines no customer or provider role — the section split is never a permission"
 
 **Product**
-- [ ] A remote engagement completes end-to-end with no address, no check-in, no panic affordance
+- [x] A remote engagement completes end-to-end with no address, no check-in, no panic affordance — `RemoteEngagementEndToEndTest`: quote → acceptance → work detail (no address, `supports_check_in` false) → check-in refused (`check-in-not-supported`) → share-my-job refused → status → deliverable → customer accepts → completion, the job never carrying an address; the mode policy says no check-in, no panic, no share for remote (panic itself is a person's affordance and is never refused by the server). Walking it found that **nothing ever moved a job past `engaged`** — fixed with `JobProgress` (2026-09-13)
 - [x] A quote is revised three times; all versions visible; none mutated — `QuoteRevisionHistoryTest`: v1→v4 over the API, the customer lists all four newest-first with each version's own lines, and every version — superseded and live — refuses UPDATE at the DB (2026-09-12)
 - [ ] Workspace state converges after a hard socket kill mid-session
 - [x] Follow-ups: complete a job, submit a review, assert both review follow-ups cancelled — `FollowUpOrchestrationTest` "schedules review follow-ups when an engagement completes, and cancels them on review (P7-02)"

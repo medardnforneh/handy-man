@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace App\Domain\Disputes\Actions;
 
+use App\Domain\Jobs\JobProgress;
 use App\Domain\Money\Ledger;
 use App\Domain\Money\LedgerEntryInput;
 use App\Domain\Money\TxnKind;
 use App\Models\Dispute;
+use App\Models\Engagement;
+use App\Models\Job;
 use App\Models\User;
 use App\Support\ActivityLogger;
 use Illuminate\Support\Facades\DB;
@@ -26,6 +29,7 @@ final class AdjudicateDispute
     public function __construct(
         private readonly Ledger $ledger,
         private readonly ActivityLogger $log,
+        private readonly JobProgress $progress,
     ) {}
 
     /**
@@ -65,6 +69,16 @@ final class AdjudicateDispute
                 'resolved_by_user_id' => $admin->id,
                 'resolved_at' => now(),
             ]);
+
+            // Decided: the job leaves `disputed` — to completed if the work was finished, else back
+            // to in progress (JobProgress).
+            $engagement = Engagement::query()->whereKey($dispute->engagement_id)->first();
+            if ($engagement !== null) {
+                $job = Job::query()->whereKey($engagement->job_id)->lockForUpdate()->first();
+                if ($job !== null) {
+                    $this->progress->settle($job, $engagement->completed_at !== null);
+                }
+            }
 
             $this->log->log(
                 action: 'dispute.adjudicated',

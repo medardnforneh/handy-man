@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Domain\Workspace\Actions;
 
+use App\Domain\Jobs\JobProgress;
 use App\Domain\Workspace\DeliverableStatus;
 use App\Models\Deliverable;
+use App\Models\Job;
 use App\Support\Outbox;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
@@ -16,7 +18,10 @@ use InvalidArgumentException;
  */
 final class ReviewDeliverable
 {
-    public function __construct(private readonly Outbox $outbox) {}
+    public function __construct(
+        private readonly Outbox $outbox,
+        private readonly JobProgress $progress,
+    ) {}
 
     public function handle(Deliverable $deliverable, bool $accept, ?string $rejectReason = null): Deliverable
     {
@@ -32,6 +37,15 @@ final class ReviewDeliverable
                 'reviewed_at' => now(),
                 'reject_reason' => $accept ? null : $rejectReason,
             ]);
+
+            // Rejected work is work in progress again. Acceptance moves nothing here: the customer's
+            // explicit completion (CompleteEngagement) is what ends the job.
+            if (! $accept) {
+                $job = Job::query()->whereHas('engagement', fn ($q) => $q->whereKey($locked->engagement_id))->lockForUpdate()->first();
+                if ($job !== null) {
+                    $this->progress->reopen($job);
+                }
+            }
 
             $this->outbox->publish($accept ? 'deliverable.accepted' : 'deliverable.rejected', [
                 'deliverable_id' => $locked->id,

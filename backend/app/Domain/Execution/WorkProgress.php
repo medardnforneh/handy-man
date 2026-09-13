@@ -56,7 +56,11 @@ final class WorkProgress
             ->where('conversation_id', $conversationId)
             ->where('sender_user_id', $assignment->worker_user_id)
             ->whereIn('kind', $kinds)
+            // Two signals inside one second tie on created_at (second precision); the id is a UUID v7,
+            // time-ordered to the millisecond, so it is the tie-break. Without it "arrived" then
+            // "started" in quick succession came back as either, by luck of the query plan.
             ->orderByDesc('created_at')
+            ->orderByDesc('id')
             ->first();
 
         return $message === null ? null : $message->kind;

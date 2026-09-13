@@ -11,6 +11,8 @@ use App\Domain\Identity\Actions\VerifyOtp;
 use App\Domain\Identity\OtpException;
 use App\Domain\Jobs\Actions\CreateJob;
 use App\Domain\Jobs\Actions\PublishJob;
+use App\Domain\Jobs\EngagementMode;
+use App\Domain\Jobs\EngagementModePolicy;
 use App\Http\Requests\Web\ConfirmQuoteRequest;
 use App\Http\Requests\Web\StartQuoteRequest;
 use App\Models\Job;
@@ -105,6 +107,7 @@ final class PublicQuoteRequestController extends Controller
         CreateAddress $createAddress,
         CreateJob $createJob,
         PublishJob $publish,
+        EngagementModePolicy $modes,
     ): RedirectResponse {
         $skill = $this->leaf($slug);
         $draft = $this->draft($request, $slug);
@@ -119,7 +122,8 @@ final class PublicQuoteRequestController extends Controller
         }
 
         $locale = app()->getLocale();
-        $onSite = $draft['engagement_mode'] === 'onsite';
+        // Whether the request needs a place is the mode policy's call (doc 06), never a string test.
+        $onSite = $modes->requiresAddress(EngagementMode::from($draft['engagement_mode']));
 
         $job = DB::transaction(function () use ($draft, $skill, $user, $locale, $onSite, $consent, $createAddress, $createJob, $publish): Job {
             // The form presented the terms and privacy notice in the locale it rendered in, and the

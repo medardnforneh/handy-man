@@ -318,6 +318,27 @@ green, the tracker did not. Re-run it before believing this paragraph.
 
 ## What was done, most recent first
 
+- **Nothing ever moved a job past `engaged`** (2026-09-13). Found by writing the launch-checklist
+  walk-through of a remote engagement end to end: the state machine defined scheduled → en_route →
+  in_progress → work_submitted → completed from day one, and no action transitioned to ANY of
+  them — the provider's signals were narrated into the thread ("the chat is the state machine")
+  and the job's own `status`, which every list and the admin read, stayed `engaged` for ever. A
+  finished job sat in the provider's active-work list and read "engaged" to its customer. The demo
+  data hid it: `DemoSeeder` writes `in_progress`/`completed` directly.
+  - `App\Domain\Jobs\JobProgress` is now the one translator from event to transition — it only
+    uses the state machine, and it WALKS: a customer approving a job the provider never formally
+    submitted steps through the unreported states rather than being refused. Wired into check-in
+    (→ in_progress), status signals (on_the_way → en_route, started/resumed → in_progress,
+    completed → work_submitted), the job report and deliverables (→ work_submitted), a rejected
+    deliverable (→ in_progress), completion (→ completed), and disputes (→ disputed, settled to
+    completed or in_progress by whether the work was finished). 7 unit tests + the walk-through.
+  - Same walk found `WorkProgress::currentStatus` ordering by `created_at` alone — two signals in
+    one second tied, and "arrived" vs "started" came back by luck of the plan. The UUID v7 id is
+    the tie-break now.
+  - **Launch checklist: 21 of 34 boxes now ticked with named evidence** (doc 05). The thirteen
+    open are legal/payment-provider items, physical-device tests, socket-kill convergence, and
+    the iOS build.
+
 - **WCAG AA contrast as a CI gate** (2026-09-12, `62e3d26`) — launch-checklist item "both themes
   pass WCAG AA, verified independently". `npm run check:contrast` (`tools/check-contrast.mjs`)
   measures every token pair the surfaces draw, per theme, at the threshold its use demands. First
