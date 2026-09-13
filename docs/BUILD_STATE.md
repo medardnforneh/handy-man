@@ -318,6 +318,22 @@ green, the tracker did not. Re-run it before believing this paragraph.
 
 ## What was done, most recent first
 
+- **The production stack, as code** (2026-09-13, `deploy/`, `docs/11-deployment.md`). Every
+  launch-checklist item left needs a staging environment and there was no way to stand one up.
+  One box, two hostnames (site/admin/API on `SITE_HOST`; the PWA + proxied API/websocket on
+  `APP_HOST`, same-origin as `environment.prod.ts` expects), Caddy for TLS/HTTP3/compression, one
+  PHP image for FPM + outbox + Horizon + scheduler + Reverb, PostGIS + Redis alongside.
+  `deploy/deploy.sh --first` seeds roles + taxonomy and mints the first superadmin through the new
+  `staff:bootstrap` (one-time password, 2FA enforced by the panel) — never `DemoSeeder`. No Docker
+  on this machine, so **CI builds both images and smokes them** (`images` job).
+  - Writing it found that **no command was scheduled** — twelve existed, `routes/console.php`
+    had the framework's `inspire` and nothing else. In production no follow-up would ever send,
+    no offer expire, no stuck payment resolve, no review reveal. `routes/console.php` now carries
+    the schedule (`schedule:list` shows twelve entries); `outbox:relay` and `horizon` are daemons.
+  - Honest gaps listed in doc 11: **WhatsApp and SMS have no real adapters** (fake/log only),
+    FCM wants a token exchange, CinetPay operator codes to confirm on the sandbox, local disk for
+    uploads, no log shipping.
+
 - **Nothing ever moved a job past `engaged`** (2026-09-13). Found by writing the launch-checklist
   walk-through of a remote engagement end to end: the state machine defined scheduled → en_route →
   in_progress → work_submitted → completed from day one, and no action transitioned to ANY of

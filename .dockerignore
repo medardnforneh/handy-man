@@ -1,0 +1,27 @@
+# Build context for deploy/Dockerfile (built from the repo root). Everything the image builds for
+# itself is excluded: dependencies are installed inside the build, bundles are compiled inside the
+# build, and a machine's own state never belongs in an image.
+.git
+.github
+node_modules
+**/node_modules
+backend/vendor
+backend/storage/app/*
+backend/storage/logs/*
+backend/storage/framework/cache/*
+backend/storage/framework/sessions/*
+backend/storage/framework/views/*
+backend/public/build
+backend/public/storage
+backend/.env
+backend/.env.*
+!backend/.env.example
+backend/bootstrap/cache/*.php
+mobile/www
+mobile/android
+mobile/ios
+mobile/.angular
+mobile/coverage
+docs
+deploy/.env
+**/*.log

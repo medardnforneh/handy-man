@@ -157,3 +157,51 @@ jobs:
       - name: Test the Ionic app (Karma, headless Chrome)
         working-directory: mobile
         run: npm run test:ci
+
+  images:
+    name: Production images build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: .
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+
+      # deploy/Dockerfile is the production stack (docs/11-deployment.md). Nothing on the dev
+      # machine can build it, so this is where it is proven: both targets, every stage — Composer
+      # without dev, the token and i18n generators, Vite, the production PWA bundle, the PHP
+      # extensions. The layer cache keeps the routine run to a few minutes.
+      - name: Build the app image (PHP-FPM + every daemon role)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: deploy/Dockerfile
+          target: app
+          push: false
+          load: true
+          tags: handyman-app:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build the web image (Caddy + PWA)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: deploy/Dockerfile
+          target: web
+          push: false
+          load: true
+          tags: handyman-web:ci
+          cache-from: type=gha
+
+      # The image must boot Laravel from environment alone — no .env — and find every extension
+      # the code needs. `about` touches the container, the config and the cache drivers.
+      - name: Smoke the app image
+        run: |
+          docker run --rm -e APP_KEY=base64:$(openssl rand -base64 32) -e APP_ENV=production -e CACHE_STORE=array -e SESSION_DRIVER=array -e QUEUE_CONNECTION=sync -e DB_CONNECTION=pgsql -e LOG_CHANNEL=stderr \
+            --entrypoint php handyman-app:ci artisan about --only=environment
+          docker run --rm --entrypoint php handyman-app:ci -m | grep -E '^(pdo_pgsql|pgsql|intl|zip|gd|bcmath|opcache|pcntl|posix|sockets|sodium)$' | wc -l | grep -qx 11
+
+      - name: Validate the Caddyfile
+        run: docker run --rm -e SITE_HOST=example.test -e APP_HOST=app.example.test -e ACME_EMAIL=ci@example.test handyman-web:ci caddy validate --config /etc/caddy/Caddyfile

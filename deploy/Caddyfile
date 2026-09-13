@@ -1,0 +1,81 @@
+# The edge (deploy/Dockerfile → web image). Caddy, because a solo founder should not be
+# maintaining certificates: it obtains and renews them from Let's Encrypt on its own, speaks
+# HTTP/2 and 3, compresses, and proxies websockets without ceremony.
+#
+# Two hostnames, one box (docs/11-deployment.md):
+#   SITE_HOST  — the public site, the admin and the API: Laravel over FastCGI.
+#   APP_HOST   — the PWA (a static bundle with an SPA fallback), with /api, /broadcasting and the
+#                websocket proxied to the same Laravel / Reverb, so the app is same-origin as it
+#                expects (mobile/src/environments/environment.prod.ts).
+#
+# Both hostnames come from the environment so staging and production use the same file.
+
+{
+	email {$ACME_EMAIL}
+}
+
+(common) {
+	encode zstd gzip
+	# Hashed build assets never change under their name: cache them for a year.
+	@immutable path /build/assets/* /fonts/* *.woff2
+	header @immutable Cache-Control "public, max-age=31536000, immutable"
+	header {
+		X-Content-Type-Options nosniff
+		X-Frame-Options SAMEORIGIN
+		Referrer-Policy strict-origin-when-cross-origin
+		-Server
+	}
+	log {
+		output stdout
+		format json
+	}
+}
+
+{$SITE_HOST} {
+	import common
+	root * /var/www/html/public
+	# Signed document views and share pages are served by Laravel, never as files.
+	php_fastcgi app:9000 {
+		resolve_root_symlink
+	}
+	file_server
+}
+
+{$APP_HOST} {
+	import common
+
+	# The realtime socket: pusher-js connects to /app/{key}. Caddy upgrades the connection itself.
+	handle /app/* {
+		reverse_proxy reverb:8080
+	}
+
+	# Everything the app talks to on the API side lives on the same origin.
+	handle /api/* {
+		root * /var/www/html/public
+		php_fastcgi app:9000
+	}
+	handle /broadcasting/* {
+		root * /var/www/html/public
+		php_fastcgi app:9000
+	}
+	handle /storage/* {
+		root * /var/www/html/public
+		file_server
+	}
+	handle /up {
+		root * /var/www/html/public
+		php_fastcgi app:9000
+	}
+
+	# The PWA: hashed chunks immutable, index.html and the service worker never cached (the worker
+	# is how an update reaches an installed app — see ngsw-config.json).
+	handle {
+		root * /srv/app
+		@never path /index.html /ngsw.json /ngsw-worker.js /manifest.webmanifest
+		header @never Cache-Control "no-cache"
+		@chunks path *.js *.css
+		header @chunks Cache-Control "public, max-age=31536000, immutable"
+		try_files {path} /index.html
+		file_server
+	}
+}

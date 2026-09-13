@@ -1,0 +1,144 @@
+# The production stack (docs/11-deployment.md). One box, in country (docs/adr/0001-hosting-region.md).
+#
+#   cp deploy/.env.production.example deploy/.env   # fill it in
+#   docker compose -f deploy/compose.yml --env-file deploy/.env up -d --build
+#
+# Every PHP role runs the SAME image with a different command, so the code that answers a request,
+# relays the outbox, works the queue and serves the socket is one build. Postgres and Redis are
+# here too: self-managed, on the same host, per the ADR — until there is a reason for more.
+
+name: handyman
+
+x-app: &app
+  build:
+    context: ..
+    dockerfile: deploy/Dockerfile
+    target: app
+  image: handyman-app:latest
+  env_file: .env
+  environment:
+    APP_ENV: production
+    APP_DEBUG: "false"
+    DB_HOST: postgres
+    REDIS_HOST: redis
+    CACHE_STORE: redis
+    QUEUE_CONNECTION: redis
+    SESSION_DRIVER: redis
+    BROADCAST_CONNECTION: reverb
+    # The server the BACKEND publishes to (broadcasting), on the internal network; the server
+    # Reverb BINDS is REVERB_SERVER_HOST below. Both are the same process.
+    REVERB_HOST: reverb
+    REVERB_PORT: "8080"
+    REVERB_SCHEME: http
+  volumes:
+    - storage:/var/www/html/storage
+  depends_on:
+    postgres:
+      condition: service_healthy
+    redis:
+      condition: service_healthy
+  restart: unless-stopped
+  logging:
+    driver: json-file
+    options: { max-size: "20m", max-file: "5" }
+
+services:
+  # ---- the edge: TLS, static files, the PWA, FastCGI to PHP, websocket to Reverb ----
+  web:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+      target: web
+    image: handyman-web:latest
+    environment:
+      SITE_HOST: ${SITE_HOST}
+      APP_HOST: ${APP_HOST}
+      ACME_EMAIL: ${ACME_EMAIL}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - caddy_data:/data
+      - caddy_config:/config
+      # Uploaded job photos and the public storage link, served as files.
+      - storage:/var/www/html/storage:ro
+    depends_on:
+      - app
+      - reverb
+    restart: unless-stopped
+
+  # ---- PHP-FPM: every HTTP request ----
+  app:
+    <<: *app
+    healthcheck:
+      test: ["CMD-SHELL", "php -r 'exit(@fsockopen(\"127.0.0.1\", 9000) ? 0 : 1);'"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  # ---- the transactional outbox relay: pushes, WhatsApp, deposit capture, broadcasts ----
+  outbox:
+    <<: *app
+    command: ["php", "artisan", "outbox:relay"]
+
+  # ---- the Redis queue (Horizon) ----
+  horizon:
+    <<: *app
+    command: ["php", "artisan", "horizon"]
+    healthcheck:
+      test: ["CMD", "php", "artisan", "horizon:status"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ---- the schedule (routes/console.php) ----
+  scheduler:
+    <<: *app
+    command: ["php", "artisan", "schedule:work"]
+
+  # ---- the realtime server ----
+  reverb:
+    <<: *app
+    command: ["php", "artisan", "reverb:start", "--host=0.0.0.0", "--port=8080"]
+    environment:
+      REVERB_SERVER_HOST: 0.0.0.0
+      REVERB_SERVER_PORT: "8080"
+    expose:
+      - "8080"
+
+  # ---- data ----
+  postgres:
+    image: postgis/postgis:16-3.4-alpine
+    environment:
+      POSTGRES_DB: ${DB_DATABASE}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/10-extensions.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME} -d ${DB_DATABASE}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory", "256mb", "--maxmemory-policy", "noeviction"]
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+  redisdata:
+  storage:
+  caddy_data:
+  caddy_config:

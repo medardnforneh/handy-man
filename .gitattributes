@@ -1,0 +1,9 @@
+# Files that run on Linux must leave a Windows checkout with LF line endings: a shell script or a
+# container entrypoint with CRLF fails with "no such file or directory" (the kernel looks for
+# `/bin/sh\r`), which is the least helpful error a deploy can produce.
+*.sh text eol=lf
+deploy/php/entrypoint.sh text eol=lf
+deploy/Caddyfile text eol=lf
+deploy/compose.yml text eol=lf
+deploy/Dockerfile text eol=lf
+deploy/postgres/*.sql text eol=lf
