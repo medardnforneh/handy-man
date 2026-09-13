@@ -15,9 +15,5 @@ php artisan route:cache --no-ansi >/dev/null
 php artisan view:cache --no-ansi >/dev/null
 php artisan event:cache --no-ansi >/dev/null
 
-# The public storage link (job photos served through the web image's public/ mount).
-if [ ! -e public/storage ]; then
-  php artisan storage:link --no-ansi >/dev/null || true
-fi
 
 exec "$@"

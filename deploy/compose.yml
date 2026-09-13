@@ -10,10 +10,6 @@
 name: handyman
 
 x-app: &app
-  build:
-    context: ..
-    dockerfile: deploy/Dockerfile
-    target: app
   image: handyman-app:latest
   env_file: .env
   environment:
@@ -71,6 +67,11 @@ services:
   # ---- PHP-FPM: every HTTP request ----
   app:
     <<: *app
+    # The one place the PHP image is built; the daemons below run the image this produces.
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+      target: app
     healthcheck:
       test: ["CMD-SHELL", "php -r 'exit(@fsockopen(\"127.0.0.1\", 9000) ? 0 : 1);'"]
       interval: 15s
@@ -80,11 +81,17 @@ services:
   # ---- the transactional outbox relay: pushes, WhatsApp, deposit capture, broadcasts ----
   outbox:
     <<: *app
+    depends_on:
+      app:
+        condition: service_started
     command: ["php", "artisan", "outbox:relay"]
 
   # ---- the Redis queue (Horizon) ----
   horizon:
     <<: *app
+    depends_on:
+      app:
+        condition: service_started
     command: ["php", "artisan", "horizon"]
     healthcheck:
       test: ["CMD", "php", "artisan", "horizon:status"]
@@ -95,11 +102,17 @@ services:
   # ---- the schedule (routes/console.php) ----
   scheduler:
     <<: *app
+    depends_on:
+      app:
+        condition: service_started
     command: ["php", "artisan", "schedule:work"]
 
   # ---- the realtime server ----
   reverb:
     <<: *app
+    depends_on:
+      app:
+        condition: service_started
     command: ["php", "artisan", "reverb:start", "--host=0.0.0.0", "--port=8080"]
     environment:
       REVERB_SERVER_HOST: 0.0.0.0

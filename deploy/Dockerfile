@@ -40,9 +40,13 @@ WORKDIR /app
 COPY backend/composer.json backend/composer.lock ./
 # The lock was resolved on Windows with pcntl/posix faked (docs/BUILD_STATE.md); the real
 # extensions are in the runtime image, so nothing needs faking here.
-RUN composer install --no-dev --no-scripts --no-autoloader --prefer-dist --no-interaction
+# --ignore-platform-reqs: this image is only here to resolve and download; the extensions the
+# lock names (intl, gd, pgsql, …) live in the runtime image below, which is where they matter.
+RUN composer install --no-dev --no-scripts --no-autoloader --prefer-dist --no-interaction --ignore-platform-reqs
 COPY backend ./
-RUN composer dump-autoload --no-dev --optimize --classmap-authoritative
+# Scripts ON here: post-autoload-dump runs `package:discover`, which writes
+# bootstrap/cache/packages.php — the runtime needs it and the build context excludes it.
+RUN composer dump-autoload --no-dev --optimize --classmap-authoritative --ignore-platform-reqs
 
 # --- app: PHP-FPM -------------------------------------------------------------------------------
 FROM php:8.3-fpm-alpine AS app
@@ -61,9 +65,11 @@ COPY --from=assets /src/backend/public/build ./public/build
 COPY --from=assets /src/backend/public/css ./public/css
 COPY --from=assets /src/backend/config/tokens.php ./config/tokens.php
 COPY --from=assets /src/backend/lang ./lang
-# Writable at runtime: storage/ (uploads, logs, cache) is a volume; bootstrap/cache holds the
-# optimised config/routes written at container start (deploy/php/entrypoint.sh).
-RUN chown -R www-data:www-data storage bootstrap/cache
+# The public storage link (job photos etc. served as files) is part of the image — the storage
+# volume mounts underneath it at runtime. Writable at runtime: storage/ (uploads, logs, cache) is
+# that volume; bootstrap/cache holds the optimised config/routes written at container start.
+RUN ln -s /var/www/html/storage/app/public public/storage \
+ && chown -R www-data:www-data storage bootstrap/cache
 COPY deploy/php/entrypoint.sh /usr/local/bin/handyman-entrypoint
 RUN chmod +x /usr/local/bin/handyman-entrypoint
 USER www-data
@@ -74,6 +80,7 @@ CMD ["php-fpm"]
 FROM caddy:2-alpine AS web
 COPY deploy/Caddyfile /etc/caddy/Caddyfile
 # The site's static files, at the path FPM sees them at, so php_fastcgi's SCRIPT_FILENAME lines up.
+# public/storage is a symlink into the storage volume, which compose mounts here read-only.
 COPY --from=app /var/www/html/public /var/www/html/public
 # The PWA, served from its own hostname with an SPA fallback.
 COPY --from=assets /src/mobile/www /srv/app
