@@ -88,7 +88,7 @@ it('never throws — Meta down, Meta refusing, a number not on WhatsApp are all 
         $sender->send('+237677000444', 'review_request', ['a', 'b'], 'en', null);
     }
 
-    Log::shouldHaveReceived('warning')->withArgs(fn (string $m): bool => $m === 'whatsapp.meta.unreachable')->once();
+    Log::shouldHaveReceived('warning')->withArgs(fn (string $m, array $ctx): bool => $m === 'whatsapp.meta.unreachable' && $ctx['to'] === '+2376…444')->once();
     // A bad token is ours to fix (warning); a number not on WhatsApp is a fact about the recipient (info).
     Log::shouldHaveReceived('log')->withArgs(fn (string $level, string $m, array $ctx): bool => $level === 'warning' && $m === 'whatsapp.meta.rejected' && $ctx['code'] === 190)->once();
     Log::shouldHaveReceived('log')->withArgs(fn (string $level, string $m, array $ctx): bool => $level === 'info' && $m === 'whatsapp.meta.rejected' && $ctx['code'] === 131026)->once();

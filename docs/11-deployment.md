@@ -131,4 +131,9 @@ days" and "payout tested with real money, and reversed" run on.
   resolve through the S3 driver with exactly the keys the env example names
   (`ObjectStorageTest`); a live round trip through a running MinIO is the first-deploy smoke,
   not something this machine (no Docker) has done.
-- **Monitoring**: container logs are JSON on stdout; nothing ships them anywhere yet.
+- **Monitoring**: every container writes JSON to stdout (Caddy access logs; Laravel via
+  `LOG_STDERR_FORMATTER`), every request carries one `X-Request-Id` that is on its response, on
+  every log line it wrote and in any `trace_id` it returned (`RequestIdTest`), and unhandled
+  exceptions go to Sentry when `SENTRY_DSN` is set. Nothing ships the logs off the box yet:
+  `docker logs --since 1h app | grep <request_id>` is the tool until a destination is chosen.
+  Sentry's servers are abroad — an open decision in the tracker, PII off either way.

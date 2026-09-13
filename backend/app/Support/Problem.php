@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Str;
 
 /**
@@ -38,7 +39,9 @@ final class Problem
             'title' => $title,
             'status' => $status,
             'detail' => $detail,
-            'trace_id' => $traceId ?? (string) Str::uuid(),
+            // The request's id (RequestId middleware): the same string is on the response header and
+            // on every log line this request wrote, so support can actually search for it.
+            'trace_id' => $traceId ?? Context::get('request_id') ?? (string) Str::uuid(),
         ], $extra);
 
         return new JsonResponse($body, $status, [

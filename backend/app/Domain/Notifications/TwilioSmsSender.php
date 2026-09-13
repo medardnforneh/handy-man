@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Notifications;
 
+use App\Support\Redact;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -50,18 +51,18 @@ final class TwilioSmsSender implements SmsSender
                 ->timeout(10)
                 ->post("{$this->baseUrl}/2010-04-01/Accounts/{$this->accountSid}/Messages.json", $this->fields($phoneE164, $message));
         } catch (ConnectionException $e) {
-            Log::warning('sms.twilio.unreachable', ['to' => $phoneE164, 'error' => $e->getMessage()]);
+            Log::warning('sms.twilio.unreachable', ['to' => Redact::phone($phoneE164), 'error' => $e->getMessage()]);
 
             return;
         } catch (Throwable $e) {
-            Log::warning('sms.twilio.failed', ['to' => $phoneE164, 'error' => $e->getMessage()]);
+            Log::warning('sms.twilio.failed', ['to' => Redact::phone($phoneE164), 'error' => $e->getMessage()]);
 
             return;
         }
 
         if ($response->successful()) {
             Log::info('sms.twilio.sent', [
-                'to' => $phoneE164,
+                'to' => Redact::phone($phoneE164),
                 'sid' => $response->json('sid'),
                 'status' => $response->json('status'),
                 'segments' => $response->json('num_segments'),
@@ -75,7 +76,7 @@ final class TwilioSmsSender implements SmsSender
         // sender, a queue full) is ours to read, with Twilio's own message.
         $code = (int) $response->json('code', 0);
         Log::log(in_array($code, [21211, 21614, 21610], true) ? 'info' : 'warning', 'sms.twilio.rejected', [
-            'to' => $phoneE164,
+            'to' => Redact::phone($phoneE164),
             'status' => $response->status(),
             'code' => $code,
             'message' => $response->json('message'),

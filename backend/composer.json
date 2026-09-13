@@ -17,6 +17,7 @@
         "league/flysystem-aws-s3-v3": "3.0",
         "matanyadaev/laravel-eloquent-spatial": "^4.8",
         "predis/predis": "^3.5",
+        "sentry/sentry-laravel": "^4.27",
         "spatie/laravel-permission": "^8.3"
     },
     "require-dev": {

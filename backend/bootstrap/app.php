@@ -5,6 +5,7 @@ use App\Http\Middleware\CompressResponse;
 use App\Http\Middleware\EnforceAppVersion;
 use App\Http\Middleware\Idempotency;
 use App\Http\Middleware\RecordUsage;
+use App\Http\Middleware\RequestId;
 use App\Http\Middleware\SetLocale;
 use App\Support\Problem;
 use App\Support\ProblemAware;
@@ -16,6 +17,7 @@ use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
+use Sentry\Laravel\Integration;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
@@ -37,6 +39,11 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(prepend: [CompressResponse::class]);
         $middleware->api(prepend: [CompressResponse::class]);
 
+        // One id per request — on the response, on every log line, in every problem+json — for
+        // every route on every host. Outermost, so even a failure inside another middleware is
+        // logged under it.
+        $middleware->prepend(RequestId::class);
+
         // Force-update kill switch runs first on every API request (build plan P0-08); the
         // idempotency guard wraps mutating requests (P0-06, CLAUDE.md rule #3).
         $middleware->api(
@@ -56,6 +63,10 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->redirectGuestsTo(fn (Request $request) => null);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
+        // Unhandled exceptions go to Sentry when SENTRY_DSN is set (doc 11 "Monitoring"); without
+        // a DSN the SDK is inert. Rendered problems below are not "unhandled" and are not reported.
+        Integration::handles($exceptions);
+
         // Render every API error as RFC 7807 application/problem+json (CLAUDE.md API conventions).
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*'),

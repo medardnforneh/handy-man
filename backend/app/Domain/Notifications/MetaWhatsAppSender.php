@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Notifications;
 
+use App\Support\Redact;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -60,18 +61,18 @@ final class MetaWhatsAppSender implements WhatsAppSender
                 ->timeout(10)
                 ->post("{$this->baseUrl}/{$this->apiVersion}/{$this->phoneNumberId}/messages", $payload);
         } catch (ConnectionException $e) {
-            Log::warning('whatsapp.meta.unreachable', ['to' => $phoneE164, 'template' => $payload['template']['name'], 'error' => $e->getMessage()]);
+            Log::warning('whatsapp.meta.unreachable', ['to' => Redact::phone($phoneE164), 'template' => $payload['template']['name'], 'error' => $e->getMessage()]);
 
             return;
         } catch (Throwable $e) {
-            Log::warning('whatsapp.meta.failed', ['to' => $phoneE164, 'error' => $e->getMessage()]);
+            Log::warning('whatsapp.meta.failed', ['to' => Redact::phone($phoneE164), 'error' => $e->getMessage()]);
 
             return;
         }
 
         if ($response->successful()) {
             Log::info('whatsapp.meta.sent', [
-                'to' => $phoneE164,
+                'to' => Redact::phone($phoneE164),
                 'template' => $payload['template']['name'],
                 'message_id' => $response->json('messages.0.id'),
             ]);
@@ -84,7 +85,7 @@ final class MetaWhatsAppSender implements WhatsAppSender
         // someone should read, with Meta's own message.
         $code = (int) $response->json('error.code', 0);
         Log::log($code === 131026 ? 'info' : 'warning', 'whatsapp.meta.rejected', [
-            'to' => $phoneE164,
+            'to' => Redact::phone($phoneE164),
             'template' => $payload['template']['name'],
             'status' => $response->status(),
             'code' => $code,

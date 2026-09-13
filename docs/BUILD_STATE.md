@@ -318,6 +318,24 @@ green, the tracker did not. Re-run it before believing this paragraph.
 
 ## What was done, most recent first
 
+- **A request id that exists, JSON logs, Sentry behind a switch, phones out of the logs**
+  (2026-09-13, `RequestId` middleware, `Redact`, `sentry/sentry-laravel`). `Problem` had
+  promised "`trace_id` — the id support can search in logs" since its first commit and minted a
+  random UUID per response that appeared nowhere else: a person could read it off their screen
+  and nobody could do anything with it. Now one id per request — honoured from a well-formed
+  inbound `X-Request-Id` so a retry chain shares it, minted otherwise — is on the response
+  header, on every log line the request wrote (Laravel `Context`, which Sentry attaches too)
+  and in any problem+json's `trace_id`. Outermost middleware on every host.
+  - Production logs are one JSON object per line (`LOG_STDERR_FORMATTER`), so `docker logs`
+    is greppable by `request_id` and a shipper can index fields.
+  - The Twilio and Meta adapters logged full phone numbers; `Redact::phone` (`+2376…111`) in
+    every log context now — enough to match a ticket, not to call anyone (doc 04).
+  - Sentry wired through `Integration::handles` for unhandled exceptions, inert without a DSN,
+    PII off. Its servers are abroad: recorded as an open decision, not switched on.
+  - Evidence: `RequestIdTest` (3: header = `trace_id` = the written log line's `request_id`;
+    inbound id kept when well-formed and replaced when not; the site gets one too), redaction
+    asserted in both sender suites.
+
 - **Object storage in the stack, and one API field that leaked the bucket layout** (2026-09-13,
   `deploy/compose.yml` `minio` + `minio-init`, `deploy/minio/init.sh`). Uploads were on a local
   volume "for v1"; the ADR says self-managed MinIO in country, and doc 04 says identity papers in
@@ -405,7 +423,8 @@ green, the tracker did not. Re-run it before believing this paragraph.
     the schedule (`schedule:list` shows twelve entries); `outbox:relay` and `horizon` are daemons.
   - Honest gaps listed in doc 11: **SMS, WhatsApp and the FCM token exchange were missing** (all three landed
     the same day, above), CinetPay operator codes to confirm on the sandbox, object storage (in the stack
-    since, above), no log shipping.
+    since, above), no log shipping (JSON + request id since, above; a destination is a hosting
+    decision).
 
 - **Nothing ever moved a job past `engaged`** (2026-09-13). Found by writing the launch-checklist
   walk-through of a remote engagement end to end: the state machine defined scheduled → en_route →
@@ -2282,6 +2301,15 @@ approval flow that raises `verification_tier` (P6).
   from the operator prefix, overridable), the CinetPay adapter names the operator (`MTNCM`/`OMCM` —
   confirm against the live sandbox), `GET /meta.payment_methods`, a rail choice pre-selected on the
   app's three money sheets, admin columns, public copy. Cash stays the settlement path (P3-12).
+
+- **Error reporting abroad (2026-09-13): Sentry is wired but off.** `SENTRY_DSN` empty means
+  the SDK is inert. Setting it sends stack traces, breadcrumbs (log lines, cache keys, SQL
+  without bindings) and the request id to Sentry's servers in the EU or US — outside the
+  in-country rule of ADR 0001. `send_default_pii` is off and phone numbers are redacted in log
+  context, so an event carries no personal data by design; whether "no personal data" satisfies
+  the lawyer under Law 2024/017 is the founder's call, with the CNDP register. Alternatives if
+  not: self-hosted Sentry (heavy for one box) or GlitchTip (light, same SDK, same DSN), in
+  country. Until decided: JSON logs on the box, searchable by `X-Request-Id`.
 
 - **SMS aggregator (2026-09-13): Twilio for now, a local aggregator when price says so.** The
   adapter is Twilio because its API could be written against without guessing and reaches every

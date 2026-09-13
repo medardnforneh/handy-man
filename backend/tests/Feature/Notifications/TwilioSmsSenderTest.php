@@ -53,7 +53,8 @@ it('never throws — Twilio down, a bad token, a landline are all logged and dro
         twilio()->send($to, 'x');
     }
 
-    Log::shouldHaveReceived('warning')->withArgs(fn (string $m): bool => $m === 'sms.twilio.unreachable')->once();
+    // The number itself never reaches a log line (doc 04) — enough to match a ticket, not to call.
+    Log::shouldHaveReceived('warning')->withArgs(fn (string $m, array $ctx): bool => $m === 'sms.twilio.unreachable' && $ctx['to'] === '+2376…111')->once();
     Log::shouldHaveReceived('log')->withArgs(fn (string $level, string $m, array $ctx): bool => $level === 'warning' && $m === 'sms.twilio.rejected' && $ctx['code'] === 20003)->once();
     Log::shouldHaveReceived('log')->withArgs(fn (string $level, string $m, array $ctx): bool => $level === 'info' && $m === 'sms.twilio.rejected' && $ctx['code'] === 21614)->once();
     Http::assertSentCount(2);
