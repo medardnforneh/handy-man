@@ -1355,5 +1355,11 @@
   "request.posted_next_2": "Comparez-les et acceptez-en un. Votre argent est mis en sécurité dès ce moment, jamais versé à quiconque avant votre approbation.",
   "request.posted_next_3": "Le travail est fait. Vous l’approuvez, et seulement alors le professionnel est payé.",
   "request.posted_keep": "Conservez la référence :reference — citez-la si vous devez nous contacter au sujet de cette demande.",
-  "request.posted_back": "Voir les autres métiers"
+  "request.posted_back": "Voir les autres métiers",
+  "upgrade.eyebrow": "Mise à jour requise",
+  "upgrade.title": "Cette version de HandyMan n’est plus prise en charge.",
+  "upgrade.body": "Quelque chose d’important a changé de notre côté — en général le fonctionnement des paiements ou de la sécurité — et cette version ne peut plus s’en charger. Mettez à jour pour continuer ; rien de ce que vous aviez n’est perdu.",
+  "upgrade.versions": "Vous avez la :current ; le minimum est désormais la :min.",
+  "upgrade.action_store": "Mettre à jour depuis le store",
+  "upgrade.action_reload": "Recharger pour mettre à jour"
 }

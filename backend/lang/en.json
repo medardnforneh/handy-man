@@ -1355,5 +1355,11 @@
   "request.posted_next_2": "Compare them and accept one. Your money is held safely from that moment, never paid to anyone before you approve.",
   "request.posted_next_3": "The work gets done. You approve it, and only then is the professional paid.",
   "request.posted_keep": "Keep the reference :reference — quote it if you need to reach us about this request.",
-  "request.posted_back": "Browse other trades"
+  "request.posted_back": "Browse other trades",
+  "upgrade.eyebrow": "Update required",
+  "upgrade.title": "This version of HandyMan has been retired.",
+  "upgrade.body": "Something important changed on our side — usually how payments or safety work — and this build can no longer be trusted with it. Update to keep going; nothing you had is lost.",
+  "upgrade.versions": "You have :current; the minimum is now :min.",
+  "upgrade.action_store": "Update in the store",
+  "upgrade.action_reload": "Reload to update"
 }

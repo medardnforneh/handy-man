@@ -22,6 +22,9 @@ export const environment = {
   apiBaseUrl: '/api/v1',
   nativeApiBaseUrl: `${NATIVE_API_ORIGIN}/api/v1`,
   appVersion: '1.0.0',
+  // Where the force-update screen sends a packaged build (P0-08). The Play listing for the appId in
+  // capacitor.config.ts; iOS gets its own once there is an App Store listing.
+  storeUrl: 'https://play.google.com/store/apps/details?id=cm.handyman.app',
   // Reverb behind the same domain over TLS. The key is a PUBLIC client identifier (never the
   // secret) — it only names the app; who may subscribe is decided by the auth endpoint.
   reverb: {

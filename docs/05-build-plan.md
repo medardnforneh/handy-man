@@ -261,7 +261,7 @@ the highest-ROI message you will ship.
 **Safety**
 - [x] Admin 2FA enforced; document *reads* logged — `AdminPanelProvider` → `multiFactorAuthentication(..., isRequired: true)`; document reads: `VerificationDocumentViewController` logs `verification_document.viewed` with viewer and IP on EVERY view (doc 04 insider-threat control)
 - [ ] Panic button tested on a physical low-end Android (Tecno/Infinix) with the app backgrounded
-- [ ] Force-update kill switch tested against a real old build
+- [x] Force-update kill switch tested against a real old build — the 1.0.0 dev build loaded in headless Chrome against the API with `API_MIN_APP_VERSION=2.0.0`: every request 426, and the app stops on a full-screen "Update required" with "You have 1.0.0; the minimum is now 2.0.0" and the store/reload action (2026-09-13). Doing this found the app had **no 426 handling at all** — a retired build just showed empty screens — and that a terminable middleware's exception is appended to the response body (`RecordUsage` now swallows and reports). `upgrade.spec.ts` (Karma) + `EnforceAppVersionTest` (server). Still owed: the same against the packaged APK
 
 **Access model (doc 10)**
 - [x] A brand-new account sees BOTH sections fully — no role gate, no unlock, no mode switch — `RoleScopingTest` "defines no customer or provider role" + "a roleless user is judged on facts"; the app routes both sections behind the one auth guard

@@ -1,3 +1,25 @@
 <ion-app>
+  @if (upgrade(); as required) {
+    <!-- The force-update kill switch (P0-08). The server has retired this build; every request is
+         refused, so the app stops here rather than limping on empty screens. One statement, one
+         action — the poster register, because there is nothing else to look at. -->
+    <div class="fixed inset-0 z-50 flex flex-col bg-brand text-brand-contrast" role="alertdialog" aria-modal="true" aria-labelledby="upgrade-title">
+      <div class="mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-6 py-10">
+        <span class="text-xs font-bold uppercase tracking-wider">{{ 'upgrade.eyebrow' | translate }}</span>
+        <h1 id="upgrade-title" class="mt-2 text-3xl font-extrabold leading-tight tracking-tight">{{ 'upgrade.title' | translate }}</h1>
+        <p class="mt-3 text-md">{{ 'upgrade.body' | translate }}</p>
+        @if (required.minVersion) {
+          <p class="mt-2 text-sm opacity-90">{{ 'upgrade.versions' | translate: { current: appVersion, min: required.minVersion } }}</p>
+        }
+        <button
+          class="mt-8 flex min-h-12 w-full cursor-pointer items-center justify-start border-0 bg-brand-contrast px-4 text-md font-extrabold text-brand [font:inherit]"
+          type="button"
+          (click)="update()"
+        >
+          {{ (isNative ? 'upgrade.action_store' : 'upgrade.action_reload') | translate }}
+        </button>
+      </div>
+    </div>
+  }
   <ion-router-outlet></ion-router-outlet>
 </ion-app>

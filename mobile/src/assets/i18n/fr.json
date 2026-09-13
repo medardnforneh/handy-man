@@ -1575,5 +1575,13 @@
     "posted_next_3": "Le travail est fait. Vous l’approuvez, et seulement alors le professionnel est payé.",
     "posted_keep": "Conservez la référence :reference — citez-la si vous devez nous contacter au sujet de cette demande.",
     "posted_back": "Voir les autres métiers"
+  },
+  "upgrade": {
+    "eyebrow": "Mise à jour requise",
+    "title": "Cette version de HandyMan n’est plus prise en charge.",
+    "body": "Quelque chose d’important a changé de notre côté — en général le fonctionnement des paiements ou de la sécurité — et cette version ne peut plus s’en charger. Mettez à jour pour continuer ; rien de ce que vous aviez n’est perdu.",
+    "versions": "Vous avez la {{current}} ; le minimum est désormais la {{min}}.",
+    "action_store": "Mettre à jour depuis le store",
+    "action_reload": "Recharger pour mettre à jour"
   }
 }

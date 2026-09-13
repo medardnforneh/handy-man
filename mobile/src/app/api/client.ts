@@ -2,6 +2,7 @@ import { Capacitor } from '@capacitor/core';
 import createClient, { type Middleware } from 'openapi-fetch';
 import { environment } from '../../environments/environment';
 import { currentDeviceId } from '../core/device';
+import { markUpgradeRequired } from '../core/upgrade';
 import type { paths } from './generated/schema';
 import { tokenStore } from './token-store';
 
@@ -125,6 +126,18 @@ const authMiddleware: Middleware = {
   async onResponse({ request, response, id }) {
     const original = inFlight.get(id);
     inFlight.delete(id);
+    // The kill switch (P0-08): this build is below the server's minimum. Every request from here
+    // will be refused the same way, so record it once and let the shell stop the app.
+    if (response.status === 426) {
+      let min: string | null = null;
+      try {
+        min = ((await response.clone().json()) as { min_app_version?: string })?.min_app_version ?? null;
+      } catch {
+        // A 426 with no readable body is still a 426.
+      }
+      markUpgradeRequired(min);
+      return undefined;
+    }
     // `/auth/logout` belongs on this list for a reason that is easy to miss: refreshing a token in
     // order to throw it away is nonsense, and a 401 there is the desired end state anyway — the
     // server has already stopped honouring the session. Left off the list, signing out with an

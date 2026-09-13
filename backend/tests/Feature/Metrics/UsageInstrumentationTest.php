@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Domain\Metrics\MarketplaceAnalytics;
 use App\Models\UsageDay;
 use App\Models\User;
+use Illuminate\Support\Facades\Schema;
 use Laravel\Sanctum\Sanctum;
 
 /**
@@ -41,6 +42,19 @@ it('tells a phone\'s browser from a desktop\'s when the client is the web build'
 
     expect(UsageDay::query()->where('user_id', $user->id)->pluck('platform')->sort()->values()->all())
         ->toBe(['web_desktop', 'web_mobile']);
+});
+
+it('never lets a recording failure reach the wire — the response is already gone by then', function () {
+    // A terminable middleware runs after the body is sent; an exception there is rendered onto the
+    // end of it. Found in the wild as `{...}{"message":"SQLSTATE..."}` when the table was missing.
+    $user = User::factory()->create();
+    Sanctum::actingAs($user);
+    Schema::drop('usage_days');
+
+    $response = $this->getJson('/api/v1/auth/me', ['X-Client-Platform' => 'android']);
+
+    $response->assertOk();
+    expect(json_decode($response->getContent(), true))->toBeArray(); // a single, well-formed document
 });
 
 it('records nothing for an unauthenticated request', function () {

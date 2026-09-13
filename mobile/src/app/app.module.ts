@@ -4,7 +4,7 @@ import { RouteReuseStrategy } from '@angular/router';
 import { provideHttpClient } from '@angular/common/http';
 
 import { IonicModule, IonicRouteStrategy } from '@ionic/angular';
-import { provideTranslateService } from '@ngx-translate/core';
+import { TranslatePipe, provideTranslateService } from '@ngx-translate/core';
 import { provideTranslateHttpLoader } from '@ngx-translate/http-loader';
 
 import { Capacitor } from '@capacitor/core';
@@ -19,6 +19,8 @@ import { registerIcons } from './core/icons';
     BrowserModule,
     IonicModule.forRoot(),
     AppRoutingModule,
+    // The shell renders the force-update screen itself (P0-08), so it needs the pipe.
+    TranslatePipe,
     // The service worker is what makes the PWA target work offline at all (P5-01): without it the
     // browser has no app to load when the network is down, so P5-02's cached data and queued writes
     // would be unreachable — you cannot queue a message in an app that won't open.

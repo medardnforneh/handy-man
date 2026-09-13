@@ -1575,5 +1575,13 @@
     "posted_next_3": "The work gets done. You approve it, and only then is the professional paid.",
     "posted_keep": "Keep the reference :reference — quote it if you need to reach us about this request.",
     "posted_back": "Browse other trades"
+  },
+  "upgrade": {
+    "eyebrow": "Update required",
+    "title": "This version of HandyMan has been retired.",
+    "body": "Something important changed on our side — usually how payments or safety work — and this build can no longer be trusted with it. Update to keep going; nothing you had is lost.",
+    "versions": "You have {{current}}; the minimum is now {{min}}.",
+    "action_store": "Update in the store",
+    "action_reload": "Reload to update"
   }
 }

@@ -11,6 +11,9 @@ export const environment = {
   // emulator the host machine is 10.0.2.2 — `127.0.0.1` there means the emulator itself.
   nativeApiBaseUrl: 'http://10.0.2.2:8100/api/v1',
   appVersion: '1.0.0',
+  // Where the force-update screen sends a packaged build (P0-08). The Play listing for the appId in
+  // capacitor.config.ts; iOS gets its own once there is an App Store listing.
+  storeUrl: 'https://play.google.com/store/apps/details?id=cm.handyman.app',
   // Reverb (P4-03/04). Must match backend/.env REVERB_APP_KEY / REVERB_PORT — start it with
   // `php artisan reverb:start` from backend/.
   // `scheme` is deliberately the full union, not a literal: narrowing it to 'http' would make the
