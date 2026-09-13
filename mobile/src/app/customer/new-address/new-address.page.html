@@ -23,7 +23,7 @@
          fit, which is decided by the row's own width rather than by a viewport breakpoint. -->
     <h2 class="mt-6 mb-4 text-lg font-extrabold tracking-snug">{{ 'address.pin' | translate }}</h2>
     <div
-      class="flex flex-wrap items-center gap-2 rounded-lg border p-4 shadow-sm"
+      class="flex flex-wrap items-center gap-2 rounded-lg border p-4"
       [class]="fix() !== null
         ? 'border-success/45 bg-[color-mix(in_srgb,var(--color-success)_8%,var(--color-surface-raised))]'
         : 'border-edge bg-surface-raised'"
@@ -130,7 +130,7 @@
       @if (saving()) {
         <ion-spinner name="crescent"></ion-spinner>
       } @else {
-        <span class="min-w-0 flex-1 text-start">{{ 'address.save' | translate }}</span>
+        {{ 'address.save' | translate }}
       }
     </ion-button>
   </div>

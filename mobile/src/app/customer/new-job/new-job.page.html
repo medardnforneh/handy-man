@@ -1,16 +1,27 @@
 <ion-header [translucent]="true" class="ion-no-border">
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-back-button defaultHref="/tabs/jobs" [text]="''"></ion-back-button>
+      <ion-back-button defaultHref="/tabs/jobs" [text]="''" icon="close"></ion-back-button>
     </ion-buttons>
-    <ion-title>{{ 'newjob.title' | translate }}</ion-title>
+    <!-- One screen rather than three steps, so the bar shows what is filled: what, category, place.
+         The handoff draws this form as step 2 of 3; the segments here are the same idea on one page. -->
+    <div class="flex items-center gap-3 pe-4">
+      <div class="flex flex-1 gap-[5px]" aria-hidden="true">
+        <span class="h-[3px] flex-1 rounded-[2px]" [class]="title().trim() ? 'bg-brand' : 'bg-surface-sunken'"></span>
+        <span class="h-[3px] flex-1 rounded-[2px]" [class]="categoryId() ? 'bg-brand' : 'bg-surface-sunken'"></span>
+        <span class="h-[3px] flex-1 rounded-[2px]" [class]="canPost() ? 'bg-brand' : 'bg-surface-sunken'"></span>
+      </div>
+      <span class="text-xs font-bold text-content-muted">{{ progress() }}/3</span>
+    </div>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <div class="mx-auto max-w-3xl px-4 pb-10">
+  <div class="mx-auto max-w-3xl px-[22px] pb-10 md:px-8">
+    <h1 class="mt-1 mb-5 text-[26px] font-extrabold leading-[1.08] tracking-tight text-balance">{{ 'newjob.title_long' | translate }}</h1>
+
     <!-- What -->
-    <h2 class="mt-6 mb-4 text-md font-extrabold tracking-snug">{{ 'newjob.what' | translate }}</h2>
+    <h2 class="mb-2.5 text-2xs font-extrabold uppercase tracking-wider text-content-muted">{{ 'newjob.what' | translate }}</h2>
     <ion-input
       class="field"
       [value]="title()"
@@ -19,36 +30,36 @@
       [attr.aria-label]="'newjob.what' | translate"
     ></ion-input>
 
-    <!-- Category -->
-    <h2 class="mt-6 mb-4 text-md font-extrabold tracking-snug">{{ 'newjob.category' | translate }}</h2>
-    <div class="grid grid-cols-[repeat(auto-fill,minmax(96px,1fr))] gap-2">
+    <!-- Category: wrapping chips, the chosen one filled (handoff: Post a request). -->
+    <h2 class="mt-6 mb-2.5 text-2xs font-extrabold uppercase tracking-wider text-content-muted">{{ 'newjob.category' | translate }}</h2>
+    <div class="flex flex-wrap gap-2">
       @for (cat of categories(); track cat.id) {
         <button
           type="button"
-          class="flex min-h-11 cursor-pointer flex-col items-center gap-1.5 rounded-lg border px-1.5 py-4 transition-colors"
+          class="box-border inline-flex min-h-11 cursor-pointer items-center gap-1.5 rounded-[14px] border border-solid px-3.5 py-2 font-sans text-sm font-bold transition-colors"
           [class]="categoryId() === cat.id
-            ? 'border-brand bg-brand/10 text-content'
-            : 'border-edge bg-surface-raised text-content-muted'"
+            ? 'border-brand bg-brand text-brand-contrast'
+            : 'border-edge bg-surface-raised text-content'"
           [attr.aria-pressed]="categoryId() === cat.id"
           (click)="selectCategory(cat.id)"
         >
-          <ion-icon [name]="cat.icon" class="text-[1.4rem] text-brand" aria-hidden="true"></ion-icon>
-          <span class="text-xs font-semibold">{{ cat.label }}</span>
+          <ion-icon [name]="cat.icon" class="text-[15px]" [class.text-brand]="categoryId() !== cat.id" aria-hidden="true"></ion-icon>
+          {{ cat.label }}
         </button>
       }
     </div>
 
     <!-- Specific service (leaf skill) — shown when the chosen category has real leaves -->
     @if (leaves().length > 0) {
-      <h2 class="mt-6 mb-4 text-md font-extrabold tracking-snug">{{ 'newjob.service' | translate }}</h2>
+      <h2 class="mt-6 mb-2.5 text-2xs font-extrabold uppercase tracking-wider text-content-muted">{{ 'newjob.service' | translate }}</h2>
       <div class="flex flex-wrap gap-2">
         @for (leaf of leaves(); track leaf.id) {
           <button
             type="button"
-            class="min-h-11 cursor-pointer rounded-pill border-[1.5px] px-3.5 py-2 text-sm font-semibold transition-colors"
+            class="box-border min-h-11 cursor-pointer rounded-[14px] border border-solid px-3.5 py-2 font-sans text-sm font-bold transition-colors"
             [class]="skillId() === leaf.id
-              ? 'border-brand bg-brand/12 text-brand-strong'
-              : 'border-edge bg-surface-raised text-content-muted'"
+              ? 'border-brand bg-brand-tint text-brand'
+              : 'border-edge bg-surface-raised text-content'"
             [attr.aria-pressed]="skillId() === leaf.id"
             (click)="skillId.set(leaf.id)"
           >{{ leaf.label }}</button>
@@ -57,7 +68,7 @@
     }
 
     <!-- Mode -->
-    <h2 class="mt-6 mb-4 text-md font-extrabold tracking-snug">{{ 'newjob.mode' | translate }}</h2>
+    <h2 class="mt-6 mb-2.5 text-2xs font-extrabold uppercase tracking-wider text-content-muted">{{ 'newjob.mode' | translate }}</h2>
     <ion-segment class="choice" [value]="mode()">
       <ion-segment-button value="onsite" (click)="setMode('onsite')">
         <ion-label>{{ 'discover.mode.onsite' | translate }}</ion-label>
@@ -70,34 +81,34 @@
       </ion-segment-button>
     </ion-segment>
 
-    <!-- Address — conditional on the engagement mode (doc 06) -->
+    <!-- Where — conditional on the engagement mode (doc 06). Selected: accent-tinted inside an
+         accent line, with a check; the rest: surface-1 inside the line, with an empty ring. -->
     @if (needsAddress()) {
-      <h2 class="mt-6 mb-4 text-md font-extrabold tracking-snug">{{ 'newjob.address' | translate }}</h2>
+      <h2 class="mt-6 mb-2.5 text-2xs font-extrabold uppercase tracking-wider text-content-muted">{{ 'newjob.address' | translate }}</h2>
       <div class="flex flex-col gap-2">
         @for (addr of addresses(); track addr.id) {
           <button
             type="button"
-            class="flex min-h-11 cursor-pointer items-center gap-2 rounded-lg border p-4 text-start text-inherit shadow-sm transition-colors"
-            [class]="addressId() === addr.id ? 'border-brand bg-brand/8' : 'border-edge bg-surface-raised'"
+            class="box-border flex min-h-11 w-full cursor-pointer items-center gap-3 rounded-md border border-solid px-[17px] py-3 text-start text-inherit font-sans text-md transition-colors"
+            [class]="addressId() === addr.id ? 'border-brand bg-brand-tint' : 'border-edge bg-surface-raised'"
             [attr.aria-pressed]="addressId() === addr.id"
             (click)="addressId.set(addr.id)"
           >
-            <ion-icon class="flex-none text-[1.2rem] text-brand" name="location-outline" aria-hidden="true"></ion-icon>
+            <ion-icon class="flex-none text-[18px]" [class]="addressId() === addr.id ? 'text-brand' : 'text-content-muted'" name="location-outline" aria-hidden="true"></ion-icon>
             <span class="min-w-0 flex-1">
-              <b class="text-md">{{ addr.label }}</b>
-              <small class="mt-0.5 block text-xs text-content-muted">{{ addr.line }}</small>
+              <b class="block text-md font-bold">{{ addr.label }}</b>
+              <small class="block truncate text-xs text-content-muted">{{ addr.line }}</small>
             </span>
             <ion-icon
-              class="flex-none text-[1.25rem]"
-              [class]="addressId() === addr.id ? 'text-brand' : 'text-edge-strong'"
+              class="flex-none text-[19px]"
+              [class]="addressId() === addr.id ? 'text-brand' : 'text-content-muted'"
               [name]="addressId() === addr.id ? 'checkmark-circle' : 'ellipse-outline'"
               aria-hidden="true"
             ></ion-icon>
           </button>
         } @empty {
           <!-- On-site work needs a real address — the column is a DB CHECK, and the pin on it is
-               what provider matching runs against. With none saved, this form cannot be finished,
-               so the way to fix that is here rather than three screens away in the account tab. -->
+               what provider matching runs against. -->
           <app-empty-state
             inline="true"
             icon="location-outline"
@@ -110,11 +121,9 @@
         }
 
         @if (addresses().length) {
-          <!-- Quieter than the address cards it follows, since choosing one of them is the common
-               path and adding another is the exception. -->
           <button
             type="button"
-            class="flex min-h-11 cursor-pointer items-center justify-center gap-1.5 rounded-lg border border-edge-strong bg-transparent p-2.5 text-sm font-bold text-brand-strong [font:inherit]"
+            class="flex min-h-11 cursor-pointer items-center justify-start gap-2 rounded-md border-0 bg-transparent px-[17px] py-2.5 font-sans text-sm font-bold text-brand"
             (click)="addAddress()"
           >
             <ion-icon name="add" class="text-lg" aria-hidden="true"></ion-icon>
@@ -123,14 +132,14 @@
         }
       </div>
     } @else {
-      <p class="m-0 flex items-center gap-1.5 rounded-md border border-edge-strong p-4 text-sm text-content-muted">
-        <ion-icon name="globe-outline" class="flex-none text-[1.1rem] text-brand" aria-hidden="true"></ion-icon>
+      <p class="m-0 flex items-center gap-2.5 rounded-md border border-edge bg-surface-raised px-[17px] py-3.5 text-sm text-content-muted">
+        <ion-icon name="globe-outline" class="flex-none text-[17px] text-brand" aria-hidden="true"></ion-icon>
         {{ 'newjob.remote_note' | translate }}
       </p>
     }
 
     <!-- Details -->
-    <h2 class="mt-6 mb-4 text-md font-extrabold tracking-snug">{{ 'newjob.details' | translate }}</h2>
+    <h2 class="mt-6 mb-2.5 text-2xs font-extrabold uppercase tracking-wider text-content-muted">{{ 'newjob.details' | translate }}</h2>
     <ion-textarea
       class="field"
       [autoGrow]="true"
@@ -141,19 +150,19 @@
       [attr.aria-label]="'newjob.details' | translate"
     ></ion-textarea>
 
-    <!-- Photos (capture lands with the native build) -->
-    <h2 class="mt-6 mb-4 text-md font-extrabold tracking-snug">{{ 'newjob.photos' | translate }}</h2>
+    <!-- Photos: a dashed tile (capture lands with the native build). -->
+    <h2 class="mt-6 mb-2.5 text-2xs font-extrabold uppercase tracking-wider text-content-muted">{{ 'newjob.photos' | translate }}</h2>
     <button
       type="button"
-      class="flex w-full min-h-11 cursor-pointer items-center justify-start gap-2 rounded-md border border-edge-strong bg-transparent p-4 text-sm font-semibold text-content-muted [font:inherit]"
+      class="grid size-14 cursor-pointer place-items-center rounded-[15px] border border-dashed border-edge bg-transparent text-[19px] text-content-muted font-sans"
+      [attr.aria-label]="'newjob.add_photo' | translate"
     >
-      <ion-icon name="camera-outline" class="text-[1.25rem] text-brand" aria-hidden="true"></ion-icon>
-      <span>{{ 'newjob.add_photo' | translate }}</span>
+      <ion-icon name="camera-outline" aria-hidden="true"></ion-icon>
     </button>
 
     <!-- Budget -->
-    <h2 class="mt-6 mb-4 text-md font-extrabold tracking-snug">{{ 'newjob.budget' | translate }}</h2>
-    <div class="field flex items-center pe-3.5">
+    <h2 class="mt-6 mb-2.5 text-2xs font-extrabold uppercase tracking-wider text-content-muted">{{ 'newjob.budget' | translate }}</h2>
+    <div class="field flex items-center pe-[17px]">
       <ion-input
         class="flex-1"
         inputmode="numeric"
@@ -168,9 +177,10 @@
 </ion-content>
 
 <ion-footer class="ion-no-border">
-  <div class="mx-auto max-w-3xl border-t border-t-edge px-4 py-2">
-    <ion-button expand="block" [disabled]="!canPost()" (click)="post()">
-      <span class="min-w-0 flex-1 text-start">{{ 'newjob.post' | translate }}</span>
+  <div class="mx-auto max-w-3xl px-[22px] pt-3.5 pb-6 md:px-8">
+    <ion-button expand="block" class="h-[54px] text-md" [disabled]="!canPost()" (click)="post()">
+      {{ 'newjob.post' | translate }}
+      <ion-icon slot="end" name="arrow-forward" class="text-[18px]" aria-hidden="true"></ion-icon>
     </ion-button>
   </div>
 </ion-footer>

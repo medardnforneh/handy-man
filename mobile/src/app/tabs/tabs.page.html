@@ -1,35 +1,52 @@
-<!-- One shell, two shapes: the split pane promotes the menu to a permanent side rail from
-     `md` up (see tabs.page.scss, which hides the tab bar at the same breakpoint), and below
-     that the menu stays closed and the bottom tab bar is the navigation. -->
+<!-- One shell, two shapes (handoff: Customer App tab bar, Customer Web rail): the split pane
+     promotes the menu to a permanent 232px rail from `md` up (see tabs.page.scss, which hides the
+     tab bar at the same breakpoint), and below that the menu stays closed and the floating tab
+     pill is the navigation. -->
 <ion-split-pane contentId="tabs-content" when="(min-width: 768px)">
   <ion-menu contentId="tabs-content" type="overlay" [swipeGesture]="false">
     <ion-content class="hm-rail">
-      <div class="flex items-center gap-2 px-2 pt-2 pb-6">
-        <span class="grid size-[38px] flex-none place-items-center rounded-md bg-brand text-[1.15rem] text-brand-contrast" aria-hidden="true">
-          <ion-icon name="hammer-outline"></ion-icon>
-        </span>
-        <span class="flex min-w-0 flex-col">
+      <div class="flex h-full flex-col">
+        <a class="flex items-center gap-2.5 px-2 pt-2 pb-7 no-underline" [routerLink]="['/tabs', 'discover']">
+          <span class="grid size-8 flex-none place-items-center rounded-[11px] bg-brand text-[1rem] text-brand-contrast" aria-hidden="true">
+            <ion-icon name="hammer-outline"></ion-icon>
+          </span>
           <strong class="text-md font-bold tracking-snug text-content">{{ 'app.name' | translate }}</strong>
-          <small class="text-2xs leading-tight text-content-muted">{{ 'app.tagline' | translate }}</small>
-        </span>
+        </a>
+
+        <nav class="grid gap-1" [attr.aria-label]="'nav.customer' | translate">
+          @for (item of items; track item.tab) {
+            <a
+              class="hm-rail-item flex min-h-11 items-center gap-3 rounded-[13px] px-3 py-2.5 text-md font-semibold no-underline"
+              [routerLink]="['/tabs', item.tab]"
+              routerLinkActive="active"
+            >
+              <ion-icon class="text-[18px]" [name]="item.icon" aria-hidden="true"></ion-icon>
+              <span class="min-w-0 flex-1">{{ item.label | translate }}</span>
+              @if (item.tab === 'jobs' && jobCount() > 0) {
+                <span class="text-sm font-bold">{{ jobCount() }}</span>
+              }
+              @if (item.tab === 'chats' && unread() > 0) {
+                <span class="grid h-5 min-w-5 place-items-center rounded-pill bg-brand px-1.5 text-2xs font-extrabold text-brand-contrast">{{ unread() }}</span>
+              }
+            </a>
+          }
+        </nav>
+
+        <ion-button class="mt-4 h-12 [--padding-start:0] [--padding-end:0]" expand="block" fill="outline" [routerLink]="['/new-job']">
+          <ion-icon slot="start" name="add" aria-hidden="true"></ion-icon>
+          {{ 'newjob.title' | translate }}
+        </ion-button>
+
+        <!-- Pushed to the bottom: who is signed in, and the way to the account screen. -->
+        <a class="mt-auto flex items-center gap-2.5 rounded-[14px] border border-edge bg-surface-raised p-2.5 no-underline" [routerLink]="['/tabs', 'account']">
+          <span class="grid size-[34px] flex-none place-items-center rounded-[11px] bg-brand text-xs font-extrabold text-brand-contrast" aria-hidden="true">{{ me().initials || '·' }}</span>
+          <span class="flex min-w-0 flex-1 flex-col">
+            <strong class="truncate text-sm font-bold text-content">{{ me().name || ('tabs.account' | translate) }}</strong>
+            <small class="text-2xs text-content-muted">{{ 'nav.customer' | translate }}</small>
+          </span>
+          <ion-icon class="text-content-muted" name="chevron-up" aria-hidden="true"></ion-icon>
+        </a>
       </div>
-
-      <p class="mt-0 mb-1 px-2 text-2xs font-bold uppercase tracking-[0.09em] text-content-muted">{{ 'nav.customer' | translate }}</p>
-
-      <ion-list lines="none">
-        @for (item of items; track item.tab) {
-          <ion-item
-            class="min-h-11 min-w-11"
-            [routerLink]="['/tabs', item.tab]"
-            routerLinkActive="active"
-            [detail]="false"
-            button
-          >
-            <ion-icon slot="start" [name]="item.icon" aria-hidden="true"></ion-icon>
-            <ion-label>{{ item.label | translate }}</ion-label>
-          </ion-item>
-        }
-      </ion-list>
     </ion-content>
   </ion-menu>
 

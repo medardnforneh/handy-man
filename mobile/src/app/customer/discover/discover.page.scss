@@ -1,25 +1,13 @@
 // Ionic's own components only — everything else on this page is a Tailwind utility in the template.
 
-// Discover used to open on a brand wash that faded down into the page. The Modernist ground is
-// flat: the header ends in the same 2px rule every other header does, and the accent is kept for
-// the one action on the screen rather than spent on the sky behind it.
-
-// A compact outline pill that fits beside the text even at 320px, so the provider row stays a row.
-// It used to wrap its CTA onto a full-width line on the narrowest phones, which made every card
-// ~215px tall — barely one and a half providers on screen, on exactly the devices with the least of
-// it.
+// The accent-tinted "Quote" (handoff: Discover): 13px radius, 12.5px/700, never wider than it needs.
 .quote {
-  --border-radius: var(--hm-radius-md);
-  --border-width: 1px;
-  --padding-start: 0.7rem;
-  --padding-end: 0.7rem;
-  font-size: var(--hm-text-xs);
+  --border-radius: 13px;
+  --padding-start: 0.9rem;
+  --padding-end: 0.9rem;
+  font-size: 12.5px;
   font-weight: 700;
+  height: 38px;
   flex: none;
   margin: 0;
-
-  @media (max-width: 360px) {
-    --padding-start: 0.55rem;
-    --padding-end: 0.55rem;
-  }
 }

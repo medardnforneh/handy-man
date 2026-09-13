@@ -8,7 +8,7 @@
   <div class="flex min-h-full flex-col mx-auto max-w-3xl px-4 pt-2 pb-10">
     @for (lead of leads(); track lead.id) {
       <button
-        class="mb-2 flex w-full min-h-11 cursor-pointer gap-2 rounded-lg bg-surface-raised p-4 text-start text-inherit shadow-sm"
+        class="mb-2 flex w-full min-h-11 cursor-pointer gap-2 rounded-lg border border-edge bg-surface-raised p-4 text-start text-inherit"
         type="button"
         (click)="openLead(lead)"
       >
@@ -23,7 +23,7 @@
           <div class="mt-0.5 flex flex-wrap items-center gap-1.5 text-xs text-content-muted">
             @if (lead.skill) {
               <span>{{ lead.skill }}</span>
-              <span class="size-[3px] flex-none rounded-full bg-edge-strong" aria-hidden="true"></span>
+              <span class="size-[3px] flex-none rounded-full bg-surface-step" aria-hidden="true"></span>
             }
             @if (lead.area) {
               <span><ion-icon name="location-outline" class="me-0.5 -mb-px" aria-hidden="true"></ion-icon>{{ lead.area }}</span>

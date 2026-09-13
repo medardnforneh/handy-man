@@ -1,42 +1,41 @@
-<!-- One shell, two shapes: the split pane promotes the menu to a permanent side rail from `md` up
-     (see pro-tabs.page.scss, which hides the tab bar at the same breakpoint); below that the bottom
-     tab bar is the navigation. Mirrors the customer shell. -->
+<!-- One shell, two shapes: the split pane promotes the menu to a permanent rail from `md` up (see
+     pro-tabs.page.scss, which hides the tab pill at the same breakpoint); below that the floating
+     tab pill is the navigation. Mirrors the customer shell — the provider app is not designed in
+     the handoff, so it shares every token and component the customer shell has. -->
 <ion-split-pane contentId="pro-tabs-content" when="(min-width: 768px)">
   <ion-menu contentId="pro-tabs-content" type="overlay" [swipeGesture]="false">
     <ion-content class="hm-rail">
-      <div class="flex items-center gap-2 px-2 pt-2 pb-6">
-        <span class="grid size-[38px] flex-none place-items-center rounded-md bg-brand text-[1.15rem] text-brand-contrast" aria-hidden="true">
-          <ion-icon name="hammer-outline"></ion-icon>
-        </span>
-        <span class="flex min-w-0 flex-col">
+      <div class="flex h-full flex-col">
+        <div class="flex items-center gap-2.5 px-2 pt-2 pb-7">
+          <span class="grid size-8 flex-none place-items-center rounded-[11px] bg-brand text-[1rem] text-brand-contrast" aria-hidden="true">
+            <ion-icon name="hammer-outline"></ion-icon>
+          </span>
           <strong class="text-md font-bold tracking-snug text-content">{{ 'app.name' | translate }}</strong>
-          <small class="text-2xs leading-tight text-content-muted">{{ 'pro.title' | translate }}</small>
-        </span>
+          <span class="ms-auto rounded-[8px] bg-surface-sunken px-2 py-1 text-[10px] font-extrabold uppercase tracking-wide text-content-muted">{{ 'pro.title' | translate }}</span>
+        </div>
+
+        <nav class="grid gap-1" [attr.aria-label]="'pro.title' | translate">
+          @for (item of items; track item.tab) {
+            <a
+              class="hm-rail-item flex min-h-11 items-center gap-3 rounded-[13px] px-3 py-2.5 text-md font-semibold no-underline"
+              [routerLink]="['/pro', item.tab]"
+              routerLinkActive="active"
+            >
+              <ion-icon class="text-[18px]" [name]="item.icon" aria-hidden="true"></ion-icon>
+              <span class="min-w-0 flex-1">{{ item.label | translate }}</span>
+            </a>
+          }
+        </nav>
+
+        <button
+          type="button"
+          class="mt-auto flex min-h-11 cursor-pointer items-center gap-3 rounded-[14px] border border-edge bg-surface-raised px-3 py-2.5 text-start font-sans text-sm font-semibold text-content"
+          (click)="backToCustomer()"
+        >
+          <ion-icon class="text-[18px] text-content-muted" name="swap-horizontal-outline" aria-hidden="true"></ion-icon>
+          <span class="min-w-0 flex-1">{{ 'pro.back_to_customer' | translate }}</span>
+        </button>
       </div>
-
-      <p class="mt-0 mb-1 px-2 text-2xs font-bold uppercase tracking-[0.09em] text-content-muted">{{ 'pro.title' | translate }}</p>
-
-      <ion-list lines="none">
-        @for (item of items; track item.tab) {
-          <ion-item
-            class="min-h-11 min-w-11"
-            [routerLink]="['/pro', item.tab]"
-            routerLinkActive="active"
-            [detail]="false"
-            button
-          >
-            <ion-icon slot="start" [name]="item.icon" aria-hidden="true"></ion-icon>
-            <ion-label>{{ item.label | translate }}</ion-label>
-          </ion-item>
-        }
-      </ion-list>
-
-      <ion-list lines="none" class="rail-foot">
-        <ion-item class="min-h-11 min-w-11" [detail]="false" button (click)="backToCustomer()">
-          <ion-icon slot="start" name="swap-horizontal-outline" aria-hidden="true"></ion-icon>
-          <ion-label>{{ 'pro.back_to_customer' | translate }}</ion-label>
-        </ion-item>
-      </ion-list>
     </ion-content>
   </ion-menu>
 

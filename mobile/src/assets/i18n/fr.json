@@ -208,6 +208,7 @@
     "clear_filter": "Tout afficher",
     "no_providers": "Aucun prestataire ne correspond à ce filtre.",
     "show_less": "Réduire",
+    "all_count": "Tout ({{count}})",
     "no_providers_title": "Aucun prestataire ici pour le moment",
     "no_providers_body": "Personne ne correspond à ce filtre pour l’instant. Essayez une autre catégorie, ou publiez une demande et laissez-les venir à vous.",
     "no_match_title": "Aucun résultat"
@@ -222,7 +223,22 @@
     "empty_title": "Aucun travail pour le moment",
     "empty_body": "Publiez une demande et des prestataires près de chez vous vous enverront un devis.",
     "no_budget": "Devis demandé",
-    "no_provider": "En attente d’un prestataire"
+    "no_provider": "En attente d’un prestataire",
+    "held_in_escrow": "Bloqué en séquestre",
+    "released": "Libéré",
+    "active": "Travaux en cours",
+    "need_you": "À traiter",
+    "waiting_on_you": "En attente de vous",
+    "running": "En cours",
+    "open_section": "Ouverts",
+    "done_section": "Terminés",
+    "approve": "Approuver",
+    "review": "Vérifier",
+    "approve_hint": "Le travail est terminé. Approuvez pour libérer le solde.",
+    "work_submitted": "travail soumis",
+    "done_of": "{{done}}/{{total}} faits",
+    "no_quotes": "Pas encore de devis",
+    "notifications": "Notifications"
   },
   "status": {
     "draft": "Brouillon",
@@ -262,7 +278,10 @@
     "work_heading": "Travailler sur HandyMan",
     "work_hint": "Référencez vos métiers et recevez les demandes des clients près de chez vous.",
     "preferences": "Préférences",
-    "more_heading": "Plus"
+    "more_heading": "Plus",
+    "jobs_done": "Travaux faits",
+    "jobs_active": "En cours",
+    "addresses_count": "Adresses"
   },
   "workspace": {
     "today": "Aujourd'hui",
@@ -945,7 +964,8 @@
     "budget": "Budget (facultatif)",
     "budget_ph": "Votre estimation",
     "post": "Publier la demande",
-    "posted": "Demande publiée"
+    "posted": "Demande publiée",
+    "title_long": "Dites-nous ce qu’il faut réparer"
   },
   "jobdetail": {
     "your_provider": "Votre prestataire",
@@ -959,6 +979,14 @@
     "remote": "Travail à distance — pas de visite",
     "open_chat": "Ouvrir la discussion",
     "find_providers": "Trouver des prestataires",
+    "approve_release": "Approuver et libérer {{amount}} FCFA",
+    "submitted_waiting": "Soumis · en attente de votre approbation",
+    "paid_released": "Payé et libéré",
+    "in_escrow_legend": "En séquestre {{amount}}",
+    "released_legend": "Libéré {{amount}}",
+    "mode_onsite": "sur place",
+    "mode_remote": "à distance",
+    "mode_hybrid": "hybride",
     "complete_title": "Ce travail est-il terminé ?",
     "complete_body": "Le marquer comme terminé ouvre la période d’avis pour vous deux.",
     "complete_cta": "Terminé",

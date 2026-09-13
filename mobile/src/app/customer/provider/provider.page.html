@@ -20,7 +20,7 @@
   @if (provider(); as p) {
     <div class="mx-auto max-w-3xl px-4 pb-10">
       <!-- Hero -->
-      <section class="mt-2 grid place-items-center rounded-lg bg-surface-raised px-4 py-6 text-center shadow-sm">
+      <section class="mt-2 grid place-items-center rounded-lg border border-edge bg-surface-raised px-4 py-6 text-center">
         <div
           [class]="'mb-2 grid size-18 place-items-center  text-[1.4rem] font-bold text-brand-contrast accent-' + p.accent"
           aria-hidden="true"
@@ -53,7 +53,7 @@
             <span>{{ p.headline }}</span>
           }
           @if (p.city) {
-            <span class="size-[3px] flex-none rounded-full bg-edge-strong" aria-hidden="true"></span>
+            <span class="size-[3px] flex-none rounded-full bg-surface-step" aria-hidden="true"></span>
             <span class="text-content-muted">
               <ion-icon name="location-outline" class="me-0.5 -mb-px text-sm" aria-hidden="true"></ion-icon>{{ p.city }}
             </span>
@@ -77,11 +77,11 @@
 
       <!-- Reputation metrics (display-safe subset) -->
       <div class="mt-4 grid grid-cols-3 gap-2">
-        <div class="grid place-items-center gap-0.5 rounded-lg bg-surface-raised px-1.5 py-4 text-center shadow-sm">
+        <div class="grid place-items-center gap-0.5 rounded-lg border border-edge bg-surface-raised px-1.5 py-4 text-center">
           <b class="text-[1.25rem] font-extrabold tracking-tight">{{ p.jobsCompleted90d }}</b>
           <small class="text-2xs text-content-muted">{{ 'provider.stat.completed' | translate }}</small>
         </div>
-        <div class="grid place-items-center gap-0.5 rounded-lg bg-surface-raised px-1.5 py-4 text-center shadow-sm">
+        <div class="grid place-items-center gap-0.5 rounded-lg border border-edge bg-surface-raised px-1.5 py-4 text-center">
           @if (hasEnoughSignal()) {
             <b class="text-[1.25rem] font-extrabold tracking-tight">{{ onTimePercent() }}%</b>
           } @else {
@@ -90,7 +90,7 @@
           <small class="text-2xs text-content-muted">{{ 'provider.stat.on_time' | translate }}</small>
         </div>
         @if (p.responseTime) {
-          <div class="grid place-items-center gap-0.5 rounded-lg bg-surface-raised px-1.5 py-4 text-center shadow-sm">
+          <div class="grid place-items-center gap-0.5 rounded-lg border border-edge bg-surface-raised px-1.5 py-4 text-center">
             <b class="text-[1.25rem] font-extrabold tracking-tight">{{ p.responseTime }}</b>
             <small class="text-2xs text-content-muted">{{ 'provider.stat.response' | translate }}</small>
           </div>
@@ -126,7 +126,7 @@
       <!-- Reviews -->
       <h2 class="mt-6 mb-4 text-lg font-extrabold tracking-snug">{{ 'provider.reviews' | translate }}</h2>
       @for (r of p.reviews; track r.id) {
-        <article class="mb-2 flex gap-2 rounded-lg bg-surface-raised p-4 shadow-sm">
+        <article class="mb-2 flex gap-2 rounded-lg border border-edge bg-surface-raised p-4">
           <div
             [class]="'grid size-10 flex-none place-items-center  text-sm font-bold text-brand-contrast accent-' + r.accent"
             aria-hidden="true"
@@ -162,7 +162,7 @@
   <div class="mx-auto max-w-3xl border-t border-t-edge px-4 py-2">
     <ion-button expand="block" [disabled]="sending()" (click)="requestQuote()">
       <ion-icon name="chatbubble-ellipses-outline" slot="start" aria-hidden="true"></ion-icon>
-      <span class="min-w-0 flex-1 text-start">{{ (hasJob ? 'provider.send_offer' : 'provider.request_quote') | translate }}</span>
+      {{ (hasJob ? 'provider.send_offer' : 'provider.request_quote') | translate }}
     </ion-button>
   </div>
 </ion-footer>
@@ -191,7 +191,7 @@
             <button
               type="button"
               class="min-h-11 cursor-pointer rounded-pill border-[1.5px] bg-transparent px-3 py-1.5 text-sm font-semibold"
-              [class]="category() === c ? 'border-brand bg-brand/12 text-brand-strong' : 'border-edge text-content'"
+              [class]="category() === c ? 'border-brand bg-brand/12 text-brand' : 'border-edge text-content'"
               (click)="category.set(c)"
             >{{ ('report.cat.' + c) | translate }}</button>
           }
@@ -200,7 +200,7 @@
         <label class="mb-4 block">
           <span class="mb-1.5 block text-sm font-bold text-content-muted">{{ 'report.body_label' | translate }}</span>
           <textarea
-            class="w-full resize-y rounded-md border border-edge-strong bg-surface-raised px-3 py-2.5 font-sans text-md leading-snug text-content focus:border-brand focus:outline-none"
+            class="w-full resize-y rounded-md border border-edge bg-surface-raised px-3 py-2.5 font-sans text-md leading-snug text-content focus:border-brand focus:outline-none"
             rows="5"
             [ngModel]="reportBody()"
             (ngModelChange)="reportBody.set($event)"
@@ -225,7 +225,7 @@
           @if (reporting()) {
             <ion-spinner name="crescent"></ion-spinner>
           } @else {
-            <span class="min-w-0 flex-1 text-start">{{ 'report.send' | translate }}</span>
+            {{ 'report.send' | translate }}
           }
         </ion-button>
       </div>

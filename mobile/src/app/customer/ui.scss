@@ -1,59 +1,50 @@
 // App-wide Ionic component styling.
 //
-// This file used to hold the app's design system — cards, pills, avatars, section heads, skeletons,
-// a type scale, a page wrapper — and every page spoke that private vocabulary. All of it is Tailwind
-// utilities now, written where it is used; the three names that survive (hm-skel, hm-pill and its
-// tones, the accents) are `@utility` definitions in src/tailwind.css, because each of them is a
-// class name chosen at RUNTIME, and a name needs a definition.
+// Every page's layout is Tailwind utilities written where it is used; the runtime-chosen names
+// (hm-skel, hm-pill and its tones, the accents) are `@utility` definitions in src/tailwind.css.
+// What is left here cannot be reached by a class at all: every rule configures an Ionic component
+// through the custom properties it exposes on its own host, from a stylesheet that is global
+// because every screen inherits it and no screen should have to restate it.
 //
-// What is left here cannot be reached by a class at all. Every rule below configures an Ionic
-// component through the custom properties it exposes on its own host, from a stylesheet that is
-// global because every screen inherits it and no screen should have to restate it.
-//
-// SEMANTIC TOKENS ONLY — never a literal colour (doc 08; enforced by `npm run lint:colors`).
+// The look is the HandyMan redesign handoff (README "Design tokens"): a dark ground, surfaces one
+// step up with a 1px line, 18px controls, 22px cards, no shadows, ink on the accent always the
+// ground. SEMANTIC TOKENS ONLY — never a literal colour (doc 08; enforced by `npm run lint:colors`).
 
-// The document baseline. Ionic's own default is 16px Roboto, which on a phone makes body copy
-// slightly larger than the interface around it and pushes everything else up to compensate.
-//
-// The app had grown twenty-five distinct font sizes — 0.76, 0.78, 0.8, 0.82, 0.85, 0.88, 0.9,
-// 0.92, 0.95rem — because every screen picked its own. Sizes a hair apart do not read as a
-// decision; they read as no decision, which is most of why a carefully-built product looked
-// unconsidered. The scale lives in the tokens (`--hm-text-*`), Tailwind reads it as `text-*`, and
-// it regenerates every surface at once like the rest of them.
+// The document baseline: 14.5px body, tabular figures everywhere (the handoff's first hard rule).
 ion-content {
   font-size: var(--hm-text-md);
   line-height: var(--hm-leading-normal);
+  font-variant-numeric: tabular-nums;
 }
 
-// Page titles, once, instead of the same three declarations at the top of a dozen page stylesheets.
 ion-title {
   font-size: var(--hm-text-xl);
   font-weight: 800;
-  letter-spacing: var(--hm-tracking-tight);
+  letter-spacing: var(--hm-tracking-snug);
 }
 
 // ---------------------------------------------------------------------------
-// Rules, not shadows.
-//
-// The Modernist system organises a page with strong 2px dividers between its major regions, and a
-// header is the first of those regions. So every header ends in the rule and every footer begins
-// with one — on the ground colour, with none of Material's drop shadow, which is the one thing this
-// system never draws. `ion-no-border` on individual headers keeps working as before: it removes
-// Ionic's own shadow, which this rule removes anyway.
+// Headers and footers: on the ground, no shadow, and the one 1px line between them and the page.
 // ---------------------------------------------------------------------------
 ion-header ion-toolbar,
 ion-footer ion-toolbar {
   --background: var(--hm-color-surface-base);
   --border-style: solid;
-  --border-color: var(--hm-color-border-strong);
+  --border-color: var(--hm-color-border-subtle);
+  --color: var(--hm-color-text-primary);
 }
 
 ion-header ion-toolbar {
-  --border-width: 0 0 var(--hm-rule-strong);
+  --border-width: 0 0 1px;
+}
+
+// A header with no border draws nothing at all — the page's own content starts the page.
+ion-header.ion-no-border ion-toolbar {
+  --border-width: 0;
 }
 
 ion-footer ion-toolbar {
-  --border-width: var(--hm-rule-strong) 0 0;
+  --border-width: 1px 0 0;
 }
 
 ion-header.header-md::after,
@@ -62,45 +53,12 @@ ion-footer.footer-md::before {
 }
 
 // ---------------------------------------------------------------------------
-// Disabled buttons.
+// Buttons.
 //
-// Ionic disables a button by dropping the whole element to `opacity: .5`. On a solid brand button
-// that is a dark green fill with dark green text sitting on a dark background — the control is
-// legible only as a smudge, and "WITHDRAW" on the wallet card was effectively invisible. Halving
-// the opacity of BOTH the fill and the label destroys the contrast between them, which is the one
-// relationship a disabled control still needs.
-//
-// So: full opacity, and say "inert" with colour instead. Grey on a sunken surface reads as a
-// control that is off, and keeps its label readable in both themes.
+// Sentence case (Material uppercases every label, which turns three choices into three warnings),
+// 700 weight, an 18px radius, no shadow. The filled variant is the accent with the ground as ink;
+// the outline variant is ink inside the strong line; `fill="clear"` is the accent as text.
 // ---------------------------------------------------------------------------
-ion-button.button-solid.button-disabled {
-  opacity: 1;
-  --background: var(--hm-color-surface-sunken);
-  --color: var(--hm-color-text-muted);
-  --box-shadow: none;
-}
-
-// On a brand-coloured card, grey-on-green would read as a hole rather than a control, so the same
-// idea in the card's own palette: a translucent wash of the card's foreground, outlined so the
-// shape is unmistakably a button, with the label at full strength.
-.hm-on-brand ion-button.button-solid.button-disabled {
-  --background: color-mix(in srgb, var(--hm-color-brand-onPrimary) 18%, transparent);
-  --color: var(--hm-color-brand-onPrimary);
-  --border-width: 1px;
-  --border-style: solid;
-  --border-color: color-mix(in srgb, var(--hm-color-brand-onPrimary) 40%, transparent);
-}
-
-// ---------------------------------------------------------------------------
-// Material defaults, restyled.
-//
-// Each rule below overrides a Material default that makes a considered product look like an
-// untouched framework demo.
-// ---------------------------------------------------------------------------
-
-// Material UPPERCASES every button label. "Send code" becomes "SEND CODE", "Quote" becomes "QUOTE",
-// and a screen with three of them reads as a set of warnings rather than a set of choices — it also
-// destroys the word shapes people read by. Sentence case, with weight carrying the emphasis.
 ion-button,
 ion-segment-button,
 ion-back-button,
@@ -109,68 +67,80 @@ ion-back-button,
   letter-spacing: 0;
 }
 
-// Buttons are set in the heading weight — in the Modernist system a label is a small heading, not
-// body copy with emphasis — and carry no radius and no shadow. Nothing on this surface floats.
 ion-button {
-  font-weight: 800;
+  font-weight: 700;
   --border-radius: var(--hm-radius-md);
   --box-shadow: none;
+  --padding-start: 1.05rem;
+  --padding-end: 1.05rem;
+
+  &.button-small {
+    --border-radius: var(--hm-radius-sm);
+    --padding-start: 0.85rem;
+    --padding-end: 0.85rem;
+  }
 }
 
-// A block button's label starts at the left padding edge, never in the middle. A button wider than
-// its label is a row, and a row's text sits flush left like every other row on the screen; centring
-// it is the one place the app would break its own left edge.
-//
-// There is no rule for it here because there is nowhere to put one: Ionic centres the label in
-// `.button-inner`, which is shadow DOM with no exposed part. What works is in the templates — every
-// `expand="block"` label is wrapped in `<span class="min-w-0 flex-1 text-start">`. A slotted element
-// is laid out by the shadow flex container it lands in, so the span takes the remaining width and
-// the text aligns to its own left edge, after any `slot="start"` icon.
-
-// The secondary button is ink on ground inside a rule — not a tinted copy of the primary. Ionic's
-// outline variant paints border and label in the accent, which makes every "Quote" and "Cancel" as
-// loud as the one action that is meant to be.
 ion-button.button-outline {
   --border-color: var(--hm-color-border-strong);
   --border-width: 1px;
   --color: var(--hm-color-text-primary);
+  --background-hover: var(--hm-color-surface-raised);
 }
 
-// Segments. One control holding one value, drawn as a ruled box with a divider between the options
-// and the chosen one filled in the accent — the system's own segmented control. Material's slab-
-// with-an-underline reads as a tab bar, and the earlier pill-in-a-track relied on a radius and a
-// shadow that no longer exist.
+// The accent-tinted button ("Quote", the chat tile): accent ink on the accent's 13% tint.
+ion-button.button-tinted {
+  --background: var(--hm-color-brand-tint);
+  --background-hover: var(--hm-color-brand-tint);
+  --color: var(--hm-color-brand-primary);
+}
+
+// Disabled: 45% opacity, no colour change (handoff "States").
+ion-button.button-disabled {
+  opacity: 0.45;
+}
+
+ion-back-button {
+  --color: var(--hm-color-text-primary);
+  --icon-font-size: 22px;
+}
+
+// ---------------------------------------------------------------------------
+// Segments: a surface-1 shell inside the line, 17px radius, 5px padding, the chosen option filled
+// in the accent with the ground as ink, the others muted (handoff: "Type of work").
+// ---------------------------------------------------------------------------
 ion-segment {
-  background: transparent;
-  border: 1px solid var(--hm-color-border-strong);
-  border-radius: var(--hm-radius-md);
-  padding: 0;
+  background: var(--hm-color-surface-raised);
+  border: 1px solid var(--hm-color-border-subtle);
+  border-radius: 17px;
+  padding: 5px;
+  gap: 6px;
 }
 
 ion-segment-button {
   --indicator-color: transparent;
   --indicator-box-shadow: none;
   --background-checked: var(--hm-color-brand-primary);
-  --background-hover: color-mix(in srgb, var(--hm-color-text-primary) 7%, transparent);
-  --color: var(--hm-color-text-primary);
+  --background-hover: var(--hm-color-surface-sunken);
+  --color: var(--hm-color-text-muted);
   --color-checked: var(--hm-color-brand-onPrimary);
-  --border-radius: 0;
+  --border-radius: 13px;
   --margin-top: 0;
   --margin-bottom: 0;
   --margin-start: 0;
   --margin-end: 0;
+  --padding-top: 0;
+  --padding-bottom: 0;
   min-height: 40px;
-  font-weight: 600;
-
-  & + ion-segment-button {
-    border-inline-start: 1px solid var(--hm-color-border-strong);
-  }
+  font-size: var(--hm-text-sm);
+  font-weight: 700;
 }
 
-// The search field is the first thing touched on Discover and shipped as a grey slab with no edge.
-// A ruled box on the surface fill, like every other input.
+// ---------------------------------------------------------------------------
+// The search field: surface-1, 18px radius, the line, a muted glyph (handoff: Discover).
 // Both selectors, because Ionic styles the md variant through a CLASS (.searchbar-md) whose
-// specificity beats a bare element, and its shadow and 8px inset came back through it.
+// specificity beats a bare element.
+// ---------------------------------------------------------------------------
 ion-searchbar,
 ion-searchbar.searchbar-md {
   --background: var(--hm-color-surface-raised);
@@ -178,26 +148,115 @@ ion-searchbar.searchbar-md {
   --box-shadow: none;
   --icon-color: var(--hm-color-text-muted);
   --placeholder-color: var(--hm-color-text-muted);
+  --color: var(--hm-color-text-primary);
   padding: 0;
+  min-height: 50px;
+
+  .searchbar-input-container {
+    height: 50px;
+  }
 
   .searchbar-input {
-    border: 1px solid var(--hm-color-border-strong);
+    border: 1px solid var(--hm-color-border-subtle);
+    border-radius: var(--hm-radius-md);
     box-shadow: none;
+    font-size: var(--hm-text-md);
+    padding-inline-start: 48px;
+  }
+
+  .searchbar-search-icon {
+    inset-inline-start: 17px;
   }
 }
 
 // ---------------------------------------------------------------------------
-// Destructive action-sheet items.
-//
-// `role: 'destructive'` colours the item red on iOS and does NOTHING on Material — Ionic ships no
-// rule for it in md mode. Rendered on Android, "Block this provider" therefore read exactly like
-// "Report" and "Cancel" above and below it: three identical lines of dark text, one of which cuts
-// a person off. The role stays for the semantics; this gives it the colour it is already promising.
+// Inputs and items: filled fields on surface-1 inside the line, the line turning accent on focus.
 // ---------------------------------------------------------------------------
+ion-input,
+ion-textarea,
+ion-select {
+  --background: var(--hm-color-surface-raised);
+  --color: var(--hm-color-text-primary);
+  --placeholder-color: var(--hm-color-text-muted);
+  --padding-start: 17px;
+  --padding-end: 17px;
+  --border-radius: var(--hm-radius-md);
+  --border-color: var(--hm-color-border-subtle);
+  --highlight-color-focused: var(--hm-color-brand-primary);
+  --highlight-color-valid: var(--hm-color-brand-primary);
+}
+
+ion-item {
+  --background: transparent;
+  --border-color: var(--hm-color-border-subtle);
+  --color: var(--hm-color-text-primary);
+  --inner-padding-end: 0;
+}
+
+ion-list {
+  background: transparent;
+}
+
+ion-toggle {
+  --track-background: var(--hm-color-surface-step);
+  --track-background-checked: var(--hm-color-brand-primary);
+  --handle-background: var(--hm-color-surface-base);
+  --handle-background-checked: var(--hm-color-surface-base);
+}
+
+ion-checkbox {
+  --checkbox-background-checked: var(--hm-color-brand-primary);
+  --border-color-checked: var(--hm-color-brand-primary);
+  --checkmark-color: var(--hm-color-brand-onPrimary);
+  --border-color: var(--hm-color-border-subtle);
+  --border-radius: 6px;
+}
+
+ion-fab-button {
+  --background: var(--hm-color-brand-primary);
+  --color: var(--hm-color-brand-onPrimary);
+  --box-shadow: none;
+  --border-radius: var(--hm-radius-md);
+}
+
+// Overlays take the surface step and the card radius; nothing floats on a shadow.
+ion-modal {
+  --background: var(--hm-color-surface-raised);
+  --border-radius: 24px;
+}
+
+ion-action-sheet,
+ion-alert {
+  --background: var(--hm-color-surface-raised);
+  --color: var(--hm-color-text-primary);
+}
+
+.action-sheet-button {
+  color: var(--hm-color-text-primary);
+}
+
+// `role: 'destructive'` colours the item on iOS and does nothing on Material; give it the colour
+// it is already promising.
 .action-sheet-button.action-sheet-destructive {
   color: var(--hm-color-status-danger);
 
   ion-icon {
     color: inherit;
   }
+}
+
+ion-toast {
+  --background: var(--hm-color-surface-sunken);
+  --color: var(--hm-color-text-primary);
+  --border-radius: var(--hm-radius-md);
+  --box-shadow: none;
+}
+
+ion-skeleton-text {
+  --background: var(--hm-color-surface-sunken);
+  border-radius: var(--hm-radius-xs);
+}
+
+ion-refresher-content {
+  color: var(--hm-color-text-muted);
 }

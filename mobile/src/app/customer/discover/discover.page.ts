@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, inject, signal } from '@angular/core';
+import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { TranslatePipe } from '@ngx-translate/core';
@@ -27,8 +27,13 @@ export class DiscoverPage {
   readonly userInitials = this.customers.me;
 
   readonly categories = this.customers.categories;
-  /** False = the horizontal rail (default), true = every category laid out as a grid. */
+  /** False = the first seven tiles and an "All" tile (default), true = every category. */
   readonly allCategories = signal(false);
+  /** The tiles on screen: a 4×2 grid whose last cell is the door to the rest, or all of them. */
+  readonly visibleCategories = computed(() => {
+    const all = this.categories();
+    return this.allCategories() || all.length <= 8 ? all : all.slice(0, 7);
+  });
   readonly mode = signal<ModeFilter>('onsite');
   /** The selected trade, or null for the whole pool. */
   readonly category = signal<string | null>(null);
@@ -136,6 +141,10 @@ export class DiscoverPage {
   }
 
   /** Nobody listed under this filter yet — describing the job is the way to reach whoever is. */
+  account(): void {
+    void this.router.navigate(['/tabs', 'account']);
+  }
+
   postRequest(): void {
     void this.router.navigate(['/new-job']);
   }

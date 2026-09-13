@@ -31,7 +31,7 @@
           class="grid h-14 place-items-center rounded-md border-[1.5px] bg-surface-raised text-[1.4rem] font-bold tabular-nums text-content transition-colors"
           [class]="error()
             ? 'border-danger'
-            : (code().length === i ? 'border-brand' : (charAt(i) ? 'border-edge-strong' : 'border-edge'))"
+            : (code().length === i ? 'border-brand' : (charAt(i) ? 'border-edge' : 'border-edge'))"
         >{{ charAt(i) }}</span>
       }
     </label>
@@ -47,7 +47,7 @@
     @if (devCode()) {
       <button
         type="button"
-        class="mt-4 flex w-full min-h-11 cursor-pointer items-center gap-2 rounded-md border border-warning bg-warning/8 px-4 py-2.5 text-start text-content [font:inherit]"
+        class="mt-4 flex w-full min-h-11 cursor-pointer items-center gap-2 rounded-md border border-warning bg-warning/8 px-4 py-2.5 text-start text-content font-sans text-md"
         (click)="useDevCode()"
       >
         <span class="flex-none rounded-sm bg-warning px-1.5 py-0.5 text-2xs font-extrabold uppercase tracking-wide text-content-inverse">{{ 'auth.dev_code_tag' | translate }}</span>
@@ -62,7 +62,7 @@
       } @else {
         <button
           type="button"
-          class="min-h-11 cursor-pointer border-0 bg-transparent px-2.5 py-1.5 text-sm font-bold text-brand-strong"
+          class="min-h-11 cursor-pointer border-0 bg-transparent px-2.5 py-1.5 text-sm font-bold text-brand"
           (click)="resend()"
         >{{ 'auth.resend' | translate }}</button>
       }
@@ -73,7 +73,7 @@
 <ion-footer class="ion-no-border">
   <div class="mx-auto max-w-md px-4 pt-2 pb-4">
     <ion-button expand="block" [disabled]="!canVerify()" (click)="verify()">
-      <span class="min-w-0 flex-1 text-start">{{ 'auth.verify' | translate }}</span>
+      {{ 'auth.verify' | translate }}
     </ion-button>
   </div>
 </ion-footer>

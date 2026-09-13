@@ -52,6 +52,9 @@ export class NewJobPage {
     && (!this.needsAddress() || this.addressId() !== null),
   );
 
+  /** How far along the form is, for the header's three segments: what, category, everything. */
+  readonly progress = computed(() => (this.title().trim() ? 1 : 0) + (this.categoryId() ? 1 : 0) + (this.canPost() ? 1 : 0));
+
   selectCategory(id: string): void {
     this.categoryId.set(id);
     this.skillId.set(null); // reset the specific-service choice

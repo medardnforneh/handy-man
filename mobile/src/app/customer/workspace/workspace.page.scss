@@ -1,39 +1,56 @@
 // Ionic's own components only — everything else on this page is a Tailwind utility in the template.
 
-ion-toolbar {
-  --background: var(--hm-color-surface-raised);
-  --border-width: 0;
-}
-
-.thread-bg {
+// The header ends in the line; the thread is on the ground (handoff: Workspace).
+ion-header ion-toolbar {
   --background: var(--hm-color-surface-base);
+  --border-width: 0 0 1px;
+  --border-color: var(--hm-color-border-subtle);
+  --border-style: solid;
 }
 
+// The composer: a line above, a 999px surface-1 field inside the line, muted glyphs either side
+// and the 44px accent circle that sends.
 .composer {
-  --background: var(--hm-color-surface-raised);
-  --border-width: 0;
+  --background: var(--hm-color-surface-base);
+  --border-width: 1px 0 0;
+  --border-color: var(--hm-color-border-subtle);
+  --border-style: solid;
+  --padding-start: 10px;
+  --padding-end: 10px;
+  --padding-top: 10px;
+  --padding-bottom: 12px;
   padding-bottom: env(safe-area-inset-bottom);
 
   .field {
-    --background: var(--hm-color-surface-sunken);
+    --background: var(--hm-color-surface-raised);
     --color: var(--hm-color-text-primary);
     --placeholder-color: var(--hm-color-text-muted);
-    --padding-start: 0.9rem;
-    --padding-end: 0.9rem;
+    --padding-start: 18px;
+    --padding-end: 18px;
+    --border-radius: var(--hm-radius-pill);
+    border: 1px solid var(--hm-color-border-subtle);
     border-radius: var(--hm-radius-pill);
+    min-height: 46px;
     font-size: var(--hm-text-md);
   }
 
-  ion-button { min-height: 44px; min-width: 44px; }
+  ion-button { min-height: 44px; min-width: 44px; margin: 0; }
+
+  .composer-glyph {
+    --color: var(--hm-color-text-muted);
+    --padding-start: 0;
+    --padding-end: 0;
+    font-size: 22px;
+  }
 
   .send {
     --background: var(--hm-color-brand-primary);
     --color: var(--hm-color-brand-onPrimary);
     --border-radius: 50%;
+    --padding-start: 0;
+    --padding-end: 0;
+    width: 44px;
+    height: 44px;
+    font-size: 18px;
   }
-}
-
-// The quote card's action button, whose fill and radius are custom properties.
-ion-button {
-  --border-radius: var(--hm-radius-md);
 }

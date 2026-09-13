@@ -1,15 +1,14 @@
 <ion-header [translucent]="true" class="ion-no-border">
   <ion-toolbar>
-    <ion-title>{{ 'account.title' | translate }}</ion-title>
+    <ion-title class="sr-only">{{ 'account.title' | translate }}</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <div class="mx-auto max-w-3xl px-4 pb-tabbar">
-    <!-- Who you are. In a card like everything else on the screen: it used to float bare above a
-         column of cards, which read as a stray fragment rather than as the top of a settings list. -->
-    <div class="mt-4 flex items-center gap-4 rounded-lg bg-surface-raised p-4 shadow-sm">
-      <div class="grid size-14 flex-none place-items-center  bg-brand text-[1.1rem] font-bold uppercase text-brand-contrast" aria-hidden="true">
+  <div class="mx-auto max-w-3xl px-[22px] pb-tabbar md:px-8">
+    <!-- Who you are (handoff: You). -->
+    <div class="mt-1 flex items-center gap-4">
+      <div class="grid size-14 flex-none place-items-center rounded-[22px] bg-brand text-[20px] font-extrabold uppercase text-brand-contrast" aria-hidden="true">
         @if (me().initials) {
           {{ me().initials }}
         } @else {
@@ -21,31 +20,46 @@
         <!-- Never a placeholder person: a name if the server sent one, else the phone you signed in
              with, else an honest line saying the details have not loaded. -->
         @if (displayName()) {
-          <b class="block truncate text-[1.05rem] font-extrabold tracking-tight">{{ displayName() }}</b>
+          <b class="block truncate text-[20px] font-extrabold tracking-snug">{{ displayName() }}</b>
           @if (knowsName()) {
-            <small class="mt-0.5 block text-sm tabular-nums text-content-muted">{{ me().phone }}</small>
+            <small class="mt-0.5 block text-sm text-content-muted">{{ me().phone }}</small>
           }
         } @else {
-          <b class="block text-[1.05rem] font-extrabold tracking-tight text-content-muted">{{ 'account.details_unavailable' | translate }}</b>
+          <b class="block text-[20px] font-extrabold tracking-snug text-content-muted">{{ 'account.details_unavailable' | translate }}</b>
         }
+      </div>
+    </div>
+
+    <!-- Three honest figures: what this account has done here. -->
+    <div class="mt-5 grid grid-cols-3 gap-[9px]">
+      <div class="rounded-lg border border-edge bg-surface-raised px-[15px] py-3">
+        <b class="block text-[19px] font-extrabold leading-tight">{{ jobsDone() }}</b>
+        <small class="text-[11.5px] leading-tight text-content-muted">{{ 'account.jobs_done' | translate }}</small>
+      </div>
+      <div class="rounded-lg border border-edge bg-surface-raised px-[15px] py-3">
+        <b class="block text-[19px] font-extrabold leading-tight">{{ jobsActive() }}</b>
+        <small class="text-[11.5px] leading-tight text-content-muted">{{ 'account.jobs_active' | translate }}</small>
+      </div>
+      <div class="rounded-lg border border-edge bg-surface-raised px-[15px] py-3">
+        <b class="block text-[19px] font-extrabold leading-tight">{{ addresses().length }}</b>
+        <small class="text-[11.5px] leading-tight text-content-muted">{{ 'account.addresses_count' | translate }}</small>
       </div>
     </div>
 
     <!-- Saved addresses -->
     <h2 class="acc-group">{{ 'account.addresses' | translate }}</h2>
     @if (addresses().length) {
-      <ion-list class="addrs overflow-hidden rounded-lg border border-edge shadow-sm" lines="full">
+      <ion-list class="hm-card" lines="full">
         @for (addr of addresses(); track addr.id) {
           <ion-item class="min-h-11">
             <ion-icon slot="start" name="location-outline" aria-hidden="true"></ion-icon>
             <ion-label>
-              <b class="text-md">{{ addr.label }}</b>
+              <b class="text-md font-semibold">{{ addr.label }}</b>
               <p class="mt-0.5 mb-0 text-xs text-content-muted">{{ addr.line }}</p>
             </ion-label>
+            <ion-icon slot="end" name="chevron-forward" class="text-content-muted" aria-hidden="true"></ion-icon>
           </ion-item>
         }
-        <!-- This row had no click handler at all, and nothing else in the app created an address —
-             so an on-site job, which the DB requires one for, could not be posted by a real user. -->
         <ion-item button="true" detail="false" class="add min-h-11" (click)="addAddress()">
           <ion-icon slot="start" name="add" aria-hidden="true"></ion-icon>
           <ion-label>{{ 'account.add_address' | translate }}</ion-label>
@@ -63,83 +77,68 @@
       ></app-empty-state>
     }
 
-    <!-- Language and appearance are one thought — "how this app presents itself to me" — and were
-         two headings with two loose segments between them, which is most of why this screen scrolled
-         as far as it did. One card, two labelled rows. -->
+    <!-- Preferences: one card, labelled rows (handoff: You). Appearance is a fact, not a choice —
+         the redesign is dark-only, so the old three-way switch that no longer changed anything is
+         gone (handoff open item 2). -->
     <h2 class="acc-group">{{ 'account.preferences' | translate }}</h2>
-    <div class="overflow-hidden rounded-lg bg-surface-raised shadow-sm">
-      <div class="p-4">
-        <span class="mb-2 block text-sm font-semibold">{{ 'account.language' | translate }}</span>
-        <ion-segment class="choice" [value]="locale()">
+    <ion-list class="hm-card" lines="full">
+      <ion-item class="min-h-11">
+        <ion-icon slot="start" name="language-outline" aria-hidden="true"></ion-icon>
+        <ion-label><b class="text-md font-semibold">{{ 'account.language' | translate }}</b></ion-label>
+        <div slot="end" class="flex items-center gap-1" role="radiogroup" [attr.aria-label]="'account.language' | translate">
           @for (code of supported; track code) {
-            <ion-segment-button [value]="code" (click)="setLocale(code)">
-              <ion-label>{{ (code === 'fr' ? 'language.french' : 'language.english') | translate }}</ion-label>
-            </ion-segment-button>
+            <button
+              type="button"
+              class="min-h-8 cursor-pointer rounded-[10px] border-0 px-2.5 py-1.5 text-xs font-bold font-sans"
+              [class]="locale() === code ? 'bg-brand text-brand-contrast' : 'bg-transparent text-content-muted'"
+              role="radio"
+              [attr.aria-checked]="locale() === code"
+              (click)="setLocale(code)"
+            >{{ (code === 'fr' ? 'language.french_short' : 'language.english_short') | translate }}</button>
           }
-        </ion-segment>
-      </div>
-      <div class="border-t border-edge p-4">
-        <span class="mb-2 block text-sm font-semibold">{{ 'account.appearance' | translate }}</span>
-        <ion-segment class="choice" [value]="theme()">
-          <ion-segment-button value="system" (click)="setTheme('system')">
-            <ion-label>{{ 'account.theme_system' | translate }}</ion-label>
-          </ion-segment-button>
-          <ion-segment-button value="light" (click)="setTheme('light')">
-            <ion-label>{{ 'account.theme_light' | translate }}</ion-label>
-          </ion-segment-button>
-          <ion-segment-button value="dark" (click)="setTheme('dark')">
-            <ion-label>{{ 'account.theme_dark' | translate }}</ion-label>
-          </ion-segment-button>
-        </ion-segment>
-      </div>
-    </div>
-
-    <!-- Becoming a provider is the biggest decision on this screen, and safety is the row somebody
-         may need to find in a hurry rather than browse to. Both are rows in one list now: they were
-         two separate cards under two headings, which spaced them apart without distinguishing them. -->
-    <h2 class="acc-group">{{ 'account.more_heading' | translate }}</h2>
-    <ion-list class="overflow-hidden rounded-lg border border-edge shadow-sm" lines="full">
+        </div>
+      </ion-item>
+      <ion-item class="min-h-11">
+        <ion-icon slot="start" name="moon-outline" aria-hidden="true"></ion-icon>
+        <ion-label><b class="text-md font-semibold">{{ 'account.appearance' | translate }}</b></ion-label>
+        <span slot="end" class="text-sm font-semibold text-content-muted">{{ 'account.theme_dark' | translate }}</span>
+      </ion-item>
       <ion-item button="true" detail="true" class="min-h-11" (click)="offerServices()">
-        <ion-icon slot="start" name="hammer-outline" aria-hidden="true"></ion-icon>
+        <ion-icon slot="start" name="briefcase-outline" aria-hidden="true"></ion-icon>
         <ion-label>
-          <b class="text-md">{{ 'nav.provider' | translate }}</b>
+          <b class="text-md font-semibold">{{ 'nav.provider' | translate }}</b>
           <p class="mt-0.5 mb-0 text-xs text-content-muted">{{ 'account.work_hint' | translate }}</p>
         </ion-label>
       </ion-item>
       <ion-item button="true" detail="true" class="min-h-11" (click)="openSafety()">
         <ion-icon slot="start" name="shield-outline" aria-hidden="true"></ion-icon>
         <ion-label>
-          <b class="text-md">{{ 'safety.title' | translate }}</b>
+          <b class="text-md font-semibold">{{ 'safety.title' | translate }}</b>
           <p class="mt-0.5 mb-0 text-xs text-content-muted">{{ 'safety.account_hint' | translate }}</p>
         </ion-label>
       </ion-item>
       <ion-item button="true" detail="true" class="min-h-11" (click)="openPrivacy()">
         <ion-icon slot="start" name="lock-closed-outline" aria-hidden="true"></ion-icon>
         <ion-label>
-          <b class="text-md">{{ 'rights.title' | translate }}</b>
+          <b class="text-md font-semibold">{{ 'rights.title' | translate }}</b>
           <p class="mt-0.5 mb-0 text-xs text-content-muted">{{ 'rights.account_hint' | translate }}</p>
         </ion-label>
       </ion-item>
 
-      <!-- Referrals (P8-01). Word of mouth is how this product actually spreads — a plumber
-           recommended by a neighbour — so both halves stay reachable: the code you give, and the box
-           for one you were given. It was a permanently-open panel the size of three settings,
-           sitting above the language switch; it is a row that opens when asked. -->
+      <!-- Referrals (P8-01): the code you give, and the box for one you were given. -->
       <ion-item button="true" detail="false" class="min-h-11" (click)="showReferral()">
         <ion-icon slot="start" name="gift-outline" aria-hidden="true"></ion-icon>
         <ion-label>
-          <b class="text-md">{{ 'referral.section' | translate }}</b>
-          <!-- A row's subtitle, not a paragraph: the full pitch ran to three lines here, making one
-               row twice the height of the three above it. -->
+          <b class="text-md font-semibold">{{ 'referral.section' | translate }}</b>
           <p class="mt-0.5 mb-0 text-xs text-content-muted">{{ 'referral.row_hint' | translate }}</p>
         </ion-label>
       </ion-item>
       @if (referralCode(); as code) {
         <div class="border-t border-edge bg-surface-sunken px-4 py-3">
-          <p class="m-0 rounded-md bg-surface-raised px-3 py-2 text-center text-lg font-extrabold tracking-[0.12em] tabular-nums">{{ code }}</p>
-          <ion-button class="mt-3" size="small" expand="block" (click)="copyReferral()">
+          <p class="m-0 rounded-md border border-edge bg-surface-raised px-3 py-2 text-center text-lg font-extrabold tracking-[0.12em]">{{ code }}</p>
+          <ion-button class="mt-3" size="small" expand="block" fill="outline" (click)="copyReferral()">
             <ion-icon name="copy-outline" slot="start" aria-hidden="true"></ion-icon>
-            <span class="min-w-0 flex-1 text-start">{{ 'referral.copy' | translate }}</span>
+            {{ 'referral.copy' | translate }}
           </ion-button>
         </div>
       }
@@ -147,10 +146,9 @@
         <ion-icon slot="start" name="ticket-outline" aria-hidden="true"></ion-icon>
         <ion-label>{{ 'referral.have_code' | translate }}</ion-label>
       </ion-item>
-    </ion-list>
 
-    <ion-list class="signout mt-4 overflow-hidden rounded-lg border border-edge shadow-sm" lines="none">
-      <ion-item button="true" detail="false" class="min-h-11" (click)="logout()">
+      <!-- The one destructive row, in its own colour. -->
+      <ion-item button="true" detail="false" class="signout min-h-11" (click)="logout()">
         <ion-icon slot="start" name="log-out-outline" aria-hidden="true"></ion-icon>
         <ion-label>{{ 'auth.logout' | translate }}</ion-label>
       </ion-item>

@@ -7,11 +7,15 @@ import {
   MessageCircleMore, MessagesSquare, Mic, Pause, Play, Plus, Power, Receipt, Repeat, Scissors,
   Search, Send, Share2, Shield, ShieldCheck, Shirt, Smartphone, Snowflake, Sparkles, Star, StarHalf,
   Ticket, TriangleAlert, User, Users, Wallet, Wrench, X, Zap,
+  Layers, ArrowUpRight, ChevronLeft, ChevronDown, ChevronUp, ArrowLeft, Phone, Moon, Languages,
+  SlidersHorizontal, BadgeCheck, TrendingUp, House, Minus, Scale, CreditCard, RefreshCw, Trash2,
+  Pencil, Eye, Navigation, Paperclip, Smile, Frown, ThumbsUp, SquareCheck, Square, CircleDot,
+  Footprints, Bike, Timer, Bookmark, Link, QrCode, CircleHelp, Settings, Mail, Building2, Store,
 } from 'lucide';
 import type { IconNode } from 'lucide';
 
 /**
- * The icon set is Lucide, as the Modernist design system asks — registered under the Ionicons
+ * The icon set is Lucide, as the redesign handoff asks — registered under the Ionicons
  * NAMES the templates already use.
  *
  * Ionicons resolves `<ion-icon name="hammer-outline">` by looking in its registry first and only
@@ -107,6 +111,52 @@ const lucideByIonicon: Record<string, Entry> = {
   'wallet-outline': Wallet,
   'warning': TriangleAlert,
   'water-outline': Droplet,
+  // Added with the redesign (handoff: per-screen icon lists).
+  'layers-outline': Layers,
+  'open-outline': ArrowUpRight,
+  'chevron-back': ChevronLeft,
+  'chevron-down': ChevronDown,
+  'chevron-up': ChevronUp,
+  'arrow-back': ArrowLeft,
+  'call-outline': Phone,
+  'moon-outline': Moon,
+  'language-outline': Languages,
+  'options-outline': SlidersHorizontal,
+  'medal-outline': BadgeCheck,
+  'trending-up-outline': TrendingUp,
+  'home-outline': House,
+  'remove': Minus,
+  'scale-outline': Scale,
+  'card-outline': CreditCard,
+  'refresh-outline': RefreshCw,
+  'trash-outline': Trash2,
+  'create-outline': Pencil,
+  'eye-outline': Eye,
+  'navigate-outline': Navigation,
+  'attach-outline': Paperclip,
+  'happy-outline': Smile,
+  'sad-outline': Frown,
+  'thumbs-up-outline': ThumbsUp,
+  'checkbox-outline': SquareCheck,
+  'square-outline': Square,
+  'radio-button-on': filled(CircleDot),
+  'radio-button-off': Circle,
+  'walk-outline': Footprints,
+  'bicycle-outline': Bike,
+  'timer-outline': Timer,
+  'bookmark-outline': Bookmark,
+  'link-outline': Link,
+  'qr-code-outline': QrCode,
+  'help-circle-outline': CircleHelp,
+  'settings-outline': Settings,
+  'chevron-forward-outline': ChevronRight,
+  'arrow-forward-outline': ArrowRight,
+  'close-outline': X,
+  'add-outline': Plus,
+  'mail-outline': Mail,
+  'call': Phone,
+  'business-outline': Building2,
+  'storefront-outline': Store,
 };
 
 function svgDataUrl(entry: Entry): string {

@@ -214,6 +214,27 @@ function mapMilestoneStatus(status: string): MilestoneStatus {
 }
 
 /**
+ * What a job's engagement says about the money, for the home screen's escrow figure (handoff:
+ * "Escrow figures — derived from the ledger, not stored on the job"). Same derivation as the job
+ * detail: paid milestones are released, the rest of the agreed amount is still held; a submitted
+ * milestone is the one thing on the list that needs this person.
+ */
+function moneyOf(engagement: { agreed_amount_minor?: number; milestones?: Array<{ amount_minor: number; status: string }> } | null | undefined): Pick<JobSummary, 'escrowHeldMinor' | 'releasedMinor' | 'needsApproval'> {
+  if (!engagement) {
+    return { escrowHeldMinor: 0, releasedMinor: 0, needsApproval: false };
+  }
+  const milestones = engagement.milestones ?? [];
+  const released = milestones
+    .filter((m) => mapMilestoneStatus(m.status) === 'paid')
+    .reduce((sum, m) => sum + m.amount_minor, 0);
+  return {
+    escrowHeldMinor: Math.max(0, (engagement.agreed_amount_minor ?? 0) - released),
+    releasedMinor: released,
+    needsApproval: milestones.some((m) => mapMilestoneStatus(m.status) === 'submitted'),
+  };
+}
+
+/**
  * Two-letter initials from a name. A phone-only "name" has no initials — "+2" is not who anyone is
  * — so it returns nothing and the avatar falls back to its person glyph. (It used to return a 👤
  * EMOJI, which rendered as a dark blob in a brand-coloured circle and matched no other icon in the
@@ -384,6 +405,7 @@ export class CustomerService {
         amountMinor: j.engagement?.agreed_amount_minor ?? j.budget?.amount_minor ?? 0,
         milestonesDone: j.engagement?.milestones_done ?? 0,
         milestonesTotal: j.engagement?.milestones_total ?? 0,
+        ...moneyOf(j.engagement),
       })));
     }
   }
@@ -1147,6 +1169,9 @@ export class CustomerService {
       amountMinor: input.budgetMinor ?? 0,
       milestonesDone: 0,
       milestonesTotal: 0,
+      escrowHeldMinor: 0,
+      releasedMinor: 0,
+      needsApproval: false,
     };
     this.jobs.update((list) => [job, ...list]);
     return id;
@@ -1162,8 +1187,16 @@ export class CustomerService {
     if (value === null) {
       return null;
     }
-    return value.map((c) => this.mapChat(c));
+    const chats = value.map((c) => this.mapChat(c));
+    this.unreadTotal.set(chats.reduce((sum, c) => sum + c.unread, 0));
+    return chats;
   }
+
+  /**
+   * Unread messages across every conversation — the pill on the rail's "Chats" item (handoff:
+   * Customer Web). Known once the inbox has been read; a stale count is a courtesy, not a claim.
+   */
+  readonly unreadTotal = signal(0);
 
   /** Mark a thread read so its badge clears. Best-effort: a failure just leaves the badge up. */
   async markChatRead(conversationId: string): Promise<void> {

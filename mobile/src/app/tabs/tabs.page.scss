@@ -1,61 +1,55 @@
 // Shared primitives load once globally — see angular.json styles.
 
 ion-split-pane {
-  --side-width: 264px;
-  --side-max-width: 264px;
+  --side-width: 232px;
+  --side-max-width: 232px;
   --border: 1px solid var(--hm-color-border-subtle);
 }
 
-// ---- side rail (wide viewports) ----
+// ---- side rail (wide viewports) — handoff "Customer Web · Jobs", the 232px rail ----
 
 .hm-rail {
-  --background: var(--hm-color-surface-raised);
-  --padding-start: var(--hm-space-sm);
-  --padding-end: var(--hm-space-sm);
-  --padding-top: var(--hm-space-md);
+  --background: var(--hm-color-surface-rail);
+  --padding-start: 14px;
+  --padding-end: 14px;
+  --padding-top: 22px;
+  --padding-bottom: 22px;
 }
 
-.hm-rail ion-list {
-  background: transparent;
-  padding: 0;
+.hm-rail-item {
+  color: var(--hm-color-text-secondary);
+  transition: background-color 150ms ease-out, color 150ms ease-out;
+
+  &:hover {
+    background: var(--hm-color-surface-raised);
+    color: var(--hm-color-text-primary);
+  }
+
+  // The active destination is the rail's one accent fill.
+  &.active {
+    background: var(--hm-color-brand-primary);
+    color: var(--hm-color-brand-onPrimary);
+  }
 }
 
-.hm-rail ion-item {
-  --background: transparent;
-  --background-hover: var(--hm-color-surface-sunken);
-  --color: var(--hm-color-text-muted);
-  --border-radius: var(--hm-radius-sm);
-  --min-height: 44px;
-  --padding-start: var(--hm-space-sm);
-  margin-bottom: 2px;
-  font-size: var(--hm-text-md);
-  font-weight: 500;
-}
-
-.hm-rail ion-item ion-icon {
-  margin-inline-end: var(--hm-space-sm);
-  font-size: 1.15rem;
-}
-
-.hm-rail ion-item.active {
-  --background: color-mix(in srgb, var(--hm-color-brand-primary) 12%, transparent);
-  --color: var(--hm-color-brand-strong);
-  font-weight: 600;
-}
-
-// ---- tab bar (phones) ----
-
-// A bar welded to the bottom edge, on the ground colour, above the system's 2px rule. It used to
-// float as a frosted pill with content passing behind it; the Modernist direction is that nothing
-// floats and nothing is decorated, and a rule does the job the blur and the shadow were doing.
+// ---- tab bar (phones) — handoff "Shared: tab bar" ----
+//
+// A 60px pill on surface-2, inset 8px/14px from the frame edge, inside the line. It floats over
+// the content, which scrolls underneath it; the pages reserve room with `pb-tabbar`.
 ion-tab-bar {
   // Through `--background`, not `background`: Ionic sets `background: var(--background)` on the
   // host itself, so a plain declaration here is overridden and the bar renders invisible.
-  --background: var(--hm-color-surface-base);
+  --background: var(--hm-color-surface-sunken);
   --border: 0;
-  border-top: var(--hm-rule-strong) solid var(--hm-color-border-strong);
-  height: calc(56px + env(safe-area-inset-bottom));
-  padding-bottom: env(safe-area-inset-bottom);
+  position: absolute;
+  inset-inline: 14px;
+  bottom: calc(8px + env(safe-area-inset-bottom));
+  height: 60px;
+  padding: 5px;
+  gap: 4px;
+  border: 1px solid var(--hm-color-border-subtle);
+  border-radius: 24px;
+  contain: layout;
 }
 
 ion-tab-button {
@@ -63,25 +57,42 @@ ion-tab-button {
   --background-focused: transparent;
   --ripple-color: transparent;
   --color: var(--hm-color-text-muted);
-  // The strong step: a selected label is small text, and the accent itself is chrome-grade only.
-  --color-selected: var(--hm-color-brand-strong);
-  font-weight: 600;
+  --color-selected: var(--hm-color-brand-onPrimary);
+  --padding-start: 0;
+  --padding-end: 0;
+  border-radius: 18px;
+  font-weight: 800;
+  transition: background-color 150ms ease-out;
+
+  &.tab-selected {
+    background: var(--hm-color-brand-primary);
+  }
+
+  ion-icon {
+    font-size: 19px;
+    margin-bottom: 5px;
+  }
 }
 
 ion-tab-button ion-label {
-  font-size: var(--hm-text-2xs);
-  letter-spacing: 0.01em;
+  font-size: 9.5px;
+  letter-spacing: 0.04em;
+  margin: 0;
 }
 
-// The last row of a list would otherwise end underneath the bar.
+// The last row of a list would otherwise end underneath the pill.
 ion-tabs ion-content {
-  --padding-bottom: calc(56px + env(safe-area-inset-bottom));
+  --padding-bottom: calc(76px + env(safe-area-inset-bottom));
 }
 
 // The rail takes over exactly where the split pane activates — never both at once.
 @media (min-width: 768px) {
   ion-tab-bar {
     display: none;
+  }
+
+  ion-tabs ion-content {
+    --padding-bottom: 0;
   }
 
   // ion-tabs is absolutely positioned by default, which makes it cover the rail inside the

@@ -1,12 +1,27 @@
-// Ionic's own components only — everything else on this page is a Tailwind utility in the template.
-// These are custom properties on shadow hosts, which no class can reach.
-
-ion-toolbar {
-  --background: var(--hm-color-surface-base);
-  --border-width: 0;
+// The door to a new request. The screen's one accent fill is the job that needs approving, so
+// this is a bordered surface with the accent as its glyph — and it sits above the tab pill,
+// which floats over the content's bottom edge.
+ion-fab {
+  bottom: calc(76px + env(safe-area-inset-bottom));
+  inset-inline-end: 18px;
 }
 
 .fab {
-  --background: var(--hm-color-brand-primary);
-  --color: var(--hm-color-brand-onPrimary);
+  --background: var(--hm-color-surface-raised);
+  --background-hover: var(--hm-color-surface-sunken);
+  --background-activated: var(--hm-color-surface-sunken);
+  --color: var(--hm-color-brand-primary);
+  --border-color: var(--hm-color-border-subtle);
+  --border-width: 1px;
+  --border-style: solid;
+  --box-shadow: none;
+  --border-radius: 16px;
+  width: 52px;
+  height: 52px;
+}
+
+@media (min-width: 768px) {
+  ion-fab {
+    bottom: 24px;
+  }
 }

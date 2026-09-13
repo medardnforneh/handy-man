@@ -35,7 +35,7 @@
            above a wallet that can only ever read zero until it is done. It shares the client-book
            card's shape but carries the brand ring. -->
       <button
-        class="mb-4 flex w-full min-h-11 cursor-pointer items-center gap-2 rounded-lg border border-brand bg-[color-mix(in_srgb,var(--color-brand)_7%,var(--color-surface-raised))] p-4 text-start text-inherit shadow-sm"
+        class="mb-4 flex w-full min-h-11 cursor-pointer items-center gap-2 rounded-lg border border-brand bg-[color-mix(in_srgb,var(--color-brand)_7%,var(--color-surface-raised))] p-4 text-start text-inherit"
         type="button"
         (click)="startOnboarding()"
       >
@@ -68,7 +68,7 @@
            produces an error toast reads as a broken app, not as a rule. -->
       <ion-button expand="block" class="withdraw mt-4" [disabled]="wallet().availableMinor <= 0" (click)="withdraw()">
         <ion-icon name="cash-outline" slot="start" aria-hidden="true"></ion-icon>
-        <span class="min-w-0 flex-1 text-start">{{ 'pro.withdraw' | translate }}</span>
+        {{ 'pro.withdraw' | translate }}
       </ion-button>
       @if (wallet().availableMinor <= 0) {
         <span class="mt-0.5 block text-xs opacity-85">{{ 'pro.nothing_to_withdraw' | translate }}</span>
@@ -77,17 +77,17 @@
 
     <!-- Stats -->
     <div class="mb-2 grid grid-cols-3 gap-2">
-      <div class="grid place-items-center gap-0.5 rounded-lg bg-surface-raised px-1.5 py-4 text-center shadow-sm">
+      <div class="grid place-items-center gap-0.5 rounded-lg border border-edge bg-surface-raised px-1.5 py-4 text-center">
         <b class="text-[1.25rem] font-extrabold tracking-tight">{{ stats().activeJobs }}</b>
         <small class="text-2xs text-content-muted">{{ 'pro.active_jobs' | translate }}</small>
       </div>
-      <div class="grid place-items-center gap-0.5 rounded-lg bg-surface-raised px-1.5 py-4 text-center shadow-sm">
+      <div class="grid place-items-center gap-0.5 rounded-lg border border-edge bg-surface-raised px-1.5 py-4 text-center">
         <b class="inline-flex items-center gap-1 text-[1.25rem] font-extrabold tracking-tight text-warning">
           <ion-icon name="star" aria-hidden="true"></ion-icon>{{ stats().rating ?? '—' }}
         </b>
         <small class="text-2xs text-content-muted">{{ 'pro.rating' | translate }}</small>
       </div>
-      <div class="grid place-items-center gap-0.5 rounded-lg bg-surface-raised px-1.5 py-4 text-center shadow-sm">
+      <div class="grid place-items-center gap-0.5 rounded-lg border border-edge bg-surface-raised px-1.5 py-4 text-center">
         @if (hasOnTime()) {
           <b class="text-[1.25rem] font-extrabold tracking-tight">{{ onTimePercent() }}%</b>
         } @else {
@@ -100,7 +100,7 @@
     <!-- The client book (P7-08). One row rather than a preview list: it costs no extra request on a
          slow network, and this is a screen a provider goes to deliberately. -->
     <button
-      class="mt-4 flex w-full min-h-11 cursor-pointer items-center gap-2 rounded-lg bg-surface-raised p-4 text-start text-inherit shadow-sm"
+      class="mt-4 flex w-full min-h-11 cursor-pointer items-center gap-2 rounded-lg border border-edge bg-surface-raised p-4 text-start text-inherit"
       type="button"
       (click)="openClients()"
     >
@@ -117,11 +117,11 @@
     <!-- Opportunities -->
     <div class="mt-6 mb-4 flex items-center justify-between gap-2">
       <h2 class="text-lg font-extrabold tracking-snug">{{ 'pro.opportunities' | translate }}</h2>
-      <a class="cursor-pointer text-sm font-semibold text-brand-strong no-underline" (click)="seeOpportunities()">{{ 'discover.see_all' | translate }} ({{ leadCount() }})</a>
+      <a class="cursor-pointer text-sm font-semibold text-brand no-underline" (click)="seeOpportunities()">{{ 'discover.see_all' | translate }} ({{ leadCount() }})</a>
     </div>
     @for (lead of topLeads(); track lead.id) {
       <button
-        class="mb-2 flex w-full min-h-11 cursor-pointer gap-2 rounded-lg bg-surface-raised p-4 text-start text-inherit shadow-sm"
+        class="mb-2 flex w-full min-h-11 cursor-pointer gap-2 rounded-lg border border-edge bg-surface-raised p-4 text-start text-inherit"
         type="button"
         (click)="openLead(lead)"
       >
@@ -135,7 +135,7 @@
           <b class="block text-md">{{ lead.title }}</b>
           <div class="mt-0.5 flex flex-wrap items-center gap-1.5 text-xs text-content-muted">
             <span>{{ lead.skill }}</span>
-            <span class="size-[3px] flex-none rounded-full bg-edge-strong" aria-hidden="true"></span>
+            <span class="size-[3px] flex-none rounded-full bg-surface-step" aria-hidden="true"></span>
             <span><ion-icon name="location-outline" class="me-0.5 -mb-px" aria-hidden="true"></ion-icon>{{ lead.area }}</span>
           </div>
           <div class="mt-2 flex items-center justify-between gap-2">
@@ -162,11 +162,11 @@
     <!-- Active work -->
     <div class="mt-6 mb-4 flex items-center justify-between gap-2">
       <h2 class="text-lg font-extrabold tracking-snug">{{ 'pro.active_work' | translate }}</h2>
-      <a class="cursor-pointer text-sm font-semibold text-brand-strong no-underline" (click)="seeWork()">{{ 'discover.see_all' | translate }}</a>
+      <a class="cursor-pointer text-sm font-semibold text-brand no-underline" (click)="seeWork()">{{ 'discover.see_all' | translate }}</a>
     </div>
     @for (work of topActive(); track work.id) {
       <button
-        class="mb-2 flex w-full min-h-11 cursor-pointer items-center gap-2 rounded-lg bg-surface-raised px-4 py-2 text-start text-inherit shadow-sm"
+        class="mb-2 flex w-full min-h-11 cursor-pointer items-center gap-2 rounded-lg border border-edge bg-surface-raised px-4 py-2 text-start text-inherit"
         type="button"
         (click)="openWork(work)"
       >

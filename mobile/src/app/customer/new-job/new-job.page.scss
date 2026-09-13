@@ -1,44 +1,41 @@
 // Ionic's own components only — everything else on this page is a Tailwind utility in the template.
 
-ion-toolbar {
+ion-header ion-toolbar {
   --background: var(--hm-color-surface-base);
   --border-width: 0;
 }
 
-ion-title {
-  font-size: var(--hm-text-md);
-  font-weight: 700;
-}
-
-// The text fields draw their box through custom properties; the outline has to sit on the host to
-// wrap the whole control, which is why it is a declaration rather than a utility.
+// The text fields draw their box through custom properties; the outline sits on the host to wrap
+// the whole control, and turns accent while the field has focus (handoff: "the job" field).
 .field {
   --background: var(--hm-color-surface-raised);
   --color: var(--hm-color-text-primary);
   --placeholder-color: var(--hm-color-text-muted);
-  --padding-start: 0.85rem;
-  --padding-end: 0.85rem;
+  --padding-start: 17px;
+  --padding-end: 17px;
   --border-radius: var(--hm-radius-md);
   background: var(--hm-color-surface-raised);
   border: 1px solid var(--hm-color-border-subtle);
   border-radius: var(--hm-radius-md);
-  min-height: 44px;
+  min-height: 50px;
+  font-size: var(--hm-text-md);
+  transition: border-color 150ms ease-out;
+
+  &:focus-within,
+  &.has-focus {
+    border-color: var(--hm-color-brand-primary);
+  }
 }
 
 ion-textarea.field {
-  --padding-top: 0.6rem;
-  --padding-bottom: 0.6rem;
+  --padding-top: 0.75rem;
+  --padding-bottom: 0.75rem;
 }
-
-// The segmented control is the global one (customer/ui.scss); this page adds nothing to it.
 
 ion-footer {
   background: var(--hm-color-surface-base);
 
   ion-button {
-    --border-radius: var(--hm-radius-md);
-    font-weight: 700;
     margin: 0;
-    min-height: 44px;
   }
 }

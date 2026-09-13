@@ -1,20 +1,10 @@
 // Ionic's own components only — everything else on this page is a Tailwind utility in the template.
 
-ion-toolbar {
+ion-header ion-toolbar {
   --background: var(--hm-color-surface-base);
   --border-width: 0;
 }
 
-// The searchbar's box is drawn by its own custom properties; the border has to sit on the host,
-// which is why this one rule is not a utility on the element.
 ion-searchbar {
-  --background: var(--hm-color-surface-raised);
-  --color: var(--hm-color-text-primary);
-  --placeholder-color: var(--hm-color-text-muted);
-  --border-radius: var(--hm-radius-md);
-  --box-shadow: none;
-  border: 1px solid var(--hm-color-border-subtle);
-  border-radius: var(--hm-radius-md);
-  padding: 0;
   margin-bottom: var(--hm-space-sm);
 }

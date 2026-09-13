@@ -18,7 +18,7 @@
          A reached rung is filled and full-contrast; an unreached one keeps its outline and stays
          muted, so the current position reads at a glance without a second colour meaning anything. -->
     <h2 class="mt-6 mb-4 text-lg font-extrabold tracking-snug">{{ 'vdoc.tier_ladder' | translate }}</h2>
-    <ol class="m-0 list-none rounded-lg bg-surface-raised p-4 shadow-sm">
+    <ol class="m-0 list-none rounded-lg border border-edge bg-surface-raised p-4">
       @for (step of steps(); track step.n) {
         <li
           class="flex items-start gap-2 text-sm leading-snug not-first:mt-2"
@@ -58,7 +58,7 @@
              claiming 100% width — it is absent on almost every row and should cost nothing when it
              is. -->
         <div
-          class="mb-2 flex flex-wrap items-center gap-2 rounded-lg border p-4 shadow-sm"
+          class="mb-2 flex flex-wrap items-center gap-2 rounded-lg border p-4"
           [class]="row.status === 'approved'
             ? 'border-success/40 bg-[color-mix(in_srgb,var(--color-success)_7%,var(--color-surface-raised))]'
             : ((row.status === 'rejected' || row.status === 'expired') ? 'border-danger/40 bg-surface-raised' : 'border-edge bg-surface-raised')"

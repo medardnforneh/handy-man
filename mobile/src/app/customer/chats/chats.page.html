@@ -7,7 +7,7 @@
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <div class="flex min-h-full flex-col mx-auto max-w-3xl px-4 pt-2 pb-tabbar">
+  <div class="mx-auto flex min-h-full max-w-3xl flex-col px-[22px] pt-1 pb-tabbar md:px-8">
     @if (hasChats()) {
       <ion-searchbar
         class="min-h-11"
@@ -20,12 +20,12 @@
 
     @for (chat of chats(); track chat.id) {
       <button
-        class="flex w-full min-h-11 cursor-pointer items-center gap-2 border-0 border-b border-b-edge bg-transparent py-2 text-start text-inherit [font:inherit] last-of-type:border-b-0"
+        class="flex w-full min-h-11 cursor-pointer items-center gap-3 border-0 border-b border-solid border-b-edge-soft bg-transparent px-0 py-[15px] text-start text-inherit font-sans text-md last-of-type:border-b-0"
         type="button"
         (click)="open(chat)"
       >
         <div
-          [class]="'grid size-12 flex-none place-items-center rounded-md text-md font-bold text-brand-contrast accent-' + chat.accent"
+          class="grid size-10 flex-none place-items-center rounded-[13px] text-sm font-extrabold" [class]="chat.unread ? 'bg-brand text-brand-contrast' : 'bg-surface-sunken text-content'"
           aria-hidden="true"
         >
           @if (chat.initials) {
@@ -39,7 +39,7 @@
           <div class="flex items-center justify-between gap-2">
             <!-- Unread threads read louder: the name goes full-strength and the preview stops
                  looking muted. -->
-            <b class="truncate text-md" [class]="chat.unread ? 'font-extrabold' : ''">{{ chat.providerName }}</b>
+            <b class="truncate text-md font-bold">{{ chat.providerName }}</b>
             <small class="flex-none text-2xs text-content-muted">{{ chat.time }}</small>
           </div>
           <div class="flex items-center justify-between gap-2">
@@ -47,7 +47,7 @@
                  than printed in whatever language the server happened to compose it in. -->
             <span
               class="min-w-0 flex-1 truncate text-sm"
-              [class]="chat.unread ? 'font-semibold text-content' : 'text-content-muted'"
+              [class]="chat.unread ? 'text-content-secondary' : 'text-content-muted'"
             >{{ chat.previewKey ? (chat.previewKey | translate) : chat.preview }}</span>
             @if (chat.unread > 0) {
               <span class="grid h-5 min-w-5 flex-none place-items-center rounded-pill bg-brand px-1.5 text-2xs font-bold text-brand-contrast">{{ chat.unread }}</span>
@@ -65,7 +65,7 @@
       @if (!loaded()) {
         @for (i of [1, 2, 3]; track i) {
           <div class="flex w-full items-center gap-2 border-b border-b-edge py-2 last-of-type:border-b-0" aria-hidden="true">
-            <div class="hm-skel size-11 flex-none rounded-md"></div>
+            <div class="hm-skel size-10 flex-none rounded-[13px]"></div>
             <div class="min-w-0 flex-1">
               <div class="flex items-center justify-between gap-2">
                 <span class="hm-skel h-[0.9em] w-2/5"></span>

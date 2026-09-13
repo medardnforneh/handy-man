@@ -14,7 +14,7 @@
       <h2 class="mt-2 mb-4 text-lg font-extrabold tracking-snug">{{ 'pro.visits_heading' | translate }}</h2>
 
       @for (visit of visits(); track visit.id) {
-        <div class="mb-2 rounded-lg bg-surface-raised p-4 shadow-sm">
+        <div class="mb-2 rounded-lg border border-edge bg-surface-raised p-4">
           <div class="flex items-start gap-2">
             <span class="grid size-[38px] flex-none place-items-center rounded-md bg-brand/12 text-[1.1rem] text-brand" aria-hidden="true">
               <ion-icon name="calendar-outline"></ion-icon>
@@ -24,7 +24,7 @@
               <div class="mt-0.5 flex flex-wrap items-center gap-1.5 text-xs text-content-muted">
                 <span>{{ visit.when }}</span>
                 @if (visit.area) {
-                  <span class="size-[3px] flex-none rounded-full bg-edge-strong" aria-hidden="true"></span>
+                  <span class="size-[3px] flex-none rounded-full bg-surface-step" aria-hidden="true"></span>
                   <span><ion-icon name="location-outline" class="me-0.5 -mb-px" aria-hidden="true"></ion-icon>{{ visit.area }}</span>
                 }
               </div>
@@ -38,7 +38,7 @@
 
           <button
             type="button"
-            class="mt-4 min-h-11 w-full cursor-pointer rounded-md border border-edge bg-transparent px-4 py-2.5 text-sm font-semibold text-content [font:inherit] disabled:opacity-50"
+            class="mt-4 min-h-11 w-full cursor-pointer rounded-md border border-edge bg-transparent px-4 py-2.5 text-sm font-semibold text-content font-sans disabled:opacity-50"
             [disabled]="busy()"
             (click)="openClose(visit)"
           >{{ 'pro.visit_close' | translate }}</button>
@@ -50,7 +50,7 @@
 
     @for (work of active(); track work.id) {
       <button
-        class="mb-2 flex w-full min-h-11 cursor-pointer items-center gap-2 rounded-lg bg-surface-raised px-4 py-2 text-start text-inherit shadow-sm"
+        class="mb-2 flex w-full min-h-11 cursor-pointer items-center gap-2 rounded-lg border border-edge bg-surface-raised px-4 py-2 text-start text-inherit"
         type="button"
         (click)="open(work)"
       >
@@ -102,7 +102,7 @@
         <label class="mb-4 block">
           <span class="mb-1.5 block text-sm font-bold text-content-muted">{{ 'pro.visit_outcome' | translate }}</span>
           <textarea
-            class="w-full resize-y rounded-md border border-edge-strong bg-surface-raised px-3 py-2.5 font-sans text-md leading-snug text-content placeholder:text-content-muted focus:border-brand focus:outline-none"
+            class="w-full resize-y rounded-md border border-edge bg-surface-raised px-3 py-2.5 font-sans text-md leading-snug text-content placeholder:text-content-muted focus:border-brand focus:outline-none"
             rows="5"
             [ngModel]="outcome()"
             (ngModelChange)="outcome.set($event)"
@@ -122,7 +122,7 @@
     <ion-footer class="ion-no-border">
       <div class="mx-auto max-w-3xl border-t border-t-edge px-4 py-2">
         <ion-button expand="block" [disabled]="busy()" (click)="completeVisit()">
-          <span class="min-w-0 flex-1 text-start">{{ 'pro.visit_close_confirm' | translate }}</span>
+          {{ 'pro.visit_close_confirm' | translate }}
         </ion-button>
       </div>
     </ion-footer>

@@ -1,28 +1,20 @@
 // Ionic's own components only — everything else on this page is a Tailwind utility in the template.
 
-ion-toolbar {
+ion-header ion-toolbar {
   --background: var(--hm-color-surface-base);
   --border-width: 0;
 }
 
-ion-title {
-  font-size: var(--hm-text-md);
-  font-weight: 700;
-}
-
 ion-button {
-  --border-radius: var(--hm-radius-md);
-  font-weight: 700;
   margin: 0;
-  min-height: 44px;
 }
 
 .rbody {
   --background: var(--hm-color-surface-base);
   --color: var(--hm-color-text-primary);
   --placeholder-color: var(--hm-color-text-muted);
-  --padding-start: var(--hm-space-sm);
-  --padding-end: var(--hm-space-sm);
+  --padding-start: 17px;
+  --padding-end: 17px;
   margin: var(--hm-space-sm) 0;
   border: 1px solid var(--hm-color-border-subtle);
   border-radius: var(--hm-radius-md);

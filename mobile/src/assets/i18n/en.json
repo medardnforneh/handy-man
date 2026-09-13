@@ -208,6 +208,7 @@
     "clear_filter": "Show all",
     "no_providers": "No providers match this filter yet.",
     "show_less": "Show less",
+    "all_count": "All {{count}}",
     "no_providers_title": "No providers here yet",
     "no_providers_body": "Nobody matches this filter right now. Try another category, or post a request and let them come to you.",
     "no_match_title": "Nothing found"
@@ -222,7 +223,22 @@
     "empty_title": "No jobs yet",
     "empty_body": "Post a request and providers near you will send you a quote.",
     "no_budget": "Quote requested",
-    "no_provider": "Awaiting a provider"
+    "no_provider": "Awaiting a provider",
+    "held_in_escrow": "Held in escrow",
+    "released": "Released",
+    "active": "Active jobs",
+    "need_you": "Need you",
+    "waiting_on_you": "Waiting on you",
+    "running": "Running",
+    "open_section": "Open",
+    "done_section": "Done",
+    "approve": "Approve",
+    "review": "Review",
+    "approve_hint": "The work is done. Approve to release the balance.",
+    "work_submitted": "work submitted",
+    "done_of": "{{done}}/{{total}} done",
+    "no_quotes": "No quotes yet",
+    "notifications": "Notifications"
   },
   "status": {
     "draft": "Draft",
@@ -262,7 +278,10 @@
     "work_heading": "Work on HandyMan",
     "work_hint": "List your trades and receive requests from customers near you.",
     "preferences": "Preferences",
-    "more_heading": "More"
+    "more_heading": "More",
+    "jobs_done": "Jobs done",
+    "jobs_active": "In progress",
+    "addresses_count": "Addresses"
   },
   "workspace": {
     "today": "Today",
@@ -945,7 +964,8 @@
     "budget": "Budget (optional)",
     "budget_ph": "Your estimate",
     "post": "Post request",
-    "posted": "Request posted"
+    "posted": "Request posted",
+    "title_long": "Tell us what needs fixing"
   },
   "jobdetail": {
     "your_provider": "Your provider",
@@ -959,6 +979,14 @@
     "remote": "Remote work — no site visit",
     "open_chat": "Open chat",
     "find_providers": "Find providers",
+    "approve_release": "Approve & release {{amount}} FCFA",
+    "submitted_waiting": "Submitted · waiting on your approval",
+    "paid_released": "Paid and released",
+    "in_escrow_legend": "In escrow {{amount}}",
+    "released_legend": "Released {{amount}}",
+    "mode_onsite": "on-site",
+    "mode_remote": "remote",
+    "mode_hybrid": "hybrid",
     "complete_title": "Is this work finished?",
     "complete_body": "Marking it done opens the review window for both of you.",
     "complete_cta": "Mark done",

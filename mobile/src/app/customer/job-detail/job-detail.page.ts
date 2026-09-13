@@ -41,6 +41,19 @@ export class JobDetailPage {
   readonly reviewBody = signal('');
   readonly starValues = [1, 2, 3, 4, 5];
 
+  /** The milestone waiting on this person — the footer's one filled button when there is one. */
+  readonly awaitingApproval = computed(() => this.job().milestones.find((m) => m.status === 'submitted') ?? null);
+
+  /** The split bar: released and still-held as shares of what was agreed (handoff: Job detail). */
+  readonly releasedShare = computed(() => {
+    const job = this.job();
+    return job.agreedMinor > 0 ? Math.min(100, (job.releasedMinor / job.agreedMinor) * 100) : 0;
+  });
+  readonly heldShare = computed(() => {
+    const job = this.job();
+    return job.agreedMinor > 0 ? Math.min(100 - this.releasedShare(), (job.escrowHeldMinor / job.agreedMinor) * 100) : 0;
+  });
+
   /**
    * Marking the work finished is offered once there is a real engagement and nobody has done it
    * yet. It is deliberately not gated on a particular job status: a customer knows when the work

@@ -7,7 +7,7 @@
     @if (thread(); as thread) {
       <div class="flex min-w-0 items-center gap-2.5 pe-4">
         <div
-          [class]="'grid size-9 flex-none place-items-center rounded-md text-sm font-bold text-brand-contrast accent-' + thread.accent"
+          class="grid size-10 flex-none place-items-center rounded-[14px] bg-brand text-sm font-extrabold text-brand-contrast"
           aria-hidden="true"
         >
           @if (thread.initials) {
@@ -17,11 +17,11 @@
           }
         </div>
         <div class="min-w-0 flex-1 leading-tight">
-          <b class="block truncate text-md">{{ thread.providerName }}</b>
+          <b class="block truncate text-[15.5px] font-bold">{{ thread.providerName }}</b>
           <!-- Presence is live-only: when the socket is down we stop claiming anyone is there,
                rather than asserting they left. -->
           @if (peerOnline()) {
-            <small class="inline-flex items-center gap-1 text-2xs font-semibold text-success">
+            <small class="inline-flex items-center gap-1.5 text-[11.5px] font-semibold text-brand">
               <i class="size-1.5 rounded-full bg-current" aria-hidden="true"></i>{{ 'workspace.online' | translate }}
             </small>
           } @else {
@@ -37,10 +37,10 @@
   <app-offline-strip></app-offline-strip>
 </ion-header>
 
-<ion-content [fullscreen]="true" class="thread-bg">
+<ion-content [fullscreen]="true">
   @if (thread(); as thread) {
-    <div class="mx-auto flex max-w-3xl flex-col gap-2 p-4">
-      <div class="self-center text-2xs font-semibold text-content-muted">{{ 'workspace.today' | translate }}</div>
+    <div class="mx-auto flex min-h-full max-w-3xl flex-col justify-end gap-2.5 px-[18px] py-4">
+      <div class="self-center py-2 text-2xs font-bold text-content-muted">{{ 'workspace.today' | translate }}</div>
 
       @for (m of thread.messages; track m.id) {
         @switch (m.kind) {
@@ -49,14 +49,14 @@
                  rather than marked as an error — nothing has gone wrong, it simply hasn't left the
                  phone yet. -->
             <div
-              class="max-w-[82%] max-[380px]:max-w-[90%] rounded-lg px-3 py-2 text-md leading-snug"
+              class="max-w-[80%] max-[380px]:max-w-[88%] flex-none px-4 py-[13px] text-md leading-[1.45]"
               [class]="(m.mine
-                ? 'self-end border border-transparent bg-brand text-brand-contrast rounded-br-sm'
-                : 'self-start border border-edge bg-surface-raised rounded-bl-sm')
+                ? 'self-end rounded-[20px] rounded-br-[7px] bg-brand font-semibold text-brand-contrast'
+                : 'self-start rounded-[20px] rounded-bl-[7px] border border-edge bg-surface-raised')
                 + (m.delivery ? ' opacity-72' : '')"
             >
               <span>{{ m.body }}</span>
-              <small class="mt-0.5 flex items-center justify-end gap-1 text-2xs opacity-70">
+              <small class="mt-1 flex items-center justify-end gap-1 text-[10.5px] font-normal" [class]="m.mine ? 'opacity-65' : 'text-content-muted'">
                 <!-- A message this device is still holding says so, rather than looking sent. Drawn
                      in CSS, not an ion-icon: the icon asset is fetched lazily and would be the one
                      thing that cannot load in the very state it exists to describe. A hollow ring
@@ -75,28 +75,28 @@
           @case ('voice') {
             <button
               type="button"
-              class="flex min-h-11 min-w-[190px] max-w-[82%] max-[380px]:max-w-[90%] cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-md [font:inherit]"
+              class="flex min-h-11 min-w-[210px] max-w-[80%] max-[380px]:max-w-[88%] flex-none cursor-pointer items-center gap-3 px-4 py-3 text-md font-sans"
               [class]="m.mine
-                ? 'self-end border border-transparent bg-brand text-brand-contrast rounded-br-sm'
-                : 'self-start border border-edge bg-surface-raised text-inherit rounded-bl-sm'"
+                ? 'self-end rounded-[20px] rounded-br-[7px] bg-brand text-brand-contrast'
+                : 'self-start rounded-[20px] rounded-bl-[7px] border border-edge bg-surface-raised text-inherit'"
               [attr.aria-label]="'workspace.play_voice' | translate"
               (click)="playVoice(m)"
             >
-              <span class="grid size-[30px] flex-none place-items-center  bg-brand/12 text-brand" aria-hidden="true">
+              <span class="grid size-8 flex-none place-items-center rounded-pill text-[15px]" [class]="m.mine ? 'bg-surface text-brand' : 'bg-brand text-brand-contrast'" aria-hidden="true">
                 <ion-icon [name]="playingId() === m.id ? 'pause' : 'play'"></ion-icon>
               </span>
-              <span class="flex h-[22px] flex-1 items-center gap-[2px]" aria-hidden="true">
-                @for (bar of [8,14,20,11,17,22,9,15,19,7]; track $index) {
-                  <i class="w-[2.5px] rounded-[2px] bg-brand opacity-65" [style.height.px]="bar"></i>
+              <span class="flex h-[23px] flex-1 items-end gap-[2.5px]" aria-hidden="true">
+                @for (bar of [9,15,21,12,18,23,10,16,20,8,14,19,11]; track $index) {
+                  <i class="w-[2.5px] rounded-[2px] opacity-55" [class]="m.mine ? 'bg-brand-contrast' : 'bg-brand'" [style.height.px]="bar"></i>
                 }
               </span>
-              <small class="flex-none text-2xs opacity-70">{{ m.duration }}</small>
+              <small class="flex-none text-[10.5px]" [class]="m.mine ? 'opacity-65' : 'text-content-muted'">{{ m.duration }}</small>
             </button>
           }
 
           @case ('system') {
-            <div class="inline-flex items-center gap-1.5 self-center rounded-pill bg-surface-sunken px-3 py-1 text-center text-xs font-semibold text-content-muted">
-              <ion-icon name="shield-checkmark" class="flex-none text-sm text-brand" aria-hidden="true"></ion-icon>
+            <div class="inline-flex flex-none items-center gap-1.5 self-center rounded-pill bg-brand-tint px-[13px] py-[7px] text-center text-[11.5px] font-bold text-brand">
+              <ion-icon name="shield-checkmark" class="flex-none text-[13px]" aria-hidden="true"></ion-icon>
               <span>{{ m.systemKey ?? '' | translate }}</span>
             </div>
           }
@@ -104,30 +104,31 @@
           @case ('quote') {
             <!-- Structured message cards — the chat IS the state machine (doc 06). These are
                  SERVER-narrated (rule #11); the provider workspace renders the same shapes. -->
-            <div class="self-stretch overflow-hidden rounded-lg bg-surface-raised shadow-sm">
-              <div class="flex items-center gap-1.5 border-b border-b-edge px-3.5 py-2.5 text-2xs font-bold uppercase tracking-wide text-brand-strong">
+            <div class="flex-none self-stretch overflow-hidden rounded-lg border border-edge bg-surface-raised">
+              <div class="flex items-center gap-2 border-b border-b-edge px-4 py-3 text-2xs font-extrabold uppercase tracking-wider text-brand">
                 <ion-icon name="document-text-outline" aria-hidden="true"></ion-icon>
                 <span>{{ 'workspace.quote' | translate }}</span>
-                <span class="ms-auto opacity-75">{{ 'workspace.version' | translate:{ version: m.quote?.version } }}</span>
+                <span class="ms-auto text-2xs font-bold normal-case tracking-normal text-content-muted">{{ 'workspace.version' | translate:{ version: m.quote?.version } }}</span>
               </div>
-              <div class="p-3.5">
-                <div class="mb-2 flex items-baseline justify-between gap-2">
-                  <span class="text-content-muted">{{ 'workspace.total' | translate }}</span>
-                  <span class="text-2xl font-extrabold tracking-tight">
-                    {{ m.quote?.totalMinor | money }}<small class="ms-1 text-xs font-semibold text-content-muted">{{ 'money.currency' | translate }}</small>
+              <div class="p-4">
+                <div class="flex items-baseline justify-between gap-2 pb-3.5">
+                  <span class="text-sm text-content-muted">{{ 'workspace.total' | translate }}</span>
+                  <span class="flex items-baseline gap-1.5">
+                    <span class="text-[34px] font-extrabold leading-none tracking-tight">{{ m.quote?.totalMinor | money }}</span>
+                    <small class="text-sm font-bold text-content-muted">{{ 'money.currency' | translate }}</small>
                   </span>
                 </div>
 
-                <div class="mb-4 flex flex-col gap-1.5">
-                  <div class="flex items-center gap-2 text-sm">
-                    <span class="grid size-5 flex-none place-items-center rounded-full border-2 border-edge-strong text-2xs font-bold text-content-muted">1</span>
+                <div class="mb-4 flex flex-col gap-2.5 border-t border-edge pt-3.5">
+                  <div class="flex items-center gap-2.5 text-sm">
+                    <span class="grid size-[22px] flex-none place-items-center rounded-full bg-surface-sunken text-[10.5px] font-extrabold text-content-muted">1</span>
                     <span class="text-content-muted">{{ 'workspace.deposit' | translate }}</span>
-                    <span class="ms-auto font-bold">{{ m.quote?.depositMinor | money }}</span>
+                    <span class="ms-auto font-extrabold">{{ m.quote?.depositMinor | money }}</span>
                   </div>
-                  <div class="flex items-center gap-2 text-sm">
-                    <span class="grid size-5 flex-none place-items-center rounded-full border-2 border-edge-strong text-2xs font-bold text-content-muted">2</span>
+                  <div class="flex items-center gap-2.5 text-sm">
+                    <span class="grid size-[22px] flex-none place-items-center rounded-full bg-surface-sunken text-[10.5px] font-extrabold text-content-muted">2</span>
                     <span class="text-content-muted">{{ 'workspace.on_completion' | translate }}</span>
-                    <span class="ms-auto font-bold">{{ m.quote?.balanceMinor | money }}</span>
+                    <span class="ms-auto font-extrabold">{{ m.quote?.balanceMinor | money }}</span>
                   </div>
                 </div>
 
@@ -141,8 +142,9 @@
                      selected from the parent: an arbitrary child selector puts a ">" inside a class
                      attribute, which the bare-string lint reads as a closing tag. -->
                 <div class="flex gap-2 max-[380px]:flex-col">
-                  <ion-button class="m-0 flex-1" expand="block" (click)="openJob()">
-                    <span class="min-w-0 flex-1 text-start">{{ 'workspace.see_quote' | translate }}</span>
+                  <ion-button class="m-0 h-12 flex-1" expand="block" (click)="openJob()">
+                    <ion-icon slot="start" name="lock-closed-outline" class="text-[14px]" aria-hidden="true"></ion-icon>
+                    {{ 'workspace.see_quote' | translate }}
                   </ion-button>
                 </div>
               </div>
@@ -154,12 +156,12 @@
                  endpoint, so if this card is not in the thread, nothing in the product tells the
                  person they are covered — which also made the claim endpoint unreachable, since a
                  claim needs an id nothing else would hand them. -->
-            <div class="self-stretch overflow-hidden rounded-lg bg-surface-raised shadow-sm">
-              <div class="flex items-center gap-1.5 border-b border-b-edge px-3.5 py-2.5 text-2xs font-bold uppercase tracking-wide text-success">
+            <div class="flex-none self-stretch overflow-hidden rounded-lg border border-edge bg-surface-raised">
+              <div class="flex items-center gap-2 border-b border-b-edge px-4 py-3 text-2xs font-extrabold uppercase tracking-wider text-brand">
                 <ion-icon name="shield-checkmark-outline" aria-hidden="true"></ion-icon>
                 <span>{{ 'workspace.warranty' | translate }}</span>
               </div>
-              <div class="p-3.5">
+              <div class="p-4">
                 <b class="block text-md leading-snug">{{ 'workspace.warranty_covered' | translate }}</b>
                 <p class="mt-1 mb-0 text-sm text-content-muted">
                   {{ 'workspace.warranty_until' | translate:{ date: m.warranty?.expiresOn } }}
@@ -171,8 +173,8 @@
                     <span class="text-content-muted">{{ 'workspace.warranty_claim_open' | translate }}</span>
                   </p>
                 } @else if (!m.mine) {
-                  <ion-button class="mt-3" expand="block" fill="outline" [disabled]="claiming()" (click)="claimWarranty(m)">
-                    <span class="min-w-0 flex-1 text-start">{{ 'workspace.warranty_claim' | translate }}</span>
+                  <ion-button class="mt-3 h-12" expand="block" fill="outline" [disabled]="claiming()" (click)="claimWarranty(m)">
+                    {{ 'workspace.warranty_claim' | translate }}
                   </ion-button>
                 }
               </div>
@@ -184,12 +186,12 @@
                  customer has to answer: remote jobs have no site visit and no on-site report, so
                  accepting what was delivered is what finishes them. The buttons go the moment a
                  review lands — the server refuses a second one. -->
-            <div class="self-stretch overflow-hidden rounded-lg bg-surface-raised shadow-sm">
-              <div class="flex items-center gap-1.5 border-b border-b-edge px-3.5 py-2.5 text-2xs font-bold uppercase tracking-wide text-brand-strong">
+            <div class="flex-none self-stretch overflow-hidden rounded-lg border border-edge bg-surface-raised">
+              <div class="flex items-center gap-2 border-b border-b-edge px-4 py-3 text-2xs font-extrabold uppercase tracking-wider text-brand">
                 <ion-icon name="cloud-upload-outline" aria-hidden="true"></ion-icon>
                 <span>{{ 'workspace.deliverable' | translate }}</span>
               </div>
-              <div class="p-3.5">
+              <div class="p-4">
                 <b class="block text-md leading-snug">{{ m.deliverable?.title }}</b>
 
                 @if (m.deliverable?.reviewed; as outcome) {
@@ -205,11 +207,11 @@
                 } @else if (!m.mine) {
                   <p class="mt-1 mb-3 text-sm leading-snug text-content-muted">{{ 'workspace.deliverable_prompt' | translate }}</p>
                   <div class="flex gap-2 max-[380px]:flex-col">
-                    <ion-button class="m-0 flex-1" expand="block" [disabled]="reviewing() !== null" (click)="acceptDeliverable(m)">
-                      <span class="min-w-0 flex-1 text-start">{{ 'workspace.deliverable_accept' | translate }}</span>
+                    <ion-button class="m-0 h-12" expand="block" fill="outline" [disabled]="reviewing() !== null" (click)="rejectDeliverable(m)">
+                      {{ 'workspace.deliverable_reject' | translate }}
                     </ion-button>
-                    <ion-button class="m-0 flex-1" expand="block" fill="outline" [disabled]="reviewing() !== null" (click)="rejectDeliverable(m)">
-                      <span class="min-w-0 flex-1 text-start">{{ 'workspace.deliverable_reject' | translate }}</span>
+                    <ion-button class="m-0 h-12 flex-1" expand="block" [disabled]="reviewing() !== null" (click)="acceptDeliverable(m)">
+                      {{ 'workspace.deliverable_accept' | translate }}
                     </ion-button>
                   </div>
                 } @else {
@@ -221,13 +223,13 @@
           }
 
           @case ('milestone') {
-            <div class="self-stretch overflow-hidden rounded-lg bg-surface-raised shadow-sm">
-              <div class="flex items-center gap-1.5 border-b border-b-edge px-3.5 py-2.5 text-2xs font-bold uppercase tracking-wide text-brand-strong">
+            <div class="flex-none self-stretch overflow-hidden rounded-lg border border-edge bg-surface-raised">
+              <div class="flex items-center gap-2 border-b border-b-edge px-4 py-3 text-2xs font-extrabold uppercase tracking-wider text-brand">
                 <ion-icon name="checkmark-circle-outline" aria-hidden="true"></ion-icon>
                 <span>{{ 'workspace.milestone_released' | translate }}</span>
               </div>
-              <div class="flex items-center gap-2.5 p-3.5">
-                <span class="grid size-[38px] flex-none place-items-center rounded-md bg-success/15 text-success" aria-hidden="true">
+              <div class="flex items-center gap-3 p-4">
+                <span class="grid size-[38px] flex-none place-items-center rounded-[13px] bg-success-tint text-success" aria-hidden="true">
                   <ion-icon name="checkmark"></ion-icon>
                 </span>
                 <div>
@@ -242,7 +244,7 @@
 
       <!-- Ephemeral: a client whisper (P4-04), never persisted. Clears on its own timer. -->
       @if (peerTyping()) {
-        <div class="inline-flex items-center gap-1.5 self-start rounded-pill bg-surface-sunken px-3 py-1.5 text-xs font-semibold text-content-muted" role="status" aria-live="polite">
+        <div class="inline-flex flex-none items-center gap-1.5 self-start rounded-pill border border-edge bg-surface-raised px-3 py-1.5 text-xs font-semibold text-content-muted" role="status" aria-live="polite">
           <span class="inline-flex gap-[0.18rem]" aria-hidden="true">
             <i class="size-[0.3rem] rounded-full bg-current animate-typing-bounce motion-reduce:animate-none"></i>
             <i class="size-[0.3rem] rounded-full bg-current animate-typing-bounce [animation-delay:0.15s] motion-reduce:animate-none"></i>
@@ -260,7 +262,7 @@
 <ion-footer class="ion-no-border">
   <ion-toolbar class="composer">
     <ion-buttons slot="start">
-      <ion-button fill="clear"><ion-icon slot="icon-only" name="image-outline"></ion-icon></ion-button>
+      <ion-button fill="clear" class="composer-glyph"><ion-icon slot="icon-only" name="add"></ion-icon></ion-button>
     </ion-buttons>
 
     <ion-input
@@ -277,6 +279,7 @@
       @if (canRecord) {
         <ion-button
           fill="clear"
+          class="composer-glyph"
           [disabled]="sending()"
           [attr.aria-label]="(isRecording() ? 'workspace.stop_recording' : 'workspace.record_voice') | translate"
           (click)="toggleRecording()"

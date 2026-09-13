@@ -26,12 +26,12 @@
          and the visual height stays slim. -->
     <button
       type="button"
-      class="ms-auto max-[360px]:ms-0 flex-none cursor-pointer rounded-pill border border-current bg-transparent px-2.5 py-1 font-bold text-inherit [font:inherit]"
+      class="ms-auto max-[360px]:ms-0 flex-none cursor-pointer rounded-pill border border-current bg-transparent px-2.5 py-1 font-bold text-inherit font-sans text-md"
       (click)="retryFailed()"
     >{{ 'offline.retry' | translate }}</button>
     <button
       type="button"
-      class="flex-none cursor-pointer rounded-pill border border-transparent bg-transparent px-2.5 py-1 font-bold text-inherit underline opacity-75 [font:inherit]"
+      class="flex-none cursor-pointer rounded-pill border border-transparent bg-transparent px-2.5 py-1 font-bold text-inherit underline opacity-75 font-sans text-md"
       (click)="discardFailed()"
     >{{ 'offline.discard' | translate }}</button>
   </div>

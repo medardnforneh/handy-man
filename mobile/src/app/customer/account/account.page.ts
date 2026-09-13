@@ -34,6 +34,9 @@ export class AccountPage {
 
   readonly me = this.customers.me;
   readonly addresses = this.customers.addresses;
+  /** What this account has done here — the three figures under the name (handoff: You). */
+  readonly jobsDone = computed(() => this.customers.jobs().filter((j) => j.status === 'completed').length);
+  readonly jobsActive = computed(() => this.customers.jobs().filter((j) => j.status !== 'completed' && j.status !== 'cancelled').length);
 
   /**
    * The heading of your own account page. A display name if the server sent one, otherwise the

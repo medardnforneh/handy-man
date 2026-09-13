@@ -87,6 +87,11 @@ export interface JobSummary {
   amountMinor: number;
   milestonesDone: number;
   milestonesTotal: number;
+  /** Money still held for this job: agreed minus released (the same derivation the detail uses). */
+  escrowHeldMinor: number;
+  releasedMinor: number;
+  /** A milestone is submitted and waiting on this person's approval — the home screen's "need you". */
+  needsApproval: boolean;
 }
 
 /** A saved address the customer can attach to an on-site/hybrid job (never needed for remote). */

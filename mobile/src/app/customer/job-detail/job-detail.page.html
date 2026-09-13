@@ -1,162 +1,175 @@
 <ion-header [translucent]="true" class="ion-no-border">
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-back-button defaultHref="/tabs/jobs" [text]="''"></ion-back-button>
+      <ion-back-button defaultHref="/tabs/jobs" [text]="''" icon="chevron-back"></ion-back-button>
     </ion-buttons>
-    <ion-title>{{ job().reference }}</ion-title>
+    <!-- The reference, small and centred (handoff: Job detail) — what you read out to support. -->
+    <ion-title class="text-center text-xs font-bold tracking-[0.06em] text-content-muted">{{ job().reference }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button [attr.aria-label]="'jobdetail.open_chat' | translate" (click)="openChat()">
+        <ion-icon slot="icon-only" name="chatbubble-ellipses-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 
   <app-offline-strip></app-offline-strip>
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <div class="mx-auto max-w-3xl px-4 pb-10">
-    <!-- Title + status -->
-    <div class="mt-2 mb-4 flex items-start justify-between gap-2">
-      <h1 class="text-[1.35rem] font-extrabold tracking-tight text-balance">{{ job().title }}</h1>
-      <span [class]="'hm-pill mt-1 flex-none ' + tone(job().status)">{{ 'status.' + job().status | translate }}</span>
+  <div class="mx-auto max-w-3xl px-[22px] pb-10 md:px-8">
+    <!-- Status line, then the title. -->
+    <div class="mt-1 flex flex-wrap items-center gap-2.5">
+      <span [class]="'hm-pill ' + tone(job().status)">{{ 'status.' + job().status | translate }}</span>
+      <span class="text-xs text-content-muted">{{ 'jobdetail.mode_' + job().mode | translate }}</span>
     </div>
+    <h1 class="mt-2.5 mb-5 text-[29px] font-extrabold leading-[1.06] tracking-tight text-balance">{{ job().title }}</h1>
 
-    <!-- Provider -->
+    <!-- Provider card: the monogram on the accent, the name, and a tinted chat tile. -->
     @if (job().providerName) {
-      <button
-        class="mb-4 flex w-full min-h-11 cursor-pointer items-center gap-2 rounded-lg bg-surface-raised px-4 py-2 text-start text-inherit shadow-sm disabled:cursor-default disabled:opacity-100"
-        type="button"
-        [disabled]="!job().providerId"
-        (click)="openProvider()"
-      >
-        <div
-          [class]="'grid size-11 flex-none place-items-center  text-sm font-bold text-brand-contrast accent-' + job().accent"
-          aria-hidden="true"
-        >{{ job().providerInitials }}</div>
-        <div class="min-w-0 flex-1">
-          <b class="text-md">{{ job().providerName }}</b>
-          <small class="block text-xs text-content-muted">{{ 'jobdetail.your_provider' | translate }}</small>
-        </div>
-        @if (job().providerId) {
-          <ion-icon class="flex-none text-[1.1rem] text-content-muted" name="chevron-forward" aria-hidden="true"></ion-icon>
-        }
-      </button>
+      <div class="mb-3 flex items-center gap-3 rounded-lg border border-edge bg-surface-raised py-3.5 ps-[17px] pe-3.5">
+        <button
+          class="flex min-h-11 min-w-0 flex-1 cursor-pointer items-center gap-3 border-0 bg-transparent p-0 text-start text-inherit font-sans text-md disabled:cursor-default"
+          type="button"
+          [disabled]="!job().providerId"
+          (click)="openProvider()"
+        >
+          <span class="grid size-11 flex-none place-items-center rounded-[15px] bg-brand text-sm font-extrabold text-brand-contrast" aria-hidden="true">{{ job().providerInitials }}</span>
+          <span class="min-w-0 flex-1">
+            <b class="block truncate text-[15.5px] font-bold">{{ job().providerName }}</b>
+            <small class="block text-xs text-content-muted">{{ 'jobdetail.your_provider' | translate }}</small>
+          </span>
+        </button>
+        <button
+          class="grid size-[38px] flex-none cursor-pointer place-items-center rounded-[13px] border-0 bg-brand-tint text-[18px] text-brand"
+          type="button"
+          [attr.aria-label]="'jobdetail.open_chat' | translate"
+          (click)="openChat()"
+        >
+          <ion-icon name="chatbubble-ellipses-outline" aria-hidden="true"></ion-icon>
+        </button>
+      </div>
     }
 
     <!-- Quotes received. A quote arrives before any engagement, so there is no chat thread to carry
-         it — this is the only place it can appear, and until it did the whole quote path dead-ended
-         with a provider having priced a job nobody could accept.
-
-         Each card answers three questions at a glance — who, how much, and what has to be paid now —
-         before it earns the right to ask for a commitment. -->
+         it — this is the only place it can appear. Each card answers who, how much, and what has to
+         be paid now, before it asks for a commitment. -->
     @if (liveQuotes().length > 0) {
-      <h2 class="mt-6 mb-4 text-lg font-extrabold tracking-snug">{{ 'quote.received' | translate }}</h2>
-      <p class="-mt-3 mb-2 text-sm leading-snug text-content-muted">{{ 'quote.received_body' | translate }}</p>
+      <h2 class="mt-6 mb-1 text-2xs font-extrabold uppercase tracking-wider text-content-muted">{{ 'quote.received' | translate }}</h2>
+      <p class="mt-0 mb-3 text-sm leading-snug text-content-muted">{{ 'quote.received_body' | translate }}</p>
 
       @for (q of liveQuotes(); track q.id) {
         <!-- Run out: readable, but plainly no longer on offer. -->
-        <div class="mb-2 rounded-lg bg-surface-raised p-4 shadow-sm" [class]="q.expired ? 'opacity-75' : ''">
-          <div class="flex items-start gap-2">
-            <div class="min-w-0 flex-1">
-              <b class="block text-md leading-snug">{{ q.providerHeadline }}</b>
-              <small class="mt-0.5 block text-xs text-content-muted">
-                {{ 'quote.version' | translate:{ n: q.version } }}
-                @if (q.providerRating !== null) {
-                  · {{ q.providerRating }} ({{ q.providerRatingCount }})
-                }
-              </small>
-            </div>
-            @if (q.providerVerified) {
-              <ion-icon class="flex-none text-[1.1rem] text-brand" name="shield-checkmark"
-                        [attr.aria-label]="'discover.verified' | translate"></ion-icon>
-            }
+        <div class="mb-3 overflow-hidden rounded-lg border border-edge bg-surface-raised" [class]="q.expired ? 'opacity-75' : ''">
+          <div class="flex items-center gap-2 border-b border-edge px-4 py-3 text-2xs font-extrabold uppercase tracking-wider text-brand">
+            <ion-icon name="document-text-outline" aria-hidden="true"></ion-icon>
+            <span>{{ 'workspace.quote' | translate }}</span>
+            <span class="ms-auto text-2xs font-bold normal-case tracking-normal text-content-muted">{{ 'quote.version' | translate:{ n: q.version } }}</span>
           </div>
-
-          @if (q.lines.length > 0) {
-            <ul class="mt-2 list-none border-t border-t-edge p-0 pt-2">
-              @for (l of q.lines; track l.label) {
-                <li class="flex items-baseline gap-2 text-sm not-first:mt-1">
-                  <span class="min-w-0 flex-1 text-content-muted">{{ l.label }}</span>
-                  <span class="flex-none tabular-nums">{{ l.quantity * l.unitPriceMinor | money }}</span>
-                </li>
+          <div class="p-4">
+            <div class="flex items-start gap-2">
+              <div class="min-w-0 flex-1">
+                <b class="block text-md leading-snug">{{ q.providerHeadline }}</b>
+                @if (q.providerRating !== null) {
+                  <small class="mt-0.5 flex items-center gap-1 text-xs text-content-muted">
+                    <ion-icon name="star" class="text-warning" aria-hidden="true"></ion-icon>
+                    <span class="font-bold text-warning">{{ q.providerRating }}</span> ({{ q.providerRatingCount }})
+                  </small>
+                }
+              </div>
+              @if (q.providerVerified) {
+                <ion-icon class="flex-none text-[15px] text-brand" name="medal-outline" [attr.aria-label]="'discover.verified' | translate"></ion-icon>
               }
-            </ul>
-          }
+            </div>
 
-          <div class="mt-2 border-t border-t-edge pt-2">
-            <div class="flex items-baseline justify-between gap-2 text-lg font-extrabold">
-              <span>{{ 'quote.total' | translate }}</span>
-              <span class="tabular-nums">
-                {{ q.totalMinor | money }} <small class="ms-0.5 text-2xs font-semibold text-content-muted">{{ 'money.currency' | translate }}</small>
+            <div class="mt-3 flex items-baseline justify-between gap-2">
+              <span class="text-sm text-content-muted">{{ 'quote.total' | translate }}</span>
+              <span class="flex items-baseline gap-1.5">
+                <span class="text-[30px] font-extrabold leading-none tracking-tight">{{ q.totalMinor | money }}</span>
+                <small class="text-sm font-bold text-content-muted">{{ 'money.currency' | translate }}</small>
               </span>
             </div>
-            <div class="mt-1 flex items-baseline justify-between gap-2 text-sm">
-              <span class="text-content-muted">{{ 'quote.deposit' | translate }}</span>
-              <span>{{ q.depositMinor | money }} <small class="ms-0.5 text-2xs font-semibold text-content-muted">{{ 'money.currency' | translate }}</small></span>
+
+            @if (q.lines.length > 0) {
+              <ul class="mt-3 list-none border-t border-edge p-0 pt-3">
+                @for (l of q.lines; track l.label) {
+                  <li class="flex items-baseline gap-2 text-sm not-first:mt-1.5">
+                    <span class="min-w-0 flex-1 text-content-muted">{{ l.label }}</span>
+                    <span class="flex-none font-bold">{{ l.quantity * l.unitPriceMinor | money }}</span>
+                  </li>
+                }
+              </ul>
+            }
+
+            <div class="mt-3 flex flex-col gap-2.5 border-t border-edge pt-3.5">
+              <div class="flex items-center gap-2.5 text-sm">
+                <span class="grid size-[22px] flex-none place-items-center rounded-full bg-surface-sunken text-[10.5px] font-extrabold text-content-muted">1</span>
+                <span class="text-content-muted">{{ 'quote.deposit' | translate }}</span>
+                <span class="ms-auto font-extrabold">{{ q.depositMinor | money }}</span>
+              </div>
+              <div class="flex items-center gap-2.5 text-sm">
+                <span class="grid size-[22px] flex-none place-items-center rounded-full bg-surface-sunken text-[10.5px] font-extrabold text-content-muted">2</span>
+                <span class="text-content-muted">{{ 'quote.balance' | translate }}</span>
+                <span class="ms-auto font-extrabold">{{ q.balanceMinor | money }}</span>
+              </div>
             </div>
-            <div class="mt-1 flex items-baseline justify-between gap-2 text-sm">
-              <span class="text-content-muted">{{ 'quote.balance' | translate }}</span>
-              <span>{{ q.balanceMinor | money }} <small class="ms-0.5 text-2xs font-semibold text-content-muted">{{ 'money.currency' | translate }}</small></span>
-            </div>
+
+            @if (q.notes) {
+              <p class="mt-3 mb-0 text-sm leading-snug text-content-muted">{{ q.notes }}</p>
+            }
+
+            <!-- An expired quote keeps its numbers and loses its button: offering to accept
+                 something the server will refuse is worse than saying plainly it has run out. -->
+            @if (q.expired) {
+              <p class="mt-4 mb-0 flex items-center gap-1.5 text-xs text-warning">
+                <ion-icon name="time-outline" class="flex-none text-md" aria-hidden="true"></ion-icon>
+                {{ 'quote.expired' | translate }}
+              </p>
+            } @else {
+              <ion-button expand="block" class="mt-4 h-12" [disabled]="busy()" (click)="accept(q)">
+                <ion-icon slot="start" name="lock-closed-outline" class="text-[14px]" aria-hidden="true"></ion-icon>
+                {{ 'quote.accept' | translate }}
+              </ion-button>
+            }
           </div>
-
-          @if (q.notes) {
-            <p class="mt-2 text-sm leading-snug text-content-muted">{{ q.notes }}</p>
-          }
-
-          <!-- An expired quote keeps its numbers and loses its button: the price is a fact worth
-               reading, and offering to accept something the server will refuse is worse than
-               saying plainly that it has run out. -->
-          @if (q.expired) {
-            <p class="mt-4 flex items-center gap-1.5 text-xs text-warning">
-              <ion-icon name="time-outline" class="flex-none text-md" aria-hidden="true"></ion-icon>
-              {{ 'quote.expired' | translate }}
-            </p>
-          } @else {
-            <ion-button expand="block" class="mt-4" [disabled]="busy()" (click)="accept(q)">
-              <span class="min-w-0 flex-1 text-start">{{ 'quote.accept' | translate }}</span>
-            </ion-button>
-          }
         </div>
       }
     }
 
-    <!-- Money. Only once something has actually been agreed: on a job still collecting quotes,
-         "Agreed 0 · In escrow 0 · Released 0" is three zeros pretending to be a statement. -->
+    <!-- Money: the agreed figure and ONE split bar — released in the accent, still held on the
+         accent track — in place of three rows of numbers (handoff: Job detail). Only once something
+         has actually been agreed. -->
     @if (job().engagementId !== null) {
-      <div class="rounded-lg bg-surface-raised p-4 shadow-sm">
-        <div class="mb-0.5 flex items-center justify-between gap-2 border-b border-b-edge pb-2.5 text-md">
-          <span class="text-content-muted">{{ 'jobdetail.agreed' | translate }}</span>
-          <span class="text-[1.15rem] font-bold tabular-nums">
-            {{ job().agreedMinor | money }} <small class="ms-0.5 text-2xs font-semibold text-content-muted">{{ 'money.currency' | translate }}</small>
+      <div class="rounded-lg border border-edge bg-surface-raised p-5">
+        <div class="flex items-baseline justify-between gap-2">
+          <span class="text-2xs font-extrabold uppercase tracking-wider text-content-muted">{{ 'jobdetail.agreed' | translate }}</span>
+          <span class="flex items-baseline gap-1.5">
+            <span class="text-[30px] font-extrabold leading-none tracking-tight">{{ job().agreedMinor | money }}</span>
+            <small class="text-xs font-bold text-content-muted">{{ 'money.currency' | translate }}</small>
           </span>
         </div>
-        <div class="mt-2.5 flex items-center justify-between gap-2 text-md">
-          <span class="inline-flex items-center gap-1.5 text-content-muted">
-            <ion-icon name="lock-closed-outline" class="text-md" aria-hidden="true"></ion-icon>{{ 'jobdetail.escrow_held' | translate }}
-          </span>
-          <span class="font-bold tabular-nums">{{ job().escrowHeldMinor | money }} <small class="ms-0.5 text-2xs font-semibold text-content-muted">{{ 'money.currency' | translate }}</small></span>
+        <div class="mt-4 flex h-2 overflow-hidden rounded-pill bg-surface-sunken" role="img" [attr.aria-label]="('jobdetail.released_legend' | translate:{ amount: (job().releasedMinor | money) }) + ' · ' + ('jobdetail.in_escrow_legend' | translate:{ amount: (job().escrowHeldMinor | money) })">
+          <span class="h-full bg-brand" [style.width.%]="releasedShare()"></span>
+          <span class="h-full bg-brand-track" [style.width.%]="heldShare()"></span>
         </div>
-        <div class="mt-2.5 flex items-center justify-between gap-2 text-md">
-          <span class="inline-flex items-center gap-1.5 text-content-muted">
-            <ion-icon name="checkmark-done-outline" class="text-md" aria-hidden="true"></ion-icon>{{ 'jobdetail.released' | translate }}
-          </span>
-          <span class="font-bold tabular-nums">{{ job().releasedMinor | money }} <small class="ms-0.5 text-2xs font-semibold text-content-muted">{{ 'money.currency' | translate }}</small></span>
+        <div class="mt-2.5 flex items-center justify-between gap-2 text-xs text-content-muted">
+          <span class="inline-flex items-center gap-1.5"><i class="size-2 rounded-full bg-brand" aria-hidden="true"></i>{{ 'jobdetail.released_legend' | translate:{ amount: (job().releasedMinor | money) } }}</span>
+          <span class="inline-flex items-center gap-1.5"><i class="size-2 rounded-full bg-brand-track" aria-hidden="true"></i>{{ 'jobdetail.in_escrow_legend' | translate:{ amount: (job().escrowHeldMinor | money) } }}</span>
         </div>
 
-        <!-- Paying the agreed money in (P3-04). Accepting a quote builds the plan and collects
-             nothing, so without this the figure above was one the customer had no way to fund. -->
+        <!-- Paying the agreed money in (P3-04): the money card's own action, bordered — the
+             screen's one filled button is the footer's. -->
         @if (canFund()) {
-          <ion-button class="mt-4" expand="block" [disabled]="busy()" (click)="openFund()">
+          <ion-button class="mt-4 h-12" expand="block" fill="outline" [disabled]="busy()" (click)="openFund()">
             <ion-icon name="phone-portrait-outline" slot="start" aria-hidden="true"></ion-icon>
-            <span class="min-w-0 flex-1 text-start">{{ 'fund.action' | translate }}</span>
+            {{ 'fund.action' | translate }}
           </ion-button>
         }
 
-        <!-- Getting the held balance back (P3-14). Inside the money card, because that is what it
-             changes, and quiet, because it ends the money side of the engagement — a provider
-             mid-job stops being paid for it. Absent entirely when escrow is empty: there would be
-             nothing to move and the button could only ever produce a refusal. -->
+        <!-- Getting the held balance back (P3-14): quiet, because it ends the money side. -->
         @if (canRefund()) {
           <button
             type="button"
-            class="mt-4 min-h-11 w-full cursor-pointer rounded-md border border-edge bg-transparent px-4 py-2.5 text-sm font-semibold text-content-muted [font:inherit] disabled:opacity-50"
+            class="mt-3 min-h-11 w-full cursor-pointer rounded-md border border-edge bg-transparent px-4 py-2.5 text-sm font-semibold text-content-muted font-sans disabled:opacity-45"
             [disabled]="busy()"
             (click)="refund()"
           >{{ 'refund.action' | translate }}</button>
@@ -164,43 +177,64 @@
       </div>
     }
 
-    <!-- Milestones -->
+    <!-- Milestones: a vertical timeline, not a list. A paid node is an accent circle with a check,
+         the current one a 2px accent ring with its index, the rest a muted ring. -->
     @if (job().milestones.length > 0) {
-      <h2 class="mt-6 mb-4 text-lg font-extrabold tracking-snug">{{ 'jobdetail.milestones' | translate }}</h2>
-      <div class="flex flex-col gap-2">
-        @for (m of job().milestones; track m.id) {
-          <div class="rounded-lg bg-surface-raised p-4 shadow-sm">
-            <div class="flex items-center justify-between gap-2">
-              <b class="text-md">{{ m.title }}</b>
-              <span [class]="'hm-pill ' + milestoneTone(m.status)">{{ 'milestone.' + m.status | translate }}</span>
-            </div>
-            <div class="mt-2 flex items-center justify-between gap-2">
-              <span class="font-bold tabular-nums">
-                {{ m.amountMinor | money }} <small class="ms-0.5 text-2xs font-semibold text-content-muted">{{ 'money.currency' | translate }}</small>
+      <h2 class="mt-7 mb-3 text-2xs font-extrabold uppercase tracking-wider text-content-muted">{{ 'jobdetail.milestones' | translate }}</h2>
+      <ol class="m-0 list-none p-0">
+        @for (m of job().milestones; track m.id; let i = $index; let last = $last) {
+          <li class="flex gap-3.5">
+            <span class="flex w-[26px] flex-none flex-col items-center">
+              <span
+                class="grid size-[26px] flex-none place-items-center rounded-full text-2xs font-extrabold"
+                [class]="m.status === 'paid'
+                  ? 'bg-brand text-brand-contrast'
+                  : (m.status === 'submitted' || m.status === 'in_progress'
+                    ? 'border-2 border-brand text-brand'
+                    : 'border border-edge text-content-muted')"
+                aria-hidden="true"
+              >
+                @if (m.status === 'paid') {
+                  <ion-icon name="checkmark" class="text-[14px]"></ion-icon>
+                } @else {
+                  {{ i + 1 }}
+                }
               </span>
-              @if (m.status === 'submitted') {
-                <ion-button size="small" (click)="approve(m.id)">{{ 'jobdetail.approve' | translate }}</ion-button>
+              @if (!last) {
+                <span class="my-1.5 w-0.5 flex-1 bg-edge" aria-hidden="true"></span>
               }
+            </span>
+            <div class="min-w-0 flex-1" [class.pb-5]="!last">
+              <div class="flex items-baseline justify-between gap-3">
+                <b class="text-md font-bold">{{ m.title }}</b>
+                <span class="flex-none text-md font-extrabold">{{ m.amountMinor | money }}</span>
+              </div>
+              <small class="block text-xs text-content-muted">
+                @switch (m.status) {
+                  @case ('paid') { {{ 'jobdetail.paid_released' | translate }} }
+                  @case ('submitted') { {{ 'jobdetail.submitted_waiting' | translate }} }
+                  @default { {{ 'milestone.' + m.status | translate }} }
+                }
+              </small>
             </div>
-          </div>
+          </li>
         }
-      </div>
+      </ol>
     }
 
-    <!-- Finishing, and then saying how it went. Two states of one story, so they share a card:
-         work that is done but not marked done, and work that is done and not yet reviewed. -->
+    <!-- Finishing, and then saying how it went. Two states of one story, so they share a card. -->
     @if (canComplete()) {
-      <div class="mt-4 flex flex-wrap items-center gap-2 rounded-lg bg-surface-raised p-4 shadow-sm">
+      <div class="mt-5 flex flex-wrap items-center gap-3 rounded-lg border border-edge bg-surface-raised p-4">
         <div class="min-w-48 flex-1">
           <b class="block text-md">{{ 'jobdetail.complete_title' | translate }}</b>
           <small class="mt-0.5 block text-xs leading-snug text-content-muted">{{ 'jobdetail.complete_body' | translate }}</small>
         </div>
-        <ion-button size="small" [disabled]="busy()" (click)="complete()">
+        <ion-button size="small" fill="outline" [disabled]="busy()" (click)="complete()">
           {{ 'jobdetail.complete_cta' | translate }}
         </ion-button>
       </div>
     } @else if (canReview()) {
-      <div class="mt-4 flex flex-col items-stretch gap-2 rounded-lg bg-surface-raised p-4 shadow-sm">
+      <div class="mt-5 flex flex-col items-stretch gap-2 rounded-lg border border-edge bg-surface-raised p-4">
         <div class="min-w-48 flex-1">
           <b class="block text-md">{{ 'review.title' | translate }}</b>
           <small class="mt-0.5 block text-xs leading-snug text-content-muted">{{ 'review.blind_note' | translate }}</small>
@@ -232,40 +266,36 @@
           rows="3"
         ></ion-textarea>
 
-        <ion-button expand="block" [disabled]="rating() === 0 || busy()" (click)="submitReview()">
-          <span class="min-w-0 flex-1 text-start">{{ 'review.submit' | translate }}</span>
+        <ion-button expand="block" class="h-12" [disabled]="rating() === 0 || busy()" (click)="submitReview()">
+          {{ 'review.submit' | translate }}
         </ion-button>
       </div>
     } @else if (job().reviewed) {
-      <p class="mt-4 flex items-center gap-1.5 text-sm text-content-muted">
+      <p class="mt-5 flex items-center gap-1.5 text-sm text-content-muted">
         <ion-icon name="checkmark-circle-outline" class="text-lg text-success" aria-hidden="true"></ion-icon>
         {{ 'review.done' | translate }}
       </p>
     }
 
-    <!-- Book the same person again (P8-05). One tap clones this job and offers it to them, because
-         the alternative is describing the same work to the same provider a second time. Only on a
-         finished job with a provider on it: that is where the thought occurs, and the one place we
-         know for certain they have worked together. -->
+    <!-- Book the same person again (P8-05). Only on a finished job with a provider on it. -->
     @if (job().completedAt !== null && job().providerId) {
       <button
         type="button"
-        class="mt-4 flex w-full min-h-11 cursor-pointer items-center justify-start gap-2 rounded-md bg-surface-raised p-4 text-sm font-semibold text-content [font:inherit] shadow-sm disabled:opacity-50"
+        class="mt-4 flex w-full min-h-11 cursor-pointer items-center justify-start gap-2.5 rounded-md border border-edge bg-surface-raised px-[17px] py-3.5 text-sm font-semibold text-content font-sans disabled:opacity-45"
         [disabled]="busy()"
         (click)="rebook()"
       >
-        <ion-icon name="repeat-outline" class="text-[1.25rem] text-brand" aria-hidden="true"></ion-icon>
+        <ion-icon name="repeat-outline" class="text-[18px] text-brand" aria-hidden="true"></ion-icon>
         <span>{{ 'rebook.action' | translate:{ name: job().providerName } }}</span>
       </button>
     }
 
-    <!-- When the thread has stopped being enough (P6-06). Deliberately below everything the job is
-         normally about: most people never need it, and a complaint offered too eagerly reads as an
-         expectation that something will go wrong. -->
+    <!-- When the thread has stopped being enough (P6-06). Below everything the job is normally
+         about: a complaint offered too eagerly reads as an expectation that something will go wrong. -->
     @if (canDispute()) {
-      <h2 class="mt-6 mb-4 text-lg font-extrabold tracking-snug">{{ 'dispute.section' | translate }}</h2>
+      <h2 class="mt-7 mb-3 text-2xs font-extrabold uppercase tracking-wider text-content-muted">{{ 'dispute.section' | translate }}</h2>
       @if (dispute(); as d) {
-        <div class="rounded-lg bg-surface-raised p-4 shadow-sm">
+        <div class="rounded-lg border border-edge bg-surface-raised p-4">
           <div class="flex items-center justify-between gap-2">
             <b class="text-md">{{ 'dispute.cat.' + d.category | translate }}</b>
             <span class="hm-pill tone-warning flex-none">{{ 'dispute.status.' + d.status | translate }}</span>
@@ -280,37 +310,35 @@
       } @else {
         <button
           type="button"
-          class="flex w-full min-h-11 cursor-pointer items-center justify-start gap-2 rounded-md border border-edge-strong bg-transparent p-4 text-sm font-semibold text-content-muted [font:inherit] disabled:opacity-50"
+          class="flex w-full min-h-11 cursor-pointer items-center justify-start gap-2.5 rounded-md border border-edge bg-transparent px-[17px] py-3.5 text-sm font-semibold text-content-muted font-sans disabled:opacity-45"
           [disabled]="busy()"
           (click)="openDispute()"
         >
-          <ion-icon name="alert-circle-outline" class="text-[1.25rem] text-warning" aria-hidden="true"></ion-icon>
+          <ion-icon name="alert-circle-outline" class="text-[18px] text-warning" aria-hidden="true"></ion-icon>
           <span>{{ 'dispute.action' | translate }}</span>
         </button>
         <p class="mt-2 text-xs leading-snug text-content-muted">{{ 'dispute.hint' | translate }}</p>
       }
     }
 
-    <!-- Share this visit (P6-05). Someone the customer trusts can watch a stranger's visit without
-         installing anything: the link opens a plain page with the provider's first name, the status
-         and the quarter — never the street address. -->
+    <!-- Share this visit (P6-05): a plain page with the provider's first name, the status and the
+         quarter — never the street address. -->
     @if (canShare()) {
-      <h2 class="mt-6 mb-4 text-lg font-extrabold tracking-snug">{{ 'share.section' | translate }}</h2>
+      <h2 class="mt-7 mb-3 text-2xs font-extrabold uppercase tracking-wider text-content-muted">{{ 'share.section' | translate }}</h2>
       @if (shareUrl(); as url) {
-        <div class="rounded-lg bg-surface-raised p-4 shadow-sm">
+        <div class="rounded-lg border border-edge bg-surface-raised p-4">
           <p class="mt-0 mb-2 text-sm leading-snug text-content-muted">{{ 'share.ready' | translate }}</p>
-          <!-- Shown in full, not hidden behind a Copy button: the token comes back once and cannot
-               be read again, so a clipboard the browser refuses must not be the only way out. -->
+          <!-- Shown in full, not hidden behind a Copy button: the token comes back once. -->
           <p class="m-0 rounded-md bg-surface-sunken px-3 py-2 text-xs [overflow-wrap:anywhere]">{{ url }}</p>
           @if (shareExpires(); as expires) {
             <p class="mt-2 mb-0 text-xs text-content-muted">{{ 'share.expires_at' | translate:{ time: expires } }}</p>
           }
           <div class="mt-4 flex flex-wrap gap-2">
-            <ion-button size="small" [disabled]="sharing()" (click)="copyShare()">
+            <ion-button size="small" fill="outline" [disabled]="sharing()" (click)="copyShare()">
               <ion-icon name="copy-outline" slot="start" aria-hidden="true"></ion-icon>
               {{ 'share.copy' | translate }}
             </ion-button>
-            <ion-button size="small" fill="outline" color="danger" [disabled]="sharing()" (click)="revokeShare()">
+            <ion-button size="small" fill="clear" color="danger" [disabled]="sharing()" (click)="revokeShare()">
               {{ 'share.revoke' | translate }}
             </ion-button>
           </div>
@@ -318,42 +346,51 @@
       } @else {
         <button
           type="button"
-          class="flex w-full min-h-11 cursor-pointer items-center justify-start gap-2 rounded-md border border-edge-strong bg-transparent p-4 text-sm font-semibold text-content-muted [font:inherit] disabled:opacity-50"
+          class="flex w-full min-h-11 cursor-pointer items-center justify-start gap-2.5 rounded-md border border-edge bg-transparent px-[17px] py-3.5 text-sm font-semibold text-content-muted font-sans disabled:opacity-45"
           [disabled]="sharing()"
           (click)="createShare()"
         >
-          <ion-icon name="share-social-outline" class="text-[1.25rem] text-brand" aria-hidden="true"></ion-icon>
+          <ion-icon name="share-social-outline" class="text-[18px] text-brand" aria-hidden="true"></ion-icon>
           <span>{{ 'share.create' | translate }}</span>
         </button>
         <p class="mt-2 text-xs leading-snug text-content-muted">{{ 'share.create_hint' | translate }}</p>
       }
     }
 
-    <!-- Location -->
-    <h2 class="mt-6 mb-4 text-lg font-extrabold tracking-snug">{{ 'jobdetail.location' | translate }}</h2>
+    <!-- Location row (handoff): surface-1, 18px radius, the pin in the accent. -->
     @if (job().mode === 'remote') {
-      <p class="m-0 flex items-center gap-2 rounded-md border border-edge-strong p-4 text-md text-content-muted">
-        <ion-icon name="globe-outline" class="flex-none text-[1.1rem] text-brand" aria-hidden="true"></ion-icon>{{ 'jobdetail.remote' | translate }}
+      <p class="mt-5 mb-0 flex items-center gap-2.5 rounded-md border border-edge bg-surface-raised px-[17px] py-3.5 text-md text-content-muted">
+        <ion-icon name="globe-outline" class="flex-none text-[17px] text-brand" aria-hidden="true"></ion-icon>{{ 'jobdetail.remote' | translate }}
       </p>
-    } @else {
-      <p class="m-0 flex items-center gap-2 rounded-lg bg-surface-raised p-4 text-md shadow-sm">
-        <ion-icon name="location-outline" class="flex-none text-[1.1rem] text-brand" aria-hidden="true"></ion-icon>{{ job().addressLine }}
+    } @else if (job().addressLine) {
+      <p class="mt-5 mb-0 flex items-center gap-2.5 rounded-md border border-edge bg-surface-raised px-[17px] py-3.5 text-md">
+        <ion-icon name="location-outline" class="flex-none text-[17px] text-brand" aria-hidden="true"></ion-icon>
+        <span class="min-w-0 flex-1 truncate">{{ job().addressLine }}</span>
+        <ion-icon name="chevron-forward" class="flex-none text-[17px] text-content-muted" aria-hidden="true"></ion-icon>
       </p>
     }
   </div>
 </ion-content>
 
+<!-- The screen's one filled button (handoff structural change 2): the approval when a milestone is
+     waiting on it, otherwise the way to a provider on an open job; the chat is in the header and
+     on the provider card, so it needs no button of its own. -->
 <ion-footer class="ion-no-border">
-  <div class="mx-auto max-w-3xl border-t border-t-edge px-4 py-2">
-    @if (job().status === 'open' && !job().providerName) {
-      <ion-button expand="block" (click)="findProviders()">
+  <div class="mx-auto max-w-3xl px-[22px] pt-3.5 pb-6 md:px-8">
+    @if (awaitingApproval(); as m) {
+      <ion-button expand="block" class="h-[54px] text-md" [disabled]="busy()" (click)="approve(m.id)">
+        <ion-icon name="shield-checkmark-outline" slot="start" class="text-[18px]" aria-hidden="true"></ion-icon>
+        {{ 'jobdetail.approve_release' | translate:{ amount: (m.amountMinor | money) } }}
+      </ion-button>
+    } @else if (job().status === 'open' && !job().providerName) {
+      <ion-button expand="block" class="h-[54px] text-md" (click)="findProviders()">
         <ion-icon name="people-outline" slot="start" aria-hidden="true"></ion-icon>
-        <span class="min-w-0 flex-1 text-start">{{ 'jobdetail.find_providers' | translate }}</span>
+        {{ 'jobdetail.find_providers' | translate }}
       </ion-button>
     } @else {
-      <ion-button expand="block" fill="outline" (click)="openChat()">
+      <ion-button expand="block" class="h-[54px] text-md" fill="outline" (click)="openChat()">
         <ion-icon name="chatbubble-ellipses-outline" slot="start" aria-hidden="true"></ion-icon>
-        <span class="min-w-0 flex-1 text-start">{{ 'jobdetail.open_chat' | translate }}</span>
+        {{ 'jobdetail.open_chat' | translate }}
       </ion-button>
     }
   </div>
@@ -375,13 +412,13 @@
 
     <ion-content>
       <div class="mx-auto max-w-3xl px-4 pt-4 pb-10">
-        <span class="mb-1.5 block text-sm font-bold text-content-muted">{{ 'dispute.category' | translate }}</span>
+        <span class="mb-2 block text-2xs font-extrabold uppercase tracking-wider text-content-muted">{{ 'dispute.category' | translate }}</span>
         <div class="mb-4 flex flex-wrap gap-1.5">
           @for (c of disputeCategories; track c) {
             <button
               type="button"
-              class="min-h-11 cursor-pointer rounded-pill border-[1.5px] bg-transparent px-3 py-1.5 text-sm font-semibold"
-              [class]="disputeCategory() === c ? 'border-brand bg-brand/12 text-brand-strong' : 'border-edge text-content'"
+              class="min-h-11 cursor-pointer rounded-[14px] border bg-transparent px-3.5 py-2 text-sm font-bold font-sans"
+              [class]="disputeCategory() === c ? 'border-brand bg-brand text-brand-contrast' : 'border-edge bg-surface-raised text-content'"
               [attr.aria-pressed]="disputeCategory() === c"
               (click)="disputeCategory.set(c)"
             >{{ 'dispute.cat.' + c | translate }}</button>
@@ -389,9 +426,9 @@
         </div>
 
         <label class="mb-4 block">
-          <span class="mb-1.5 block text-sm font-bold text-content-muted">{{ 'dispute.body_label' | translate }}</span>
+          <span class="mb-2 block text-2xs font-extrabold uppercase tracking-wider text-content-muted">{{ 'dispute.body_label' | translate }}</span>
           <textarea
-            class="w-full resize-y rounded-md border border-edge-strong bg-surface-raised px-3 py-2.5 font-sans text-md leading-snug text-content placeholder:text-content-muted focus:border-brand focus:outline-none"
+            class="w-full resize-y rounded-md border border-edge bg-surface-raised px-[17px] py-3 font-sans text-md leading-snug text-content placeholder:text-content-muted focus:border-brand focus:outline-none"
             rows="5"
             [ngModel]="disputeBody()"
             (ngModelChange)="disputeBody.set($event)"
@@ -411,9 +448,9 @@
     </ion-content>
 
     <ion-footer class="ion-no-border">
-      <div class="mx-auto max-w-3xl border-t border-t-edge px-4 py-2">
-        <ion-button expand="block" [disabled]="busy()" (click)="sendDispute()">
-          <span class="min-w-0 flex-1 text-start">{{ 'dispute.send' | translate }}</span>
+      <div class="mx-auto max-w-3xl border-t border-t-edge px-[22px] pt-3.5 pb-6">
+        <ion-button expand="block" class="h-[54px] text-md" [disabled]="busy()" (click)="sendDispute()">
+          {{ 'dispute.send' | translate }}
         </ion-button>
       </div>
     </ion-footer>
@@ -438,9 +475,9 @@
     <ion-content>
       <div class="mx-auto max-w-3xl px-4 pt-4 pb-10">
         <label class="mb-4 block">
-          <span class="mb-1.5 block text-sm font-bold text-content-muted">{{ 'fund.amount' | translate }}</span>
+          <span class="mb-2 block text-2xs font-extrabold uppercase tracking-wider text-content-muted">{{ 'fund.amount' | translate }}</span>
           <input
-            class="w-full rounded-md border border-edge-strong bg-surface-raised px-3 py-2.5 font-sans text-md tabular-nums text-content focus:border-brand focus:outline-none"
+            class="w-full rounded-md border border-edge bg-surface-raised px-[17px] py-3 font-sans text-md tabular-nums text-content focus:border-brand focus:outline-none"
             type="number"
             inputmode="numeric"
             min="1"
@@ -451,9 +488,9 @@
         </label>
 
         <label class="mb-4 block">
-          <span class="mb-1.5 block text-sm font-bold text-content-muted">{{ 'fund.msisdn' | translate }}</span>
+          <span class="mb-2 block text-2xs font-extrabold uppercase tracking-wider text-content-muted">{{ 'fund.msisdn' | translate }}</span>
           <input
-            class="w-full rounded-md border border-edge-strong bg-surface-raised px-3 py-2.5 font-sans text-md tabular-nums text-content focus:border-brand focus:outline-none"
+            class="w-full rounded-md border border-edge bg-surface-raised px-[17px] py-3 font-sans text-md tabular-nums text-content focus:border-brand focus:outline-none"
             type="tel"
             inputmode="tel"
             [ngModel]="fundMsisdn()"
@@ -466,7 +503,7 @@
         }
 
         <div class="mb-4">
-          <span class="mb-1.5 block text-sm font-bold text-content-muted">{{ 'pay.method' | translate }}</span>
+          <span class="mb-2 block text-2xs font-extrabold uppercase tracking-wider text-content-muted">{{ 'pay.method' | translate }}</span>
           <ion-segment [value]="fundRail()" (ionChange)="fundRailChoice.set($any($event.detail.value))">
             <ion-segment-button value="mtn_momo"><ion-label>{{ 'pay.method_mtn_momo' | translate }}</ion-label></ion-segment-button>
             <ion-segment-button value="orange_money"><ion-label>{{ 'pay.method_orange_money' | translate }}</ion-label></ion-segment-button>
@@ -482,9 +519,9 @@
     </ion-content>
 
     <ion-footer class="ion-no-border">
-      <div class="mx-auto max-w-3xl border-t border-t-edge px-4 py-2">
-        <ion-button expand="block" [disabled]="busy()" (click)="fund()">
-          <span class="min-w-0 flex-1 text-start">{{ 'fund.confirm' | translate }}</span>
+      <div class="mx-auto max-w-3xl border-t border-t-edge px-[22px] pt-3.5 pb-6">
+        <ion-button expand="block" class="h-[54px] text-md" [disabled]="busy()" (click)="fund()">
+          {{ 'fund.confirm' | translate }}
         </ion-button>
       </div>
     </ion-footer>
