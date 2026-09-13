@@ -53,9 +53,12 @@ class AdminPanelProvider extends PanelProvider
                 static fn (string $hex): array => Color::hex($hex),
                 config('tokens.colors'),
             ))
-            // Archivo, from the @font-face in the token stylesheet linked below — the LocalFontProvider
-            // with no URL emits no <link>, so the panel makes no request to a font CDN.
-            ->font('Archivo', provider: LocalFontProvider::class)
+            // Plus Jakarta Sans, from the @font-face in the token stylesheet linked below — the
+            // LocalFontProvider with no URL emits no <link>, so the panel makes no request to a font CDN.
+            ->font('Plus Jakarta Sans', provider: LocalFontProvider::class)
+            // The redesign is dark-only (handoff open item 2 is a light theme, undesigned): forced, so
+            // the panel never shows Filament's light chrome under the dark tokens.
+            ->darkMode(true, isForced: true)
             ->sidebarCollapsibleOnDesktop()
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
@@ -85,7 +88,7 @@ class AdminPanelProvider extends PanelProvider
 
     public function boot(): void
     {
-        // The Modernist system is set in Lucide; this reaches the chrome the resources do not choose.
+        // The redesign is set in Lucide; this reaches the chrome the resources do not choose.
         LucideChrome::register();
 
         // The bespoke admin views consume the SAME generated design tokens as the app and Blade

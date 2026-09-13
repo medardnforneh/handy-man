@@ -33,15 +33,14 @@
     {{-- KPIs --}}
     <div class="hm-kpis">
         @foreach ($stats as $s)
-            <div class="hm-card hm-kpi {{ ($s['flag'] ?? null) === 'attention' ? 'hm-attention' : '' }}">
+            <div class="hm-card hm-kpi {{ match($s['flag'] ?? null) { 'attention' => 'hm-attention', 'info' => 'hm-escrow', default => '' } }}">
                 <div class="hm-label">{{ $s['label'] }}</div>
                 <div class="hm-value">{{ $s['value'] }}@if($s['unit'])<span class="hm-unit">{{ $s['unit'] }}</span>@endif</div>
                 <div class="hm-delta {{ $s['dir'] }}">{{ $s['desc'] }}</div>
                 @if ($s['spark'])
                     @php $sc = ($s['flag'] ?? null) === 'attention' ? 'var(--hm-danger)' : 'var(--hm-brand)'; @endphp
                     <svg class="hm-spark" width="72" height="40" viewBox="0 0 72 40" fill="none" aria-hidden="true">
-                        <polygon points="{{ $s['spark']['area'] }}" fill="var(--hm-brand-weak)"></polygon>
-                        <polyline points="{{ $s['spark']['line'] }}" stroke="{{ $sc }}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></polyline>
+                                                <polyline points="{{ $s['spark']['line'] }}" stroke="{{ $sc }}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></polyline>
                         <circle cx="{{ $s['spark']['cx'] }}" cy="{{ $s['spark']['cy'] }}" r="3" fill="{{ $sc }}"></circle>
                     </svg>
                 @endif
@@ -74,6 +73,7 @@
                                 <td>
                                     <div class="hm-mstones">
                                         @for ($i = 0; $i < max($total, 1); $i++)<i class="{{ $i < $done ? 'hm-done' : '' }}"></i>@endfor
+                                        <span class="hm-count">{{ $done }}/{{ max($total, 1) }}</span>
                                     </div>
                                 </td>
                                 <td class="hm-num">{{ number_format((int) $e->agreed_amount_minor, 0, '.', ' ') }}</td>
@@ -89,8 +89,8 @@
 
         {{-- Attention + money --}}
         <div class="hm-stack">
-            <section class="hm-card">
-                <div class="hm-phead"><h2>{{ __('admin.needs_attention') }}</h2><a href="{{ \App\Filament\Resources\ReconciliationExceptions\ReconciliationExceptionResource::getUrl() }}">{{ __('admin.reconciliation') }}</a></div>
+            <section class="hm-card {{ $exceptions->isNotEmpty() ? 'hm-exceptions' : '' }}">
+                <div class="hm-phead"><h2>{{ __('admin.needs_attention') }}@if ($exceptions->isNotEmpty())<span class="hm-badge hm-crit">{{ $exceptions->count() }}</span>@endif</h2><a href="{{ \App\Filament\Resources\ReconciliationExceptions\ReconciliationExceptionResource::getUrl() }}">{{ __('admin.reconciliation') }}</a></div>
                 @forelse ($exceptions as $x)
                     @php $crit = $x->kind === 'settlement_mismatch'; @endphp
                     <div class="hm-exc {{ $crit ? 'hm-crit' : 'hm-warn' }}">
@@ -111,14 +111,14 @@
                 <div class="hm-phead"><h2>{{ __('admin.money_held') }}</h2><span class="hm-sub">{{ __('admin.now') }}</span></div>
                 <div class="hm-ledger">
                     <div class="hm-lbar">
-                        <span style="width:{{ round(($money['escrow'] / $totalMoney) * 100, 1) }}%;background:var(--hm-info)"></span>
-                        <span style="width:{{ round(($money['payable'] / $totalMoney) * 100, 1) }}%;background:var(--hm-brand)"></span>
+                        <span style="width:{{ round(($money['escrow'] / $totalMoney) * 100, 1) }}%;background:var(--hm-brand)"></span>
+                        <span style="width:{{ round(($money['payable'] / $totalMoney) * 100, 1) }}%;background:var(--hm-brand);opacity:.55"></span>
                         <span style="width:{{ round(($money['lead'] / $totalMoney) * 100, 1) }}%;background:var(--hm-warning)"></span>
                     </div>
-                    <div class="hm-lrow"><div class="hm-k"><i style="background:var(--hm-info)"></i> {{ __('admin.escrow_liability') }}</div><div class="hm-v">{{ number_format($money['escrow'], 0, '.', ' ') }}</div></div>
-                    <div class="hm-lrow"><div class="hm-k"><i style="background:var(--hm-brand)"></i> {{ __('admin.provider_payable') }}</div><div class="hm-v">{{ number_format($money['payable'], 0, '.', ' ') }}</div></div>
+                    <div class="hm-lrow"><div class="hm-k"><i style="background:var(--hm-brand)"></i> {{ __('admin.escrow_liability') }}</div><div class="hm-v">{{ number_format($money['escrow'], 0, '.', ' ') }}</div></div>
+                    <div class="hm-lrow"><div class="hm-k"><i style="background:var(--hm-brand);opacity:.55"></i> {{ __('admin.provider_payable') }}</div><div class="hm-v">{{ number_format($money['payable'], 0, '.', ' ') }}</div></div>
                     <div class="hm-lrow"><div class="hm-k"><i style="background:var(--hm-warning)"></i> {{ __('admin.lead_float') }}</div><div class="hm-v">{{ number_format($money['lead'], 0, '.', ' ') }}</div></div>
-                    <div class="hm-lrow hm-tot"><div class="hm-k" style="color:var(--hm-text);font-weight:700">{{ __('admin.gateway_receivable') }}</div><div class="hm-v">{{ number_format($money['receivable'], 0, '.', ' ') }}</div></div>
+                    <div class="hm-lrow hm-tot"><div class="hm-k"><i style="background:var(--hm-step)"></i> {{ __('admin.gateway_receivable') }}</div><div class="hm-v">{{ number_format($money['receivable'], 0, '.', ' ') }}</div></div>
                 </div>
             </section>
         </div>

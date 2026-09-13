@@ -49,6 +49,12 @@ class VerificationDocumentResource extends Resource
         return $pending > 0 ? (string) $pending : null;
     }
 
+    /** Handoff badge rule: danger for what is wrong, warning for a queue under SLA pressure, neutral for a count. */
+    public static function getNavigationBadgeColor(): string
+    {
+        return 'gray';
+    }
+
     public static function canCreate(): bool
     {
         return false;

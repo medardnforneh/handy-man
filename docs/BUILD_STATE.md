@@ -3,10 +3,11 @@
 > Living tracker for the build. Updated as work progresses. Source of truth for **where we
 > are** and **how this machine is set up**. Read this first when resuming.
 
-_Last updated: 2026-09-12 (the MODERNIST design system landed on all three surfaces — Archivo,
-a red accent, zero radius, 2px rules, flush-left buttons, nothing floats — and then its icon set,
-Lucide; grayscale imagery is the one item deliberately not applied. Before that: the
-reachability sweep re-run and CLOSED)_
+_Last updated: 2026-09-13 (the HandyMan REDESIGN — dark, one luminous green, Plus Jakarta Sans,
+22px cards, no shadows, one filled button per screen — replaced Modernist on every surface after
+the founder said Modernist was the wrong design; the handoff folder in Downloads is the spec.
+Same day: every notification channel got a real adapter, object storage, retention, erasure of
+identity papers, 24 security advisories closed)_
 
 ## Environment (this dev machine — Windows 10 Pro, non-admin)
 
@@ -223,24 +224,28 @@ founder-owned legal items in doc 05's launch checklist.
 
 ## Design debt (tracked)
 
-- **Design system: MODERNIST (claude.ai/design project "Modernist", id
-  `53a2fd5a-4c0d-4bd7-a71b-a1a46608a3dc`), applied 2026-09-12.** Flat and architectural: one
-  accent (#ec3013) on a warm off-white ground, everything in Archivo, no corner rounded anywhere,
-  strong 2px dividers between regions, button labels flush left, nothing floats, photography in
-  black and white. Its light theme is in `tokens/tokens.json` verbatim; the dark theme is ours,
-  designed on the same warm ink. The design's own `readme.md` / `styles.css` are the reference —
-  read them through DesignSync before changing a surface.
-  - **Icons: Lucide, on all three surfaces (2026-09-12).** The app keeps its Ionicons NAMES —
-    `mobile/src/app/core/icons.ts` registers a Lucide glyph under each (Ionicons checks its
-    registry before fetching an SVG), so a new `<ion-icon name>` either maps there or falls
-    through to the Ionicon with a console warning: **add the mapping**. The site's
-    `public/partials/icon.blade.php` is generated from `lucide`'s node data (take nodes, don't
-    draw). The admin uses `LucideIcon::*` (codewithdennis/filament-lucide-icons) at the resource
-    and `App\Filament\LucideChrome` for Filament's own chrome aliases.
-  - **`.grayscale` imagery: deliberately not applied.** The product has no marketing photography.
-    Its only photographs are evidentiary — a deliverable, an ID document, a chat attachment — and
-    colour is information in every one of them. If marketing photography is ever added it goes
-    through the wrapper; the evidentiary ones never do.
+- **Design system: the HandyMan REDESIGN handoff (2026-09-13).** The spec is the folder
+  `C:\Users\admin\Downloads\Redesign project modernization\design_handoff_handyman_redesign\`:
+  `README.md` (exact tokens, per-screen specs, icon lists) and four `.dc.html` prototypes —
+  Customer App (6 phone screens + a "Before" section to ignore), Customer Web (desktop rail + a
+  three-pane workspace, a proposal), Public Web (home / all services / service detail), Admin
+  (one dashboard). Render them headlessly with the session's `dc-shot.mjs` / `dc-crop.mjs`.
+  - **Modernist (claude.ai/design project `53a2fd5a-…`, red / Archivo / radius 0) was the WRONG
+    design** — applied 2026-09-12, replaced 2026-09-13. The handoff's own sync record says the
+    Modernist directions were "since replaced by the single dark direction". Do not read it again.
+  - The rules that bind: dark only (`#0B0F0E` ground, surface-1/2/3, a rail), accent `#25E08C`
+    with ink on it ALWAYS the ground (`#0B0F0E`, never white), Plus Jakarta Sans 400–800, every
+    number tabular, micro-labels uppercase/800/0.10–0.12em, radii 22–24 cards / 16–18 primary
+    controls / 13–15 small / 999 pills / 50% avatars, chat bubbles `20 20 20 7` in and`20 20 7 20`
+    out, **elevation = a surface step and a 1px line, never a shadow** (one deep shadow on the
+    marketing hero card only), **one filled button per screen**, status ink on a 14% tint of
+    itself, monograms as the photo placeholder. Icons stay Lucide (app: Ionicons names mapped in
+    `core/icons.ts`; site: generated `icon.blade.php`; admin: `LucideIcon::*`).
+  - **Open items the handoff leaves** (recorded, not decided): a light theme (the design is
+    dark-only, so both token slots hold it and the app's appearance setting shows "Dark" as a
+    fact); the desktop customer app (the rail is built; the three-pane workspace and the jobs
+    table are not — "confirm it is wanted"); photography for the site; **the provider app is
+    not designed** and only inherits the tokens and components.
 - **UI quality bar (user-mandated): every UI must be beautiful, professional, perfect.** New UI is
   built to that bar from the start on the design-token system (light+dark, semantic colours,
   no-literal-colour lint).
@@ -318,6 +323,38 @@ green, the tracker did not. Re-run it before believing this paragraph.
 
 ## What was done, most recent first
 
+- **The HandyMan redesign, on every surface** (2026-09-13, three commits: tokens + site, app,
+  admin). The founder: "you used the wrong design" — Modernist was a replaced direction; the
+  real design is the dark-green handoff (see Design debt). Everything Modernist put on the
+  surfaces the day before was redone from the handoff's README and prototypes.
+  - **Tokens** (`tokens/tokens.json`): the handoff palette (ground, three surfaces, a rail, four
+    ink steps, accent + tint + track, status tints), radii 9/13/18/22/28/999, no shadows but the
+    hero's, the type scale; Plus Jakarta Sans self-hosted (latin + latin-ext, ~30kB); Ionic's
+    rgb pairs derived, its dark palette forced; the contrast gate composites translucent tokens
+    and checks the handoff's pairs — every one passes, the white-on-red waiver is gone.
+  - **Site**: the three pages re-laid to the 1440 frame; a small components layer (`.card`,
+    `.btn`, `.chip`, `.pill`, `.icon-tile`, `.eyebrow`); the escrow hero card, the rail-coloured
+    trust strip, eight trade cards (largest first), the professionals band, the one danger tile,
+    FAQ as ruled rows, the 32px accent CTA panel; thirteen more category icons.
+  - **App**: Home leads with escrow + counters, then the one accent card for the job waiting on
+    you, then quiet rows (`JobSummary` gained escrowHeld / released / needsApproval); Discover's
+    tile grid and ruled provider rows; the workspace's 20/7 bubbles, quotation card and 44px
+    send circle; the job detail's split money bar and milestone timeline with the footer's one
+    filled button; Post a request's progress bar and chips; You with three counters and one
+    preferences card (the theme switch is gone — the design is dark-only). The tab bar is the
+    floating inset pill; from 768px the rail is the handoff's desktop rail with count, unread
+    pill, "Post a request" and the account chip. A sweep replaced the Modernist vocabulary
+    everywhere, and found `[font:inherit]` cancelling `font-bold` on 34 direct button labels.
+  - **Admin**: Filament's dark mode forced; the rail on `--rail` with the active item accent-
+    filled, group labels in the faint ink, table headers on the rail fill, badges per the
+    handoff's rule (danger = wrong, warning = SLA queue, neutral = a count); the dashboard's six
+    KPI cards with the escrow one accent-tinted and the exceptions one danger-tinted, the
+    exceptions panel, the 16×5 milestone segments with counts, the 999px stacked ledger bar.
+  - Evidence: captures against the prototypes at 1440 (site: home, services, service detail;
+    admin: dashboard, engagements) and 390 (app: Home, Discover, Chats, Workspace, Job detail,
+    Post a request, You), plus the app rail at 1440. Gates: contrast, colour lint, string lint,
+    i18n parity, Angular lint, Karma 16, backend 562, Pint, PHPStan.
+
 - **Erasure left the identity papers in the bucket; nothing had a retention schedule**
   (2026-09-13, `ErasePartyData`, `ApplyRetention`, `data:retain`, `config/retention.php`).
   P1-10 published `party.erased` "for downstream cleanup in P6" and P6 never subscribed: a
@@ -345,7 +382,7 @@ green, the tracker did not. Re-run it before believing this paragraph.
   page; Guzzle (host-check bypass, cookie scope), commonmark (eight DoS/XSS), Livewire (DOM XSS).
   Updated to Filament 5.8.1, Livewire 4.4.4, Guzzle 7.15.5, commonmark 2.10.1 (framework
   13.20 → 13.31 came with them); audit clean. 557 tests, PHPStan and Pint green; the admin
-  captured after the bump (dashboard, jobs, safety alerts at 1366px) still wears the Modernist
+  captured after the bump (dashboard, jobs, safety alerts at 1366px) still wore the then-current
   skin — stale Filament font files from the previous publish removed.
   - The app had nine of its own (`npm audit --omit=dev`): Angular 20.3.25 — an i18n XSS via
     event-handler attributes, a sanitiser bypass through host bindings, two `HttpTransferCache`

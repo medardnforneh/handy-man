@@ -1,123 +1,174 @@
-/* Admin chrome — brings Filament's shell onto the design tokens so the panel matches the approved
-   proposal. Authored (not generated); every colour resolves to a --hm-color-* variable from
-   tokens.css, which is linked before this file. Both themes follow `data-theme`, mirrored from
-   Filament's `.dark` class by AdminPanelProvider. */
+/* Admin chrome — brings Filament's shell onto the design tokens so the panel matches the handoff
+   ("HandyMan Admin"). Authored (not generated); every colour resolves to a --hm-color-* variable
+   from tokens.css, which is linked before this file. The panel is dark-only, like every other
+   surface (AdminPanelProvider forces Filament's dark mode). */
 
 /* ---- the system's constants, over Filament's own ----
    Filament's compiled Tailwind defines its radius scale in a LAYERED :root block and reads it from
    every component (`.fi-btn { border-radius: var(--radius-lg) }`, and so on). An unlayered
-   declaration on the same element wins whatever the layer says, so this one block squares every
-   corner in the panel — buttons, inputs, badges, modals, sections — without touching a component.
-   Modernist rounds nothing; `--radius-md` is 0 on purpose. */
+   declaration on the same element wins whatever the layer says, so this one block rounds every
+   corner in the panel to the handoff's scale without touching a component. */
 :root {
-    --radius-xs: 0px;
-    --radius-sm: 0px;
-    --radius-md: 0px;
-    --radius-lg: 0px;
-    --radius-xl: 0px;
-    --radius-2xl: 0px;
-    --radius-3xl: 0px;
-    --radius-4xl: 0px;
+    --radius-xs: 9px;
+    --radius-sm: 11px;
+    --radius-md: 13px;
+    --radius-lg: 16px;
+    --radius-xl: 20px;
+    --radius-2xl: 22px;
+    --radius-3xl: 24px;
+    --radius-4xl: 28px;
 }
 
 /* ---- canvas ---- */
 .fi-body {
     background: var(--hm-color-surface-base);
     color: var(--hm-color-text-primary);
+    font-variant-numeric: tabular-nums;
 }
 
-/* Nothing floats: Filament's sections, tables and cards carry a ring and a shadow by default; the
-   system draws a fill and, where a region needs separating, a rule. */
+/* Elevation is a surface step and a 1px line — never a shadow. */
 .fi-section,
 .fi-ta-ctn,
 .fi-fo-field-wrp-hint,
 .fi-in-entry,
-.fi-wi-stats-overview-stat {
+.fi-wi-stats-overview-stat,
+.fi-dropdown-panel,
+.fi-modal-window {
     box-shadow: none;
     --tw-ring-shadow: 0 0 #0000;
     --tw-shadow: 0 0 #0000;
+    border: 1px solid var(--hm-color-border-subtle);
+    background: var(--hm-color-surface-raised);
 }
 
-/* ---- sidebar ---- */
+/* ---- sidebar: the 250px rail (handoff) ---- */
 .fi-sidebar {
-    background: var(--hm-color-surface-base);
-    border-inline-end: var(--hm-rule-strong) solid var(--hm-color-border-strong);
+    background: var(--hm-color-surface-rail);
+    border-inline-end: 1px solid var(--hm-color-border-subtle);
 }
 
 .fi-sidebar-header {
-    background: var(--hm-color-surface-base);
-    border-bottom: var(--hm-rule-strong) solid var(--hm-color-border-strong);
+    background: var(--hm-color-surface-rail);
+    border-bottom: 0;
     box-shadow: none;
 }
 
 .fi-logo {
-    font-weight: 800;
+    font-weight: 700;
     letter-spacing: -0.02em;
     color: var(--hm-color-text-primary);
 }
 
+/* Group labels: 10.5px/800, 0.12em, the faint ink — the one place it is allowed. */
 .fi-sidebar-group-label {
     font-size: 0.66rem;
-    font-weight: 700;
-    letter-spacing: 0.09em;
+    font-weight: 800;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: var(--hm-color-text-muted);
+    color: var(--hm-color-text-faint);
 }
 
 .fi-sidebar-item-btn {
-    border-radius: var(--hm-radius-sm);
-    color: var(--hm-color-text-muted);
-    font-weight: 500;
-}
-
-.fi-sidebar-item-btn:hover {
-    background: var(--hm-color-surface-sunken);
-    color: var(--hm-color-text-primary);
-}
-
-/* The active item is the accent on a tint — the system's own tag treatment, squared. */
-.fi-sidebar-item.fi-active > .fi-sidebar-item-btn,
-.fi-sidebar-item-btn[aria-current='page'] {
-    background: color-mix(in srgb, var(--hm-color-brand-primary) 12%, transparent);
-    color: var(--hm-color-brand-strong);
+    border-radius: 13px;
+    color: var(--hm-color-text-secondary);
     font-weight: 600;
 }
 
+.fi-sidebar-item-btn:hover {
+    background: var(--hm-color-surface-raised);
+    color: var(--hm-color-text-primary);
+}
+
+/* The active item is the rail's one accent fill, ink always the ground. */
+.fi-sidebar-item.fi-active > .fi-sidebar-item-btn,
+.fi-sidebar-item-btn[aria-current='page'] {
+    background: var(--hm-color-brand-primary);
+    color: var(--hm-color-brand-onPrimary);
+    font-weight: 700;
+}
+
 .fi-sidebar-item.fi-active .fi-sidebar-item-icon,
-.fi-sidebar-item-btn[aria-current='page'] .fi-sidebar-item-icon {
-    color: var(--hm-color-brand-primary);
+.fi-sidebar-item.fi-active .fi-sidebar-item-label,
+.fi-sidebar-item-btn[aria-current='page'] .fi-sidebar-item-icon,
+.fi-sidebar-item-btn[aria-current='page'] .fi-sidebar-item-label {
+    color: var(--hm-color-brand-onPrimary);
+}
+
+/* Badges on the rail: danger for what is wrong, warning for a queue under SLA pressure,
+   surface-2 for a neutral count (handoff "Badge rule"). Filament colours them; round them. */
+.fi-sidebar-item-badge-ctn .fi-badge {
+    border-radius: 999px;
+    font-weight: 800;
 }
 
 /* ---- topbar ----
-   A bar on the ground colour ending in the system's 2px rule. It used to be frosted glass; the
-   Modernist direction is that nothing floats, and the rule does the organising.
-
-   One caution kept from the glass days: never put `backdrop-filter` (or transform, filter,
-   perspective, contain, will-change) on `.fi-topbar-ctn` itself. It makes the bar the containing
-   block for every `position: fixed` descendant, and Filament's Floating-UI dropdowns then resolve
-   their viewport coordinates against the bar — the profile menu opened at `top: -125px`. */
+   Never put `backdrop-filter` (or transform, filter, perspective, contain, will-change) on
+   `.fi-topbar-ctn` itself: it becomes the containing block for every `position: fixed`
+   descendant, and Filament's Floating-UI dropdowns then resolve against the bar. */
 .fi-topbar > nav,
 .fi-topbar-ctn {
     background: var(--hm-color-surface-base);
-    border-bottom: var(--hm-rule-strong) solid var(--hm-color-border-strong);
+    border-bottom: 1px solid var(--hm-color-border-subtle);
     box-shadow: none;
 }
 
 /* ---- page ---- */
 .fi-main {
-    max-width: 1240px;
+    max-width: 1320px;
 }
 
 .fi-header-heading {
-    letter-spacing: -0.02em;
     font-weight: 800;
+    letter-spacing: -0.025em;
 }
 
-/* The dashboard widget owns its own cards — don't double up Filament's section chrome. */
-.fi-page-content .fi-wi,
-.fi-page-content .fi-wi > .fi-section {
-    background: transparent;
-    border: 0;
+/* Buttons: 700, the primary on the accent with the ground as ink, the rest bordered. */
+.fi-btn {
+    font-weight: 700;
     box-shadow: none;
-    padding: 0;
+}
+
+.fi-btn.fi-color-primary {
+    color: var(--hm-color-brand-onPrimary);
+}
+
+/* Tables: the rail fill under column headers, soft lines between rows. */
+.fi-ta-header-cell {
+    background: var(--hm-color-surface-rail);
+}
+
+.fi-ta-header-cell-label {
+    font-size: 0.66rem;
+    font-weight: 800;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--hm-color-text-faint);
+}
+
+.fi-ta-row {
+    border-color: var(--hm-color-border-soft);
+}
+
+.fi-ta-row:hover {
+    background: var(--hm-color-surface-sunken);
+}
+
+/* Inputs: surface-1 inside the line, the line turning accent on focus. */
+.fi-input-wrp {
+    background: var(--hm-color-surface-raised);
+    box-shadow: none;
+    --tw-ring-shadow: 0 0 #0000;
+    border: 1px solid var(--hm-color-border-subtle);
+}
+
+.fi-input-wrp:focus-within {
+    border-color: var(--hm-color-brand-primary);
+}
+
+/* Status badges as pills. */
+.fi-badge {
+    border-radius: 999px;
+    font-weight: 700;
+    box-shadow: none;
+    --tw-ring-shadow: 0 0 #0000;
 }

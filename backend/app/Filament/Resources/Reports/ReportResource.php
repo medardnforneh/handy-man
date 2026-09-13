@@ -62,6 +62,12 @@ class ReportResource extends Resource
         return $open > 0 ? (string) $open : null;
     }
 
+    /** Handoff badge rule: danger for what is wrong, warning for a queue under SLA pressure, neutral for a count. */
+    public static function getNavigationBadgeColor(): string
+    {
+        return 'warning';
+    }
+
     public static function canCreate(): bool
     {
         return false;
