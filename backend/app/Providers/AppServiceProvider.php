@@ -7,6 +7,7 @@ namespace App\Providers;
 use App\Domain\Engagements\Policies\EngagementPolicy;
 use App\Domain\Identity\Otp\LogOtpSender;
 use App\Domain\Identity\Otp\OtpSender;
+use App\Domain\Identity\Otp\SmsOtpSender;
 use App\Domain\Reference\Policies\NotePolicy;
 use App\Listeners\RecordLastLogin;
 use App\Models\Engagement;
@@ -15,6 +16,7 @@ use Illuminate\Auth\Events\Login;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
+use InvalidArgumentException;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -31,8 +33,16 @@ class AppServiceProvider extends ServiceProvider
 
     public function register(): void
     {
-        // OTP delivery — LogOtpSender in dev; the comms layer (doc 07) swaps in WhatsApp/SMS.
-        $this->app->bind(OtpSender::class, LogOtpSender::class);
+        // OTP delivery: the log in dev, the SMS rail (notifications.sms) anywhere real.
+        $this->app->bind(OtpSender::class, function ($app): OtpSender {
+            $driver = (string) config('otp.sender', 'log');
+
+            return match ($driver) {
+                'log' => new LogOtpSender,
+                'sms' => $app->make(SmsOtpSender::class),
+                default => throw new InvalidArgumentException("Unknown OTP sender: {$driver}"),
+            };
+        });
     }
 
     public function boot(): void

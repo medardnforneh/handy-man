@@ -802,7 +802,8 @@
     }
   },
   "sms": {
-    "panic_alert": "SAFETY ALERT: :name triggered a panic alert. Location: :location"
+    "panic_alert": "SAFETY ALERT: :name triggered a panic alert. Location: :location",
+    "otp": "Your HandyMan code: :code. Valid :minutes min. Never share it."
   },
   "share": {
     "heading": "Live job status",

@@ -68,7 +68,7 @@ Task IDs come from `docs/05-build-plan.md`.
 | ID | Task | Status |
 |---|---|---|
 | P1-01 | parties/users/orgs/memberships + kind trigger | **DONE** — UUID identity per doc 02 (reconciled P0 bigint→UUID: Spatie morph/team keys, notes, idempotency, sessions all UUID); native enums `party_kind`/`user_status`/`membership_role`; constraint trigger rejects user↔org-kind mismatch at DB; phone-primary, OTP-first (password optional); 7 tests. `TestCase::$dropTypes` so RefreshDatabase drops enum types |
-| P1-02 | OTP signup/login + rate limits | **DONE** — `otp_challenges` (hashed codes), `RequestOtp`/`VerifyOtp` actions, phone 3/hr + IP 10/hr + device 5/hr limits, hard-lock after 5 wrong verifies (attempt increment persists outside txn), find-or-create user on first verify; `POST /v1/auth/otp/{request,verify}`; 6 tests incl. 4th-request-rejected. Also fixed pgsql session **timezone→UTC** (timestamptz was shifting by +1h, breaking tight windows) |
+| P1-02 | OTP signup/login + rate limits | **DONE** — `otp_challenges` (hashed codes), `RequestOtp`/`VerifyOtp` actions, phone 3/hr + IP 10/hr + device 5/hr limits, hard-lock after 5 wrong verifies (attempt increment persists outside txn), find-or-create user on first verify; `POST /v1/auth/otp/{request,verify}`; 6 tests incl. 4th-request-rejected. **The code reaches a phone since 2026-09-13**: `OTP_SENDER=sms` → `SmsOtpSender` over the SMS rail (`OtpOverSmsTest`); before that the only sender was the log, in every environment. Also fixed pgsql session **timezone→UTC** (timestamptz was shifting by +1h, breaking tight windows) |
 | P1-03 | Sanctum access + rotating refresh tokens + reuse detection | **DONE** — Sanctum 15m access tokens (uuid tokenable); `refresh_tokens` (opaque 256-bit, sha256-hashed, 30d, family rotation); `IssueAuthTokens`/`RotateRefreshToken`; **replaying a rotated token revokes the whole family + wipes access tokens** (revocation persists outside txn); tokens issued on OTP verify; `POST /v1/auth/refresh`, `GET /me`, `POST /logout`; reference routes → `auth:sanctum`; `ProblemAware` interface unifies error rendering; 7 tests |
 | P1-04 | devices registration + push token capture | **DONE** — `devices` (id == client X-Device-Id, upsert), `RegisterDevice` action (moves a push token to the newest device), `POST /v1/devices` (auth:sanctum); captures platform/push_token/app_version; 5 tests |
 | P1-05 | consents (granular/versioned/revocable + presented_locale) | **DONE** — append-only `consents` log (terms/privacy/location_tracking/id_verification/marketing), policy_version, presented_locale (CHECK fr/en); `ConsentState` (latest-per-purpose), `ConsentGuard` blocks geo writes when location_tracking revoked → `consent_required` problem+json (`missing_purpose`); `GET/POST /v1/consents`; `ProvidesProblemExtras` interface |
@@ -163,7 +163,7 @@ registered yet — it must be set before the first store build, or the native ap
 | P6-07 | `reports` + `blocks`; blocks honoured in search, ranking, offers | **DONE** — `reports` (category incl. first-class `off_platform`; not-self CHECK; feeds admin queue + `report.filed` outbox alert, never auto-penalises) + `blocks` (composite PK, not-self CHECK). `Block::partyIdsAround`/`existsBetween` honour a block **bidirectionally**; wired into **all three paths** — `ProviderSearch` (search + ranking) excludes blocked parties, `CreateDirectOffer` refuses (`PartyBlocked` 422). `BlockParty`/`UnblockParty`/`ReportParty`; `GET/POST/DELETE /v1/blocks`, `POST /v1/reports`; Filament report queue. OpenAPI + TS client. 6 tests incl. **block honoured in search (either direction) + offer refused** |
 | P6-08 | Reviews: double-blind, 14-day window, simultaneous reveal | **DONE** — `reviews` (native `review_visibility`; UNIQUE(engagement, author); not-self + 1–5 CHECKs; `private_note` never published). `SubmitReview` rests each review `pending` — content withheld even from an API peek — until BOTH parties submit (revealed at once) or the shared window closes; the first submission fixes `window_closes_at`, the second inherits it. `RevealDueReviews` + `reviews:reveal` command publish a lone review when its 14-day window expires. `POST /v1/engagements/{engagement}/reviews`; public `GET /v1/providers/{party}/reviews` (published only). OpenAPI + TS client. Tests incl. **hidden-until-both, window-expiry reveal, dup 409, non-party 403** |
 | P6-09 | Bayesian shrinkage rating display | **DONE** — `RatingCalculator` shrinks toward the prior mean (4.0, weight 10 pseudo-reviews): `(w·mean + Σ)/(w + n)`; recomputed into `provider_profiles.rating_avg` (shrunk) + `rating_count` (RAW, for P6-12's sample-size floor) on every publish. Test: **1×5★ → 4.09 ranks below 200×4.8 → 4.76; unrated shows null, not the bare prior** |
-| P6-04 | Panic button + `safety_alerts` + emergency contact SMS + admin alert | **DONE** — `safety_alerts` (native `safety_alert_kind`; geo point; status open/acknowledged/resolved, resolution attributed to a named admin) + `emergency_contacts` (citext phone). `RaisePanicAlert` (one request) creates the alert, **texts every emergency contact directly** (not via the relay — a panic mustn't wait for a queue) and alerts staff via `safety.alert_raised` outbox — all server-side, so it **works with the app backgrounded**. New `SmsSender` rail (Fake/Log, config-selected — mirrors the push rail); panic SMS copy through i18n (`sms.panic_alert`, per comms locale). `POST /v1/safety/panic`, `GET/POST/DELETE /v1/emergency-contacts`; Filament safety-alert queue (danger badge, acknowledge/resolve). OpenAPI + TS client. 5 tests incl. **all contacts texted + staff alerted + no-contacts still records** |
+| P6-04 | Panic button + `safety_alerts` + emergency contact SMS + admin alert | **DONE** — `safety_alerts` (native `safety_alert_kind`; geo point; status open/acknowledged/resolved, resolution attributed to a named admin) + `emergency_contacts` (citext phone). `RaisePanicAlert` (one request) creates the alert, **texts every emergency contact directly** (not via the relay — a panic mustn't wait for a queue) and alerts staff via `safety.alert_raised` outbox — all server-side, so it **works with the app backgrounded**. New `SmsSender` rail (Fake/Log/**Twilio** since 2026-09-13, config-selected — mirrors the push rail; `TwilioSmsSenderTest` proves a fan-out survives one dead number); panic SMS copy through i18n (`sms.panic_alert`, per comms locale). `POST /v1/safety/panic`, `GET/POST/DELETE /v1/emergency-contacts`; Filament safety-alert queue (danger badge, acknowledge/resolve). OpenAPI + TS client. 5 tests incl. **all contacts texted + staff alerted + no-contacts still records** |
 | P6-05 | Share-my-job signed expiring link | **DONE** — `engagement_shares` (opaque token stored **hashed**; expiring + revocable). `CreateEngagementShare` (participant-gated: customer or assigned worker; onsite/hybrid only via `supportsShareJob`, remote → 422) mints a link; a **public, tokenised Blade page** (`/s/{token}`) renders read-only, PII-minimised status — provider first name, approximate location (quarter/city), live status from `work_sessions` — a stale/revoked token is 404. `POST /v1/engagements/{engagement}/share`, `DELETE /v1/engagement-shares/{share}`; i18n `share.*` (parity OK); no-literal-colour + no-bare-string linters clean. 5 tests |
 | P6-06 | Check-in-overdue watchdog | **DONE** — `RaiseOverdueCheckIns` + `safety:check-in-watchdog` command: an assignment past `scheduled_from` + grace with **no `work_session`** (never checked in) on an onsite/hybrid job raises a `check_in_overdue` `safety_alert` + `safety.alert_raised` outbox — deduped against an open alert, mode-gated via the policy. Reuses the P5-03 audit trail. 5 tests incl. **overdue-flagged, checked-in-not-flagged, remote-skipped, within-grace-skipped, dedupe** |
 | P6-10 | Dispute flow + admin adjudication → balanced adjustment txn | **DONE** — `disputes` (category/status CHECKs; links `resolution_transaction_id` + `resolved_by_user_id`). `RaiseDispute` (party-gated; `dispute.raised` outbox, never auto-moves money); `AdjudicateDispute` — a human decision that, when it moves money, posts a **balanced `Adjustment` ledger transaction stamped with the admin's id** and referenced to the dispute (mirrors `ResolveReconciliationException`), else resolves with no ledger effect; writes `dispute.adjudicated` to the audit log; once-only. `POST /v1/engagements/{engagement}/disputes`, `GET /v1/disputes`; Filament dispute queue (adjudicate = resolve/reject + note). 5 tests incl. **balanced adjustment attributable to a named admin + no-money dismissal** |
@@ -317,6 +317,26 @@ This section stayed at "25 open" for almost a month after the last gap closed �
 green, the tracker did not. Re-run it before believing this paragraph.
 
 ## What was done, most recent first
+
+- **SMS through Twilio — and the sign-in code finally reaching a phone** (2026-09-13,
+  `TwilioSmsSender`, `SmsOtpSender`). The SMS rail (`SmsSender`) had Fake and Log only. Worse,
+  and found while wiring it: **the OTP had never had any sender but the log**. `AppServiceProvider`
+  bound `OtpSender` to `LogOtpSender` unconditionally, in every environment — a deployed build
+  would have taken the phone number, written the code to a file, and left every single person on
+  the verify screen for ever. Nothing in the launch checklist would have caught it: the OTP tests
+  read the code from the fake, and the dev flow reads it from `dev_code`.
+  - `otp.sender` (`OTP_SENDER=log|sms`) now chooses; `sms` composes the general SMS rail, so the
+    aggregator is picked once for OTPs, panic alerts and follow-ups. The OTP text is one line per
+    language, unaccented (GSM-7 — accents halve a segment), French first to a stranger, one line
+    to someone whose `comms_locale` is known; both lines together fit one 160-character segment.
+  - `TwilioSmsSender`: Programmable Messaging, basic auth, `From` or `MessagingServiceSid` by the
+    sender's shape; never throws — unreachable, a bad token, a landline (21614) / invalid (21211)
+    / opted-out (21610) number are logged and dropped, the recipient-side codes at `info`.
+  - Evidence: `TwilioSmsSenderTest` (4: form + auth + URL, sender kinds, the three failure modes
+    never throw, a panic fan-out where one dead number does not stop the other);
+    `OtpOverSmsTest` (3: the binding follows config, `RequestOtp` texts the code, the bilingual
+    copy and its GSM-7 budget). Never sent a real text — pends a Twilio account and sender.
+    The deploy example now says `OTP_SENDER=sms`, with the consequence of `log` spelled out.
 
 - **WhatsApp through Meta's Cloud API** (2026-09-13, `MetaWhatsAppSender`, `WHATSAPP_SENDER=meta`).
   The workhorse channel had interfaces, a ladder and a `log` driver, and nothing that could reach
@@ -2230,6 +2250,16 @@ approval flow that raises `verification_tier` (P6).
   from the operator prefix, overridable), the CinetPay adapter names the operator (`MTNCM`/`OMCM` —
   confirm against the live sandbox), `GET /meta.payment_methods`, a rail choice pre-selected on the
   app's three money sheets, admin columns, public copy. Cash stays the settlement path (P3-12).
+
+- **SMS aggregator (2026-09-13): Twilio for now, a local aggregator when price says so.** The
+  adapter is Twilio because its API could be written against without guessing and reaches every
+  MTN and Orange number; it is also the dearest per text (roughly ten times a Cameroonian
+  aggregator's rate). Volume is OTPs, panic alerts and the ladder's last rung — small — so cost
+  is not the launch question. When it becomes one, a local aggregator (Nexah, Orange's SMS API,
+  or whichever the founder can open an account with) is one more class behind `SmsSender`,
+  selected by `SMS_SENDER`; nothing else moves. Needs a founder decision only on the sender id:
+  the alphanumeric `HandyMan` (no reply path; what the deploy example assumes) or a purchased
+  number people can text back.
 
 - **Primary button label contrast (founder decision, 2026-09-12).** White on the brand red
   `#ec3013` is 3.76:1; WCAG AA wants 4.5:1 for a 14px label and no label colour gets there on

@@ -104,8 +104,11 @@ days" and "payout tested with real money, and reversed" run on.
 - **WhatsApp** has its adapter (`WHATSAPP_SENDER=meta`, the Cloud API, doc 07 "The WhatsApp
   template") but has never spoken to Meta: it pends a Business portfolio, a System User token
   and the `handyman_follow_up` template approved in fr + en. Until then `log`.
-- **SMS adapter** does not exist: `notifications.php` offers `fake` and `log` only. The interface
-  (`SmsSender`) and the channel ladder are in place; an aggregator adapter is the missing code.
+- **SMS** goes through Twilio (`SMS_SENDER=twilio`) — the OTP (`OTP_SENDER=sms`), panic alerts
+  and the ladder's last rung. It has never sent a real text: pends an account, a sender (the
+  alphanumeric `HandyMan` or a number) and a first paid message to an MTN and an Orange number.
+  Twilio is the expensive option per text; a Cameroonian aggregator, chosen for price once volume
+  says so, is another class behind the same interface.
 - **FCM** has an adapter that expects a pre-obtained access token; a service-account exchange is
   the deploy-time piece.
 - **CinetPay operator codes** (`MTNCM` / `OMCM`) and the webhook token field order are to be

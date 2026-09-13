@@ -14,6 +14,7 @@ use App\Domain\Notifications\LogWhatsAppSender;
 use App\Domain\Notifications\MetaWhatsAppSender;
 use App\Domain\Notifications\PushSender;
 use App\Domain\Notifications\SmsSender;
+use App\Domain\Notifications\TwilioSmsSender;
 use App\Domain\Notifications\WhatsAppSender;
 use App\Events\OutboxMessagePublished;
 use Illuminate\Support\Facades\Event;
@@ -56,6 +57,12 @@ final class NotificationsServiceProvider extends ServiceProvider
             return match ($driver) {
                 'fake' => $app->make(FakeSmsSender::class),
                 'log' => new LogSmsSender,
+                'twilio' => new TwilioSmsSender(
+                    accountSid: (string) config('notifications.twilio.account_sid'),
+                    authToken: (string) config('notifications.twilio.auth_token'),
+                    from: (string) config('notifications.twilio.from'),
+                    baseUrl: (string) config('notifications.twilio.base_url'),
+                ),
                 default => throw new InvalidArgumentException("Unknown SMS sender: {$driver}"),
             };
         });

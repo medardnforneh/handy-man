@@ -16,10 +16,20 @@ return [
     |--------------------------------------------------------------------------
     | Active SMS sender
     |--------------------------------------------------------------------------
-    | Emergency-contact texts (panic alerts) ride this. 'fake' in tests, 'log' in
-    | local dev, a real aggregator in prod. The app depends only on the interface.
+    | OTPs (when `otp.sender` is 'sms'), emergency-contact texts (panic alerts) and the last rung
+    | of the follow-up ladder ride this. 'fake' in tests, 'log' in local dev, 'twilio' in prod.
+    | The app depends only on the interface.
     */
     'sms' => env('SMS_SENDER', 'fake'),
+
+    'twilio' => [
+        'account_sid' => env('TWILIO_ACCOUNT_SID', ''),
+        'auth_token' => env('TWILIO_AUTH_TOKEN', ''),
+        // A purchased number (E.164), an alphanumeric sender id ("HandyMan" — supported for
+        // Cameroon, no reply path), or a Messaging Service SID (MG…).
+        'from' => env('TWILIO_FROM', ''),
+        'base_url' => env('TWILIO_BASE_URL', 'https://api.twilio.com'),
+    ],
 
     /*
     |--------------------------------------------------------------------------

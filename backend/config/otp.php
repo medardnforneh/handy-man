@@ -18,4 +18,8 @@ return [
 
     'purposes' => ['signup', 'login', 'phone_change'],
 
+    // How the code reaches the phone: 'log' (dev — and with APP_ENV=local the API echoes it as
+    // dev_code) or 'sms' (the notifications.sms rail). A deployed build MUST be 'sms'.
+    'sender' => env('OTP_SENDER', 'log'),
+
 ];

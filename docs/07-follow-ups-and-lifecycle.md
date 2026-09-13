@@ -185,6 +185,11 @@ re-submitted. The app answers `/follow-up/{id}` (`followUpGuard`): it records th
 `opened` — which is how this channel's response rate is measured — and opens the job the nudge
 was about.
 
+The SMS rung — and the sign-in code, and a panic alert's fan-out — ride `SmsSender`, Twilio
+for now (`SMS_SENDER=twilio`, `OTP_SENDER=sms`; the aggregator choice is recorded in the
+tracker's open decisions). SMS copy is plain text, unaccented: GSM-7 keeps a text in one
+160-character segment, an accent drops it to 70.
+
 Operationally: `WHATSAPP_SENDER=meta`, a permanent **System User** token with
 `whatsapp_business_messaging` (not the 24-hour test token from the API setup page) in
 `WHATSAPP_ACCESS_TOKEN`, and the business phone number's **ID** in `WHATSAPP_PHONE_NUMBER_ID`.
