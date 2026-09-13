@@ -72,8 +72,12 @@ return [
     'fcm' => [
         // FCM HTTP v1: https://fcm.googleapis.com/v1/projects/{project_id}/messages:send
         'project_id' => env('FCM_PROJECT_ID', ''),
-        // A pre-obtained OAuth2 access token (or service-account exchange, wired at deploy). Kept out
-        // of the domain so the sender stays a thin HTTP adapter — live delivery pends real creds.
+        // The service-account JSON from the Firebase console (Project settings → Service accounts →
+        // Generate new private key): either its path, or the JSON itself base64-encoded into the
+        // environment. `FcmAccessToken` exchanges it for the hourly bearer token and caches it.
+        'service_account_file' => env('FCM_SERVICE_ACCOUNT_FILE', ''),
+        'service_account_json' => env('FCM_SERVICE_ACCOUNT_JSON', ''),
+        // A pre-obtained access token instead — a one-off or a test; it expires within the hour.
         'access_token' => env('FCM_ACCESS_TOKEN', ''),
         'base_url' => env('FCM_BASE_URL', 'https://fcm.googleapis.com'),
     ],

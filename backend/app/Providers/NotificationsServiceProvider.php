@@ -7,6 +7,7 @@ namespace App\Providers;
 use App\Domain\Notifications\FakePushSender;
 use App\Domain\Notifications\FakeSmsSender;
 use App\Domain\Notifications\FakeWhatsAppSender;
+use App\Domain\Notifications\FcmAccessToken;
 use App\Domain\Notifications\FcmPushSender;
 use App\Domain\Notifications\Listeners\NotifyOnOutboxMessage;
 use App\Domain\Notifications\LogSmsSender;
@@ -41,7 +42,7 @@ final class NotificationsServiceProvider extends ServiceProvider
                 'fake' => $app->make(FakePushSender::class),
                 'fcm' => new FcmPushSender(
                     projectId: (string) config('notifications.fcm.project_id'),
-                    accessToken: (string) config('notifications.fcm.access_token'),
+                    auth: $this->fcmAccessToken(),
                     baseUrl: (string) config('notifications.fcm.base_url'),
                 ),
                 default => throw new InvalidArgumentException("Unknown push sender: {$driver}"),
@@ -94,5 +95,31 @@ final class NotificationsServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Event::listen(OutboxMessagePublished::class, NotifyOnOutboxMessage::class);
+    }
+
+    /**
+     * The service account wins when one is configured (a file, or the JSON base64-encoded into the
+     * environment); a static token is the fallback for a one-off. Misconfiguration surfaces here,
+     * at boot of the sender, not as a silent no-op per push.
+     */
+    private function fcmAccessToken(): FcmAccessToken
+    {
+        $file = (string) config('notifications.fcm.service_account_file');
+        $inline = (string) config('notifications.fcm.service_account_json');
+
+        $json = match (true) {
+            $file !== '' => (string) file_get_contents($file),
+            $inline !== '' => (string) base64_decode($inline, true),
+            default => '',
+        };
+
+        if ($json !== '') {
+            /** @var array<string, mixed> $decoded */
+            $decoded = json_decode($json, true, 512, JSON_THROW_ON_ERROR);
+
+            return FcmAccessToken::serviceAccount($decoded);
+        }
+
+        return FcmAccessToken::static((string) config('notifications.fcm.access_token'));
     }
 }

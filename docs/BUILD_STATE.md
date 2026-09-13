@@ -318,6 +318,23 @@ green, the tracker did not. Re-run it before believing this paragraph.
 
 ## What was done, most recent first
 
+- **FCM: the service-account exchange, and dead tokens cleared** (2026-09-13, `FcmAccessToken`,
+  `FcmPushSender`). The push adapter expected a pre-obtained OAuth token from the environment —
+  a token Google issues for one hour, so in production it would have worked for the first hour
+  after deploy and then silently returned 0 for every push. Now the app holds the service-account
+  JSON (`FCM_SERVICE_ACCOUNT_JSON`, base64, or a file), signs the RS256 JWT itself (no library
+  for one claim set), exchanges it, caches the bearer 55 min, re-mints once on a 401 mid fan-out,
+  and never throws when Google is down. A registration token FCM reports `UNREGISTERED` /
+  `NOT_FOUND` is nulled on its device row in the one place that learns it, so `ChannelLadder`
+  stops choosing push for that phone and falls through to WhatsApp instead of sending every
+  nudge into a void.
+  - Evidence: `FcmPushSenderTest` (5: the JWT's claims and signature verified against the public
+    key, one exchange per fan-out, the FCM request shape; a gone token cleared and the live one
+    kept; 401 → re-mint → retry; no token → nothing sent, nothing thrown; the provider builds
+    from the env and rejects a service account without a private key). Test key in
+    `tests/Fixtures` because PHP on Windows cannot mint one without an openssl.cnf.
+    Never pushed to a real device — pends the Firebase project and a physical phone.
+
 - **SMS through Twilio — and the sign-in code finally reaching a phone** (2026-09-13,
   `TwilioSmsSender`, `SmsOtpSender`). The SMS rail (`SmsSender`) had Fake and Log only. Worse,
   and found while wiring it: **the OTP had never had any sender but the log**. `AppServiceProvider`
@@ -371,8 +388,8 @@ green, the tracker did not. Re-run it before believing this paragraph.
     had the framework's `inspire` and nothing else. In production no follow-up would ever send,
     no offer expire, no stuck payment resolve, no review reveal. `routes/console.php` now carries
     the schedule (`schedule:list` shows twelve entries); `outbox:relay` and `horizon` are daemons.
-  - Honest gaps listed in doc 11: **SMS has no real adapter** (fake/log only; WhatsApp's came
-    the same day, above), FCM wants a token exchange, CinetPay operator codes to confirm on the sandbox, local disk for
+  - Honest gaps listed in doc 11: **SMS, WhatsApp and the FCM token exchange were missing** (all three landed
+    the same day, above), CinetPay operator codes to confirm on the sandbox, local disk for
     uploads, no log shipping.
 
 - **Nothing ever moved a job past `engaged`** (2026-09-13). Found by writing the launch-checklist

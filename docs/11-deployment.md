@@ -109,8 +109,11 @@ days" and "payout tested with real money, and reversed" run on.
   alphanumeric `HandyMan` or a number) and a first paid message to an MTN and an Orange number.
   Twilio is the expensive option per text; a Cameroonian aggregator, chosen for price once volume
   says so, is another class behind the same interface.
-- **FCM** has an adapter that expects a pre-obtained access token; a service-account exchange is
-  the deploy-time piece.
+- **FCM** exchanges the Firebase service account for its hourly bearer itself
+  (`FcmAccessToken`, cached 55 min, re-minted on a 401) and clears a registration token Google
+  reports as gone. Never pushed to a real device: pends the Firebase project, the service-account
+  JSON in `FCM_SERVICE_ACCOUNT_JSON`, and the Android app registering a token through
+  `POST /devices` on a physical phone (launch checklist).
 - **CinetPay operator codes** (`MTNCM` / `OMCM`) and the webhook token field order are to be
   confirmed against the live sandbox — the adapter says so in its own comments.
 - **Object storage**: local disk for v1 (see above).
