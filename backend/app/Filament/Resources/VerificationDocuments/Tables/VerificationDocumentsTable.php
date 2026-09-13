@@ -30,6 +30,7 @@ class VerificationDocumentsTable
                 ]),
                 TextColumn::make('created_at')->dateTime()->sortable(),
                 TextColumn::make('reviewed_at')->dateTime()->placeholder('—')->toggleable(),
+                TextColumn::make('purged_at')->label('Bytes purged')->dateTime()->placeholder('—')->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 SelectFilter::make('status')
@@ -44,6 +45,8 @@ class VerificationDocumentsTable
                     ->icon(LucideIcon::Eye)
                     // Signed short-TTL URL; opening it streams the file through the route that logs the view.
                     ->url(fn (VerificationDocument $record): string => app(SignedDocumentUrl::class)->for($record))
+                // Purged bytes (retention, erasure) cannot be opened; the row stays for the audit.
+                    ->hidden(fn (VerificationDocument $record): bool => $record->purged_at !== null)
                     ->openUrlInNewTab(),
                 Action::make('approve')
                     ->icon(LucideIcon::CircleCheck)

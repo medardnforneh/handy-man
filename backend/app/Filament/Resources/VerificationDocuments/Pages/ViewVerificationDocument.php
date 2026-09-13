@@ -25,6 +25,8 @@ class ViewVerificationDocument extends ViewRecord
                 ->label('Open document')
                 ->icon(LucideIcon::Eye)
                 ->url(fn (VerificationDocument $record): string => app(SignedDocumentUrl::class)->for($record))
+                // Purged bytes (retention, erasure) cannot be opened; the row stays for the audit.
+                ->hidden(fn (VerificationDocument $record): bool => $record->purged_at !== null)
                 ->openUrlInNewTab(),
             Action::make('approve')
                 ->icon(LucideIcon::CircleCheck)

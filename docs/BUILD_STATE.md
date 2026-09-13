@@ -77,7 +77,7 @@ Task IDs come from `docs/05-build-plan.md`.
 | P1-07 + P1-07b | bilingual skills taxonomy + language-matched FTS | **DONE** — self-referencing `skills` (name_fr/name_en, slug citext, risk_tier 1–3, requires_license); `SkillsSeeder` = 41 leaves / 13 categories real Cameroon trades, both languages; `Skill::scopeSearch` uses the **matching french/english FTS config** (GIN indexes per language); public `GET /v1/skills` + `/skills/search`; `DatabaseSeeder` runs staff roles + skills; 6 tests |
 | P1-08 | provider_profiles + provider_skills + service_areas | **DONE** — 3 tables (service_areas geography+GIST; provider_skills price_model enum); `CreateProviderProfile` (always allowed, doc 10), `AddProviderSkill` (gated on `has_provider_profile` via `ListSkill` capability → precondition_unmet), `SetServiceArea` (location_tracking consent). **Wired REAL fact resolvers** in AccessServiceProvider: has_provider_profile, skill_listed, identity_verified (from verification_tier) — P0-17 now data-driven. 5 tests |
 | P1-09 | Filament 5 admin panel + mandatory 2FA + admin roles | **DONE** — Filament 5.7, `/admin` gated by `canAccessPanel` (staff roles only, never customer/provider), **mandatory TOTP 2FA** (`multiFactorAuthentication(..., isRequired: true)` — can't reach dashboard un-enrolled), recovery codes; `ProviderProfileResource`; User implements FilamentUser/HasName/HasAppAuthentication(+Recovery); **Spatie teams turned OFF** (org roles live in `memberships.role` per doc 02; Spatie = global staff only); 4 tests |
-| P1-10 | DSAR export + crypto-shred erasure | **DONE** — per-party `data_key` (encrypted, minted on party creation); `ErasePartyData` destroys the key, nulls/tombstones identifiers, deletes PII rows, but KEEPS the party row + id (ledger FKs survive) and announces `party.erased` via outbox; `ExportPersonalData` (DSAR); `DELETE /v1/me`, `GET /v1/me/data-export`; 3 tests |
+| P1-10 | DSAR export + crypto-shred erasure | **DONE** — per-party `data_key` (encrypted, minted on party creation); `ErasePartyData` destroys the key, nulls/tombstones identifiers, deletes PII rows (since 2026-09-13 also the identity papers' bytes and the emergency contacts — `ErasureTest`), but KEEPS the party row + id (ledger FKs survive) and announces `party.erased` via outbox; `ExportPersonalData` (DSAR); `DELETE /v1/me`, `GET /v1/me/data-export`; 3 tests |
 
 ### Phase 2 — Jobs, offers, engagements (direct booking)
 
@@ -317,6 +317,27 @@ This section stayed at "25 open" for almost a month after the last gap closed �
 green, the tracker did not. Re-run it before believing this paragraph.
 
 ## What was done, most recent first
+
+- **Erasure left the identity papers in the bucket; nothing had a retention schedule**
+  (2026-09-13, `ErasePartyData`, `ApplyRetention`, `data:retain`, `config/retention.php`).
+  P1-10 published `party.erased` "for downstream cleanup in P6" and P6 never subscribed: a
+  person who exercised their right to erasure had their ID scans kept, decryptable, for ever —
+  and their emergency contacts (other people's names and numbers) with them. Doc 04's "keep a
+  documented retention schedule" had no schedule and nothing to apply one.
+  - Erasure now purges every verification document's bytes after commit (`VerificationStorage::
+    purge`: object deleted, row kept with `purged_at` — who reviewed what, and the sha256 that
+    recognises the same paper re-uploaded) and deletes the emergency contacts.
+  - `config/retention.php` is the schedule, in days from the moment the purpose ended, and is the
+    register's answer to "for how long": rejected/expired identity documents 30, work-session
+    coordinates 90 (the session stays), spent OTPs 1, expired idempotency records 0, revoked or
+    expired refresh tokens 30. `data:retain` applies it nightly at 03:00 and logs every count
+    (`retention.applied`) so the log is the evidence the schedule runs. Admin hides "Open" on a
+    purged document and can show the purge date.
+  - Evidence: `RetentionTest` (4: each rule takes what is past the line and leaves what is a day
+    inside it, is idempotent, is on the schedule, reports every rule); `ErasureTest` (+1: the
+    bytes gone, the audit row marked, the contacts gone). Messages and job media are kept for
+    the engagement's life — evidence in a dispute — and that policy is named in doc 04 as still
+    owed to the lawyer.
 
 - **Fifteen advisories closed** (2026-09-13). `composer audit` had been reporting 15 across four
   packages, one of them on the admin's own door: Filament's app-MFA accepted a TOTP code after a

@@ -230,6 +230,13 @@ are in direct conflict, and it will surprise you at the worst time.
   history stays intact and auditable; the human becomes unidentifiable.
 - Keep a documented retention schedule: verification documents purged N days after account
   closure or rejection; work-session geo aggregated after 90 days; messages retained per policy.
+  **The schedule is `backend/config/retention.php`** and `data:retain` applies it nightly
+  (`ApplyRetention`, `RetentionTest`): rejected or expired identity documents purged after 30
+  days (the bytes; the audit row stays, marked `purged_at`), work-session coordinates nulled 90
+  days after check-out, spent OTPs after a day, expired idempotency records, revoked or expired
+  refresh tokens after 30 days. Erasure purges the identity papers and the emergency contacts
+  immediately. Messages and job media are kept for the engagement's life (evidence in a dispute)
+  — a policy still to be written into this file when the lawyer has read it.
 
 Write this design down in your processing register. It's the answer to "how do you reconcile
 erasure with financial record-keeping," and the regulator will ask.

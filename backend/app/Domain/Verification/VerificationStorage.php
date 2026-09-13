@@ -40,6 +40,22 @@ final class VerificationStorage
     }
 
     /**
+     * Destroy the bytes and say so on the row (doc 04 retention; erasure). The record survives —
+     * who reviewed what and when, and the plaintext's sha256 so the same paper re-uploaded is still
+     * recognised — but nothing decryptable remains, on this disk or anywhere the app can reach.
+     * Idempotent: a document purged twice is purged.
+     */
+    public function purge(VerificationDocument $document): void
+    {
+        if ($document->purged_at !== null) {
+            return;
+        }
+
+        Storage::disk($this->disk())->delete($document->storage_path);
+        $document->forceFill(['purged_at' => now()])->save();
+    }
+
+    /**
      * Decrypt and return the document's plaintext bytes for streaming through a signed URL.
      */
     public function read(VerificationDocument $document): string

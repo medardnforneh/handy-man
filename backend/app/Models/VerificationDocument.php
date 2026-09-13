@@ -30,6 +30,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $reviewed_at
  * @property string|null $reject_reason
  * @property Carbon|null $expires_at
+ * @property Carbon|null $purged_at when the bytes were destroyed (doc 04 retention); the row stays
  */
 final class VerificationDocument extends Model
 {
@@ -42,7 +43,7 @@ final class VerificationDocument extends Model
 
     protected $fillable = [
         'party_id', 'subject_user_id', 'kind', 'storage_path', 'sha256', 'grants_tier',
-        'status', 'reviewed_by_user_id', 'reviewed_at', 'reject_reason', 'expires_at',
+        'status', 'reviewed_by_user_id', 'reviewed_at', 'reject_reason', 'expires_at', 'purged_at',
     ];
 
     protected function casts(): array
@@ -53,6 +54,7 @@ final class VerificationDocument extends Model
             'grants_tier' => 'integer',
             'reviewed_at' => 'datetime',
             'expires_at' => 'datetime',
+            'purged_at' => 'datetime',
         ];
     }
 

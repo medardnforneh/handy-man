@@ -43,6 +43,9 @@ Schedule::command('deliverables:auto-approve')->hourly()->withoutOverlapping()->
 Schedule::command('reconcile:nightly')->dailyAt('02:00')->withoutOverlapping()->onOneServer();
 Schedule::command('ledger:rebuild-balances')->dailyAt('02:30')->withoutOverlapping()->onOneServer();
 
+// --- the retention schedule (doc 04, config/retention.php): personal data past its purpose ---
+Schedule::command('data:retain')->dailyAt('03:00')->withoutOverlapping()->onOneServer();
+
 // --- housekeeping the framework provides ---
 Schedule::command('horizon:snapshot')->everyFiveMinutes();
 Schedule::command('sanctum:prune-expired --hours=24')->daily();

@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace App\Domain\Identity\Actions;
 
+use App\Domain\Verification\VerificationStorage;
 use App\Models\Address;
 use App\Models\Device;
+use App\Models\EmergencyContact;
 use App\Models\OtpChallenge;
 use App\Models\ProviderProfile;
 use App\Models\RefreshToken;
 use App\Models\User;
+use App\Models\VerificationDocument;
 use App\Support\Outbox;
 use Illuminate\Support\Facades\DB;
 
@@ -25,6 +28,7 @@ final class ErasePartyData
 {
     public function __construct(
         private readonly Outbox $outbox,
+        private readonly VerificationStorage $verification,
     ) {}
 
     public function handle(User $user): void
@@ -38,6 +42,20 @@ final class ErasePartyData
             RefreshToken::query()->where('user_id', $user->getKey())->delete();
             OtpChallenge::query()->where('phone_e164', $user->phone_e164)->delete();
             $user->tokens()->delete(); // Sanctum access tokens
+            // Emergency contacts are OTHER people's names and numbers, held only for this person's
+            // safety; with the person gone there is no basis to keep them (doc 04).
+            EmergencyContact::query()->where('user_id', $user->getKey())->delete();
+
+            // 1d. The identity papers. P1-10 announced `party.erased` "for downstream cleanup in
+            // P6" and P6 never subscribed — an erased person's ID scans stayed in the bucket,
+            // decryptable, for ever. The bytes go now; the rows stay for the audit trail (who
+            // reviewed what, and the sha256 that recognises the same paper re-uploaded).
+            $documents = VerificationDocument::query()->where('party_id', $party->id)->whereNull('purged_at')->get();
+            DB::afterCommit(function () use ($documents): void {
+                foreach ($documents as $document) {
+                    $this->verification->purge($document);
+                }
+            });
 
             // 1b. Null free-text PII on the provider profile, but keep the row — its aggregate
             // history (jobs_completed, ratings) is not personal data and may anchor FKs.
@@ -66,7 +84,7 @@ final class ErasePartyData
                 'status' => 'closed',
             ])->save();
 
-            // Downstream cleanup (e.g. purge the verification-document bucket in P6) runs off this.
+            // The fact, for anything that keeps its own copy of who exists (analytics, exports).
             $this->outbox->publish('party.erased', ['party_id' => $party->id]);
         });
     }
