@@ -318,6 +318,15 @@ green, the tracker did not. Re-run it before believing this paragraph.
 
 ## What was done, most recent first
 
+- **Fifteen advisories closed** (2026-09-13). `composer audit` had been reporting 15 across four
+  packages, one of them on the admin's own door: Filament's app-MFA accepted a TOTP code after a
+  newer one had been used (CVE-2026-84306), plus a password-validity disclosure on its login
+  page; Guzzle (host-check bypass, cookie scope), commonmark (eight DoS/XSS), Livewire (DOM XSS).
+  Updated to Filament 5.8.1, Livewire 4.4.4, Guzzle 7.15.5, commonmark 2.10.1 (framework
+  13.20 → 13.31 came with them); audit clean. 557 tests, PHPStan and Pint green; the admin
+  captured after the bump (dashboard, jobs, safety alerts at 1366px) still wears the Modernist
+  skin — stale Filament font files from the previous publish removed.
+
 - **A request id that exists, JSON logs, Sentry behind a switch, phones out of the logs**
   (2026-09-13, `RequestId` middleware, `Redact`, `sentry/sentry-laravel`). `Problem` had
   promised "`trace_id` — the id support can search in logs" since its first commit and minted a
