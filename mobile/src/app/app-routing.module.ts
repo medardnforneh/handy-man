@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
 import { authGuard, guestGuard } from './core/auth.guard';
+import { followUpGuard } from './core/follow-up.guard';
 
 const routes: Routes = [
   {
@@ -112,6 +113,13 @@ const routes: Routes = [
     path: 'workspace/:id',
     canActivate: [authGuard],
     loadComponent: () => import('./customer/workspace/workspace.page').then((m) => m.WorkspacePage),
+  },
+  {
+    // Where a WhatsApp button or SMS link lands (doc 07). Not a screen: the guard records the tap
+    // and redirects to whatever the nudge was about, so this route never renders anything.
+    path: 'follow-up/:id',
+    canActivate: [authGuard, followUpGuard],
+    children: [],
   },
   {
     path: 'home',

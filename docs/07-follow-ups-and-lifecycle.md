@@ -156,6 +156,43 @@ WhatsApp Business API requires pre-approved templates for business-initiated mes
 the 24-hour service window. That's a lead time — **start template approval early**, alongside
 the MTN MoMo KYC (doc 03), because both are external dependencies with human queues.
 
+### The WhatsApp template
+
+Every follow-up this product sends on WhatsApp is business-initiated, so every one is a template
+message. Rather than a template per kind and language — sixteen kinds × two languages through a
+human review queue, re-submitted whenever the copy changes — the adapter
+(`MetaWhatsAppSender`) sends **one generic utility template per language** and passes the copy as
+parameters. The copy stays in `lang/{fr,en}/followup.php`, bilingual and tested; Meta approves
+the frame once. A kind that later earns a richer template of its own is mapped in
+`notifications.whatsapp_meta.templates` without touching the adapter.
+
+Submit exactly this, in Meta Business Suite → WhatsApp Manager → Message templates, once per
+language:
+
+| Field | Value |
+|---|---|
+| Name | `handyman_follow_up` |
+| Category | **Utility** (a nudge about an existing job — not marketing; marketing templates are throttled and priced higher) |
+| Languages | French (`fr`) and English (`en`) — one template, two language variants, **both must be approved** |
+| Body | `{{1}}` ⏎ ⏎ `{{2}}` — title on the first line, body after a blank line |
+| Body samples | fr: `Comment ça s'est passé ?` / `Votre plombier a terminé. Dites-nous en deux mots.` · en: `How did it go?` / `Your plumber has finished. Tell us in two words.` |
+| Button | Call to action → **Visit website**, type **Dynamic**, text `Ouvrir` (fr) / `Open` (en), URL `https://app.handyman.cm/follow-up/{{1}}`, sample `01j8x2f9k3m4n5p6q7r8s9t0v1` |
+| Header / footer | none |
+
+The button's URL base is `FOLLOW_UP_LINK_BASE` in deploy/.env; the adapter sends only the part
+after it (the follow-up id) as the dynamic suffix. Change the base and the template must be
+re-submitted. The app answers `/follow-up/{id}` (`followUpGuard`): it records the tap as
+`opened` — which is how this channel's response rate is measured — and opens the job the nudge
+was about.
+
+Operationally: `WHATSAPP_SENDER=meta`, a permanent **System User** token with
+`whatsapp_business_messaging` (not the 24-hour test token from the API setup page) in
+`WHATSAPP_ACCESS_TOKEN`, and the business phone number's **ID** in `WHATSAPP_PHONE_NUMBER_ID`.
+A number that is not on WhatsApp comes back as error 131026 and is logged at `info` — it is a
+fact about the recipient, not a failure; the channel ladder's SMS rung is the fallback. Any other
+rejection (an unapproved template, a paused number, a bad token) is a `warning` with Meta's own
+message, and nothing is ever thrown at the delivery layer.
+
 Voice notes: the workspace supports them (doc 06) and this market uses them heavily. Follow-ups
 stay text — a robot voice note is uncanny.
 

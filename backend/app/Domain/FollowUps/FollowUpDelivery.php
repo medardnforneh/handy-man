@@ -36,7 +36,8 @@ final class FollowUpDelivery
         $vars = $this->variables($followUp, $locale);
         $title = $this->copy($followUp->kind, 'title', $locale, $vars);
         $body = $this->copy($followUp->kind, 'body', $locale, $vars);
-        $deepLink = rtrim((string) config('app.url', ''), '/')."/follow-up/{$followUp->id}";
+        // The app's `follow-up/:id` route: records the tap as `opened`, then opens what it is about.
+        $deepLink = rtrim((string) config('notifications.follow_up_link_base', ''), '/')."/{$followUp->id}";
 
         match ($followUp->channel) {
             FollowUpChannel::Push => $this->deliverPush($user, $followUp, $title, $body),

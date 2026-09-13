@@ -250,7 +250,7 @@ the highest-ROI message you will ship.
 - [ ] CNDP processing register written; authorisation applied for
 - [ ] Lawyer has reviewed the privacy policy and consent flows against Law No. 2024/017
 - [ ] MTN MoMo KYC complete; aggregator merchant account live
-- [ ] WhatsApp Business templates approved
+- [ ] WhatsApp Business templates approved — the adapter (`MetaWhatsAppSender`) and the exact submission (doc 07 "The WhatsApp template") are ready; needs a Meta Business portfolio + System User token, then `WHATSAPP_SENDER=meta`
 
 **Money**
 - [ ] Reconciliation runs clean for 7 consecutive days in staging
@@ -288,5 +288,5 @@ the highest-ROI message you will ship.
 - [x] No raw i18n keys reachable in either language (CI gate green) — `npm run i18n:check` in CI + `lint:strings` (no bare user-facing strings)
 - [x] Key screens laid out and verified in French (the longer strings) — every 390px review capture since 2026-08-13 has been taken signed in as a French-locale demo user; the Modernist pass (2026-09-12) was judged in French on the app and English on the site
 - [ ] Terms, privacy, and consent prompts reviewed by the lawyer in **both** FR and EN
-- [ ] WhatsApp templates approved in both languages
+- [ ] WhatsApp templates approved in both languages — one template, fr + en variants; `MetaWhatsAppSenderTest` proves the fr locale reaches Meta as `language.code=fr`
 - [x] Round-trip: `locale=en` + `comms_locale=fr` → English UI, French reminder — `ConsentTest` "lets a user set locale=en and comms_locale=fr independently"; `FollowUpDeliveryTest` "names the actual service in a maintenance nudge, in the target's comms locale"

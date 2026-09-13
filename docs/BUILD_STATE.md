@@ -182,7 +182,7 @@ registered yet — it must be set before the first store build, or the native ap
 | P7-04 | Consent gate on non-transactional kinds | **DONE** — `FollowUpKind::requiresMarketingConsent()` (reengagement/maintenance_due) gated on the `marketing` grant via `ConsentState`; `isTransactional()` kinds (check_in_overdue/auto_approve_warning/payout_ready/…) bypass the budget entirely. Test: **revoke marketing → reengagement suppressed, check_in_overdue still sent** |
 | P7-02 | Event-driven scheduling + cancellation | **DONE** — `FollowUpOrchestrator` subscribes to the outbox seam: `engagement.completed` → review_request (+2h) + review_reminder (+3d); `review.submitted` (by the customer) → cancels both by dedupe-prefix; `warranty.issued` → warranty_expiring 14d before expiry. New `CompleteEngagement` action (publishes `engagement.completed`, idempotent); `SubmitReview`/`IssueWarranty` now publish their events. `POST /v1/engagements/{engagement}/complete`. Test: **complete → 2 scheduled; review submitted → both cancelled; completing twice → still 2** |
 | P7-07 | `quote_pending_customer` / `warranty_expiring` / `review_request` / `maintenance_due` + `response_action` | **DONE (all four named kinds, 2026-08-09)** — review_request/reminder, warranty_expiring and quote_pending_customer wired to events; **maintenance_due** now fires too, gated on a per-skill `maintenance_interval_days` that is null for most of the taxonomy (a wardrobe built once needs no servicing). Every follow-up carries a single **`response_action`** recorded via `POST /v1/follow-ups/{followUp}/respond` (target-gated, enum'd), `GET /v1/follow-ups` lists a user's nudges. Beyond the four named here, five more of doc 07's catalogue were also wired (job_unquoted, site_visit_reminder, job_starting_soon, awaiting_approval, payout_ready) — see the entry below; three remain unwired for stated reasons. Tests: response_action recorded → responded; non-target → 403 |
-| P7-05 | WhatsApp Business API + approved templates + deep links | **DONE (adapter)** — `WhatsAppSender` rail (Fake/Log, config-selected, mirroring push/SMS); template = kind, variables + **deep link back to the follow-up**, sent in the target's **comms locale** (`followup.*` i18n copy, parity OK). `FollowUpDelivery` routes each follow-up to the right transport at dispatch; a transport failure marks the row `failed`. Live template approval is the remaining external dependency (like CinetPay creds). Test: **WhatsApp follow-up → transport got template + fr locale + deep link** |
+| P7-05 | WhatsApp Business API + approved templates + deep links | **DONE (code)** — `WhatsAppSender` rail (Fake/Log/**Meta**, config-selected); `MetaWhatsAppSender` speaks the Cloud API with ONE generic utility template per language (`handyman_follow_up`: title, body, URL button = follow-up id; doc 07 has the submission), copy from `followup.*` in the target's **comms locale**; the link lands on the app's `/follow-up/:id` which records `opened`. `FollowUpDelivery` routes each follow-up to the right transport at dispatch; a transport failure marks the row `failed`. Template approval in fr + en is the remaining external dependency. Tests: **`MetaWhatsAppSenderTest` (5), `follow-up.guard.spec.ts` (4), WhatsApp follow-up → transport got template + fr locale + deep link** |
 | P7-06 | Channel ladder in_app → push → whatsapp → sms → email | **DONE** — `ChannelLadder::pick` chooses the outbound channel (push if a live device token, else WhatsApp — the workhorse), used by the orchestrator; the follow-up row is always the in-app record; SMS/email reserved (SMS transactional, email for receipts). Test: **ladder picks push with a token, WhatsApp without; push follow-up reaches the device token** |
 | P7-08 | Provider CRM surface (customer list, pipeline, manual follow-up, do-not-contact) | **DONE (all four parts, 2026-08-09)** — the **pipeline** was the missing quarter and is now real: `ProviderPipeline` + `GET /v1/provider/pipeline` reports four stages off existing rows (offers awaiting an answer / quotes out / work in flight / completed in the window), each a count and a value. **Not a forecast** (nothing weighted by a probability of closing) and an **unpriced lead is counted but contributes no money** — falling back to the job budget where the customer named one, never inventing a figure. Client surface is the "My business" screen (Pipeline / Clients segment). 4 tests incl. unpriced-lead and cross-provider isolation. Backend below — `ProviderCustomers` builds the client book (per customer: job count, completions, lifetime value, last engagement) from the provider's engagements; `ScheduleManualFollowUp` lets a provider send a `reengagement` nudge on the **same budget + consent gates** (`created_by_user_id` recorded) — a provider can't spam through the platform; `do_not_contacts` (per provider→customer) is **honoured absolutely** — refused at schedule time and re-checked at dispatch. `GET /v1/provider/customers`, `POST /v1/provider/customers/{party}/follow-up`, `POST`/`DELETE .../do-not-contact`. 3 tests. (Pipeline view is a client/admin UI surface.) |
 
@@ -318,6 +318,27 @@ green, the tracker did not. Re-run it before believing this paragraph.
 
 ## What was done, most recent first
 
+- **WhatsApp through Meta's Cloud API** (2026-09-13, `MetaWhatsAppSender`, `WHATSAPP_SENDER=meta`).
+  The workhorse channel had interfaces, a ladder and a `log` driver, and nothing that could reach
+  a phone. Every follow-up is business-initiated, so every one is a template message; instead of
+  sixteen kinds × two languages through Meta's human review, ONE generic utility template per
+  language (`handyman_follow_up`: `{{1}}` title, `{{2}}` body, a URL button whose dynamic suffix
+  is the follow-up id) carries the copy that already lives, bilingual and tested, in
+  `lang/*/followup.php`. Best effort by contract: Meta down, a bad token, a number not on
+  WhatsApp (131026, logged at `info` — a fact about the recipient) are logged and dropped, never
+  thrown. The exact submission (fields, samples, button) is in doc 07 "The WhatsApp template".
+  - Writing it found that **the deep link every nudge carried landed nowhere**: `APP_URL/follow-up/{id}`
+    — the site host in production, where no route answers, and no app route either. Now one
+    `FOLLOW_UP_LINK_BASE` (the APP host) feeds both the delivery layer and the button, and the app
+    answers `/follow-up/:id` (`followUpGuard`): records the tap as `opened` — the number that
+    justifies WhatsApp's per-message cost — then opens the job the nudge is about; every failure
+    still opens the app.
+  - Evidence: `MetaWhatsAppSenderTest` (5: payload shape against the Cloud API, per-kind override
+    + en fallback, parameter sanitising, the three failure modes never throw, end to end through
+    `FollowUpDelivery` with the app on its own host); `follow-up.guard.spec.ts` (4, Karma).
+    Never spoken to Meta: needs a Business portfolio, a System User token, the template approved
+    in fr + en — external, with a human queue; `log` until then.
+
 - **The production stack, as code** (2026-09-13, `deploy/`, `docs/11-deployment.md`). Every
   launch-checklist item left needs a staging environment and there was no way to stand one up.
   One box, two hostnames (site/admin/API on `SITE_HOST`; the PWA + proxied API/websocket on
@@ -330,8 +351,8 @@ green, the tracker did not. Re-run it before believing this paragraph.
     had the framework's `inspire` and nothing else. In production no follow-up would ever send,
     no offer expire, no stuck payment resolve, no review reveal. `routes/console.php` now carries
     the schedule (`schedule:list` shows twelve entries); `outbox:relay` and `horizon` are daemons.
-  - Honest gaps listed in doc 11: **WhatsApp and SMS have no real adapters** (fake/log only),
-    FCM wants a token exchange, CinetPay operator codes to confirm on the sandbox, local disk for
+  - Honest gaps listed in doc 11: **SMS has no real adapter** (fake/log only; WhatsApp's came
+    the same day, above), FCM wants a token exchange, CinetPay operator codes to confirm on the sandbox, local disk for
     uploads, no log shipping.
 
 - **Nothing ever moved a job past `engaged`** (2026-09-13). Found by writing the launch-checklist

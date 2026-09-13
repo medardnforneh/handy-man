@@ -11,6 +11,7 @@ use App\Domain\Notifications\FcmPushSender;
 use App\Domain\Notifications\Listeners\NotifyOnOutboxMessage;
 use App\Domain\Notifications\LogSmsSender;
 use App\Domain\Notifications\LogWhatsAppSender;
+use App\Domain\Notifications\MetaWhatsAppSender;
 use App\Domain\Notifications\PushSender;
 use App\Domain\Notifications\SmsSender;
 use App\Domain\Notifications\WhatsAppSender;
@@ -68,6 +69,16 @@ final class NotificationsServiceProvider extends ServiceProvider
             return match ($driver) {
                 'fake' => $app->make(FakeWhatsAppSender::class),
                 'log' => new LogWhatsAppSender,
+                'meta' => new MetaWhatsAppSender(
+                    accessToken: (string) config('notifications.whatsapp_meta.access_token'),
+                    phoneNumberId: (string) config('notifications.whatsapp_meta.phone_number_id'),
+                    defaultTemplate: (string) config('notifications.whatsapp_meta.template'),
+                    templates: (array) config('notifications.whatsapp_meta.templates', []),
+                    languages: (array) config('notifications.whatsapp_meta.languages', []),
+                    deepLinkBase: (string) config('notifications.follow_up_link_base'),
+                    baseUrl: (string) config('notifications.whatsapp_meta.base_url'),
+                    apiVersion: (string) config('notifications.whatsapp_meta.api_version'),
+                ),
                 default => throw new InvalidArgumentException("Unknown WhatsApp sender: {$driver}"),
             };
         });
