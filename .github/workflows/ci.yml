@@ -94,6 +94,10 @@ jobs:
       - name: Test (Pest)
         run: composer test
 
+      # Known advisories against the lock (2026-09-13: fifteen were open, one on the admin's MFA).
+      - name: Security advisories (composer audit)
+        run: composer audit --no-dev
+
   frontend:
     name: i18n · Tokens · Lints · App build
     runs-on: ubuntu-latest
@@ -157,6 +161,10 @@ jobs:
       - name: Test the Ionic app (Karma, headless Chrome)
         working-directory: mobile
         run: npm run test:ci
+
+      - name: Security advisories (npm audit, production deps)
+        working-directory: mobile
+        run: npm audit --omit=dev --audit-level=moderate
 
   images:
     name: Production images build
