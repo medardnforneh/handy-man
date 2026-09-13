@@ -30,14 +30,20 @@ Services (`deploy/compose.yml`):
 | `reverb` | same image | the realtime server on 8080, internal only |
 | `postgres` | `postgis/postgis:16-3.4` | the database; extensions enabled at first boot (`deploy/postgres/init.sql`) |
 | `redis` | `redis:7` | cache, sessions, queue, Horizon |
+| `minio` | `minio/minio` | the object store: job photos, voice notes, verification documents |
+| `minio-init` | `minio/mc` | one-shot on every `up`: two buckets, two confined users (`deploy/minio/init.sh`) |
 
 One PHP image for all five PHP roles: the code that answers a request, relays the outbox, works
 the queue and serves the socket is one build. Caddy's image carries a copy of `public/` at the
 same path FPM sees it at, so FastCGI's `SCRIPT_FILENAME` lines up.
 
-Uploads (job photos, reports, verification documents) live on the `storage` volume, local disk,
-for v1. The verification disk is a separate Laravel disk by design (doc 04) and can move to an
-in-country object store without touching anything else.
+Uploads live in MinIO, in country (ADR 0001), as two buckets with two credentials: `media`
+(job photos, reports, voice notes — `FILESYSTEM_DISK=s3`) and `verification` (identity papers,
+versioned, app-encrypted before they land — `VERIFICATION_DISK_DRIVER=s3`). Each user's policy
+reaches its own bucket only, so the media key cannot read anyone's papers (doc 04). Nothing is
+public and no bucket URL ever leaves the API: every byte is streamed by Laravel after an
+entitlement check (`GET /media/{id}`, the signed verification view). The `storage` volume keeps
+only logs, caches and the public link.
 
 ## First deployment
 
@@ -82,14 +88,19 @@ action. Tested against a real build (launch checklist).
 
 ## Backups
 
-The two things that cannot be rebuilt are the `pgdata` volume and the `storage` volume. A nightly
-`pg_dump` and an rsync of the storage volume to a second location are the minimum; they are not
-in this stack because where they go is a hosting decision (the ADR's in-country requirement
-applies to backups too).
+The two things that cannot be rebuilt are the `pgdata` volume and the `miniodata` volume. A
+nightly `pg_dump` and an `mc mirror` of both buckets to a second location are the minimum; they
+are not in this stack because where they go is a hosting decision (the ADR's in-country
+requirement applies to backups too).
 
 ```bash
 docker compose -f deploy/compose.yml --env-file deploy/.env exec -T postgres \
   pg_dump -U "$DB_USERNAME" -Fc "$DB_DATABASE" > "backup-$(date +%F).dump"
+
+# From any host that can reach the box (the root user only — never the app's keys).
+mc alias set prod https://minio.internal "$MINIO_ROOT_USER" "$MINIO_ROOT_PASSWORD"
+mc mirror --preserve prod/media      /backup/media
+mc mirror --preserve prod/verification /backup/verification
 ```
 
 ## Staging
@@ -116,5 +127,8 @@ days" and "payout tested with real money, and reversed" run on.
   `POST /devices` on a physical phone (launch checklist).
 - **CinetPay operator codes** (`MTNCM` / `OMCM`) and the webhook token field order are to be
   confirmed against the live sandbox — the adapter says so in its own comments.
-- **Object storage**: local disk for v1 (see above).
+- **Object storage** is in the stack (MinIO, two buckets, two users) and both Laravel disks
+  resolve through the S3 driver with exactly the keys the env example names
+  (`ObjectStorageTest`); a live round trip through a running MinIO is the first-deploy smoke,
+  not something this machine (no Docker) has done.
 - **Monitoring**: container logs are JSON on stdout; nothing ships them anywhere yet.

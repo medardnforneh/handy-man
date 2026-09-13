@@ -33,6 +33,8 @@ x-app: &app
       condition: service_healthy
     redis:
       condition: service_healthy
+    minio-init:
+      condition: service_completed_successfully
   restart: unless-stopped
   logging:
     driver: json-file
@@ -57,7 +59,7 @@ services:
     volumes:
       - caddy_data:/data
       - caddy_config:/config
-      # Uploaded job photos and the public storage link, served as files.
+      # The public storage link only — media lives in MinIO and is served by Laravel.
       - storage:/var/www/html/storage:ro
     depends_on:
       - app
@@ -137,6 +139,45 @@ services:
       retries: 10
     restart: unless-stopped
 
+  # ---- object storage (doc 04, ADR 0001: in-country, self-managed) ----
+  # Two buckets, two users: `media` for job photos and voice notes, `verification` for identity
+  # papers — the app can be given one credential without the other, which is the doc-04 promise.
+  # Nothing is public: every byte is served by Laravel after an entitlement check.
+  minio:
+    image: minio/minio:RELEASE.2025-04-22T22-12-26Z
+    command: ["server", "/data", "--console-address", ":9001"]
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    volumes:
+      - miniodata:/data
+    expose:
+      - "9000"
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  # One-shot: buckets, users and least-privilege policies. Idempotent — safe on every `up`.
+  minio-init:
+    image: minio/mc:RELEASE.2025-04-16T18-13-26Z
+    depends_on:
+      minio:
+        condition: service_healthy
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+      MEDIA_ACCESS_KEY: ${AWS_ACCESS_KEY_ID}
+      MEDIA_SECRET_KEY: ${AWS_SECRET_ACCESS_KEY}
+      VERIFICATION_ACCESS_KEY: ${VERIFICATION_AWS_ACCESS_KEY_ID}
+      VERIFICATION_SECRET_KEY: ${VERIFICATION_AWS_SECRET_ACCESS_KEY}
+    volumes:
+      - ./minio/init.sh:/init.sh:ro
+    entrypoint: ["sh", "/init.sh"]
+    restart: "no"
+
   redis:
     image: redis:7-alpine
     command: ["redis-server", "--appendonly", "yes", "--maxmemory", "256mb", "--maxmemory-policy", "noeviction"]
@@ -152,6 +193,7 @@ services:
 volumes:
   pgdata:
   redisdata:
+  miniodata:
   storage:
   caddy_data:
   caddy_config:

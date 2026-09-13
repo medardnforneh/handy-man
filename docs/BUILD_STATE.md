@@ -318,6 +318,21 @@ green, the tracker did not. Re-run it before believing this paragraph.
 
 ## What was done, most recent first
 
+- **Object storage in the stack, and one API field that leaked the bucket layout** (2026-09-13,
+  `deploy/compose.yml` `minio` + `minio-init`, `deploy/minio/init.sh`). Uploads were on a local
+  volume "for v1"; the ADR says self-managed MinIO in country, and doc 04 says identity papers in
+  a SEPARATE bucket with SEPARATE credentials. Now: two buckets, two users each confined by
+  policy to its own bucket (a leaked media key cannot read anyone's papers), `verification`
+  versioned, nothing anonymous; the root user only administers and the app never holds it.
+  `league/flysystem-aws-s3-v3` added; the env example carries every key for both disks.
+  - `MediaResource` (job-report photos) returned `storage_path` — the object key — where the
+    message and verification resources already refused to. It now returns `url`
+    (`GET /media/{id}`, entitlement-checked) like the others; OpenAPI + the generated client
+    follow. The app never read the path, so nothing on the phone changes.
+  - Evidence: `ObjectStorageTest` (both disks resolve to the S3 adapter with different keys and
+    buckets, path-style against `minio`; the API spec names no storage path or bucket host).
+    No Docker on this machine: the live MinIO round trip is the first-deploy smoke.
+
 - **FCM: the service-account exchange, and dead tokens cleared** (2026-09-13, `FcmAccessToken`,
   `FcmPushSender`). The push adapter expected a pre-obtained OAuth token from the environment —
   a token Google issues for one hour, so in production it would have worked for the first hour
@@ -389,8 +404,8 @@ green, the tracker did not. Re-run it before believing this paragraph.
     no offer expire, no stuck payment resolve, no review reveal. `routes/console.php` now carries
     the schedule (`schedule:list` shows twelve entries); `outbox:relay` and `horizon` are daemons.
   - Honest gaps listed in doc 11: **SMS, WhatsApp and the FCM token exchange were missing** (all three landed
-    the same day, above), CinetPay operator codes to confirm on the sandbox, local disk for
-    uploads, no log shipping.
+    the same day, above), CinetPay operator codes to confirm on the sandbox, object storage (in the stack
+    since, above), no log shipping.
 
 - **Nothing ever moved a job past `engaged`** (2026-09-13). Found by writing the launch-checklist
   walk-through of a remote engagement end to end: the state machine defined scheduled → en_route →

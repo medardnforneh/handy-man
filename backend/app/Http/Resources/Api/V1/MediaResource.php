@@ -9,6 +9,10 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
+ * A stored file as the API describes it: where to FETCH it (the entitlement-checked media route),
+ * never where it LIVES. The storage key is bucket layout — the same rule the verification and
+ * message resources already keep, and the one that lets the object store move without an API change.
+ *
  * @mixin Media
  */
 final class MediaResource extends JsonResource
@@ -21,7 +25,7 @@ final class MediaResource extends JsonResource
         return [
             'id' => $this->id,
             'kind' => $this->kind,
-            'storage_path' => $this->storage_path,
+            'url' => route('api.v1.media.show', ['media' => $this->id]),
             'sha256' => $this->sha256,
             'bytes' => $this->bytes,
             'captured_at' => $this->captured_at?->toIso8601String(),

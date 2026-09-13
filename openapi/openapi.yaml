@@ -2543,11 +2543,11 @@ components:
 
     Media:
       type: object
-      required: [id, kind, storage_path, sha256, bytes]
+      required: [id, kind, url, sha256, bytes]
       properties:
         id: { type: string, format: uuid }
         kind: { type: string, enum: [before, after, issue, id_doc, attachment] }
-        storage_path: { type: string }
+        url: { type: string, format: uri, description: "GET /media/{id} — served by the API after an entitlement check; never a storage URL" }
         sha256: { type: string }
         bytes: { type: integer }
         captured_at: { type: [string, "null"], format: date-time }

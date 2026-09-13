@@ -1964,7 +1964,11 @@ export interface components {
             id: string;
             /** @enum {string} */
             kind: "before" | "after" | "issue" | "id_doc" | "attachment";
-            storage_path: string;
+            /**
+             * Format: uri
+             * @description GET /media/{id} — served by the API after an entitlement check; never a storage URL
+             */
+            url: string;
             sha256: string;
             bytes: number;
             /** Format: date-time */
