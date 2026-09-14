@@ -1,67 +1,61 @@
 <ion-header [translucent]="true" class="ion-no-border">
   <ion-toolbar>
-    <ion-title>{{ 'pro.active_work' | translate }}</ion-title>
+    <ion-title class="sr-only">{{ 'pro.active_work' | translate }}</ion-title>
   </ion-toolbar>
 
   <app-offline-strip></app-offline-strip>
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <div class="flex min-h-full flex-col mx-auto max-w-3xl px-4 pt-2 pb-10">
+  <div class="mx-auto flex min-h-full max-w-3xl flex-col px-[22px] pt-3 pb-tabbar md:px-8">
+    <h1 class="mt-1 mb-4 text-[30px] font-extrabold leading-[1.06] tracking-tight text-balance">{{ 'pro.work_title' | translate }}</h1>
+
     <!-- Visits booked but not yet closed (P2.5-04). Above the active work because they are the part
          with a time on them, and a visit nobody closes is a trip nobody can account for later. -->
     @if (visits().length > 0) {
-      <h2 class="mt-2 mb-4 text-lg font-extrabold tracking-snug">{{ 'pro.visits_heading' | translate }}</h2>
+      <h2 class="mt-2 mb-3 text-2xs font-extrabold uppercase tracking-wider text-content-muted">{{ 'pro.visits_heading' | translate }}</h2>
 
       @for (visit of visits(); track visit.id) {
-        <div class="mb-2 rounded-lg border border-edge bg-surface-raised p-4">
-          <div class="flex items-start gap-2">
-            <span class="grid size-[38px] flex-none place-items-center rounded-md bg-brand/12 text-[1.1rem] text-brand" aria-hidden="true">
+        <div class="mb-3 rounded-lg border border-edge bg-surface-raised p-4">
+          <div class="flex items-start gap-3">
+            <span class="grid size-10 flex-none place-items-center rounded-[13px] bg-brand-tint text-[18px] text-brand" aria-hidden="true">
               <ion-icon name="calendar-outline"></ion-icon>
             </span>
             <div class="min-w-0 flex-1">
-              <b class="block text-md leading-snug">{{ visit.title }}</b>
+              <b class="block text-md font-bold leading-snug">{{ visit.title }}</b>
               <div class="mt-0.5 flex flex-wrap items-center gap-1.5 text-xs text-content-muted">
                 <span>{{ visit.when }}</span>
                 @if (visit.area) {
-                  <span class="size-[3px] flex-none rounded-full bg-surface-step" aria-hidden="true"></span>
-                  <span><ion-icon name="location-outline" class="me-0.5 -mb-px" aria-hidden="true"></ion-icon>{{ visit.area }}</span>
+                  <span class="size-[3px] flex-none rounded-full bg-content-muted" aria-hidden="true"></span>
+                  <span>{{ visit.area }}</span>
                 }
               </div>
             </div>
             @if (visit.feeMinor > 0) {
-              <span class="flex-none text-sm font-bold tabular-nums">
-                {{ visit.feeMinor | money }} <small class="ms-0.5 text-2xs font-semibold text-content-muted">{{ 'money.currency' | translate }}</small>
-              </span>
+              <span class="flex-none text-md font-extrabold">{{ visit.feeMinor | money }}</span>
             }
           </div>
 
-          <button
-            type="button"
-            class="mt-4 min-h-11 w-full cursor-pointer rounded-md border border-edge bg-transparent px-4 py-2.5 text-sm font-semibold text-content font-sans disabled:opacity-50"
-            [disabled]="busy()"
-            (click)="openClose(visit)"
-          >{{ 'pro.visit_close' | translate }}</button>
+          <ion-button class="mt-4 h-11 m-0" expand="block" fill="outline" [disabled]="busy()" (click)="openClose(visit)">
+            {{ 'pro.visit_close' | translate }}
+          </ion-button>
         </div>
       }
 
-      <h2 class="mt-6 mb-4 text-lg font-extrabold tracking-snug">{{ 'pro.active_work' | translate }}</h2>
+      <h2 class="mt-6 mb-1 text-2xs font-extrabold uppercase tracking-wider text-content-muted">{{ 'pro.active_work' | translate }}</h2>
     }
 
     @for (work of active(); track work.id) {
       <button
-        class="mb-2 flex w-full min-h-11 cursor-pointer items-center gap-2 rounded-lg border border-edge bg-surface-raised px-4 py-2 text-start text-inherit"
+        class="box-border flex w-full cursor-pointer items-center gap-3 border-0 border-b border-solid border-edge-soft bg-transparent px-0 py-[15px] text-start text-inherit font-sans text-md last:border-b-0"
         type="button"
         (click)="open(work)"
       >
-        <div
-          [class]="'grid size-10 flex-none place-items-center  text-sm font-bold uppercase text-brand-contrast accent-' + work.accent"
-          aria-hidden="true"
-        >{{ work.customerName.charAt(0) || '•' }}</div>
-        <div class="min-w-0 flex-1">
-          <b class="text-md">{{ work.title }}</b>
-          <small class="block text-xs text-content-muted">{{ work.reference }} · {{ work.customerName }}</small>
-        </div>
+        <span class="grid size-[46px] flex-none place-items-center rounded-[16px] bg-surface-sunken text-md font-extrabold uppercase" aria-hidden="true">{{ work.customerName.charAt(0) || '·' }}</span>
+        <span class="min-w-0 flex-1">
+          <b class="block truncate text-[15.5px] font-bold tracking-snug">{{ work.title }}</b>
+          <small class="block truncate text-xs text-content-muted">{{ work.reference }} · {{ work.customerName }}</small>
+        </span>
         <span [class]="'hm-pill flex-none ' + tone(work.status)">{{ 'status.' + work.status | translate }}</span>
       </button>
     } @empty {
@@ -76,7 +70,6 @@
     }
   </div>
 </ion-content>
-
 <!-- Closing a visit (P2.5-04). One field, and it is the one that matters: what the provider found.
      The quote that follows gets argued from these notes, and a visit closed with nothing written
      down is a trip nobody can account for later. -->
@@ -92,7 +85,7 @@
     </ion-header>
 
     <ion-content>
-      <div class="mx-auto max-w-3xl px-4 pt-4 pb-10">
+      <div class="mx-auto max-w-3xl px-[22px] pt-4 pb-10 md:px-8">
         @if (closing(); as visit) {
           <p class="mt-0 mb-4 text-sm leading-snug text-content-muted">
             {{ 'pro.visit_close_for' | translate:{ title: visit.title } }}
@@ -100,9 +93,9 @@
         }
 
         <label class="mb-4 block">
-          <span class="mb-1.5 block text-sm font-bold text-content-muted">{{ 'pro.visit_outcome' | translate }}</span>
+          <span class="hm-label">{{ 'pro.visit_outcome' | translate }}</span>
           <textarea
-            class="w-full resize-y rounded-md border border-edge bg-surface-raised px-3 py-2.5 font-sans text-md leading-snug text-content placeholder:text-content-muted focus:border-brand focus:outline-none"
+            class="hm-field resize-y"
             rows="5"
             [ngModel]="outcome()"
             (ngModelChange)="outcome.set($event)"
@@ -120,8 +113,8 @@
     </ion-content>
 
     <ion-footer class="ion-no-border">
-      <div class="mx-auto max-w-3xl border-t border-t-edge px-4 py-2">
-        <ion-button expand="block" [disabled]="busy()" (click)="completeVisit()">
+      <div class="mx-auto max-w-3xl px-[22px] pt-3.5 pb-6">
+        <ion-button expand="block" class="h-[54px] text-md" [disabled]="busy()" (click)="completeVisit()">
           {{ 'pro.visit_close_confirm' | translate }}
         </ion-button>
       </div>

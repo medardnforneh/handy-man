@@ -1,13 +1,8 @@
-// Ionic's own components, plus one shared rule for the composer's NATIVE form controls.
+// Ionic's own components only — everything else on this page is a Tailwind utility in the template.
 
 ion-toolbar {
   --background: var(--hm-color-surface-base);
   --border-width: 0;
-}
-
-ion-title {
-  font-size: var(--hm-text-md);
-  font-weight: 700;
 }
 
 ion-button {
@@ -19,24 +14,4 @@ ion-button {
 
 ion-footer {
   background: var(--hm-color-surface-base);
-}
-
-// The quote composer is the one screen built from bare <input>, <select> and <textarea> rather than
-// ion-input, because a quote line is a grid of small fields and Ionic's form controls do not sit in
-// one. Tailwind's Preflight is deliberately not loaded on this surface (it would undo Ionic's own
-// normalize), so these three elements still carry their user-agent font and border — `font: inherit`
-// is not something a utility can express, and repeating the same eight declarations across three
-// element types in nine places would be worse than one rule.
-.finput {
-  width: 100%;
-  padding: 0.65rem 0.75rem;
-  background: var(--hm-color-surface-raised);
-  border: 1.5px solid var(--hm-color-border-subtle);
-  border-radius: var(--hm-radius-md);
-  color: var(--hm-color-text-primary);
-  font: inherit;
-  font-size: var(--hm-text-md);
-
-  &::placeholder { color: var(--hm-color-text-muted); }
-  &:focus { outline: none; border-color: var(--hm-color-brand-primary); }
 }

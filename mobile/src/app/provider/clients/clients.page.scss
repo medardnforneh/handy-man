@@ -1,18 +1,8 @@
-// Provider client book (P7-08).
 // Ionic's own components only — everything else on this page is a Tailwind utility in the template.
 
 ion-toolbar {
   --background: var(--hm-color-surface-base);
   --border-width: 0;
-}
-
-ion-title {
-  font-weight: 800;
-  letter-spacing: -0.02em;
-}
-
-.crm-tabs {
-  margin-bottom: var(--hm-space-md);
 }
 
 ion-searchbar {
@@ -23,20 +13,4 @@ ion-button {
   --border-radius: var(--hm-radius-md);
   font-weight: 700;
   margin: 0;
-}
-
-// The follow-up nudge. Sentence case: SHOUTING a marketing action on every row reads as pressure,
-// and the uppercase label was also the widest thing in the card. Its 34px height is deliberate and
-// deliberately under the app's 44px floor — the row's own hit area is comfortable, and a 44px
-// button here made every card look like a form.
-.nudge {
-  --border-color: var(--hm-color-brand-primary);
-  --color: var(--hm-color-brand-primary);
-  --padding-start: var(--hm-space-md);
-  --padding-end: var(--hm-space-md);
-  text-transform: none;
-  letter-spacing: 0;
-  font-size: var(--hm-text-sm);
-  height: 34px;
-  min-height: 34px;
 }

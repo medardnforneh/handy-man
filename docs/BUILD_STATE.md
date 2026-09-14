@@ -251,8 +251,9 @@ founder-owned legal items in doc 05's launch checklist.
     a bound `aria-label` changes before hydration — the label now lives inside the button.
   - **Open items the handoff leaves** (recorded, not decided): a light theme (the design is
     dark-only, so both token slots hold it and the app's appearance setting shows "Dark" as a
-    fact); photography for the site; **the provider app is
-    not designed** and only inherits the tokens and components.
+    fact); photography for the site. The provider app, which the handoff leaves undesigned,
+    was designed in the same grammar on 2026-09-14 (see the top entry) — money first, one
+    accent "needs you" card, ruled rows, micro-labels, one filled button per screen.
 - **UI quality bar (user-mandated): every UI must be beautiful, professional, perfect.** New UI is
   built to that bar from the start on the design-token system (light+dark, semantic colours,
   no-literal-colour lint).
@@ -330,6 +331,34 @@ green, the tracker did not. Re-run it before believing this paragraph.
 
 ## What was done, most recent first
 
+- **The provider app, designed** (2026-09-14, founder: "design the provider app too"). The
+  handoff has no provider screens, so they were designed in its grammar rather than borrowed
+  from the old app. Home: the money card (available, outline Withdraw, pending payout / active /
+  new-leads counters), then the ONE accent card for what needs the provider — profile setup,
+  else the booking to check into or the job owed a report, else the freshest lead — then New
+  leads and Active work as ruled rows, the rating / on-time pair, the client-book row. Leads,
+  Work and Money are H1 lists of ruled rows (the tab toolbars collapse to a sliver); Money's one
+  filled button is Withdraw, credits are a row with a text action, payouts are rows. Profile
+  mirrors the customer You screen: the 56px monogram, verification as a row card (verified) or
+  the accent card (not yet), availability + service area, preferences (FR/EN pair, Appearance ·
+  Dark as a fact), clients / safety / privacy / back-to-customer, the danger sign-out; skills as
+  chips. Lead: chevron-back + centred reference, status line, 29px title, budget and details
+  cards, the visit as a bordered row, footer with the outline quote and the filled accept.
+  Work detail: the same head, the customer card with an accent monogram and a chat tile, the
+  location row, arrival / status chips / report / deliverables / cash / warranty as micro-label
+  sections with bordered rows, and the footer's one filled button is whatever comes next
+  (check in → report or deliverable → the thread). Clients: H1, segment, the funnel as one
+  card of ruled bars on the track colour, the book as three counters + ruled rows with the
+  follow-up as a text action. Verification: the ladder card with rows divided by lines, one
+  card per document group, the send as a text action. Onboarding: H1 + lead, micro-labels, the
+  trade chips at 14px radius, a one-surface field. Two utilities (hm-label, hm-field)
+  replaced every page-local .finput rule; stale .withdraw / .finput scss removed.
+  Evidence: scratchpad captures pro-v3/dark_390_pro_home.png (warm, all five reads landed),
+  pro-v1/dark_390_pro_{earnings,profile}.png, pro-v2/dark_390_{opportunities,work,
+  opportunity_*,work_*,clients,verification,become_a_provider}.png — judged, and the lead row's
+  meta line, the empty tab toolbars, the header's duplicate chat button and the arrow back
+  buttons were fixed off them. Note for captures: rtisan serve is single-threaded and Home
+  fires ten reads, so a cold capture shows zeros — wait ~40s (EVAL) for a true one.
 - **The HandyMan redesign, on every surface** (2026-09-13, three commits: tokens + site, app,
   admin). The founder: "you used the wrong design" — Modernist was a replaced direction; the
   real design is the dark-green handoff (see Design debt). Everything Modernist put on the

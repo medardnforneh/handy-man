@@ -5,20 +5,19 @@ ion-toolbar {
   --border-width: 0;
 }
 
-ion-title {
-  font-weight: 800;
-  letter-spacing: -0.02em;
-}
-
+// The host draws the field's box; the control inside it stays transparent so the counter row
+// sits on the same surface rather than in a second, lighter box.
 .field {
-  --background: var(--hm-color-surface-raised);
+  --background: transparent;
+  --border-width: 0;
+  background: var(--hm-color-surface-raised);
   --color: var(--hm-color-text-primary);
   --placeholder-color: var(--hm-color-text-muted);
   --padding-start: var(--hm-space-md);
   --padding-end: var(--hm-space-md);
   border: 1px solid var(--hm-color-border-subtle);
   border-radius: var(--hm-radius-md);
-  min-height: 44px;
+  min-height: 50px;
 }
 
 // The segmented control is the global one (customer/ui.scss); this page adds nothing to it.

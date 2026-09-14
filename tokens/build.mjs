@@ -106,8 +106,14 @@ function buildIonicCss() {
   // Ionic reads its own --ion-* variables; point them at our semantic --hm-* vars so the whole
   // Ionic surface inherits the theme switch for free. The -rgb pairs (Ionic mixes translucent
   // overlays from them) cannot be variables, so they are derived from the same tokens here.
+  //
+  // `:root.md` / `:root.ios` as well as `:root`: Ionic's always-dark palette sets its own greys
+  // (#121212 ground, #1f1f1f toolbars) under the mode-classed root, which outranks a bare `:root`
+  // — without these the whole app rendered on Ionic's grey rather than the design's ground.
   return `${header}
-:root {
+:root,
+:root.md,
+:root.ios {
   --ion-background-color: var(${cssVar('color', 'surface.base')});
   --ion-background-color-rgb: ${rgb(tokens.color['surface.base'].dark)};
   --ion-text-color: var(${cssVar('color', 'text.primary')});

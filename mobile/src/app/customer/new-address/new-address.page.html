@@ -8,7 +8,7 @@
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <div class="mx-auto max-w-3xl px-4 pb-10">
+  <div class="mx-auto max-w-3xl px-[22px] pb-10 md:px-8">
     <p class="mt-2 text-md leading-snug text-content-muted">{{ 'address.lead' | translate }}</p>
 
     <!-- The pin first: it is the field that decides whether this address can be matched to a
@@ -21,7 +21,7 @@
          on one line left the explanation at about eleven characters a line — five lines of it — on
          a 390px phone. The text asks for 11rem and the button drops beneath it when that will not
          fit, which is decided by the row's own width rather than by a viewport breakpoint. -->
-    <h2 class="mt-6 mb-4 text-lg font-extrabold tracking-snug">{{ 'address.pin' | translate }}</h2>
+    <h2 class="mt-7 mb-3 text-2xs font-extrabold uppercase tracking-wider text-content-muted">{{ 'address.pin' | translate }}</h2>
     <div
       class="flex flex-wrap items-center gap-2 rounded-lg border p-4"
       [class]="fix() !== null
@@ -66,7 +66,7 @@
       </p>
     }
 
-    <h2 class="mt-6 mb-4 text-lg font-extrabold tracking-snug">{{ 'address.details' | translate }}</h2>
+    <h2 class="mt-7 mb-3 text-2xs font-extrabold uppercase tracking-wider text-content-muted">{{ 'address.details' | translate }}</h2>
 
     <ion-input
       class="field"
@@ -125,8 +125,8 @@
 </ion-content>
 
 <ion-footer class="ion-no-border">
-  <div class="mx-auto max-w-3xl border-t border-t-edge px-4 py-2">
-    <ion-button expand="block" [disabled]="!canSave()" (click)="save()">
+  <div class="mx-auto max-w-3xl px-[22px] pt-3.5 pb-6">
+    <ion-button expand="block" class="h-[54px] text-md" [disabled]="!canSave()" (click)="save()">
       @if (saving()) {
         <ion-spinner name="crescent"></ion-spinner>
       } @else {

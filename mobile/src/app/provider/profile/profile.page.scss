@@ -1,43 +1,67 @@
 // Ionic's own components only — everything else on this page is a Tailwind utility in the template.
+// Mirrors the customer account screen — the same one card, rows, group labels and sign-out row.
 
-ion-toolbar {
+ion-header ion-toolbar {
   --background: var(--hm-color-surface-base);
   --border-width: 0;
+  --min-height: 12px;
 }
 
-ion-title {
+// A settings group label: the micro-label (handoff: ADDRESSES, PREFERENCES).
+.acc-group {
+  margin: 24px 0 10px;
+  font-size: var(--hm-text-2xs);
   font-weight: 800;
-  letter-spacing: -0.02em;
+  letter-spacing: var(--hm-tracking-wider);
+  text-transform: uppercase;
+  color: var(--hm-color-text-muted);
 }
 
-ion-button {
-  --border-radius: var(--hm-radius-md);
-  font-weight: 700;
-  min-height: 44px;
-}
-
-.avail {
-  --background: var(--hm-color-surface-raised);
-  --padding-start: var(--hm-space-md);
-  --inner-padding-end: var(--hm-space-md);
-  --border-radius: var(--hm-radius-lg);
-
-  ion-icon { color: var(--hm-color-brand-primary); font-size: 1.3rem; }
-  ion-toggle { --track-background-checked: var(--hm-color-brand-primary); }
-}
-
-// The segmented control is the global one (customer/ui.scss); this page adds nothing to it.
-
-.actions {
+// One surface-1 card inside the line, rows divided by the soft line.
+.hm-card {
   padding: 0;
+  overflow: hidden;
   background: var(--hm-color-surface-raised);
+  border: 1px solid var(--hm-color-border-subtle);
+  border-radius: var(--hm-radius-lg);
+}
 
-  ion-item {
-    --background: var(--hm-color-surface-raised);
-    --color: var(--hm-color-text-primary);
-    --border-color: var(--hm-color-border-subtle);
-    font-size: var(--hm-text-md);
+ion-item {
+  --background: var(--hm-color-surface-raised);
+  --background-hover: var(--hm-color-surface-sunken);
+  --color: var(--hm-color-text-primary);
+  --border-color: var(--hm-color-border-soft);
+  --padding-start: 17px;
+  --inner-padding-end: 14px;
+  --min-height: 56px;
+  font-size: var(--hm-text-md);
 
-    ion-icon { color: var(--hm-color-text-muted); font-size: 1.2rem; }
+  &:last-of-type {
+    --border-width: 0;
+    --inner-border-width: 0;
   }
+}
+
+// Ionic sizes a label's <p> with a class+element selector that outranks a bare utility.
+.hm-card ion-label p {
+  font-size: 12.5px;
+  line-height: 1.4;
+  color: var(--hm-color-text-muted);
+}
+
+ion-list ion-icon[slot='start'] {
+  color: var(--hm-color-text-muted);
+  font-size: 18px;
+  margin-inline-end: 14px;
+}
+
+.add {
+  ion-icon { color: var(--hm-color-brand-primary); }
+  ion-label { color: var(--hm-color-brand-primary); font-weight: 700; }
+}
+
+// Sign-out is the one destructive row on the screen; it says so in its own colour.
+.signout {
+  ion-icon[slot='start'] { color: var(--hm-color-status-danger); }
+  ion-label { color: var(--hm-color-status-danger); font-weight: 700; }
 }

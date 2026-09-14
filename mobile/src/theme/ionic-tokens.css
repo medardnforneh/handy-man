@@ -1,6 +1,8 @@
 /* GENERATED from tokens/tokens.json — do not edit by hand. Run `npm run tokens:build`. */
 
-:root {
+:root,
+:root.md,
+:root.ios {
   --ion-background-color: var(--hm-color-surface-base);
   --ion-background-color-rgb: 11, 15, 14;
   --ion-text-color: var(--hm-color-text-primary);

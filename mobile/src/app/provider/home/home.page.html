@@ -1,156 +1,137 @@
 <ion-header [translucent]="true" class="ion-no-border">
   <ion-toolbar>
-    <ion-title>{{ 'pro.title' | translate }}</ion-title>
-    <ion-buttons slot="end">
-      <div class="me-4 grid size-9 flex-none place-items-center  bg-brand text-xs font-bold uppercase text-brand-contrast" aria-hidden="true">
+    <!-- The same header as the customer Home: the lockup, a PRO chip, the monogram. The provider
+         app is not in the handoff; it borrows the customer screens' grammar wholesale. -->
+    <div class="flex items-center gap-2.5 px-4 py-1 md:px-6">
+      <span class="grid size-[26px] flex-none place-items-center rounded-[9px] bg-brand text-[15px] text-brand-contrast" aria-hidden="true">
+        <ion-icon name="hammer-outline"></ion-icon>
+      </span>
+      <strong class="text-md font-bold tracking-snug">{{ 'app.name' | translate }}</strong>
+      <span class="rounded-[8px] bg-surface-sunken px-2 py-1 text-[10px] font-extrabold uppercase tracking-wide text-content-muted">{{ 'pro.title' | translate }}</span>
+      <button
+        class="ms-auto grid size-[38px] cursor-pointer place-items-center rounded-[14px] bg-surface-sunken text-xs font-extrabold text-content"
+        type="button"
+        [attr.aria-label]="'pro.tab.profile' | translate"
+        (click)="openProfile()"
+      >
         @if (who().initials) {
           {{ who().initials }}
         } @else {
-          <ion-icon name="person-outline" class="text-[1.25em]"></ion-icon>
+          <ion-icon name="person-outline" class="text-[1.25em]" aria-hidden="true"></ion-icon>
         }
-      </div>
-    </ion-buttons>
+      </button>
+    </div>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <div class="mx-auto max-w-3xl px-4 pb-10">
-    <div class="mt-2 mb-4">
-      <h1 class="text-[1.1rem] font-semibold text-content-muted">{{ 'pro.greeting' | translate }}</h1>
-      <!-- The person is known whether or not they have a provider profile — they are signed in —
-           so the greeting names them either way. What used to sit here was the setup instruction
-           itself, rendered as muted text with nothing to tap; that prompt is a real card below. -->
-      @if (who().name) {
-        <span class="inline-flex items-center gap-1.5 text-[1.5rem] font-extrabold tracking-tight">
-          {{ who().name }}
-          @if (identity().verificationTier >= 2) {
-            <ion-icon class="text-md text-brand" name="shield-checkmark" [attr.aria-label]="'discover.verified' | translate"></ion-icon>
-          }
-        </span>
-      }
-    </div>
+  <div class="mx-auto max-w-3xl px-[22px] pt-1 pb-tabbar md:px-8">
+    <!-- What is waiting on this provider (P7-02). Renders nothing when nothing is owed. -->
+    <app-follow-ups></app-follow-ups>
 
+    <!-- ── The money, first: what can be withdrawn, then the three figures a provider checks. ── -->
+    <section class="rounded-lg border border-edge bg-surface-raised px-5 pt-[17px] pb-[15px]" [attr.aria-label]="'pro.available' | translate">
+      <p class="m-0 flex items-center gap-1.5 text-2xs font-extrabold uppercase tracking-wider text-content-muted">
+        <ion-icon class="text-[13px]" name="wallet-outline" aria-hidden="true"></ion-icon>
+        {{ 'pro.available' | translate }}
+      </p>
+      <div class="mt-2 flex items-end justify-between gap-3">
+        <p class="m-0 flex items-baseline gap-2">
+          <span class="text-[46px] font-extrabold leading-none tracking-tight">{{ wallet().availableMinor | money }}</span>
+          <span class="text-md font-bold text-content-muted">{{ 'money.currency' | translate }}</span>
+        </p>
+        <!-- Bordered: the screen's one accent fill is the card that needs this person. Disabled at
+             zero rather than left tappable-then-refused. -->
+        <ion-button class="m-0 h-10" fill="outline" size="small" [disabled]="wallet().availableMinor <= 0" (click)="withdraw()">
+          {{ 'pro.withdraw' | translate }}
+        </ion-button>
+      </div>
+      <div class="mt-[13px] flex border-t border-edge pt-[13px]">
+        <div class="flex-1">
+          <b class="block text-lg font-extrabold leading-tight" [class.text-warning]="wallet().pendingPayoutMinor > 0">{{ wallet().pendingPayoutMinor | money }}</b>
+          <small class="text-2xs text-content-muted">{{ 'pro.pending_payout' | translate }}</small>
+        </div>
+        <div class="flex-1 border-s border-edge ps-3.5">
+          <b class="block text-lg font-extrabold leading-tight">{{ stats().activeJobs }}</b>
+          <small class="text-2xs text-content-muted">{{ 'pro.active_jobs' | translate }}</small>
+        </div>
+        <div class="flex-1 border-s border-edge ps-3.5">
+          <b class="block text-lg font-extrabold leading-tight">{{ leadCount() }}</b>
+          <small class="text-2xs text-content-muted">{{ 'pro.new_leads_count' | translate }}</small>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Needs you: the one accent-filled card. Without a profile it is the profile; then the
+         work that is waiting on a check-in or a report; then the newest lead. ── -->
+    <h2 class="mt-6 mb-3 text-2xs font-extrabold uppercase tracking-wider text-content-muted">{{ 'pro.needs_you' | translate }}</h2>
     @if (!hasProfile()) {
-      <!-- No provider profile: the one thing worth doing on this screen, said once and actionable,
-           above a wallet that can only ever read zero until it is done. It shares the client-book
-           card's shape but carries the brand ring. -->
       <button
-        class="mb-4 flex w-full min-h-11 cursor-pointer items-center gap-2 rounded-lg border border-brand bg-[color-mix(in_srgb,var(--color-brand)_7%,var(--color-surface-raised))] p-4 text-start text-inherit"
+        class="box-border block w-full cursor-pointer rounded-lg border-0 bg-brand px-5 py-4 text-start text-brand-contrast font-sans text-md transition active:scale-[0.995]"
         type="button"
         (click)="startOnboarding()"
       >
-        <span class="grid size-[38px] flex-none place-items-center rounded-md bg-brand/12 text-[1.1rem] text-brand" aria-hidden="true">
-          <ion-icon name="hammer-outline"></ion-icon>
+        <span class="flex items-start justify-between gap-3">
+          <span class="text-2xs font-extrabold uppercase tracking-wide opacity-70">{{ 'pro.setup_nav_title' | translate }}</span>
+          <ion-icon class="flex-none text-[19px]" name="open-outline" aria-hidden="true"></ion-icon>
         </span>
-        <span class="min-w-0 flex-1">
-          <b class="block text-md">{{ 'pro.setup_title' | translate }}</b>
-          <small class="mt-0.5 block text-xs text-content-muted">{{ 'pro.setup_body' | translate }}</small>
+        <b class="mt-1.5 block text-[21px] font-extrabold leading-tight tracking-snug">{{ 'pro.setup_title' | translate }}</b>
+        <span class="mt-1 block text-sm font-semibold opacity-80">{{ 'pro.setup_body' | translate }}</span>
+        <span class="mt-3.5 flex justify-end border-t border-edge-inverse pt-3.5">
+          <span class="inline-flex items-center gap-1.5 rounded-[14px] bg-surface px-4 py-2.5 text-sm font-bold text-brand">
+            {{ 'pro.setup_submit_short' | translate }}
+            <ion-icon class="text-[15px]" name="arrow-forward" aria-hidden="true"></ion-icon>
+          </span>
         </span>
-        <ion-icon class="flex-none text-md text-content-muted" name="chevron-forward" aria-hidden="true"></ion-icon>
       </button>
-    }
-
-    <!-- What is waiting on this provider (P7-02) — a quote about to expire, a payout ready to take.
-         Above the wallet because it is the part with a deadline; renders nothing when nothing is
-         owed. -->
-    <app-follow-ups></app-follow-ups>
-
-    <!-- Wallet -->
-    <div class="hm-on-brand mb-4 rounded-lg bg-brand px-4 py-6 text-brand-contrast">
-      <span class="text-sm font-semibold opacity-85">{{ 'pro.available' | translate }}</span>
-      <div class="mt-0.5 text-[2rem] font-extrabold tracking-[-0.03em]">
-        {{ wallet().availableMinor | money }} <small class="ms-1 text-sm font-semibold opacity-85">{{ 'money.currency' | translate }}</small>
-      </div>
-      @if (wallet().pendingPayoutMinor > 0) {
-        <span class="mt-0.5 block text-xs opacity-85">{{ 'pro.payout_pending' | translate:{ amount: (wallet().pendingPayoutMinor | money), currency: ('money.currency' | translate) } }}</span>
-      }
-      <!-- Disabled at zero rather than left tappable-then-refused: a primary button that only ever
-           produces an error toast reads as a broken app, not as a rule. -->
-      <ion-button expand="block" class="withdraw mt-4" [disabled]="wallet().availableMinor <= 0" (click)="withdraw()">
-        <ion-icon name="cash-outline" slot="start" aria-hidden="true"></ion-icon>
-        {{ 'pro.withdraw' | translate }}
-      </ion-button>
-      @if (wallet().availableMinor <= 0) {
-        <span class="mt-0.5 block text-xs opacity-85">{{ 'pro.nothing_to_withdraw' | translate }}</span>
-      }
-    </div>
-
-    <!-- Stats -->
-    <div class="mb-2 grid grid-cols-3 gap-2">
-      <div class="grid place-items-center gap-0.5 rounded-lg border border-edge bg-surface-raised px-1.5 py-4 text-center">
-        <b class="text-[1.25rem] font-extrabold tracking-tight">{{ stats().activeJobs }}</b>
-        <small class="text-2xs text-content-muted">{{ 'pro.active_jobs' | translate }}</small>
-      </div>
-      <div class="grid place-items-center gap-0.5 rounded-lg border border-edge bg-surface-raised px-1.5 py-4 text-center">
-        <b class="inline-flex items-center gap-1 text-[1.25rem] font-extrabold tracking-tight text-warning">
-          <ion-icon name="star" aria-hidden="true"></ion-icon>{{ stats().rating ?? '—' }}
-        </b>
-        <small class="text-2xs text-content-muted">{{ 'pro.rating' | translate }}</small>
-      </div>
-      <div class="grid place-items-center gap-0.5 rounded-lg border border-edge bg-surface-raised px-1.5 py-4 text-center">
-        @if (hasOnTime()) {
-          <b class="text-[1.25rem] font-extrabold tracking-tight">{{ onTimePercent() }}%</b>
-        } @else {
-          <b class="text-md font-bold text-content-muted">{{ 'provider.building' | translate }}</b>
-        }
-        <small class="text-2xs text-content-muted">{{ 'provider.stat.on_time' | translate }}</small>
-      </div>
-    </div>
-
-    <!-- The client book (P7-08). One row rather than a preview list: it costs no extra request on a
-         slow network, and this is a screen a provider goes to deliberately. -->
-    <button
-      class="mt-4 flex w-full min-h-11 cursor-pointer items-center gap-2 rounded-lg border border-edge bg-surface-raised p-4 text-start text-inherit"
-      type="button"
-      (click)="openClients()"
-    >
-      <span class="grid size-[38px] flex-none place-items-center rounded-md bg-brand/12 text-[1.1rem] text-brand" aria-hidden="true">
-        <ion-icon name="people-outline"></ion-icon>
-      </span>
-      <span class="min-w-0 flex-1">
-        <b class="block text-md">{{ 'crm.title' | translate }}</b>
-        <small class="mt-0.5 block text-xs text-content-muted">{{ 'crm.home_hint' | translate }}</small>
-      </span>
-      <ion-icon class="flex-none text-md text-content-muted" name="chevron-forward" aria-hidden="true"></ion-icon>
-    </button>
-
-    <!-- Opportunities -->
-    <div class="mt-6 mb-4 flex items-center justify-between gap-2">
-      <h2 class="text-lg font-extrabold tracking-snug">{{ 'pro.opportunities' | translate }}</h2>
-      <a class="cursor-pointer text-sm font-semibold text-brand no-underline" (click)="seeOpportunities()">{{ 'discover.see_all' | translate }} ({{ leadCount() }})</a>
-    </div>
-    @for (lead of topLeads(); track lead.id) {
+    } @else if (urgentWork(); as work) {
       <button
-        class="mb-2 flex w-full min-h-11 cursor-pointer gap-2 rounded-lg border border-edge bg-surface-raised p-4 text-start text-inherit"
+        class="box-border block w-full cursor-pointer rounded-lg border-0 bg-brand px-5 py-4 text-start text-brand-contrast font-sans text-md transition active:scale-[0.995]"
+        type="button"
+        (click)="openWork(work)"
+      >
+        <span class="flex items-start justify-between gap-3">
+          <span class="text-2xs font-extrabold uppercase tracking-wide opacity-70">{{ work.reference }} · {{ work.customerName }}</span>
+          <ion-icon class="flex-none text-[19px]" name="open-outline" aria-hidden="true"></ion-icon>
+        </span>
+        <b class="mt-1.5 block text-[21px] font-extrabold leading-tight tracking-snug">{{ work.title }}</b>
+        <span class="mt-1 block text-sm font-semibold opacity-80">{{ workHint(work) | translate }}</span>
+        <span class="mt-3.5 flex items-center justify-between gap-3 border-t border-edge-inverse pt-3.5">
+          <span class="text-sm font-semibold opacity-80">{{ 'status.' + work.status | translate }}</span>
+          <span class="inline-flex items-center gap-1.5 rounded-[14px] bg-surface px-4 py-2.5 text-sm font-bold text-brand">
+            {{ 'pro.work_cta' | translate }}
+            <ion-icon class="text-[15px]" name="arrow-forward" aria-hidden="true"></ion-icon>
+          </span>
+        </span>
+      </button>
+    } @else if (topLeads()[0]; as lead) {
+      <button
+        class="box-border block w-full cursor-pointer rounded-lg border-0 bg-brand px-5 py-4 text-start text-brand-contrast font-sans text-md transition active:scale-[0.995]"
         type="button"
         (click)="openLead(lead)"
       >
-        <div
-          [class]="'grid size-11 flex-none place-items-center rounded-md text-[1.2rem] text-brand-contrast accent-' + lead.accent"
-          aria-hidden="true"
-        >
-          <ion-icon name="briefcase" aria-hidden="true"></ion-icon>
-        </div>
-        <div class="min-w-0 flex-1">
-          <b class="block text-md">{{ lead.title }}</b>
-          <div class="mt-0.5 flex flex-wrap items-center gap-1.5 text-xs text-content-muted">
-            <span>{{ lead.skill }}</span>
-            <span class="size-[3px] flex-none rounded-full bg-surface-step" aria-hidden="true"></span>
-            <span><ion-icon name="location-outline" class="me-0.5 -mb-px" aria-hidden="true"></ion-icon>{{ lead.area }}</span>
-          </div>
-          <div class="mt-2 flex items-center justify-between gap-2">
-            @if (lead.budgetMinor) {
-              <span class="font-bold tabular-nums">
-                {{ lead.budgetMinor | money }} <small class="ms-0.5 text-2xs font-semibold text-content-muted">{{ 'money.currency' | translate }}</small>
-              </span>
-            } @else {
-              <span class="hm-pill tone-neutral">{{ 'pro.quote_requested' | translate }}</span>
-            }
-            <span class="text-xs text-content-muted">{{ lead.postedAgo }}</span>
-          </div>
-        </div>
+        <span class="flex items-start justify-between gap-3">
+          <span class="min-w-0 truncate text-2xs font-extrabold uppercase tracking-wide opacity-70">{{ leadMeta(lead) }}</span>
+          <ion-icon class="flex-none text-[19px]" name="open-outline" aria-hidden="true"></ion-icon>
+        </span>
+        <b class="mt-1.5 block text-[21px] font-extrabold leading-tight tracking-snug">{{ lead.title }}</b>
+        <span class="mt-1 block text-sm font-semibold opacity-80">{{ 'pro.lead_hint' | translate }}</span>
+        <span class="mt-3.5 flex items-center justify-between gap-3 border-t border-edge-inverse pt-3.5">
+          @if (lead.budgetMinor) {
+            <span class="flex items-baseline gap-1">
+              <span class="text-[24px] font-extrabold leading-none tracking-tight">{{ lead.budgetMinor | money }}</span>
+              <span class="text-xs font-bold opacity-70">{{ 'money.currency' | translate }}</span>
+            </span>
+          } @else {
+            <span class="text-sm font-semibold opacity-80">{{ 'pro.quote_requested' | translate }}</span>
+          }
+          <span class="inline-flex items-center gap-1.5 rounded-[14px] bg-surface px-4 py-2.5 text-sm font-bold text-brand">
+            {{ 'pro.lead_cta' | translate }}
+            <ion-icon class="text-[15px]" name="arrow-forward" aria-hidden="true"></ion-icon>
+          </span>
+        </span>
       </button>
-    } @empty {
+    } @else {
       <app-empty-state
         inline="true"
         icon="briefcase-outline"
@@ -159,36 +140,91 @@
       ></app-empty-state>
     }
 
-    <!-- Active work -->
-    <div class="mt-6 mb-4 flex items-center justify-between gap-2">
-      <h2 class="text-lg font-extrabold tracking-snug">{{ 'pro.active_work' | translate }}</h2>
-      <a class="cursor-pointer text-sm font-semibold text-brand no-underline" (click)="seeWork()">{{ 'discover.see_all' | translate }}</a>
-    </div>
-    @for (work of topActive(); track work.id) {
-      <button
-        class="mb-2 flex w-full min-h-11 cursor-pointer items-center gap-2 rounded-lg border border-edge bg-surface-raised px-4 py-2 text-start text-inherit"
-        type="button"
-        (click)="openWork(work)"
-      >
-        <div
-          [class]="'grid size-10 flex-none place-items-center  text-sm font-bold uppercase text-brand-contrast accent-' + work.accent"
-          aria-hidden="true"
-        >{{ work.customerName.charAt(0) }}</div>
-        <div class="min-w-0 flex-1">
-          <b class="text-md">{{ work.title }}</b>
-          <small class="block text-xs text-content-muted">{{ work.reference }} · {{ work.customerName }}</small>
-        </div>
-        <span [class]="'hm-pill flex-none ' + tone(work.status)">{{ 'status.' + work.status | translate }}</span>
-      </button>
-    } @empty {
-      <!-- The opportunities list had an empty state and this one did not, so an idle provider saw a
-           heading followed by nothing at all. -->
-      <app-empty-state
-        inline="true"
-        icon="construct-outline"
-        heading="pro.no_work_title"
-        body="pro.no_work_body"
-      ></app-empty-state>
+    <!-- ── New leads: quiet rows, the rest of them. ── -->
+    @if (leadCount() > 0) {
+      <div class="mt-7 mb-1 flex items-center justify-between">
+        <h2 class="m-0 text-2xs font-extrabold uppercase tracking-wider text-content-muted">{{ 'pro.new_leads' | translate }}</h2>
+        <a class="cursor-pointer text-sm font-bold text-brand no-underline" (click)="seeOpportunities()">{{ 'discover.see_all' | translate }} ({{ leadCount() }})</a>
+      </div>
+      @for (lead of topLeads(); track lead.id) {
+        <button
+          class="box-border flex w-full cursor-pointer items-center gap-3 border-0 border-b border-solid border-edge-soft bg-transparent px-0 py-[15px] text-start text-inherit font-sans text-md last:border-b-0"
+          type="button"
+          (click)="openLead(lead)"
+        >
+          <span class="grid size-[38px] flex-none place-items-center rounded-[13px] bg-surface-sunken text-[17px] text-brand" aria-hidden="true">
+            <ion-icon name="briefcase-outline"></ion-icon>
+          </span>
+          <span class="min-w-0 flex-1">
+            <b class="block truncate text-md font-bold">{{ lead.title }}</b>
+            <small class="block truncate text-xs text-content-muted">{{ leadMeta(lead, true) }}</small>
+          </span>
+          <span class="flex-none text-end">
+            @if (lead.budgetMinor) {
+              <b class="block text-md font-extrabold">{{ lead.budgetMinor | money }}</b>
+            } @else {
+              <span class="hm-pill tone-neutral">{{ 'pro.quote_requested' | translate }}</span>
+            }
+          </span>
+        </button>
+      }
     }
+
+    <!-- ── Active work ── -->
+    @if (active().length > 0) {
+      <div class="mt-7 mb-1 flex items-center justify-between">
+        <h2 class="m-0 text-2xs font-extrabold uppercase tracking-wider text-content-muted">{{ 'pro.active_work' | translate }}</h2>
+        <a class="cursor-pointer text-sm font-bold text-brand no-underline" (click)="seeWork()">{{ 'discover.see_all' | translate }}</a>
+      </div>
+      @for (work of topActive(); track work.id) {
+        <button
+          class="box-border flex w-full cursor-pointer items-center gap-3 border-0 border-b border-solid border-edge-soft bg-transparent px-0 py-[15px] text-start text-inherit font-sans text-md last:border-b-0"
+          type="button"
+          (click)="openWork(work)"
+        >
+          <span class="grid size-[38px] flex-none place-items-center rounded-[13px] bg-surface-sunken text-xs font-extrabold uppercase" aria-hidden="true">{{ work.customerName.charAt(0) || '·' }}</span>
+          <span class="min-w-0 flex-1">
+            <b class="block truncate text-md font-bold">{{ work.title }}</b>
+            <small class="block truncate text-xs text-content-muted">{{ work.reference }} · {{ work.customerName }}</small>
+          </span>
+          <span [class]="'hm-pill flex-none ' + tone(work.status)">{{ 'status.' + work.status | translate }}</span>
+        </button>
+      }
+    }
+
+    <!-- ── The rest of the business: rating and reliability, the client book. ── -->
+    <div class="mt-7 grid grid-cols-2 gap-[9px]">
+      <div class="rounded-lg border border-edge bg-surface-raised px-[15px] py-3">
+        <b class="flex items-center gap-1 text-[19px] font-extrabold leading-tight" [class.text-warning]="stats().rating !== null">
+          @if (stats().rating !== null) {<ion-icon name="star" class="text-[15px]" aria-hidden="true"></ion-icon>}
+          {{ stats().rating ?? '—' }}
+        </b>
+        <small class="text-[11.5px] leading-tight text-content-muted">{{ 'pro.rating' | translate }}</small>
+      </div>
+      <div class="rounded-lg border border-edge bg-surface-raised px-[15px] py-3">
+        @if (hasOnTime()) {
+          <b class="block text-[19px] font-extrabold leading-tight">{{ onTimePercent() }}%</b>
+        } @else {
+          <b class="block text-md font-bold leading-tight text-content-muted">{{ 'provider.building' | translate }}</b>
+        }
+        <small class="text-[11.5px] leading-tight text-content-muted">{{ 'provider.stat.on_time' | translate }}</small>
+      </div>
+    </div>
+
+    <!-- The client book (P7-08). One row rather than a preview list: it costs no request. -->
+    <button
+      class="mt-3 box-border flex w-full cursor-pointer items-center gap-3 rounded-lg border border-solid border-edge bg-surface-raised px-[17px] py-3.5 text-start text-inherit font-sans text-md"
+      type="button"
+      (click)="openClients()"
+    >
+      <span class="grid size-[38px] flex-none place-items-center rounded-[13px] bg-brand-tint text-[18px] text-brand" aria-hidden="true">
+        <ion-icon name="people-outline"></ion-icon>
+      </span>
+      <span class="min-w-0 flex-1">
+        <b class="block text-md font-bold">{{ 'crm.title' | translate }}</b>
+        <small class="mt-0.5 block text-xs text-content-muted">{{ 'crm.home_hint' | translate }}</small>
+      </span>
+      <ion-icon class="flex-none text-[17px] text-content-muted" name="chevron-forward" aria-hidden="true"></ion-icon>
+    </button>
   </div>
 </ion-content>

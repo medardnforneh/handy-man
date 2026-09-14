@@ -1,9 +1,9 @@
 <ion-header [translucent]="true" class="ion-no-border">
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-back-button defaultHref="/pro/work" [text]="''"></ion-back-button>
+      <ion-back-button defaultHref="/pro/work" [text]="''" icon="chevron-back"></ion-back-button>
     </ion-buttons>
-    <ion-title>{{ work().reference }}</ion-title>
+    <ion-title class="text-center text-xs font-bold tracking-[0.06em] text-content-muted">{{ work().reference }}</ion-title>
   </ion-toolbar>
 
   <!-- The screen a worker uses in the field — where the network is worst and the state of the
@@ -12,53 +12,61 @@
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <div class="mx-auto max-w-3xl px-4 pb-10">
-    <!-- Title + current status -->
-    <div class="mt-2 mb-4 flex items-start justify-between gap-2">
-      <h1 class="text-[1.3rem] font-extrabold tracking-tight text-balance">{{ work().title }}</h1>
-      <span class="hm-pill tone-info mt-1 flex-none">{{ 'work.status.' + work().status | translate }}</span>
+  <div class="mx-auto max-w-3xl px-[22px] pb-10 md:px-8">
+    <!-- Status line, then the title (the job detail's shape). -->
+    <div class="mt-1 flex flex-wrap items-center gap-2.5">
+      <span [class]="'hm-pill ' + tone(work().status)">{{ 'work.status.' + work().status | translate }}</span>
+      <span class="text-xs text-content-muted">{{ (work().addressLine ? 'jobdetail.mode_onsite' : 'jobdetail.mode_remote') | translate }}</span>
     </div>
+    <h1 class="mt-2.5 mb-5 text-[29px] font-extrabold leading-[1.06] tracking-tight text-balance">{{ work().title }}</h1>
 
-    <!-- Customer -->
-    <div class="flex items-center gap-2 rounded-lg border border-edge bg-surface-raised px-4 py-2">
-      <div
-        [class]="'grid size-11 flex-none place-items-center  text-sm font-bold uppercase text-brand-contrast accent-' + work().accent"
-        aria-hidden="true"
-      >{{ work().customerInitials }}</div>
-      <div class="min-w-0 flex-1">
-        <b class="text-md">{{ work().customerName }}</b>
+    <!-- The customer, with the chat tile. -->
+    <div class="mb-3 flex items-center gap-3 rounded-lg border border-edge bg-surface-raised py-3.5 ps-[17px] pe-3.5">
+      <span class="grid size-11 flex-none place-items-center rounded-[15px] bg-brand text-sm font-extrabold uppercase text-brand-contrast" aria-hidden="true">{{ work().customerInitials }}</span>
+      <span class="min-w-0 flex-1">
+        <b class="block truncate text-[15.5px] font-bold">{{ work().customerName }}</b>
         <small class="block text-xs text-content-muted">{{ 'work.customer' | translate }}</small>
-      </div>
+      </span>
+      <button
+        class="grid size-[38px] flex-none cursor-pointer place-items-center rounded-[13px] border-0 bg-brand-tint text-[18px] text-brand disabled:opacity-45"
+        type="button"
+        [disabled]="!work().jobId"
+        [attr.aria-label]="'jobdetail.open_chat' | translate"
+        (click)="openChat()"
+      >
+        <ion-icon name="chatbubble-ellipses-outline" aria-hidden="true"></ion-icon>
+      </button>
     </div>
 
     <!-- Location. The server decides whether this engagement has an address at all (mode policy). -->
-    <h2 class="mt-6 mb-4 text-lg font-extrabold tracking-snug">{{ 'jobdetail.location' | translate }}</h2>
     @if (!work().addressLine) {
-      <p class="m-0 flex items-center gap-2 rounded-md border border-edge p-4 text-md text-content-muted">
-        <ion-icon name="globe-outline" class="flex-none text-[1.1rem] text-brand" aria-hidden="true"></ion-icon>{{ 'jobdetail.remote' | translate }}
+      <p class="m-0 flex items-center gap-2.5 rounded-md border border-edge bg-surface-raised px-[17px] py-3.5 text-md text-content-muted">
+        <ion-icon name="globe-outline" class="flex-none text-[17px] text-brand" aria-hidden="true"></ion-icon>{{ 'jobdetail.remote' | translate }}
       </p>
     } @else {
-      <p class="m-0 flex items-center gap-2 rounded-lg border border-edge bg-surface-raised p-4 text-md">
-        <ion-icon name="location-outline" class="flex-none text-[1.1rem] text-brand" aria-hidden="true"></ion-icon>{{ work().addressLine }}
+      <p class="m-0 flex items-center gap-2.5 rounded-md border border-edge bg-surface-raised px-[17px] py-3.5 text-md">
+        <ion-icon name="location-outline" class="flex-none text-[17px] text-brand" aria-hidden="true"></ion-icon>
+        <span class="min-w-0 flex-1 truncate">{{ work().addressLine }}</span>
       </p>
     }
 
-    <!-- Check-in (on-site/hybrid only) -->
+    <!-- Arrival (on-site/hybrid only): the check-in is the footer's button until it is done. -->
     @if (canCheckIn()) {
-      <h2 class="mt-6 mb-4 text-lg font-extrabold tracking-snug">{{ 'work.arrival' | translate }}</h2>
+      <h2 class="mt-7 mb-3 text-2xs font-extrabold uppercase tracking-wider text-content-muted">{{ 'work.arrival' | translate }}</h2>
       @if (!work().checkedIn) {
-        <ion-button expand="block" [disabled]="busy()" (click)="checkIn()">
-          <ion-icon name="location" slot="start" aria-hidden="true"></ion-icon>
-          {{ 'work.check_in' | translate }}
-        </ion-button>
-        <p class="mt-2 text-xs leading-snug text-content-muted">{{ 'work.check_in_hint' | translate }}</p>
+        <p class="m-0 flex items-center gap-2.5 rounded-lg border border-edge bg-surface-raised px-[17px] py-3.5 text-sm text-content-muted">
+          <ion-icon name="location" class="flex-none text-[18px] text-brand" aria-hidden="true"></ion-icon>
+          <span class="min-w-0 flex-1">{{ 'work.check_in_hint' | translate }}</span>
+        </p>
       } @else {
-        <div class="flex items-center gap-2 rounded-lg border border-edge bg-surface-raised p-4">
-          <ion-icon name="checkmark-circle" class="flex-none text-[1.4rem] text-success" aria-hidden="true"></ion-icon>
-          <span class="min-w-0 flex-1 text-md">{{ 'work.checked_in' | translate }}</span>
+        <div class="flex items-center gap-2.5 rounded-lg border border-edge bg-surface-raised px-[17px] py-3.5">
+          <span class="grid size-8 flex-none place-items-center rounded-pill bg-success-tint text-[16px] text-success" aria-hidden="true">
+            <ion-icon name="checkmark"></ion-icon>
+          </span>
+          <span class="min-w-0 flex-1 text-md font-semibold">{{ 'work.checked_in' | translate }}</span>
           <button
             type="button"
-            class="min-h-11 flex-none cursor-pointer border-0 bg-transparent px-2 text-sm font-bold text-brand font-sans"
+            class="min-h-11 flex-none cursor-pointer border-0 bg-transparent px-2 font-sans text-sm font-bold text-brand disabled:opacity-45"
             [disabled]="busy()"
             (click)="checkOut()"
           >{{ 'work.check_out' | translate }}</button>
@@ -66,15 +74,15 @@
       }
     }
 
-    <!-- Status -->
-    <h2 class="mt-6 mb-4 text-lg font-extrabold tracking-snug">{{ 'work.update_status' | translate }}</h2>
-    <div class="flex flex-wrap gap-1.5">
+    <!-- Status: chips, the current one filled — what the customer's thread narrates. -->
+    <h2 class="mt-7 mb-3 text-2xs font-extrabold uppercase tracking-wider text-content-muted">{{ 'work.update_status' | translate }}</h2>
+    <div class="flex flex-wrap gap-2">
       @for (s of statuses; track s) {
         <button
           type="button"
-          class="min-h-11 cursor-pointer rounded-pill border px-3 py-2 text-sm font-semibold font-sans disabled:opacity-50"
+          class="box-border min-h-11 cursor-pointer rounded-[14px] border border-solid px-3.5 py-2 font-sans text-sm font-bold transition-colors disabled:opacity-45"
           [class]="work().status === s
-            ? 'border-brand bg-brand text-brand-contrast'
+            ? 'border-brand bg-brand-tint text-brand'
             : 'border-edge bg-surface-raised text-content'"
           [attr.aria-pressed]="work().status === s"
           [disabled]="busy()"
@@ -83,36 +91,31 @@
       }
     </div>
 
-    <!-- Report — on-site modes only; remote proves its work with deliverables instead (doc 06). -->
+    <!-- The proof of work: a report on site, deliverables remotely (doc 06). -->
     @if (work().supportsReport) {
-      <h2 class="mt-6 mb-4 text-lg font-extrabold tracking-snug">{{ 'work.report' | translate }}</h2>
+      <h2 class="mt-7 mb-3 text-2xs font-extrabold uppercase tracking-wider text-content-muted">{{ 'work.report' | translate }}</h2>
       @if (!work().reportSubmitted) {
-        <button
-          type="button"
-          class="flex w-full min-h-11 cursor-pointer items-center justify-start gap-2 rounded-md border border-edge bg-transparent p-4 text-sm font-semibold text-content-muted font-sans disabled:opacity-50"
-          [disabled]="busy()"
-          (click)="openReport()"
-        >
-          <ion-icon name="camera-outline" class="text-[1.25rem] text-brand" aria-hidden="true"></ion-icon>
-          <span>{{ 'work.submit_report' | translate }}</span>
-        </button>
-        <p class="mt-2 text-xs leading-snug text-content-muted">{{ 'work.report_hint' | translate }}</p>
+        <p class="m-0 flex items-center gap-2.5 rounded-lg border border-edge bg-surface-raised px-[17px] py-3.5 text-sm text-content-muted">
+          <ion-icon name="camera-outline" class="flex-none text-[18px] text-brand" aria-hidden="true"></ion-icon>
+          <span class="min-w-0 flex-1">{{ 'work.report_hint' | translate }}</span>
+        </p>
       } @else {
-        <div class="flex items-center gap-2 rounded-lg border border-edge bg-surface-raised p-4">
-          <ion-icon name="checkmark-circle" class="flex-none text-[1.4rem] text-success" aria-hidden="true"></ion-icon>
-          <span class="min-w-0 flex-1 text-md">{{ 'work.report_submitted' | translate }}</span>
+        <div class="flex items-center gap-2.5 rounded-lg border border-edge bg-surface-raised px-[17px] py-3.5">
+          <span class="grid size-8 flex-none place-items-center rounded-pill bg-success-tint text-[16px] text-success" aria-hidden="true">
+            <ion-icon name="checkmark"></ion-icon>
+          </span>
+          <span class="min-w-0 flex-1 text-md font-semibold">{{ 'work.report_submitted' | translate }}</span>
         </div>
       }
     }
 
-    <!-- Deliverables — the remote (and hybrid) path's proof of work; the customer reviews each. -->
     @if (work().usesDeliverables) {
-      <h2 class="mt-6 mb-4 text-lg font-extrabold tracking-snug">{{ 'work.deliverables' | translate }}</h2>
+      <h2 class="mt-7 mb-3 text-2xs font-extrabold uppercase tracking-wider text-content-muted">{{ 'work.deliverables' | translate }}</h2>
       @if (work().deliverables.length) {
-        <ul class="m-0 list-none p-0">
+        <ul class="m-0 mb-3 list-none overflow-hidden rounded-lg border border-edge bg-surface-raised p-0">
           @for (d of work().deliverables; track d.id) {
-            <li class="mb-2 flex items-center gap-2 rounded-lg border border-edge bg-surface-raised p-4">
-              <span class="min-w-0 flex-1 text-md">{{ d.title }}</span>
+            <li class="flex items-center gap-3 border-b border-edge-soft px-[17px] py-3.5 last:border-b-0">
+              <span class="min-w-0 flex-1 truncate text-md font-semibold">{{ d.title }}</span>
               <span [class]="'hm-pill flex-none ' + deliverableTone(d.status)">
                 {{ 'work.deliverable.' + d.status | translate }}
               </span>
@@ -122,62 +125,70 @@
       }
       <button
         type="button"
-        class="flex w-full min-h-11 cursor-pointer items-center justify-start gap-2 rounded-md border border-edge bg-transparent p-4 text-sm font-semibold text-content-muted font-sans disabled:opacity-50"
+        class="flex w-full min-h-11 cursor-pointer items-center justify-start gap-2.5 rounded-md border border-edge bg-transparent px-[17px] py-3.5 font-sans text-sm font-semibold text-content disabled:opacity-45"
         [disabled]="busy()"
         (click)="openDeliverable()"
       >
-        <ion-icon name="cloud-upload-outline" class="text-[1.25rem] text-brand" aria-hidden="true"></ion-icon>
+        <ion-icon name="cloud-upload-outline" class="text-[18px] text-brand" aria-hidden="true"></ion-icon>
         <span>{{ 'work.submit_deliverable' | translate }}</span>
       </button>
       <p class="mt-2 text-xs leading-snug text-content-muted">{{ 'work.deliverable_hint' | translate }}</p>
     }
 
-    <!-- Paid in cash (P3-15). Plenty of this work is settled in notes at the door, and an
-         unrecorded cash job leaves nothing behind — no completed count, no rating, nothing to show
-         the next customer. So it is offered here rather than demanded, and the reason is stated. -->
-    <h2 class="mt-6 mb-4 text-lg font-extrabold tracking-snug">{{ 'work.cash_heading' | translate }}</h2>
+    <!-- Paid in cash (P3-15) and the warranty (P6-11): offered, quietly, with the reason stated. -->
+    <h2 class="mt-7 mb-3 text-2xs font-extrabold uppercase tracking-wider text-content-muted">{{ 'work.cash_heading' | translate }}</h2>
     <button
       type="button"
-      class="flex w-full min-h-11 cursor-pointer items-center justify-start gap-2 rounded-md border border-edge bg-transparent p-4 text-sm font-semibold text-content-muted font-sans disabled:opacity-50"
+      class="flex w-full min-h-11 cursor-pointer items-center justify-start gap-2.5 rounded-md border border-edge bg-transparent px-[17px] py-3.5 font-sans text-sm font-semibold text-content disabled:opacity-45"
       [disabled]="busy()"
       (click)="openCash()"
     >
-      <ion-icon name="cash-outline" class="text-[1.25rem] text-brand" aria-hidden="true"></ion-icon>
+      <ion-icon name="cash-outline" class="text-[18px] text-brand" aria-hidden="true"></ion-icon>
       <span>{{ 'work.cash_record' | translate }}</span>
     </button>
     <p class="mt-2 text-xs leading-snug text-content-muted">{{ 'work.cash_hint' | translate }}</p>
 
-    <!-- Offering a warranty (P6-11). Not a step of the work: a sales argument, and the one the
-         platform is built around — a warranty exists here and nowhere else, so it is what makes
-         staying on-platform worth more than the fee a provider saves by leaving. -->
-    <h2 class="mt-6 mb-4 text-lg font-extrabold tracking-snug">{{ 'work.warranty_heading' | translate }}</h2>
+    <h2 class="mt-7 mb-3 text-2xs font-extrabold uppercase tracking-wider text-content-muted">{{ 'work.warranty_heading' | translate }}</h2>
     <button
       type="button"
-      class="flex w-full min-h-11 cursor-pointer items-center justify-start gap-2 rounded-md border border-edge bg-transparent p-4 text-sm font-semibold text-content-muted font-sans disabled:opacity-50"
+      class="flex w-full min-h-11 cursor-pointer items-center justify-start gap-2.5 rounded-md border border-edge bg-transparent px-[17px] py-3.5 font-sans text-sm font-semibold text-content disabled:opacity-45"
       [disabled]="busy()"
       (click)="openWarranty()"
     >
-      <ion-icon name="shield-checkmark-outline" class="text-[1.25rem] text-success" aria-hidden="true"></ion-icon>
+      <ion-icon name="shield-checkmark-outline" class="text-[18px] text-success" aria-hidden="true"></ion-icon>
       <span>{{ 'work.warranty_offer' | translate }}</span>
     </button>
     <p class="mt-2 text-xs leading-snug text-content-muted">{{ 'work.warranty_hint' | translate }}</p>
   </div>
 </ion-content>
 
+<!-- The screen's one filled button: whatever this job needs next — the check-in, then the report
+     (or a deliverable), then the thread. -->
 <ion-footer class="ion-no-border">
-  <div class="mx-auto max-w-3xl border-t border-t-edge px-4 py-2">
-    <ion-button
-      expand="block"
-      fill="outline"
-      [disabled]="!work().jobId"
-      (click)="openChat()"
-    >
-      <ion-icon name="chatbubble-ellipses-outline" slot="start" aria-hidden="true"></ion-icon>
-      {{ 'jobdetail.open_chat' | translate }}
-    </ion-button>
+  <div class="mx-auto max-w-3xl px-[22px] pt-3.5 pb-6 md:px-8">
+    @if (canCheckIn() && !work().checkedIn) {
+      <ion-button expand="block" class="h-[54px] text-md m-0" [disabled]="busy()" (click)="checkIn()">
+        <ion-icon name="location" slot="start" aria-hidden="true"></ion-icon>
+        {{ 'work.check_in' | translate }}
+      </ion-button>
+    } @else if (work().supportsReport && !work().reportSubmitted) {
+      <ion-button expand="block" class="h-[54px] text-md m-0" [disabled]="busy()" (click)="openReport()">
+        <ion-icon name="camera-outline" slot="start" aria-hidden="true"></ion-icon>
+        {{ 'work.submit_report' | translate }}
+      </ion-button>
+    } @else if (work().usesDeliverables && !work().supportsReport) {
+      <ion-button expand="block" class="h-[54px] text-md m-0" [disabled]="busy()" (click)="openDeliverable()">
+        <ion-icon name="cloud-upload-outline" slot="start" aria-hidden="true"></ion-icon>
+        {{ 'work.submit_deliverable' | translate }}
+      </ion-button>
+    } @else {
+      <ion-button expand="block" class="h-[54px] text-md m-0" fill="outline" [disabled]="!work().jobId" (click)="openChat()">
+        <ion-icon name="chatbubble-ellipses-outline" slot="start" aria-hidden="true"></ion-icon>
+        {{ 'jobdetail.open_chat' | translate }}
+      </ion-button>
+    }
   </div>
 </ion-footer>
-
 <!-- Report composer: summary (required), materials, extra charges, before/after photos (P5-04). -->
 <ion-modal [isOpen]="reportOpen()" (didDismiss)="closeReport()">
   <ng-template>
@@ -191,12 +202,12 @@
     </ion-header>
 
     <ion-content>
-      <div class="mx-auto max-w-3xl px-4 pt-4 pb-10">
+      <div class="mx-auto max-w-3xl px-[22px] pt-4 pb-10 md:px-8">
         <!-- Summary -->
         <label class="mb-4 block">
-          <span class="mb-1.5 block text-sm font-bold text-content-muted">{{ 'work.summary' | translate }}</span>
+          <span class="hm-label">{{ 'work.summary' | translate }}</span>
           <textarea
-            class="finput resize-y leading-snug"
+            class="hm-field resize-y leading-snug"
             rows="5"
             [ngModel]="summary()"
             (ngModelChange)="summary.set($event)"
@@ -208,18 +219,18 @@
         }
 
         <!-- Materials -->
-        <h2 class="mt-6 mb-4 text-lg font-extrabold tracking-snug">{{ 'work.materials' | translate }}</h2>
+        <h2 class="mt-7 mb-3 text-2xs font-extrabold uppercase tracking-wider text-content-muted">{{ 'work.materials' | translate }}</h2>
         @for (m of materials(); track $index) {
           <div class="mb-2 grid grid-cols-[1fr_4.5rem_6rem_auto] items-center gap-2 rounded-lg border border-edge bg-surface-raised p-2 max-[480px]:grid-cols-[1fr_auto]">
             <input
-              class="finput max-[480px]:col-span-full"
+              class="hm-field max-[480px]:col-span-full"
               [ngModel]="m.label"
               (ngModelChange)="updateMaterial($index, { label: $event })"
               [placeholder]="'work.material_label' | translate"
               [attr.aria-label]="'work.material_label' | translate"
             />
             <input
-              class="finput"
+              class="hm-field"
               type="number"
               min="0"
               [ngModel]="m.qty"
@@ -228,7 +239,7 @@
               [attr.aria-label]="'work.material_qty' | translate"
             />
             <input
-              class="finput"
+              class="hm-field"
               type="number"
               min="0"
               [ngModel]="m.unitCostMinor"
@@ -255,9 +266,9 @@
 
         <!-- Extra charges -->
         <label class="mb-4 block">
-          <span class="mb-1.5 block text-sm font-bold text-content-muted">{{ 'work.extra_charges' | translate }}</span>
+          <span class="hm-label">{{ 'work.extra_charges' | translate }}</span>
           <input
-            class="finput"
+            class="hm-field"
             type="number"
             min="0"
             [ngModel]="extraCharges()"
@@ -266,7 +277,7 @@
         </label>
 
         <!-- Photos. Every one is EXIF-stripped server-side; the geo lands in the DB, not the file. -->
-        <h2 class="mt-6 mb-4 text-lg font-extrabold tracking-snug">{{ 'work.photos' | translate }}</h2>
+        <h2 class="mt-7 mb-3 text-2xs font-extrabold uppercase tracking-wider text-content-muted">{{ 'work.photos' | translate }}</h2>
         @if (photos().length) {
           <ul class="m-0 list-none p-0">
             @for (p of photos(); track $index) {
@@ -299,8 +310,8 @@
     </ion-content>
 
     <ion-footer class="ion-no-border">
-      <div class="mx-auto max-w-3xl border-t border-t-edge px-4 py-2">
-        <ion-button expand="block" [disabled]="busy()" (click)="submitReport()">
+      <div class="mx-auto max-w-3xl px-[22px] pt-3.5 pb-6">
+        <ion-button expand="block" class="h-[54px] text-md" [disabled]="busy()" (click)="submitReport()">
           {{ 'work.send_report' | translate }}
         </ion-button>
       </div>
@@ -322,8 +333,8 @@
     </ion-header>
 
     <ion-content>
-      <div class="mx-auto max-w-3xl px-4 pt-4 pb-10">
-        <span class="mb-1.5 block text-sm font-bold text-content-muted">{{ 'work.warranty_length' | translate }}</span>
+      <div class="mx-auto max-w-3xl px-[22px] pt-4 pb-10 md:px-8">
+        <span class="hm-label">{{ 'work.warranty_length' | translate }}</span>
         <div class="mb-4 flex flex-wrap gap-1.5">
           @for (days of warrantyChoices; track days) {
             <button
@@ -339,9 +350,9 @@
         </div>
 
         <label class="mb-4 block">
-          <span class="mb-1.5 block text-sm font-bold text-content-muted">{{ 'work.warranty_terms' | translate }}</span>
+          <span class="hm-label">{{ 'work.warranty_terms' | translate }}</span>
           <textarea
-            class="finput resize-y leading-snug"
+            class="hm-field resize-y leading-snug"
             rows="4"
             [ngModel]="warrantyTerms()"
             (ngModelChange)="warrantyTerms.set($event)"
@@ -359,8 +370,8 @@
     </ion-content>
 
     <ion-footer class="ion-no-border">
-      <div class="mx-auto max-w-3xl border-t border-t-edge px-4 py-2">
-        <ion-button expand="block" [disabled]="busy()" (click)="issueWarranty()">
+      <div class="mx-auto max-w-3xl px-[22px] pt-3.5 pb-6">
+        <ion-button expand="block" class="h-[54px] text-md" [disabled]="busy()" (click)="issueWarranty()">
           {{ 'work.warranty_confirm' | translate }}
         </ion-button>
       </div>
@@ -383,11 +394,11 @@
     </ion-header>
 
     <ion-content>
-      <div class="mx-auto max-w-3xl px-4 pt-4 pb-10">
+      <div class="mx-auto max-w-3xl px-[22px] pt-4 pb-10 md:px-8">
         <label class="mb-4 block">
-          <span class="mb-1.5 block text-sm font-bold text-content-muted">{{ 'work.cash_amount' | translate }}</span>
+          <span class="hm-label">{{ 'work.cash_amount' | translate }}</span>
           <input
-            class="finput"
+            class="hm-field"
             type="number"
             inputmode="numeric"
             min="1"
@@ -408,8 +419,8 @@
     </ion-content>
 
     <ion-footer class="ion-no-border">
-      <div class="mx-auto max-w-3xl border-t border-t-edge px-4 py-2">
-        <ion-button expand="block" [disabled]="busy()" (click)="recordCash()">
+      <div class="mx-auto max-w-3xl px-[22px] pt-3.5 pb-6">
+        <ion-button expand="block" class="h-[54px] text-md" [disabled]="busy()" (click)="recordCash()">
           {{ 'work.cash_confirm' | translate }}
         </ion-button>
       </div>
@@ -430,11 +441,11 @@
     </ion-header>
 
     <ion-content>
-      <div class="mx-auto max-w-3xl px-4 pt-4 pb-10">
+      <div class="mx-auto max-w-3xl px-[22px] pt-4 pb-10 md:px-8">
         <label class="mb-4 block">
-          <span class="mb-1.5 block text-sm font-bold text-content-muted">{{ 'work.deliverable_title' | translate }}</span>
+          <span class="hm-label">{{ 'work.deliverable_title' | translate }}</span>
           <input
-            class="finput"
+            class="hm-field"
             [ngModel]="deliverableTitle()"
             (ngModelChange)="deliverableTitle.set($event)"
             [placeholder]="'work.deliverable_title_placeholder' | translate"
@@ -445,9 +456,9 @@
         }
 
         <label class="mb-4 block">
-          <span class="mb-1.5 block text-sm font-bold text-content-muted">{{ 'work.deliverable_url' | translate }}</span>
+          <span class="hm-label">{{ 'work.deliverable_url' | translate }}</span>
           <input
-            class="finput"
+            class="hm-field"
             type="url"
             inputmode="url"
             [ngModel]="deliverableUrl()"
@@ -460,8 +471,8 @@
     </ion-content>
 
     <ion-footer class="ion-no-border">
-      <div class="mx-auto max-w-3xl border-t border-t-edge px-4 py-2">
-        <ion-button expand="block" [disabled]="busy()" (click)="submitDeliverable()">
+      <div class="mx-auto max-w-3xl px-[22px] pt-3.5 pb-6">
+        <ion-button expand="block" class="h-[54px] text-md" [disabled]="busy()" (click)="submitDeliverable()">
           {{ 'work.send_deliverable' | translate }}
         </ion-button>
       </div>

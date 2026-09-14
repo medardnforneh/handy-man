@@ -6,19 +6,6 @@ ion-toolbar {
 }
 
 ion-title {
-  font-size: var(--hm-text-md);
-  font-weight: 700;
-}
-
-.withdraw {
-  --border-radius: var(--hm-radius-md);
-  font-weight: 700;
-  min-height: 44px;
-}
-
-// Scoped to the ENABLED state so the shared disabled treatment (ui.scss) is not out-specified by
-// this rule — that fight is what left a disabled button wearing enabled colours.
-.withdraw:not(.button-disabled) {
-  --background: var(--hm-color-brand-onPrimary);
-  --color: var(--hm-color-brand-primary);
+  font-weight: 800;
+  letter-spacing: -0.02em;
 }

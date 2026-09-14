@@ -33,6 +33,8 @@ export class ProviderEarningsPage {
   /** Fixture wallet/history first (instant, offline-safe); the real earnings replace them once loaded. */
   readonly wallet = signal<ProviderWallet>(this.provider.getWallet());
   readonly payouts = signal<Payout[]>(this.provider.listPayouts());
+  /** Everything that has actually landed on a Mobile Money number — the counter beside what is pending. */
+  readonly paidOutMinor = computed(() => this.payouts().filter((p) => p.status === 'paid').reduce((sum, p) => sum + p.amountMinor, 0));
 
   /**
    * Prepaid lead credits (P2-08), out of the same earnings payload. Null until it is read, and the

@@ -1,13 +1,8 @@
-// Ionic's own components, plus one shared rule for the composers' NATIVE form controls.
+// Ionic's own components only — everything else on this page is a Tailwind utility in the template.
 
 ion-toolbar {
   --background: var(--hm-color-surface-base);
   --border-width: 0;
-}
-
-ion-title {
-  font-size: var(--hm-text-md);
-  font-weight: 700;
 }
 
 ion-button {
@@ -19,24 +14,4 @@ ion-button {
 
 ion-footer {
   background: var(--hm-color-surface-base);
-}
-
-// The report and deliverable composers are built from bare <input> and <textarea> rather than
-// ion-input: a materials row is four small fields on one line and Ionic's control does not sit in
-// a grid cell. Preflight is deliberately not loaded on this surface (it would undo Ionic's own
-// normalize), so these elements still carry their user-agent font — `font: inherit` is not
-// something a utility can express.
-.finput {
-  width: 100%;
-  min-width: 0;
-  padding: 0.65rem 0.75rem;
-  background: var(--hm-color-surface-raised);
-  border: 1.5px solid var(--hm-color-border-subtle);
-  border-radius: var(--hm-radius-md);
-  color: var(--hm-color-text-primary);
-  font: inherit;
-  font-size: var(--hm-text-md);
-
-  &::placeholder { color: var(--hm-color-text-muted); }
-  &:focus { outline: none; border-color: var(--hm-color-brand-primary); }
 }

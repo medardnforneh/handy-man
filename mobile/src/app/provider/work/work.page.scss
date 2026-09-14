@@ -1,11 +1,8 @@
 // Ionic's own components only — everything else on this page is a Tailwind utility in the template.
 
-ion-toolbar {
+// The tab's title is spoken, not shown, so the toolbar collapses to a sliver above the H1.
+ion-header ion-toolbar {
   --background: var(--hm-color-surface-base);
   --border-width: 0;
-}
-
-ion-title {
-  font-weight: 800;
-  letter-spacing: -0.02em;
+  --min-height: 12px;
 }

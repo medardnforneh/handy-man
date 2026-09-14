@@ -5,23 +5,9 @@ ion-toolbar {
   --border-width: 0;
 }
 
-ion-title {
-  font-weight: 800;
-  letter-spacing: -0.02em;
-}
-
 // The retry beside a failed load speaks in the same colour as the failure it follows.
 .retry {
   flex: none;
   --color: var(--hm-color-status-danger);
   font-weight: 700;
-}
-
-.send {
-  flex: none;
-  --border-radius: var(--hm-radius-md);
-  font-weight: 700;
-  min-height: 44px;
-
-  ion-spinner { width: 18px; height: 18px; }
 }

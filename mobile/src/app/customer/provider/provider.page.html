@@ -18,7 +18,7 @@
 
 <ion-content [fullscreen]="true">
   @if (provider(); as p) {
-    <div class="mx-auto max-w-3xl px-4 pb-10">
+    <div class="mx-auto max-w-3xl px-[22px] pb-10 md:px-8">
       <!-- Hero -->
       <section class="mt-2 grid place-items-center rounded-lg border border-edge bg-surface-raised px-4 py-6 text-center">
         <div
@@ -106,7 +106,7 @@
 
       <!-- Skills -->
       @if (p.skills.length > 0) {
-        <h2 class="mt-6 mb-4 text-lg font-extrabold tracking-snug">{{ 'provider.skills' | translate }}</h2>
+        <h2 class="mt-7 mb-3 text-2xs font-extrabold uppercase tracking-wider text-content-muted">{{ 'provider.skills' | translate }}</h2>
         <div class="flex flex-wrap gap-1.5">
           @for (skill of p.skills; track skill) {
             <span class="rounded-pill border border-edge bg-surface-sunken px-2.5 py-1 text-xs font-semibold text-content">{{ skill }}</span>
@@ -116,7 +116,7 @@
 
       <!-- About -->
       @if (p.about) {
-        <h2 class="mt-6 mb-4 text-lg font-extrabold tracking-snug">{{ 'provider.about' | translate }}</h2>
+        <h2 class="mt-7 mb-3 text-2xs font-extrabold uppercase tracking-wider text-content-muted">{{ 'provider.about' | translate }}</h2>
         <p class="m-0 text-md leading-relaxed text-content">{{ p.about }}</p>
       }
       @if (p.memberSince) {
@@ -124,7 +124,7 @@
       }
 
       <!-- Reviews -->
-      <h2 class="mt-6 mb-4 text-lg font-extrabold tracking-snug">{{ 'provider.reviews' | translate }}</h2>
+      <h2 class="mt-7 mb-3 text-2xs font-extrabold uppercase tracking-wider text-content-muted">{{ 'provider.reviews' | translate }}</h2>
       @for (r of p.reviews; track r.id) {
         <article class="mb-2 flex gap-2 rounded-lg border border-edge bg-surface-raised p-4">
           <div
@@ -159,8 +159,8 @@
 </ion-content>
 
 <ion-footer class="ion-no-border">
-  <div class="mx-auto max-w-3xl border-t border-t-edge px-4 py-2">
-    <ion-button expand="block" [disabled]="sending()" (click)="requestQuote()">
+  <div class="mx-auto max-w-3xl px-[22px] pt-3.5 pb-6">
+    <ion-button expand="block" class="h-[54px] text-md" [disabled]="sending()" (click)="requestQuote()">
       <ion-icon name="chatbubble-ellipses-outline" slot="start" aria-hidden="true"></ion-icon>
       {{ (hasJob ? 'provider.send_offer' : 'provider.request_quote') | translate }}
     </ion-button>
@@ -181,8 +181,8 @@
     </ion-header>
 
     <ion-content>
-      <div class="mx-auto max-w-3xl px-4 pt-4 pb-10">
-        <span class="mb-1.5 block text-sm font-bold text-content-muted">{{ 'report.category' | translate }}</span>
+      <div class="mx-auto max-w-3xl px-[22px] pt-4 pb-10 md:px-8">
+        <span class="hm-label">{{ 'report.category' | translate }}</span>
         <!-- Chips rather than a select: seven reasons is a list you read, and one of them is the
              point of the whole screen — burying them behind a dropdown hides what the platform will
              act on. -->
@@ -198,7 +198,7 @@
         </div>
 
         <label class="mb-4 block">
-          <span class="mb-1.5 block text-sm font-bold text-content-muted">{{ 'report.body_label' | translate }}</span>
+          <span class="hm-label">{{ 'report.body_label' | translate }}</span>
           <textarea
             class="w-full resize-y rounded-md border border-edge bg-surface-raised px-3 py-2.5 font-sans text-md leading-snug text-content focus:border-brand focus:outline-none"
             rows="5"
@@ -220,8 +220,8 @@
     </ion-content>
 
     <ion-footer class="ion-no-border">
-      <div class="mx-auto max-w-3xl border-t border-t-edge px-4 py-2">
-        <ion-button expand="block" [disabled]="reporting()" (click)="sendReport()">
+      <div class="mx-auto max-w-3xl px-[22px] pt-3.5 pb-6">
+        <ion-button expand="block" class="h-[54px] text-md" [disabled]="reporting()" (click)="sendReport()">
           @if (reporting()) {
             <ion-spinner name="crescent"></ion-spinner>
           } @else {

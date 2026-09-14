@@ -42,6 +42,16 @@ export class ProviderWorkDetailPage implements OnInit {
   /** The status signals a provider can post; `arrived` is reserved to check-in (P5-06). */
   readonly statuses: WorkStatus[] = ['on_the_way', 'started', 'paused', 'resumed', 'completed'];
 
+  /** The status pill's tone: done is green, moving is amber, everything else the quiet grey. */
+  tone(status: WorkStatus): string {
+    switch (status) {
+      case 'completed': return 'tone-success';
+      case 'started': case 'resumed': case 'on_the_way': return 'tone-warning';
+      case 'paused': return 'tone-danger';
+      default: return 'tone-neutral';
+    }
+  }
+
   // --- Report composer -------------------------------------------------------------------------
 
   readonly reportOpen = signal(false);

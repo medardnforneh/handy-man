@@ -1,74 +1,76 @@
 <ion-header [translucent]="true" class="ion-no-border">
   <ion-toolbar>
-    <ion-title>{{ 'pro.tab.earnings' | translate }}</ion-title>
+    <ion-title class="sr-only">{{ 'pro.tab.earnings' | translate }}</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <div class="mx-auto max-w-3xl px-4 pt-2 pb-10">
-    <!-- Wallet -->
+  <div class="mx-auto max-w-3xl px-[22px] pt-3 pb-tabbar md:px-8">
+    <h1 class="mt-1 mb-4 text-[30px] font-extrabold leading-[1.06] tracking-tight text-balance">{{ 'pro.earnings_title' | translate }}</h1>
+
+    <!-- The money card, and this screen's one filled button: withdrawing is what it is for. -->
     @if (wallet(); as w) {
-      <div class="hm-on-brand mb-4 rounded-lg bg-brand px-4 py-6 text-brand-contrast">
-        <span class="text-sm font-semibold opacity-85">{{ 'pro.available' | translate }}</span>
-        <div class="mt-0.5 text-[2rem] font-extrabold tracking-[-0.03em]">
-          {{ w.availableMinor | money }} <small class="ms-1 text-sm font-semibold opacity-85">{{ 'money.currency' | translate }}</small>
+      <section class="rounded-lg border border-edge bg-surface-raised px-5 pt-[17px] pb-5" [attr.aria-label]="'pro.available' | translate">
+        <p class="m-0 flex items-center gap-1.5 text-2xs font-extrabold uppercase tracking-wider text-content-muted">
+          <ion-icon class="text-[13px]" name="wallet-outline" aria-hidden="true"></ion-icon>
+          {{ 'pro.available' | translate }}
+        </p>
+        <p class="m-0 mt-2 flex items-baseline gap-2">
+          <span class="text-[46px] font-extrabold leading-none tracking-tight">{{ w.availableMinor | money }}</span>
+          <span class="text-md font-bold text-content-muted">{{ 'money.currency' | translate }}</span>
+        </p>
+        <div class="mt-[13px] flex border-t border-edge pt-[13px]">
+          <div class="flex-1">
+            <b class="block text-lg font-extrabold leading-tight" [class.text-warning]="w.pendingPayoutMinor > 0">{{ w.pendingPayoutMinor | money }}</b>
+            <small class="text-2xs text-content-muted">{{ 'pro.pending_payout' | translate }}</small>
+          </div>
+          <div class="flex-1 border-s border-edge ps-3.5">
+            <b class="block text-lg font-extrabold leading-tight">{{ paidOutMinor() | money }}</b>
+            <small class="text-2xs text-content-muted">{{ 'pro.paid_out' | translate }}</small>
+          </div>
         </div>
-        @if (w.pendingPayoutMinor > 0) {
-          <span class="mt-0.5 block text-xs opacity-85">{{ 'pro.payout_pending' | translate:{ amount: (w.pendingPayoutMinor | money), currency: ('money.currency' | translate) } }}</span>
-        }
-        <ion-button expand="block" class="withdraw mt-4" [disabled]="w.availableMinor <= 0" (click)="openSheet()">
+        <ion-button expand="block" class="mt-4 h-[50px] m-0" [disabled]="w.availableMinor <= 0" (click)="openSheet()">
           <ion-icon name="cash-outline" slot="start" aria-hidden="true"></ion-icon>
           {{ 'pro.withdraw' | translate }}
         </ion-button>
-      </div>
+        @if (w.availableMinor <= 0) {
+          <span class="mt-2 block text-center text-xs text-content-muted">{{ 'pro.nothing_to_withdraw' | translate }}</span>
+        }
+      </section>
     }
 
-    <!-- Lead credits. A different pot from earnings and shown as one: this is money the provider
-         has PUT IN to buy opportunities, not money they have taken out. Hidden entirely when the
-         balance could not be read, rather than shown as a zero they might believe. A plain card
-         rather than a second brand-coloured block competing with the wallet above it.
-
-         Top-aligned: the hint wraps on a narrow phone, and centring left the icon and the amount
-         floating against the middle of a three-line block. -->
+    <!-- Lead credits: a different pot — money the provider has PUT IN to buy opportunities. Hidden
+         entirely when the balance could not be read, rather than shown as a zero they might believe. -->
     @if (credits() !== null) {
-      <div class="mb-4 flex items-start gap-2 rounded-lg border border-edge bg-surface-raised p-4">
-        <ion-icon name="ticket-outline" class="mt-0.5 flex-none text-[1.4rem] text-brand" aria-hidden="true"></ion-icon>
-        <div class="min-w-0 flex-1">
-          <b class="block text-md">{{ 'wd.credits' | translate }}</b>
-          <small class="mt-0.5 block text-xs leading-snug text-content-muted">{{ 'wd.credits_hint' | translate }}</small>
-        </div>
-        <span class="flex-none text-md font-extrabold tabular-nums">
-          {{ credits() | money }} <small class="ms-0.5 text-2xs font-semibold text-content-muted">{{ 'money.currency' | translate }}</small>
+      <div class="mt-3 flex items-center gap-3 rounded-lg border border-edge bg-surface-raised px-[17px] py-3.5">
+        <span class="grid size-10 flex-none place-items-center rounded-[13px] bg-surface-sunken text-[18px] text-brand" aria-hidden="true">
+          <ion-icon name="ticket-outline"></ion-icon>
+        </span>
+        <span class="min-w-0 flex-1">
+          <b class="block text-md font-bold">{{ 'wd.credits' | translate }}</b>
+          <small class="block text-xs leading-snug text-content-muted">{{ 'wd.credits_hint' | translate }}</small>
+        </span>
+        <span class="flex-none text-end">
+          <b class="block text-md font-extrabold">{{ credits() | money }}</b>
+          <button type="button" class="cursor-pointer border-0 bg-transparent p-0 font-sans text-xs font-bold text-brand disabled:opacity-45" [disabled]="busy()" (click)="openTopUp()">{{ 'credits.top_up' | translate }}</button>
         </span>
       </div>
-      <!-- Adding to it (P3-04). The balance has been readable since this screen was built and there
-           was no way to top it up, so running out meant quietly losing the ability to bid. -->
-      <button
-        type="button"
-        class="mb-4 min-h-11 w-full cursor-pointer rounded-md border border-edge bg-surface-raised px-4 py-2.5 text-sm font-semibold text-content font-sans disabled:opacity-50"
-        [disabled]="busy()"
-        (click)="openTopUp()"
-      >{{ 'credits.top_up' | translate }}</button>
     }
 
-    <!-- Payout history -->
-    <h2 class="mt-6 mb-4 text-lg font-extrabold tracking-snug">{{ 'pro.payout_history' | translate }}</h2>
+    <!-- Payout history: rows divided by lines. -->
+    <h2 class="mt-7 mb-1 text-2xs font-extrabold uppercase tracking-wider text-content-muted">{{ 'pro.payout_history' | translate }}</h2>
     @for (p of payouts(); track p.id) {
-      <div class="mb-2 flex items-center gap-2 rounded-lg border border-edge bg-surface-raised px-4 py-2">
-        <div [class]="'grid size-[38px] flex-none place-items-center  text-[1.1rem] ' + tone(p.status)" aria-hidden="true">
+      <div class="flex items-center gap-3 border-b border-edge-soft py-[15px] last:border-b-0">
+        <span [class]="'grid size-[38px] flex-none place-items-center rounded-[13px] text-[17px] ' + tone(p.status)" aria-hidden="true">
           <ion-icon [name]="p.status === 'failed' ? 'close' : (p.status === 'paid' ? 'checkmark' : 'time-outline')"></ion-icon>
-        </div>
-        <div class="min-w-0 flex-1">
-          <b class="text-md tabular-nums">
-            {{ p.amountMinor | money }} <small class="ms-0.5 text-2xs font-semibold text-content-muted">{{ 'money.currency' | translate }}</small>
-          </b>
-          <small class="block text-xs text-content-muted">{{ p.reference }} · {{ p.date }}</small>
-        </div>
+        </span>
+        <span class="min-w-0 flex-1">
+          <b class="block text-md font-extrabold">{{ p.amountMinor | money }} <small class="ms-0.5 text-2xs font-semibold text-content-muted">{{ 'money.currency' | translate }}</small></b>
+          <small class="block truncate text-xs text-content-muted">{{ p.reference }} · {{ p.date }}</small>
+        </span>
         <span [class]="'hm-pill flex-none ' + tone(p.status)">{{ 'payout.' + p.status | translate }}</span>
       </div>
     } @empty {
-      <!-- Inline, not full-screen: the wallet above it is real content, so this is one empty
-           section rather than an empty page. -->
       <app-empty-state
         inline="true"
         icon="receipt-outline"
@@ -78,7 +80,6 @@
     }
   </div>
 </ion-content>
-
 <!-- The withdraw sheet. Two fields, because the endpoint takes two things and neither can be
      guessed: how much of the balance to take, and the wallet it lands in. -->
 <ion-modal [isOpen]="sheetOpen()" (didDismiss)="closeSheet()">
@@ -93,14 +94,14 @@
     </ion-header>
 
     <ion-content>
-      <div class="mx-auto max-w-3xl px-4 pt-4 pb-10">
+      <div class="mx-auto max-w-3xl px-[22px] pt-4 pb-10 md:px-8">
         <label class="mb-4 block">
-          <span class="mb-1.5 block text-sm font-bold text-content-muted">{{ 'wd.amount' | translate }}</span>
+          <span class="hm-label">{{ 'wd.amount' | translate }}</span>
           <!-- "All of it" sits beside the amount rather than under it: it is a shortcut for the
                field, not a separate decision. -->
           <span class="flex items-center gap-2">
             <input
-              class="finput min-w-0 flex-1"
+              class="hm-field min-w-0 flex-1"
               type="number"
               inputmode="numeric"
               min="1"
@@ -122,9 +123,9 @@
         }
 
         <label class="mb-4 block">
-          <span class="mb-1.5 block text-sm font-bold text-content-muted">{{ 'wd.msisdn' | translate }}</span>
+          <span class="hm-label">{{ 'wd.msisdn' | translate }}</span>
           <input
-            class="finput"
+            class="hm-field"
             type="tel"
             inputmode="tel"
             [ngModel]="msisdn()"
@@ -137,7 +138,7 @@
         }
 
         <div class="mb-4">
-          <span class="mb-1.5 block text-sm font-bold text-content-muted">{{ 'pay.receive_method' | translate }}</span>
+          <span class="hm-label">{{ 'pay.receive_method' | translate }}</span>
           <ion-segment [value]="payoutRail()" (ionChange)="payoutRailChoice.set($any($event.detail.value))">
             <ion-segment-button value="mtn_momo"><ion-label>{{ 'pay.method_mtn_momo' | translate }}</ion-label></ion-segment-button>
             <ion-segment-button value="orange_money"><ion-label>{{ 'pay.method_orange_money' | translate }}</ion-label></ion-segment-button>
@@ -154,8 +155,8 @@
     </ion-content>
 
     <ion-footer class="ion-no-border">
-      <div class="mx-auto max-w-3xl border-t border-t-edge px-4 py-2">
-        <ion-button expand="block" [disabled]="busy()" (click)="submit()">
+      <div class="mx-auto max-w-3xl px-[22px] pt-3.5 pb-6">
+        <ion-button expand="block" class="h-[54px] text-md" [disabled]="busy()" (click)="submit()">
           @if (busy()) {
             <ion-spinner name="crescent"></ion-spinner>
           } @else {
@@ -181,11 +182,11 @@
     </ion-header>
 
     <ion-content>
-      <div class="mx-auto max-w-3xl px-4 pt-4 pb-10">
+      <div class="mx-auto max-w-3xl px-[22px] pt-4 pb-10 md:px-8">
         <label class="mb-4 block">
-          <span class="mb-1.5 block text-sm font-bold text-content-muted">{{ 'credits.amount' | translate }}</span>
+          <span class="hm-label">{{ 'credits.amount' | translate }}</span>
           <input
-            class="finput"
+            class="hm-field"
             type="number"
             inputmode="numeric"
             min="1"
@@ -196,9 +197,9 @@
         </label>
 
         <label class="mb-4 block">
-          <span class="mb-1.5 block text-sm font-bold text-content-muted">{{ 'credits.msisdn' | translate }}</span>
+          <span class="hm-label">{{ 'credits.msisdn' | translate }}</span>
           <input
-            class="finput"
+            class="hm-field"
             type="tel"
             inputmode="tel"
             [ngModel]="topUpMsisdn()"
@@ -210,7 +211,7 @@
         }
 
         <div class="mb-4">
-          <span class="mb-1.5 block text-sm font-bold text-content-muted">{{ 'pay.method' | translate }}</span>
+          <span class="hm-label">{{ 'pay.method' | translate }}</span>
           <ion-segment [value]="topUpRail()" (ionChange)="topUpRailChoice.set($any($event.detail.value))">
             <ion-segment-button value="mtn_momo"><ion-label>{{ 'pay.method_mtn_momo' | translate }}</ion-label></ion-segment-button>
             <ion-segment-button value="orange_money"><ion-label>{{ 'pay.method_orange_money' | translate }}</ion-label></ion-segment-button>
@@ -226,8 +227,8 @@
     </ion-content>
 
     <ion-footer class="ion-no-border">
-      <div class="mx-auto max-w-3xl border-t border-t-edge px-4 py-2">
-        <ion-button expand="block" [disabled]="busy()" (click)="buyCredits()">
+      <div class="mx-auto max-w-3xl px-[22px] pt-3.5 pb-6">
+        <ion-button expand="block" class="h-[54px] text-md" [disabled]="busy()" (click)="buyCredits()">
           {{ 'credits.confirm' | translate }}
         </ion-button>
       </div>

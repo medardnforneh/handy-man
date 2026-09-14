@@ -1,48 +1,11 @@
-// Ionic's own components, plus the one rule the withdraw sheet's NATIVE inputs need.
+// Ionic's own components only — everything else on this page is a Tailwind utility in the template.
 
-ion-toolbar {
+// The tab's title is spoken, not shown, so the toolbar collapses to a sliver above the H1.
+ion-header ion-toolbar {
   --background: var(--hm-color-surface-base);
   --border-width: 0;
+  --min-height: 12px;
 }
-
-ion-title {
-  font-weight: 800;
-  letter-spacing: -0.02em;
-}
-
-.withdraw {
-  --border-radius: var(--hm-radius-md);
-  font-weight: 700;
-  min-height: 44px;
-}
-
-// Scoped to the ENABLED state so the shared disabled treatment (ui.scss) is not out-specified by
-// this rule — that fight is what left a disabled button wearing enabled colours.
-.withdraw:not(.button-disabled) {
-  --background: var(--hm-color-brand-onPrimary);
-  --color: var(--hm-color-brand-primary);
-}
-
-// Bare <input> rather than ion-input: an amount with a shortcut button beside it does not fit
-// Ionic's control. Preflight is deliberately not loaded on this surface, so the element still
-// carries its user-agent font — `font: inherit` is not something a utility can express.
-.finput {
-  width: 100%;
-  padding: 0.7rem 0.8rem;
-  background: var(--hm-color-surface-raised);
-  border: 1.5px solid var(--hm-color-border-subtle);
-  border-radius: var(--hm-radius-md);
-  color: var(--hm-color-text-primary);
-  font: inherit;
-  font-size: var(--hm-text-md);
-  font-variant-numeric: tabular-nums;
-
-  &:focus {
-    outline: none;
-    border-color: var(--hm-color-brand-primary);
-  }
-}
-
 ion-footer {
   background: var(--hm-color-surface-base);
 

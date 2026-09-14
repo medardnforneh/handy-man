@@ -1,15 +1,16 @@
 <ion-header [translucent]="true" class="ion-no-border">
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-back-button defaultHref="/pro/profile" [text]="''"></ion-back-button>
+      <ion-back-button defaultHref="/pro/profile" [text]="''" icon="chevron-back"></ion-back-button>
     </ion-buttons>
-    <ion-title>{{ 'vdoc.title' | translate }}</ion-title>
+    <ion-title class="sr-only">{{ 'vdoc.title' | translate }}</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <div class="mx-auto max-w-3xl px-4 pb-10">
-    <p class="mt-2 text-md leading-snug text-content-muted">{{ 'vdoc.lead' | translate }}</p>
+  <div class="mx-auto max-w-3xl px-[22px] pb-10 md:px-8">
+    <h1 class="mt-1 mb-2 text-[29px] font-extrabold leading-[1.06] tracking-tight text-balance">{{ 'vdoc.title' | translate }}</h1>
+    <p class="mt-0 text-md leading-snug text-content-muted">{{ 'vdoc.lead' | translate }}</p>
 
     <!-- The ladder, with the current rung marked. The point of the screen is a tier, so the tier is
          the first thing on it — and each rung says what it OPENS rather than what it is called,
@@ -17,16 +18,16 @@
 
          A reached rung is filled and full-contrast; an unreached one keeps its outline and stays
          muted, so the current position reads at a glance without a second colour meaning anything. -->
-    <h2 class="mt-6 mb-4 text-lg font-extrabold tracking-snug">{{ 'vdoc.tier_ladder' | translate }}</h2>
-    <ol class="m-0 list-none rounded-lg border border-edge bg-surface-raised p-4">
+    <h2 class="mt-7 mb-3 text-2xs font-extrabold uppercase tracking-wider text-content-muted">{{ 'vdoc.tier_ladder' | translate }}</h2>
+    <ol class="m-0 list-none rounded-lg border border-edge bg-surface-raised px-[17px] py-1">
       @for (step of steps(); track step.n) {
         <li
-          class="flex items-start gap-2 text-sm leading-snug not-first:mt-2"
-          [class]="step.reached ? 'text-content' : 'text-content-muted'"
+          class="flex items-center gap-3 border-b border-edge-soft py-3 text-md leading-snug"
+          [class]="step.reached ? 'font-semibold text-content' : 'text-content-muted'"
         >
           <span
-            class="grid size-[22px] flex-none place-items-center rounded-full text-xs"
-            [class]="step.reached ? 'bg-success/16 text-success' : 'bg-surface-sunken text-content-muted'"
+            class="grid size-7 flex-none place-items-center rounded-pill text-[14px]"
+            [class]="step.reached ? 'bg-success-tint text-success' : 'bg-surface-sunken text-content-faint'"
             aria-hidden="true"
           >
             <ion-icon [name]="step.reached ? 'checkmark' : 'ellipse-outline'"></ion-icon>
@@ -34,13 +35,13 @@
           <span class="min-w-0 flex-1">{{ step.key | translate }}</span>
         </li>
       }
-      <li class="mt-4 border-t border-t-edge pt-2 text-xs font-bold text-content-muted">{{ 'vdoc.tier_now' | translate:{ n: tier() } }}</li>
+      <li class="py-3 text-2xs font-extrabold uppercase tracking-wider text-content-muted">{{ 'vdoc.tier_now' | translate:{ n: tier() } }}</li>
     </ol>
 
     @if (loadFailed()) {
       <!-- "We could not load this" and "you have sent nothing" are different sentences, and the
            difference decides whether someone sends their ID in twice. -->
-      <p class="mt-2 flex flex-wrap items-center gap-1.5 text-sm leading-snug text-danger">
+      <p class="mt-3 flex flex-wrap items-center gap-1.5 text-sm leading-snug text-danger">
         <ion-icon name="alert-circle-outline" class="flex-none text-md" aria-hidden="true"></ion-icon>
         <span class="min-w-0 flex-1">{{ 'vdoc.load_failed' | translate }}</span>
         <ion-button class="retry" fill="clear" size="small" (click)="load()">
@@ -50,65 +51,67 @@
     }
 
     @for (group of groups(); track group.key) {
-      <h2 class="mt-6 mb-4 text-lg font-extrabold tracking-snug">{{ group.title | translate }}</h2>
-      <p class="-mt-3 mb-2 text-sm leading-snug text-content-muted">{{ group.body | translate }}</p>
+      <h2 class="mt-7 mb-1 text-2xs font-extrabold uppercase tracking-wider text-content-muted">{{ group.title | translate }}</h2>
+      <p class="mt-0 mb-3 text-sm leading-snug text-content-muted">{{ group.body | translate }}</p>
 
-      @for (row of group.rows; track row.kind) {
-        <!-- Flex-wrap rather than grid so the refusal reason can take a full row of its own by
-             claiming 100% width — it is absent on almost every row and should cost nothing when it
-             is. -->
-        <div
-          class="mb-2 flex flex-wrap items-center gap-2 rounded-lg border p-4"
-          [class]="row.status === 'approved'
-            ? 'border-success/40 bg-[color-mix(in_srgb,var(--color-success)_7%,var(--color-surface-raised))]'
-            : ((row.status === 'rejected' || row.status === 'expired') ? 'border-danger/40 bg-surface-raised' : 'border-edge bg-surface-raised')"
-        >
-          <span
-            class="grid size-[38px] flex-none place-items-center rounded-md text-[1.1rem]"
-            [class]="row.status === 'approved' ? 'bg-success/14 text-success' : 'bg-brand/12 text-brand'"
-            aria-hidden="true"
-          >
-            <ion-icon [name]="row.status === 'approved' ? 'checkmark-circle' : group.icon"></ion-icon>
-          </span>
-          <span class="min-w-0 flex-1">
-            <b class="block text-md leading-snug">{{ ('vdoc.kind.' + row.kind) | translate }}</b>
-            <span class="hm-pill mt-1"
-                  [class.tone-success]="row.status === 'approved'"
-                  [class.tone-warning]="row.status === 'pending'"
-                  [class.tone-danger]="row.status === 'rejected' || row.status === 'expired'"
-                  [class.tone-neutral]="row.status === 'none'">
-              {{ ('vdoc.status.' + row.status) | translate }}
+      <!-- One card per group, a row per document, divided by lines. The send is a text action on
+           the row: there are seven of these and no one of them is the thing to do next, so none
+           of them is filled. -->
+      <div class="rounded-lg border border-edge bg-surface-raised px-[17px]">
+        @for (row of group.rows; track row.kind) {
+          <!-- Flex-wrap rather than grid so the refusal reason can take a full row of its own by
+               claiming 100% width — it is absent on almost every row and should cost nothing when it
+               is. -->
+          <div class="flex flex-wrap items-center gap-3 border-b border-edge-soft py-3.5 last:border-b-0">
+            <span
+              class="grid size-10 flex-none place-items-center rounded-[13px] text-[18px]"
+              [class]="row.status === 'approved' ? 'bg-success-tint text-success' : 'bg-brand-tint text-brand'"
+              aria-hidden="true"
+            >
+              <ion-icon [name]="row.status === 'approved' ? 'checkmark-circle' : group.icon"></ion-icon>
             </span>
-          </span>
+            <span class="min-w-0 flex-1">
+              <b class="block text-md font-bold leading-snug">{{ ('vdoc.kind.' + row.kind) | translate }}</b>
+              <span class="hm-pill mt-1"
+                    [class.tone-success]="row.status === 'approved'"
+                    [class.tone-warning]="row.status === 'pending'"
+                    [class.tone-danger]="row.status === 'rejected' || row.status === 'expired'"
+                    [class.tone-neutral]="row.status === 'none'">
+                {{ ('vdoc.status.' + row.status) | translate }}
+              </span>
+            </span>
 
-          <!-- An approved document is finished: no button, because re-sending it can only lengthen
-               the reviewer's queue without changing anything the provider wants changed. -->
-          @if (row.status !== 'approved') {
-            <!-- Outline, not solid: there are seven of these and no one of them is the thing to do
-                 next. Seven filled buttons make a wall of green and say nothing about priority.
-                 On the narrowest phones it drops to its own full-width row rather than squeezing
-                 the document's name to two words and an ellipsis. -->
-            <ion-button size="small" fill="outline" class="send max-[380px]:w-full" [disabled]="busy() !== null" (click)="picker.click()">
-              @if (busy() === row.kind) {
-                <ion-spinner name="crescent"></ion-spinner>
-              } @else {
-                {{ (row.status === 'none' ? 'vdoc.send' : 'vdoc.send_again') | translate }}
-              }
-            </ion-button>
-            <!-- The real file input, kept reachable by assistive tech rather than `display: none`;
-                 the button in front of it is what everyone else sees. -->
-            <input #picker class="sr-only" type="file" [accept]="accept"
-                   [attr.aria-label]="('vdoc.kind.' + row.kind) | translate"
-                   (change)="pick($event, row.kind)" />
-          }
+            <!-- An approved document is finished: no action, because re-sending it can only lengthen
+                 the reviewer's queue without changing anything the provider wants changed. -->
+            @if (row.status !== 'approved') {
+              <button
+                type="button"
+                class="inline-flex min-h-11 flex-none cursor-pointer items-center gap-1.5 border-0 bg-transparent px-1 font-sans text-sm font-bold text-brand disabled:opacity-45"
+                [disabled]="busy() !== null"
+                (click)="picker.click()"
+              >
+                @if (busy() === row.kind) {
+                  <ion-spinner name="crescent" class="size-[18px]"></ion-spinner>
+                } @else {
+                  <ion-icon name="cloud-upload-outline" class="text-[16px]" aria-hidden="true"></ion-icon>
+                  {{ (row.status === 'none' ? 'vdoc.send' : 'vdoc.send_again') | translate }}
+                }
+              </button>
+              <!-- The real file input, kept reachable by assistive tech rather than display: none;
+                   the button in front of it is what everyone else sees. -->
+              <input #picker class="sr-only" type="file" [accept]="accept"
+                     [attr.aria-label]="('vdoc.kind.' + row.kind) | translate"
+                     (change)="pick($event, row.kind)" />
+            }
 
-          <!-- The reviewer's own words. Written by a human, so it is shown rather than mapped onto
-               a generic "please try again" that would leave the provider guessing. -->
-          @if (row.doc?.rejectReason) {
-            <span class="basis-full border-t border-t-edge pt-2 text-xs leading-snug text-danger">{{ row.doc?.rejectReason }}</span>
-          }
-        </div>
-      }
+            <!-- The reviewer's own words. Written by a human, so it is shown rather than mapped onto
+                 a generic "please try again" that would leave the provider guessing. -->
+            @if (row.doc?.rejectReason) {
+              <span class="basis-full text-xs leading-snug text-danger">{{ row.doc?.rejectReason }}</span>
+            }
+          </div>
+        }
+      </div>
     }
 
     <!-- Said plainly, on the screen where the document is handed over, rather than buried in a

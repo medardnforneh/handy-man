@@ -67,6 +67,38 @@ export class ProviderHomePage {
   readonly hasOnTime = computed(() => this.stats().onTimeRate !== null);
   readonly onTimePercent = computed(() => Math.round((this.stats().onTimeRate ?? 0) * 100));
 
+  /**
+   * The one job waiting on this provider — the home screen's accent card. A booking not yet
+   * checked into comes first (a customer is expecting someone), then work in progress (a report
+   * is owed), then anything else in flight.
+   */
+  readonly urgentWork = computed(() => {
+    const rank: Partial<Record<JobStatus, number>> = { scheduled: 0, engaged: 1, in_progress: 2, work_submitted: 3 };
+    return [...this.active()].sort((a, b) => (rank[a.status] ?? 9) - (rank[b.status] ?? 9))[0] ?? null;
+  });
+
+  workHint(work: ActiveWork): string {
+    switch (work.status) {
+      case 'scheduled':
+      case 'engaged':
+        return 'pro.work_hint_scheduled';
+      case 'in_progress':
+        return 'pro.work_hint_in_progress';
+      default:
+        return 'pro.work_hint_generic';
+    }
+  }
+
+  /** The lead's one-line facts — trade, place (or remote), and optionally its age — skipping blanks. */
+  leadMeta(lead: Lead, withAge = false): string {
+    const place = lead.area || this.translate.instant('discover.mode.remote');
+    return [lead.skill, place, withAge ? lead.postedAgo : ''].filter(Boolean).join(' · ');
+  }
+
+  openProfile(): void {
+    void this.router.navigate(['/pro/profile']);
+  }
+
   constructor() {
     void this.load();
   }
