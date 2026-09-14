@@ -1,4 +1,4 @@
-<ion-header [translucent]="true" class="ion-no-border">
+<ion-header [translucent]="true" class="ion-no-border" [class.hidden]="wide()">
   <ion-toolbar>
     <!-- The brand lockup where a title would be (handoff: Home header), a bell and the monogram. -->
     <div class="flex items-center gap-2.5 px-4 py-1 md:px-6">
@@ -38,6 +38,171 @@
 </ion-header>
 
 <ion-content [fullscreen]="true">
+  <!-- ══ Desktop (handoff: "Web · Jobs"): a top bar, the escrow and pending-action cards side by
+       side, then the jobs table with its filter bar. The rail beside it is the tab shell's. ══ -->
+  @if (wide()) {
+    <div class="flex min-h-full flex-col">
+      <div class="flex items-center gap-4 border-b border-edge px-8 py-5">
+        <h1 class="m-0 text-[22px] font-extrabold tracking-snug">{{ 'jobs.title' | translate }}</h1>
+        <div class="ms-auto flex items-center gap-2.5">
+          <label class="flex min-w-[210px] items-center gap-2 rounded-[13px] border border-edge bg-surface-raised px-3.5 py-2.5 text-sm text-content-muted">
+            <ion-icon name="search-outline" class="text-[16px]" aria-hidden="true"></ion-icon>
+            <input
+              class="min-w-0 flex-1 border-0 bg-transparent p-0 font-sans text-sm text-content outline-none placeholder:text-content-muted"
+              type="search"
+              [placeholder]="'jobs.search' | translate"
+              [value]="query()"
+              (input)="query.set($any($event.target).value)"
+            />
+          </label>
+          <ion-button class="h-11 m-0" (click)="postRequest()">
+            <ion-icon slot="start" name="add" class="text-[16px]" aria-hidden="true"></ion-icon>
+            {{ 'jobs.new_request' | translate }}
+          </ion-button>
+        </div>
+      </div>
+
+      <div class="flex flex-1 flex-col gap-4 px-8 py-6">
+        <app-follow-ups></app-follow-ups>
+
+        @if (loaded()) {
+          <div class="grid gap-4" [class]="needYou().length ? 'grid-cols-[1.35fr_1fr]' : 'grid-cols-1'">
+            <!-- Escrow: the same figures as the phone, at desktop size. -->
+            <section class="rounded-lg border border-edge bg-surface-raised px-6 pt-5 pb-4" [attr.aria-label]="'jobs.held_in_escrow' | translate">
+              <p class="m-0 flex items-center gap-1.5 text-2xs font-extrabold uppercase tracking-wider text-content-muted">
+                <ion-icon class="text-[13px]" name="lock-closed-outline" aria-hidden="true"></ion-icon>
+                {{ 'jobs.held_in_escrow' | translate }}
+              </p>
+              <p class="m-0 mt-2 flex items-baseline gap-2">
+                <span class="text-[44px] font-extrabold leading-none tracking-tight">{{ held() | money }}</span>
+                <span class="text-md font-bold text-content-muted">{{ 'money.currency' | translate }}</span>
+              </p>
+              <div class="mt-4 flex border-t border-edge pt-4">
+                <div class="flex-1">
+                  <b class="block text-[18px] font-extrabold leading-tight">{{ released() | money }}</b>
+                  <small class="text-xs text-content-muted">{{ 'jobs.released' | translate }}</small>
+                </div>
+                <div class="flex-1 border-s border-edge ps-4">
+                  <b class="block text-[18px] font-extrabold leading-tight">{{ active().length }}</b>
+                  <small class="text-xs text-content-muted">{{ 'jobs.active' | translate }}</small>
+                </div>
+                <div class="flex-1 border-s border-edge ps-4">
+                  <b class="block text-[18px] font-extrabold leading-tight" [class.text-warning]="needYou().length > 0">{{ needYou().length }}</b>
+                  <small class="text-xs text-content-muted">{{ 'jobs.need_you' | translate }}</small>
+                </div>
+              </div>
+            </section>
+
+            <!-- The pending action, accent-filled, its footer pinned to the bottom. -->
+            @if (needYou()[0]; as job) {
+              <button
+                class="box-border flex w-full cursor-pointer flex-col rounded-lg border-0 bg-brand px-6 py-5 text-start text-brand-contrast font-sans text-md transition active:scale-[0.995]"
+                type="button"
+                (click)="open(job)"
+              >
+                <span class="text-2xs font-extrabold uppercase tracking-wide opacity-70">{{ 'jobs.waiting_on_you' | translate }} · {{ job.reference }}</span>
+                <b class="mt-2 block text-[22px] font-extrabold leading-tight tracking-snug">{{ job.title }}</b>
+                <span class="mt-1 block text-sm font-semibold opacity-80">{{ 'jobs.approve_hint_named' | translate:{ name: job.providerName || job.reference } }}</span>
+                <span class="mt-auto flex items-center justify-between gap-3 border-t border-edge-inverse pt-4">
+                  <span class="flex items-baseline gap-1">
+                    <span class="text-[24px] font-extrabold leading-none tracking-tight">{{ job.escrowHeldMinor | money }}</span>
+                    <span class="text-xs font-bold opacity-70">{{ 'money.currency' | translate }}</span>
+                  </span>
+                  <span class="inline-flex items-center gap-1.5 rounded-[14px] bg-surface px-4 py-2.5 text-sm font-bold text-brand">
+                    {{ 'jobs.approve' | translate }}
+                    <ion-icon class="text-[15px]" name="checkmark" aria-hidden="true"></ion-icon>
+                  </span>
+                </span>
+              </button>
+            }
+          </div>
+
+          <!-- The table: a filter bar, a column header on the rail fill, one row per job. -->
+          <section class="flex flex-1 flex-col overflow-hidden rounded-lg border border-edge bg-surface-raised">
+            <div class="flex items-center gap-1 border-b border-edge px-4 py-3">
+              @for (f of filters; track f.key) {
+                <button
+                  type="button"
+                  class="cursor-pointer rounded-[11px] border-0 px-3 py-1.5 font-sans text-sm font-bold"
+                  [class]="filter() === f.key ? 'bg-surface-sunken text-content' : 'bg-transparent text-content-muted'"
+                  [attr.aria-pressed]="filter() === f.key"
+                  (click)="filter.set(f.key)"
+                >{{ f.label | translate }} {{ count(f.key) }}</button>
+              }
+              <span class="ms-auto inline-flex items-center gap-1.5 text-xs font-semibold text-content-muted">
+                <ion-icon name="swap-horizontal-outline" class="text-[14px]" aria-hidden="true"></ion-icon>
+                {{ 'jobs.most_recent' | translate }}
+              </span>
+            </div>
+
+            <div class="grid grid-cols-[1.5fr_1.2fr_1fr_0.9fr_0.7fr] gap-4 border-b border-edge bg-surface-rail px-6 py-[11px] text-[10.5px] font-extrabold uppercase tracking-[0.09em] text-content-faint" role="row">
+              <span>{{ 'jobs.col_job' | translate }}</span>
+              <span>{{ 'jobs.col_provider' | translate }}</span>
+              <span>{{ 'jobs.col_milestones' | translate }}</span>
+              <span class="text-end">{{ 'jobs.col_agreed' | translate }}</span>
+              <span class="text-end">{{ 'jobs.col_status' | translate }}</span>
+            </div>
+
+            @for (job of tableRows(); track job.id) {
+              <button
+                class="grid w-full cursor-pointer grid-cols-[1.5fr_1.2fr_1fr_0.9fr_0.7fr] items-center gap-4 border-0 border-b border-solid border-edge-soft bg-transparent px-6 py-4 text-start text-inherit font-sans text-md last:border-b-0 hover:bg-surface-sunken"
+                type="button"
+                (click)="open(job)"
+              >
+                <span class="min-w-0">
+                  <b class="block truncate text-md font-bold">{{ job.title }}</b>
+                  <small class="block truncate text-xs text-content-muted">{{ job.reference }}</small>
+                </span>
+                <span class="flex min-w-0 items-center gap-2.5">
+                  @if (job.providerName) {
+                    <span class="grid size-7 flex-none place-items-center rounded-[9px] bg-surface-sunken text-[10px] font-extrabold" aria-hidden="true">{{ initials(job) }}</span>
+                    <span class="truncate text-sm">{{ job.providerName }}</span>
+                  } @else {
+                    <span class="text-sm text-content-muted">{{ 'jobs.no_quotes' | translate }}</span>
+                  }
+                </span>
+                <span class="flex items-center gap-2">
+                  @if (job.milestonesTotal > 0) {
+                    <span class="flex gap-[3px]" aria-hidden="true">
+                      @for (i of slots(job); track i) {
+                        <i class="h-[5px] w-[18px] rounded-[3px]" [class]="i < job.milestonesDone ? 'bg-brand' : 'bg-surface-step'"></i>
+                      }
+                    </span>
+                    <small class="text-xs text-content-muted">{{ job.milestonesDone }}/{{ job.milestonesTotal }}</small>
+                  } @else {
+                    <span class="text-sm text-content-muted">—</span>
+                  }
+                </span>
+                <span class="text-end text-md font-extrabold">{{ job.amountMinor > 0 ? (job.amountMinor | money) : '—' }}</span>
+                <span class="flex justify-end"><span [class]="'hm-pill ' + tone(job.status)">{{ 'status.' + job.status | translate }}</span></span>
+              </button>
+            } @empty {
+              @if (jobs().length === 0) {
+                <app-empty-state
+                  inline="true"
+                  icon="layers-outline"
+                  heading="jobs.empty_title"
+                  body="jobs.empty_body"
+                  actionLabel="newjob.title"
+                  actionIcon="add"
+                  (action)="postRequest()"
+                ></app-empty-state>
+              } @else {
+                <p class="m-0 px-6 py-8 text-center text-sm text-content-muted">{{ 'jobs.none_in_filter' | translate }}</p>
+              }
+            }
+          </section>
+        } @else {
+          <div class="rounded-lg border border-edge bg-surface-raised px-6 pt-5 pb-4" aria-hidden="true">
+            <span class="hm-skel block h-[0.7em] w-28"></span>
+            <span class="hm-skel mt-3 block h-[2.4em] w-40"></span>
+          </div>
+          <p class="sr-only">{{ 'common.loading' | translate }}</p>
+        }
+      </div>
+    </div>
+  } @else {
+
   <div class="mx-auto flex min-h-full max-w-3xl flex-col px-[22px] pt-1 pb-tabbar md:px-8">
     <!-- What is waiting on this person (P7-02). Renders nothing when nothing is owed. -->
     <app-follow-ups></app-follow-ups>
@@ -171,6 +336,8 @@
     }
   </div>
 
+  }
+
   <!-- A row per job: monogram, title over who, the money over the milestone count. -->
   <ng-template #rows let-list>
     @for (job of list; track job.id) {
@@ -200,7 +367,7 @@
     }
   </ng-template>
 
-  @if (jobs().length) {
+  @if (jobs().length && !wide()) {
     <ion-fab slot="fixed" vertical="bottom" horizontal="end">
       <ion-fab-button class="fab" (click)="postRequest()">
         <ion-icon name="add" aria-hidden="true" class="text-[1.5rem]"></ion-icon>

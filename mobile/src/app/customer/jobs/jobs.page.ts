@@ -1,11 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { TranslatePipe } from '@ngx-translate/core';
 import { OfflineStripComponent } from '../../core/offline/offline-strip.component';
 import { EmptyStateComponent } from '../../core/ui/empty-state.component';
 import { FollowUpsComponent } from '../../core/ui/follow-ups.component';
+import { ViewportService } from '../../core/viewport.service';
 import { JobStatus, JobSummary } from '../customer.models';
 import { CustomerService } from '../customer.service';
 import { MoneyPipe } from '../money.pipe';
@@ -14,6 +15,8 @@ import { MoneyPipe } from '../money.pipe';
 const ACTIVE: ReadonlySet<JobStatus> = new Set(['engaged', 'scheduled', 'in_progress', 'work_submitted']);
 /** Posted and waiting for a provider. */
 const OPEN: ReadonlySet<JobStatus> = new Set(['draft', 'open', 'offered']);
+
+type Filter = 'all' | 'running' | 'open' | 'done';
 
 /**
  * Home: the money held, then the jobs that need this person, then the rest (handoff structural
@@ -29,8 +32,11 @@ const OPEN: ReadonlySet<JobStatus> = new Set(['draft', 'open', 'offered']);
 export class JobsPage {
   private readonly customers = inject(CustomerService);
   private readonly router = inject(Router);
+  private readonly viewport = inject(ViewportService);
 
   readonly jobs = this.customers.jobs;
+  /** The desktop shape (handoff: Web · Jobs): top bar, two cards, the table. */
+  readonly wide = this.viewport.wide;
   /** "Still asking" vs "you have none" — an empty list alone cannot tell them apart. */
   readonly loaded = this.customers.jobsLoaded;
   readonly me = this.customers.me;
@@ -44,6 +50,30 @@ export class JobsPage {
   readonly running = computed(() => this.active().filter((j) => !j.needsApproval));
   readonly openJobs = computed(() => this.jobs().filter((j) => OPEN.has(j.status)));
   readonly done = computed(() => this.jobs().filter((j) => !ACTIVE.has(j.status) && !OPEN.has(j.status)));
+
+  // ---- the desktop table: a filter, a search, most recent first (the API's order) ----
+  readonly filters: ReadonlyArray<{ key: Filter; label: string }> = [
+    { key: 'all', label: 'jobs.filter_all' },
+    { key: 'running', label: 'jobs.running' },
+    { key: 'open', label: 'jobs.open_section' },
+    { key: 'done', label: 'jobs.done_section' },
+  ];
+  readonly filter = signal<Filter>('all');
+  readonly query = signal('');
+  readonly tableRows = computed(() => {
+    const q = this.query().trim().toLowerCase();
+    const rows = this.filter() === 'running' ? this.active() : this.filter() === 'open' ? this.openJobs() : this.filter() === 'done' ? this.done() : this.jobs();
+    return q === '' ? rows : rows.filter((j) => (j.title + ' ' + j.reference + ' ' + (j.providerName ?? '')).toLowerCase().includes(q));
+  });
+
+  count(filter: Filter): number {
+    return filter === 'running' ? this.active().length : filter === 'open' ? this.openJobs().length : filter === 'done' ? this.done().length : this.jobs().length;
+  }
+
+  /** Milestone slots for a row's progress bar. */
+  slots(job: JobSummary): number[] {
+    return Array.from({ length: Math.max(job.milestonesTotal, 0) }, (_, i) => i);
+  }
 
   tone(status: JobStatus): string {
     switch (status) {

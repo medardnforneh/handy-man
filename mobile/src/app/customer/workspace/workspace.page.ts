@@ -1,15 +1,16 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnDestroy, effect, inject, signal } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Component, OnDestroy, computed, effect, inject, signal } from '@angular/core';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AlertController, IonicModule, ToastController } from '@ionic/angular';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { OfflineStripComponent } from '../../core/offline/offline-strip.component';
 import { WriteQueue } from '../../core/offline/write-queue.service';
 import { RealtimeService, Unsubscribe } from '../../core/realtime.service';
+import { ViewportService } from '../../core/viewport.service';
 import { uuid } from '../../core/uuid';
 import { Recording, VoiceRecorderService } from '../../core/voice-recorder.service';
 import { CustomerService } from '../customer.service';
-import { JobStatus, WorkspaceMessage, WorkspaceThread } from '../customer.models';
+import { ChatSummary, JobDetail, JobStatus, WorkspaceMessage, WorkspaceThread } from '../customer.models';
 import { MoneyPipe } from '../money.pipe';
 
 /** How long "typing…" stays up after the last whisper — no "stopped" event is ever sent. */
@@ -28,7 +29,7 @@ const TYPING_WHISPER_EVERY_MS = 2000;
   selector: 'app-workspace',
   templateUrl: './workspace.page.html',
   styleUrls: ['./workspace.page.scss'],
-  imports: [CommonModule, IonicModule, TranslatePipe, MoneyPipe, OfflineStripComponent],
+  imports: [CommonModule, IonicModule, TranslatePipe, MoneyPipe, OfflineStripComponent, RouterLink],
 })
 export class WorkspacePage implements OnDestroy {
   private readonly customers = inject(CustomerService);
@@ -41,12 +42,31 @@ export class WorkspacePage implements OnDestroy {
   private readonly toasts = inject(ToastController);
   private readonly translate = inject(TranslateService);
 
-  private readonly jobId = this.route.snapshot.paramMap.get('id') ?? '';
+  readonly jobId = this.route.snapshot.paramMap.get('id') ?? '';
 
   /** Fixture thread first (instant, offline-safe); the real thread replaces it once loaded. */
   readonly thread = signal<WorkspaceThread | null>(this.customers.thread(this.jobId));
   readonly draft = signal('');
   readonly sending = signal(false);
+
+  // ---- the desktop shape (handoff: Web · Workspace): the conversation list left, the job right ----
+  readonly wide = inject(ViewportService).wide;
+  readonly conversations = signal<ChatSummary[]>([]);
+  readonly chatQuery = signal('');
+  readonly visibleConversations = computed(() => {
+    const q = this.chatQuery().trim().toLowerCase();
+    return q === '' ? this.conversations() : this.conversations().filter((c) => (c.providerName + ' ' + c.reference + ' ' + c.preview).toLowerCase().includes(q));
+  });
+  readonly job = signal<JobDetail | null>(null);
+  readonly awaitingApproval = computed(() => this.job()?.milestones.find((m) => m.status === 'submitted') ?? null);
+  readonly releasedShare = computed(() => {
+    const j = this.job();
+    return j && j.agreedMinor > 0 ? Math.min(100, (j.releasedMinor / j.agreedMinor) * 100) : 0;
+  });
+  readonly heldShare = computed(() => {
+    const j = this.job();
+    return j && j.agreedMinor > 0 ? Math.min(100 - this.releasedShare(), (j.escrowHeldMinor / j.agreedMinor) * 100) : 0;
+  });
 
   private unsubscribe: Unsubscribe = () => undefined;
   private unwatchReconnect: Unsubscribe = () => undefined;
@@ -74,6 +94,19 @@ export class WorkspacePage implements OnDestroy {
   constructor() {
     void this.loadReal();
     document.addEventListener('visibilitychange', this.onVisible);
+
+    // The side panes are only drawn on a wide window, but their data is cheap and cached, so it
+    // is fetched once regardless — a window widened mid-thread has it ready.
+    void this.customers.fetchChats().then((chats) => {
+      if (chats) {
+        this.conversations.set(chats);
+      }
+    });
+    void this.customers.fetchJobDetail(this.jobId).then((detail) => {
+      if (detail) {
+        this.job.set(detail);
+      }
+    });
 
     // The moment the queue empties, everything it was holding is on the server — so re-read the
     // thread and let the real messages replace the optimistic ones. Watching the queue rather than
@@ -538,6 +571,13 @@ export class WorkspacePage implements OnDestroy {
    * wired to nothing. Accepting spends money and commits to a provider — it belongs on the screen
    * that can show every quote received side by side and confirm the figures first.
    */
+  /** Switch threads from the desktop's conversation list. */
+  openThread(chat: ChatSummary): void {
+    if (chat.id !== this.jobId) {
+      void this.router.navigate(['/workspace', chat.id]);
+    }
+  }
+
   openJob(): void {
     void this.router.navigate(['/job', this.jobId]);
   }

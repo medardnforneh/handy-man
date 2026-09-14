@@ -43,6 +43,13 @@ ion-header ion-toolbar {
     font-size: 22px;
   }
 
+  // Inside the centre pane on a wide window: the handoff's 26px horizontal padding.
+  &.composer-wide {
+    --padding-start: 26px;
+    --padding-end: 26px;
+    padding-bottom: 0;
+  }
+
   .send {
     --background: var(--hm-color-brand-primary);
     --color: var(--hm-color-brand-onPrimary);

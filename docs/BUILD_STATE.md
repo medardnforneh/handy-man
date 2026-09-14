@@ -241,10 +241,17 @@ founder-owned legal items in doc 05's launch checklist.
     marketing hero card only), **one filled button per screen**, status ink on a 14% tint of
     itself, monograms as the photo placeholder. Icons stay Lucide (app: Ionicons names mapped in
     `core/icons.ts`; site: generated `icon.blade.php`; admin: `LucideIcon::*`).
+  - **The desktop customer app is built (2026-09-14, founder asked):** from 1024px Home is the
+    handoff's "Web · Jobs" (top bar with search + New request, the escrow and pending-action
+    cards side by side, the jobs table with All/Running/Open/Done filters and a search) and the
+    workspace is the three-pane "Web · Workspace" (conversations with a search on the rail, the
+    thread with its own header and composer, the job's money bar / milestone timeline / address
+    / one CTA on the right). One `ViewportService.wide` signal decides; the phone layouts are
+    untouched below it. Found on the way: Ionic's `ion-button` throws in its aria watcher when
+    a bound `aria-label` changes before hydration — the label now lives inside the button.
   - **Open items the handoff leaves** (recorded, not decided): a light theme (the design is
     dark-only, so both token slots hold it and the app's appearance setting shows "Dark" as a
-    fact); the desktop customer app (the rail is built; the three-pane workspace and the jobs
-    table are not — "confirm it is wanted"); photography for the site; **the provider app is
+    fact); photography for the site; **the provider app is
     not designed** and only inherits the tokens and components.
 - **UI quality bar (user-mandated): every UI must be beautiful, professional, perfect.** New UI is
   built to that bar from the start on the design-token system (light+dark, semantic colours,
