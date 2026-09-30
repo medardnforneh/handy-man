@@ -33,6 +33,18 @@ final class Party extends Model
 
     public const string KIND_ORGANIZATION = 'organization';
 
+    /**
+     * What `display_name` holds once a party is erased.
+     *
+     * Locale-free on purpose. It used to be French prose ('Utilisateur supprimé'), stored once and
+     * then read by everyone — so an anglophone customer saw French in their own thread, and there
+     * was no way to fix that at write time, because the writer does not know who will read it. The
+     * stored value is now an unmistakable tombstone in raw data (an export, a ledger report, an
+     * admin table), and what a PERSON sees comes from {@see displayName()}, translated where it is
+     * rendered.
+     */
+    public const string ERASED_NAME = '[erased]';
+
     protected $keyType = 'string';
 
     public $incrementing = false;
@@ -61,6 +73,19 @@ final class Party extends Model
     public function isErased(): bool
     {
         return $this->erased_at !== null;
+    }
+
+    /**
+     * The name to SHOW a person, in their own language.
+     *
+     * `erased_at` is the signal, not the stored string: every surface that shows a party's name to
+     * a human goes through here, so an erased party reads as "Deleted user" in English and
+     * "Utilisateur supprimé" in French rather than whichever one happened to be the default when
+     * the erasure ran. Read the column directly only where the raw tombstone is what you want.
+     */
+    public function displayName(): string
+    {
+        return $this->isErased() ? __('common.erased_user') : $this->display_name;
     }
 
     /**

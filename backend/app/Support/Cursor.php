@@ -113,4 +113,79 @@ final class Cursor
 
         return max(1, min((int) $requested, self::MAX_LIMIT));
     }
+
+    /**
+     * A cursor for a list ordered by a BUCKET before its timestamp.
+     *
+     * `/provider/site-visits` is the case: scheduled visits come before completed ones, and only
+     * then does the date decide. A two-part cursor cannot page that — a keyset comparison has to
+     * compare exactly what the ordering compares, or the boundary between "the last scheduled
+     * visit" and "the first completed one" falls in the wrong place and a page is silently skipped.
+     * So the bucket travels in the tuple.
+     */
+    public static function encodeBucketed(int $bucket, string $timestamp, string $id): string
+    {
+        return rtrim(strtr(base64_encode($bucket.'|'.$timestamp.'|'.$id), '+/', '-_'), '=');
+    }
+
+    /**
+     * Narrow a query to the rows strictly BEFORE the cursor, in (bucket, timestamp, id) order.
+     *
+     * `$bucketExpression` is the SAME expression the ordering uses, passed by the caller's own code
+     * and never from a request; all three values are bound (rule #7). Note the direction: these
+     * lists are ASCENDING (soonest first), so "before" here means `>`, the rows still to come.
+     *
+     * @param  Builder<covariant Model>|QueryBuilder  $query
+     */
+    public static function applyAfterBucketed(
+        Builder|QueryBuilder $query,
+        string $bucketExpression,
+        string $column,
+        ?string $raw,
+        string $idColumn = 'id',
+    ): void {
+        $parts = self::decodeBucketed($raw);
+
+        if ($parts === null) {
+            return;
+        }
+
+        $query->whereRaw(
+            "({$bucketExpression}, {$column}, {$idColumn}) > (?::int, ?::timestamptz, ?::uuid)",
+            $parts,
+        );
+    }
+
+    /**
+     * @return array{0: int, 1: string, 2: string}|null
+     */
+    public static function decodeBucketed(?string $raw): ?array
+    {
+        if ($raw === null || trim($raw) === '') {
+            return null;
+        }
+
+        $decoded = base64_decode(strtr($raw, '-_', '+/'), true);
+
+        if ($decoded === false) {
+            return null;
+        }
+
+        $parts = explode('|', $decoded, 3);
+
+        if (count($parts) !== 3) {
+            return null;
+        }
+
+        [$bucket, $timestamp, $id] = $parts;
+
+        // Validated for the same reason the two-part cursor is: these go into a row comparison with
+        // explicit casts, so anything else would be a Postgres error mid-scroll rather than the
+        // "treated as absent" this promises.
+        if (! ctype_digit($bucket) || ! Str::isUuid($id) || strtotime($timestamp) === false) {
+            return null;
+        }
+
+        return [(int) $bucket, $timestamp, $id];
+    }
 }

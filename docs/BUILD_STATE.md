@@ -3,12 +3,13 @@
 > Living tracker for the build. Updated as work progresses. Source of truth for **where we
 > are** and **how this machine is set up**. Read this first when resuming.
 
-_Last updated: 2026-09-30 (a repository review, in two passes. First: rate limiting where there
+_Last updated: 2026-09-30 (a repository review, in three passes. First: rate limiting where there
 was none, idempotency claims scoped to the caller, the OTP cap applied by the database, gateway
 calls taken out of database transactions, CLAUDE.md committed for the first time. Then the rest of
 that review's list: suspension that means something, a data key that protects something, erasure
 that reaches the person's own content, cursor pagination, and the CRM's missing authorisation —
-see the two top entries under "What was done")_
+and then the nine open decisions those two left — see the three top entries under "What was
+done")_
 
 _Previously: 2026-09-13 (the HandyMan REDESIGN — dark, one luminous green, Plus Jakarta Sans,
 22px cards, no shadows, one filled button per screen — replaced Modernist on every surface after
@@ -337,6 +338,45 @@ This section stayed at "25 open" for almost a month after the last gap closed �
 green, the tracker did not. Re-run it before believing this paragraph.
 
 ## What was done, most recent first
+
+### 2026-09-30 (third pass) — the nine open decisions, decided
+
+The review's list had nine items left that were judgement calls rather than defects. Seven are now
+code; two are decisions to leave things alone, recorded above with the reasoning rather than left
+looking unfinished.
+
+**The erased tombstone.** `display_name` held French prose written once and read by everyone, so an
+anglophone customer saw French in their own thread. It stores a locale-free sentinel now
+(`Party::ERASED_NAME`), and `Party::displayName()` translates off `erased_at` where the name is
+rendered — the six API resources, the workspace counterpart name and the provider's client book.
+The raw sentinel is what an export or a ledger report shows, which is what it is for.
+
+**Retention reaches the workspace**, which the schedule had said nothing about, so a thread and its
+voice notes were kept for ever for everyone rather than only for people who ask to be erased. Two
+clocks, because the things differ: media (a recording of someone speaking, the inside of someone's
+home) goes at 730 days past the engagement completing, row kept with `purged_at`; message text —
+small, and the record a dispute is argued from — goes a year later and only the body, never the row.
+Both numbers are the founder's to set with the register, and `data:retain --dry-run` exists so
+nobody has to learn what a number means by watching it delete a year of somebody's threads.
+
+**The app downscales photos** to 2000px / JPEG 0.8 at the pick point. This is what closes the
+`post_max_size` mismatch from the right end: PHP discards an oversized body WHOLE, so five camera
+photos came back as "photos.*.file is required" and read as a broken app, and the declared limit
+could not be tightened (rule #4). Best-effort — an undecodable photo is attached at full size, not
+dropped. Its spec pins the failure modes as carefully as the success, and pins one thing found
+while writing it: the skip threshold is on BYTES, not megapixels, because upload size is the point.
+The first fixture drew 8×8 blocks, compressed to 128 KB, and was correctly left alone.
+
+**A bucketed cursor** for `/provider/site-visits`, since its sort key is compound. **A paged
+payout history** as its own endpoint (`GET /provider/payouts`) with the summary handing over
+`payouts_next_cursor` — the client must never mint one, and an earlier draft of this had it doing
+exactly that until the opacity rule in `Cursor`'s own docblock caught it. **One query** for the
+conversations' unread counts instead of one per conversation.
+
+Verified: the app builds, its suite is **20/20** (the four new downscaler specs included), the
+OpenAPI drift gate is clean at 94 operations with 0 uncalled, and all five frontend gates pass
+(i18n 1443 × 2). PHP remains CI's to check.
+
 
 ### 2026-09-30 (second pass) — suspension that means something, and the rest of the review's list
 
@@ -2609,40 +2649,50 @@ payout reservations that were never dispatched; the third named concurrency test
 floor; Redis behind a password; a strict Content-Security-Policy in report-only; and `shot.mjs`, a
 tracked empty file, deleted.
 
-Still open, and each of these is a decision someone has to make rather than code someone has to
-write:
+Third pass closed the rest of that list. What each decision was resolved AS, since these were
+judgement calls rather than bugs:
 
-1. **A locale-correct tombstone for an erased party.** `display_name` is stored as
-   `'Utilisateur supprimé'`, so an anglophone reader sees French. A value written once and read
-   later in either locale cannot be translated at write time; the fix is a sentinel translated
-   where it is rendered (`erased_at` is already the signal on every surface that shows a display
-   name), which is a change on each of those surfaces rather than in the erasure Action.
-2. **What retention does with message history and media.** Erasure now destroys the content of
-   someone who asks to be forgotten. `config/retention.php` still says nothing about how long a
-   thread or a voice note is kept for everyone else, and that is a schedule the register needs a
-   number for, not a default worth guessing.
-3. **The job report's photo count.** `photos` is declared `array max:20` at 10M each, which fits in
-   no `post_max_size` worth setting on one box. `post_max_size` is now 64M, so a realistic report
-   works — but either the count comes down (which additive-only forbids, rule #4) or the app
-   downscales before upload. The app downscaling is the right answer and it is app work.
-4. **Promoting the CSP from report-only to enforcing.** The strict policy is being reported
-   against now; turning it on means threading nonces through the Blade layouts and whatever
-   Filament 5 needs. The reports are the input to that work.
-5. **A cursor for `/provider/site-visits`.** Ordered by a compound key (the
-   scheduled-before-completed bucket, then the date), so a keyset cursor needs the bucket in the
-   tuple. It takes `limit` now; a to-do list read from the top did not need more than that badly
-   enough to guess at the shape.
-6. **`/provider/earnings` history.** A nested array inside a composite payload rather than a list
-   endpoint, so paging it properly means a separate endpoint, which is an API design decision.
-7. **The unread counts on the conversations index** are one `COUNT` per conversation. Bounded to
-   the page now (≤50 rather than every conversation the user has ever had), so it is no longer a
-   scaling problem — but it is still N queries where one grouped query would do.
-8. **The design source of truth is a path on one laptop** —
-   `C:\Users\admin\Downloads\Redesign project modernization\…`. Tokens are in the repo; the
-   per-screen specs and prototypes are not.
-9. **`check:native-origin` still warns.** `NATIVE_API_ORIGIN` reads as a real domain while the
-   checker and the docblock both call it a placeholder. Resolve it so the release gate means
-   something.
+1. **The erased-party tombstone is now locale-correct.** `display_name` stores
+   `Party::ERASED_NAME` (`[erased]`), which is locale-free and unmistakable in an export or a
+   ledger report, and `Party::displayName()` translates from `erased_at` at render time. Every
+   user-facing path goes through it. Filament keeps the raw sentinel, which is the right thing for
+   a staff table reading raw data.
+2. **Retention covers the workspace**, on two clocks, because media and text are not alike:
+   `engagement_media_days` (default 730) destroys voice-note and report-photo BYTES once an
+   engagement is that long finished, keeping the row with `purged_at`; `message_bodies_days`
+   (default 1095) empties message bodies and never the rows, so a thread reads as redacted rather
+   than truncated and a dispute can still see who said something. **Those numbers are a starting
+   point, not a finding** — they are what the CNDP register needs an answer for, and
+   `php artisan data:retain --dry-run` reports exactly what a number would destroy before it does.
+   0 means kept for ever, deliberately.
+3. **The app downscales photos before upload** (`core/downscale-image.ts`): 2000px long edge, JPEG
+   0.8, which takes a 6 MB capture to a few hundred KB. That is what makes the declared
+   `photos: array max:20` reachable without tightening it (rule #4 forbids that) and it is the
+   slowest thing a provider does on site. Best-effort by design — a photo it cannot process is
+   attached at full size rather than dropped, because the worker is standing in someone's kitchen.
+4. **CSP stays report-only, deliberately.** The strict policy is being reported against now.
+   Promoting it means threading nonces through the Blade layouts and whatever Filament 5 needs,
+   and the reports are the input to that work — turning it on without them is how a site breaks in
+   production for a header nobody could test.
+5. **`/provider/site-visits` has its cursor**, carrying the bucket:
+   `(scheduled-before-completed, scheduled_for, id)`. A two-part cursor would have compared
+   something the ordering does not, and the page boundary between the last scheduled visit and the
+   first completed one is exactly where that lands wrong.
+6. **`GET /provider/payouts`** is the paged history, and `/provider/earnings` now hands over
+   `payouts_next_cursor` where its embedded page stops. The cursor is minted server-side; the app's
+   earnings screen has a "show older payouts" text action behind it, absent rather than inert once
+   the history runs out.
+7. **The unread counts are one query**, joined on `conversation_participants` so each row keeps its
+   own `last_read_at` cutoff, instead of one `COUNT` per conversation.
+8. **The design source of truth is still a path on one laptop** and this pass could not change
+   that — the files are not in the repo and are not reachable from here. Copying
+   `design_handoff_handyman_redesign/` (the README and the four `.dc.html` prototypes) into
+   `docs/design/` is a two-minute job on the machine that has them, and until someone does it the
+   spec dies with that disk.
+9. **`check:native-origin` still warns**, and still should: the domain is not registered. The
+   checker now says what resolving it means, because the placeholder LOOKS like the real thing —
+   when `app.handyman.cm` is registered the check will still fail, and the fix is to drop it from
+   `PLACEHOLDERS` in the same commit that confirms the DNS, not to argue with the checker.
 
 Follow-ups noted in code (not blocking): `cap add android/ios` when building native; full
 Tailwind/Vite pipeline for Blade (token CSS linked directly for now); the identity-verification

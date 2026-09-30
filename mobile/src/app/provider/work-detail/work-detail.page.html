@@ -311,7 +311,9 @@
 
     <ion-footer class="ion-no-border">
       <div class="mx-auto max-w-3xl px-[22px] pt-3.5 pb-6">
-        <ion-button expand="block" class="h-[54px] text-md" [disabled]="busy()" (click)="submitReport()">
+        <!-- Also disabled while photos are being shrunk: submitting mid-optimisation would send the
+             report without the ones still in flight, and nothing on screen would say so. -->
+        <ion-button expand="block" class="h-[54px] text-md" [disabled]="busy() || optimisingPhotos()" (click)="submitReport()">
           {{ 'work.send_report' | translate }}
         </ion-button>
       </div>

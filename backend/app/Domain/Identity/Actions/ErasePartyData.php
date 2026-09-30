@@ -14,6 +14,7 @@ use App\Models\JobPhoto;
 use App\Models\Media;
 use App\Models\Message;
 use App\Models\OtpChallenge;
+use App\Models\Party;
 use App\Models\ProviderProfile;
 use App\Models\RefreshToken;
 use App\Models\Review;
@@ -136,16 +137,15 @@ final class ErasePartyData
 
             // 2 + 3. Destroy the data key (crypto-shred) and tombstone the party — keep the row + id.
             //
-            // The tombstone is stored in French, the platform's default, and that is a known rough
-            // edge rather than a choice: a value written once and read later by anyone in either
-            // locale cannot be translated at write time, so an anglophone reader sees French. The
-            // fix is a sentinel translated where it is rendered (`erased_at` is already the signal,
-            // on every surface that shows a display name), not a key looked up here — see the
-            // tracker. Leaving the French string is the smaller wrong of the two.
+            // The stored tombstone is locale-free (`Party::ERASED_NAME`). It cannot be translated
+            // here — it is written once and read later by anyone, in either language — so what a
+            // person sees comes from `Party::displayName()`, which keys on `erased_at` at render
+            // time. This value is what an export, a ledger report or an admin table shows, and
+            // being unmistakable there is exactly what it is for.
             $party->forceFill([
                 'data_key' => null,
                 'erased_at' => now(),
-                'display_name' => 'Utilisateur supprimé',
+                'display_name' => Party::ERASED_NAME,
             ])->save();
 
             // The status half goes through the machine (CLAUDE.md rule #8) rather than onto the

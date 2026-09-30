@@ -24,8 +24,9 @@ final class ProviderCustomers
             ->join('service_jobs as j', 'j.id', '=', 'e.job_id')
             ->join('parties as p', 'p.id', '=', 'j.customer_party_id')
             ->where('e.provider_party_id', $providerPartyId)
-            ->groupBy('j.customer_party_id', 'p.display_name')
+            ->groupBy('j.customer_party_id', 'p.display_name', 'p.erased_at')
             ->selectRaw('j.customer_party_id as customer_party_id, p.display_name as customer_name,
+                p.erased_at as erased_at,
                 count(*) as job_count,
                 count(*) filter (where e.completed_at is not null) as completed_count,
                 coalesce(sum(e.agreed_amount_minor), 0) as lifetime_value_minor,
@@ -42,7 +43,12 @@ final class ProviderCustomers
         foreach ($rows as $r) {
             $out[] = [
                 'customer_party_id' => (string) $r->customer_party_id,
-                'customer_name' => (string) $r->customer_name,
+                // An erased customer reads as a tombstone in the PROVIDER's language, not in
+                // whichever one was default when the erasure ran: the stored name is the
+                // locale-free sentinel and `erased_at` is the signal (see Party::displayName).
+                'customer_name' => $r->erased_at !== null
+                    ? __('common.erased_user')
+                    : (string) $r->customer_name,
                 'job_count' => (int) $r->job_count,
                 'completed_count' => (int) $r->completed_count,
                 'lifetime_value_minor' => (int) $r->lifetime_value_minor,

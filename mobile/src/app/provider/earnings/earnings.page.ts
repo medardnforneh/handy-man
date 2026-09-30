@@ -43,6 +43,16 @@ export class ProviderEarningsPage {
    */
   readonly credits = signal<number | null>(null);
 
+  /**
+   * Where the embedded history stopped, and whether there is more behind it.
+   *
+   * The summary carries the most recent 50; for a long time that was the whole history as far as
+   * this screen was concerned, so a provider past their fiftieth payout simply could not see the
+   * earlier ones. Null cursor means there is nothing further to ask for.
+   */
+  readonly moreCursor = signal<string | null>(null);
+  readonly loadingMore = signal(false);
+
   // --- the withdraw sheet -------------------------------------------------------------------------
 
   readonly sheetOpen = signal(false);
@@ -67,7 +77,42 @@ export class ProviderEarningsPage {
       this.wallet.set(real.wallet);
       this.payouts.set(real.payouts);
       this.credits.set(real.leadCreditsMinor);
+      this.moreCursor.set(real.nextPayoutCursor);
     }
+  }
+
+  /**
+   * Append the next page of older payouts.
+   *
+   * Appends rather than replaces, and clears the cursor when the server says there is no more, so
+   * the affordance disappears at the end of the history instead of sitting there doing nothing —
+   * the same rule the dead-affordance audit landed on.
+   */
+  async loadMorePayouts(): Promise<void> {
+    const cursor = this.moreCursor();
+    if (cursor === null || this.loadingMore()) {
+      return;
+    }
+
+    this.loadingMore.set(true);
+    const page = await this.provider.fetchMorePayouts(cursor);
+    this.loadingMore.set(false);
+
+    if (page === null) {
+      // The history would not load further. Say so, and keep the cursor so it can be retried.
+      const toast = await this.toasts.create({
+        message: this.translate.instant('pro.payout_history_failed'),
+        duration: 4000,
+        position: 'top',
+        color: 'danger',
+      });
+      await toast.present();
+
+      return;
+    }
+
+    this.payouts.update((current) => [...current, ...page.payouts]);
+    this.moreCursor.set(page.nextCursor);
   }
 
   tone(status: PayoutStatus): string {

@@ -195,3 +195,26 @@ it('erases the content the person made, and keeps what is not theirs alone', fun
         ->and($review->private_note)->toBeNull()
         ->and($review->rating)->toBe(4);
 });
+
+it('shows an erased party by name in the READER\'s language, not the eraser\'s', function () {
+    // The stored tombstone used to be French prose, written once and then read by everyone — so an
+    // anglophone customer saw French in their own thread, and no choice at write time could fix it
+    // because the writer does not know who will read. `erased_at` is the signal now.
+    $user = User::factory()->create();
+    $partyId = $user->party_id;
+
+    Sanctum::actingAs($user);
+    $this->deleteJson('/api/v1/me', [], ['Idempotency-Key' => (string) Str::uuid()])->assertOk();
+
+    $party = Party::findOrFail($partyId);
+
+    // What is STORED is locale-free, and unmistakable in an export or a ledger report.
+    expect($party->display_name)->toBe(Party::ERASED_NAME);
+
+    // What a PERSON sees is their own language.
+    app()->setLocale('fr');
+    expect($party->displayName())->toBe('Utilisateur supprimé');
+
+    app()->setLocale('en');
+    expect($party->displayName())->toBe('Deleted user');
+});

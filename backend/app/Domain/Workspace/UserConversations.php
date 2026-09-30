@@ -85,7 +85,7 @@ final class UserConversations
             ->keyBy('id');
 
         $lastMessages = $this->lastMessagePerConversation($conversationIds);
-        $unread = $this->unreadCounts($memberships->values(), $user);
+        $unread = $this->unreadCounts($conversationIds, $user);
 
         $out = [];
         foreach ($rows as $row) {
@@ -132,27 +132,42 @@ final class UserConversations
     }
 
     /**
-     * Unread counts per conversation: messages after this participant's `last_read_at` that they did
-     * not send themselves. A participant who has never opened the thread has read nothing, so every
-     * message from the other side counts — which is the honest answer for a brand-new engagement.
+     * Unread counts for the page, in ONE query.
      *
-     * @param  Collection<int, ConversationParticipant>  $memberships
+     * Messages after this participant's `last_read_at` that they did not send themselves. A
+     * participant who has never opened the thread has read nothing, so every message from the other
+     * side counts — the honest answer for a brand-new engagement.
+     *
+     * It used to be one `COUNT` per conversation, which was N queries over every conversation the
+     * user had ever been in. Paging fixed the N; this removes it. The per-participant `last_read_at`
+     * is why it needs a join rather than a plain `groupBy`: each row's cutoff is its own.
+     *
+     * @param  array<int, string>  $conversationIds
      * @return array<string, int>
      */
-    private function unreadCounts(Collection $memberships, User $user): array
+    private function unreadCounts(array $conversationIds, User $user): array
     {
+        if ($conversationIds === []) {
+            return [];
+        }
+
+        $rows = DB::table('conversation_participants as cp')
+            ->join('messages as m', function ($join): void {
+                $join->on('m.conversation_id', '=', 'cp.conversation_id')
+                    ->whereNull('m.deleted_at')
+                    // Not their own, and the server's own narration (null sender) counts.
+                    ->whereRaw('(m.sender_user_id is null or m.sender_user_id <> cp.user_id)')
+                    ->whereRaw('(cp.last_read_at is null or m.created_at > cp.last_read_at)');
+            })
+            ->where('cp.user_id', $user->getKey())
+            ->whereIn('cp.conversation_id', $conversationIds)
+            ->groupBy('cp.conversation_id')
+            ->selectRaw('cp.conversation_id, count(m.id) as unread')
+            ->get();
+
         $counts = [];
-        foreach ($memberships as $membership) {
-            $query = Message::query()
-                ->where('conversation_id', $membership->conversation_id)
-                ->whereNull('deleted_at')
-                ->where(fn ($q) => $q->whereNull('sender_user_id')->orWhere('sender_user_id', '!=', $user->getKey()));
-
-            if ($membership->last_read_at !== null) {
-                $query->where('created_at', '>', $membership->last_read_at);
-            }
-
-            $counts[$membership->conversation_id] = $query->count();
+        foreach ($rows as $row) {
+            $counts[(string) $row->conversation_id] = (int) $row->unread;
         }
 
         return $counts;
@@ -174,7 +189,7 @@ final class UserConversations
         $isCustomer = $job->customer_party_id === $user->party_id;
 
         return $isCustomer
-            ? $job->engagement?->provider?->display_name
-            : $job->customer?->display_name;
+            ? $job->engagement?->provider?->displayName()
+            : $job->customer?->displayName();
     }
 }

@@ -132,7 +132,8 @@
     "continue": "Continuer",
     "retry": "Réessayer",
     "back": "Retour",
-    "loading": "Chargement…"
+    "loading": "Chargement…",
+    "erased_user": "Utilisateur supprimé"
   },
   "auth": {
     "login": "Se connecter",
@@ -1166,7 +1167,9 @@
     "visit_close_note": "Clôturer la visite n'envoie pas de prix. Chiffrez la mission depuis l'opportunité quand vous serez prêt.",
     "visit_close_confirm": "Clôturer la visite",
     "visit_closed": "Visite clôturée",
-    "visit_close_failed": "La visite n'a pas pu être clôturée. Réessayez."
+    "visit_close_failed": "La visite n'a pas pu être clôturée. Réessayez.",
+    "payout_history_more": "Voir les paiements plus anciens",
+    "payout_history_failed": "Impossible de charger les paiements plus anciens. Réessayez."
   },
   "payout": {
     "paid": "Versé",

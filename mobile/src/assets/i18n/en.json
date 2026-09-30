@@ -132,7 +132,8 @@
     "continue": "Continue",
     "retry": "Retry",
     "back": "Back",
-    "loading": "Loading…"
+    "loading": "Loading…",
+    "erased_user": "Deleted user"
   },
   "auth": {
     "login": "Log in",
@@ -1166,7 +1167,9 @@
     "visit_close_note": "Closing the visit does not send a price. Quote the job from the opportunity when you are ready.",
     "visit_close_confirm": "Close visit",
     "visit_closed": "Visit closed",
-    "visit_close_failed": "The visit could not be closed. Try again."
+    "visit_close_failed": "The visit could not be closed. Try again.",
+    "payout_history_more": "Show older payouts",
+    "payout_history_failed": "Couldn't load older payouts. Try again."
   },
   "payout": {
     "paid": "Paid",

@@ -1406,6 +1406,30 @@ paths:
         "403": { $ref: "#/components/responses/Problem" }
 
   /provider/payouts:
+    get:
+      tags: [Platform]
+      operationId: listPayouts
+      summary: The provider's payout history, newest first
+      description: >
+        Cursor-paged. `GET /provider/earnings` still carries the most recent 50 alongside the
+        balances, so the screen needs one round trip to open; this is how it reaches anything older,
+        which it could not before. A separate endpoint rather than a cursor on that embedded array,
+        because the array sits inside a composite payload whose other fields are not a page.
+      parameters:
+        - $ref: "#/components/parameters/PageLimit"
+        - $ref: "#/components/parameters/PageCursor"
+      responses:
+        "200":
+          description: This provider's payouts
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data: { type: array, items: { $ref: "#/components/schemas/Payout" } }
+                  meta: { $ref: "#/components/schemas/PageMeta" }
+        "401": { $ref: "#/components/responses/Problem" }
     post:
       tags: [Platform]
       operationId: requestPayout
@@ -1471,8 +1495,15 @@ paths:
                       payable_pending: { $ref: "#/components/schemas/Money" }
                       lead_credits: { $ref: "#/components/schemas/Money" }
                       payouts:
+                        description: The most recent page of the history, so the screen opens in one round trip.
                         type: array
                         items: { $ref: "#/components/schemas/Payout" }
+                      payouts_next_cursor:
+                        description: >-
+                          Pass as `before` to `GET /provider/payouts` for the payouts older than the
+                          embedded page. Null when this is the whole history. Opaque — the client
+                          must not build one of these itself.
+                        oneOf: [{ type: string }, { type: "null" }]
         "401": { $ref: "#/components/responses/Problem" }
 
   /provider/opportunities:

@@ -102,7 +102,7 @@ final class JobResource extends JsonResource
             // disputing it are all scoped to it, and none of that was reachable from a job without
             // this field.
             'id' => $engagement->id,
-            'provider_name' => $engagement->provider?->display_name,
+            'provider_name' => $engagement->provider?->displayName(),
             'agreed_amount_minor' => $engagement->agreed_amount_minor,
             'currency' => $engagement->currency,
             'completed_at' => $engagement->completed_at?->toIso8601String(),

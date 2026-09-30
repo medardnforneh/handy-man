@@ -61,7 +61,7 @@ final class ProviderWorkDetailResource extends JsonResource
             'reference' => $job->reference,
             'title' => $job->title,
             'description' => $job->description,
-            'customer_name' => $job->customer?->display_name,
+            'customer_name' => $job->customer?->displayName(),
             'engagement_mode' => $job->engagement_mode->value,
             'job_status' => $job->status->value,
             'agreed_amount' => [

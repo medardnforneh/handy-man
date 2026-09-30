@@ -78,6 +78,17 @@
         body="pro.no_payouts_body"
       ></app-empty-state>
     }
+
+    <!-- Older payouts. A text action, not a button: this screen already has its one filled button.
+         It is absent when there is nothing more behind it, rather than present and inert. -->
+    @if (moreCursor() !== null) {
+      <button
+        type="button"
+        class="mt-3 w-full cursor-pointer border-0 bg-transparent py-2 font-sans text-xs font-bold text-brand disabled:opacity-45"
+        [disabled]="loadingMore()"
+        (click)="loadMorePayouts()"
+      >{{ (loadingMore() ? 'common.loading' : 'pro.payout_history_more') | translate }}</button>
+    }
   </div>
 </ion-content>
 <!-- The withdraw sheet. Two fields, because the endpoint takes two things and neither can be

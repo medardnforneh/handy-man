@@ -159,8 +159,11 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
         // here: they keep their signed, audited route (P6-01/02).
         Route::get('/media/{media}', [MediaController::class, 'show'])->name('media.show');
 
-        // Provider payout request (P3-08).
+        // Provider payout request (P3-08), and the paged history beside it. `GET /provider/earnings`
+        // still carries the first 50 for the one-round-trip case; this is how the screen reaches
+        // anything older, which it could not before.
         Route::post('/provider/payouts', [PayoutController::class, 'store'])->name('provider.payouts.store');
+        Route::get('/provider/payouts', [ProviderEarningsController::class, 'history'])->name('provider.payouts.index');
 
         // Escrow (P3-10/14). Customer approves a milestone (releases its slice) or refunds remaining.
         Route::post('/milestones/{milestone}/approve', [EscrowController::class, 'approveMilestone'])->name('milestones.approve');

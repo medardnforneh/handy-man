@@ -2,10 +2,13 @@
 
 declare(strict_types=1);
 
+use App\Domain\Quotations\SiteVisitStatus;
 use App\Models\Conversation;
 use App\Models\ConversationParticipant;
 use App\Models\Job;
 use App\Models\Message;
+use App\Models\Payout;
+use App\Models\SiteVisit;
 use App\Models\User;
 use App\Support\Cursor;
 use Laravel\Sanctum\Sanctum;
@@ -184,3 +187,83 @@ function threadFixture(): array
 
     return [$user, $job, $conversation];
 }
+
+it('pages site visits across the scheduled/completed boundary without skipping one', function () {
+    // The reason this one carries the bucket in its cursor. The list is scheduled-before-completed,
+    // then by date, so a two-part cursor would compare something the ordering does not — and the
+    // page boundary between the last scheduled visit and the first completed one is exactly where
+    // it would land wrong, silently dropping a row.
+    $provider = User::factory()->create();
+
+    foreach (range(1, 2) as $i) {
+        SiteVisit::factory()->create([
+            'provider_party_id' => $provider->party_id,
+            'status' => SiteVisitStatus::Scheduled->value,
+            'scheduled_for' => now()->addDays($i),
+        ]);
+    }
+    foreach (range(1, 2) as $i) {
+        SiteVisit::factory()->create([
+            'provider_party_id' => $provider->party_id,
+            'status' => SiteVisitStatus::Completed->value,
+            'scheduled_for' => now()->subDays($i),
+            'completed_at' => now()->subDays($i),
+        ]);
+    }
+
+    Sanctum::actingAs($provider);
+
+    // A page size of 3 puts the boundary INSIDE a page break: two scheduled, then one completed.
+    $first = $this->getJson('/api/v1/provider/site-visits?limit=3')->assertOk();
+    $first->assertJsonCount(3, 'data')->assertJsonPath('meta.has_more', true);
+
+    $second = $this->getJson('/api/v1/provider/site-visits?limit=3&before='.urlencode($first->json('meta.next_cursor')))
+        ->assertOk();
+    $second->assertJsonCount(1, 'data')->assertJsonPath('meta.has_more', false);
+
+    // All four, each once. Scheduled first, and the completed ones after them.
+    $ids = array_merge($first->json('data.*.id'), $second->json('data.*.id'));
+    expect(array_unique($ids))->toHaveCount(4);
+
+    $statuses = array_merge($first->json('data.*.status'), $second->json('data.*.status'));
+    expect($statuses)->toBe(['scheduled', 'scheduled', 'completed', 'completed']);
+});
+
+it('pages the payout history from the cursor the summary hands over', function () {
+    // The summary embeds the most recent page and mints the cursor for the rest — the client must
+    // never build one, because the encoding is the server's to change.
+    $provider = User::factory()->create();
+
+    foreach (range(1, 4) as $i) {
+        Payout::factory()->create([
+            'party_id' => $provider->party_id,
+            'requested_at' => now()->subDays($i),
+        ]);
+    }
+
+    Sanctum::actingAs($provider);
+
+    $page = $this->getJson('/api/v1/provider/payouts?limit=3')->assertOk();
+    $page->assertJsonCount(3, 'data')->assertJsonPath('meta.has_more', true);
+
+    $rest = $this->getJson('/api/v1/provider/payouts?limit=3&before='.urlencode($page->json('meta.next_cursor')))
+        ->assertOk();
+    $rest->assertJsonCount(1, 'data')->assertJsonPath('meta.has_more', false);
+
+    $ids = array_merge($page->json('data.*.id'), $rest->json('data.*.id'));
+    expect(array_unique($ids))->toHaveCount(4);
+});
+
+it('tells the earnings screen where its embedded history stops', function () {
+    $provider = User::factory()->create();
+    Payout::factory()->count(2)->create(['party_id' => $provider->party_id]);
+
+    Sanctum::actingAs($provider);
+
+    // Two payouts is well inside the embedded page, so there is nothing behind it and the screen's
+    // "show older" affordance must be absent rather than present and inert.
+    $this->getJson('/api/v1/provider/earnings')
+        ->assertOk()
+        ->assertJsonCount(2, 'data.payouts')
+        ->assertJsonPath('data.payouts_next_cursor', null);
+});

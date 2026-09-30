@@ -1018,7 +1018,11 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /**
+         * The provider's payout history, newest first
+         * @description Cursor-paged. `GET /provider/earnings` still carries the most recent 50 alongside the balances, so the screen needs one round trip to open; this is how it reaches anything older, which it could not before. A separate endpoint rather than a cursor on that embedded array, because the array sits inside a composite payload whose other fields are not a page.
+         */
+        get: operations["listPayouts"];
         put?: never;
         /**
          * Request a payout of the provider's payable balance
@@ -4402,6 +4406,35 @@ export interface operations {
             403: components["responses"]["Problem"];
         };
     };
+    listPayouts: {
+        parameters: {
+            query?: {
+                /** @description How many rows to return. Clamped to the endpoint's maximum; anything unparseable means "the default", so a client cannot break itself with a bad value. */
+                limit?: components["parameters"]["PageLimit"];
+                /** @description An opaque cursor from a previous response's `meta`. Returns the rows strictly before that position. Do not parse it — the encoding is the server's and a stale one is treated as absent rather than an error. */
+                before?: components["parameters"]["PageCursor"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description This provider's payouts */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["Payout"][];
+                        meta?: components["schemas"]["PageMeta"];
+                    };
+                };
+            };
+            401: components["responses"]["Problem"];
+        };
+    };
     requestPayout: {
         parameters: {
             query?: never;
@@ -4486,7 +4519,10 @@ export interface operations {
                             payable_available: components["schemas"]["Money"];
                             payable_pending: components["schemas"]["Money"];
                             lead_credits: components["schemas"]["Money"];
+                            /** @description The most recent page of the history, so the screen opens in one round trip. */
                             payouts: components["schemas"]["Payout"][];
+                            /** @description Pass as `before` to `GET /provider/payouts` for the payouts older than the embedded page. Null when this is the whole history. Opaque — the client must not build one of these itself. */
+                            payouts_next_cursor?: string | null;
                         };
                     };
                 };

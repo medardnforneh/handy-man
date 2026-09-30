@@ -20,7 +20,7 @@ final class UserResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'display_name' => $this->whenLoaded('party', fn () => $this->party->display_name),
+            'display_name' => $this->whenLoaded('party', fn () => $this->party->displayName()),
             'phone_e164' => $this->phone_e164,
             'email' => $this->email,
             'locale' => $this->locale,

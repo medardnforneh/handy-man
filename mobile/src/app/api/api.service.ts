@@ -1301,6 +1301,23 @@ export class ApiService {
   }
 
   /**
+   * Older payouts than the summary carries (P3-08).
+   *
+   * `/provider/earnings` embeds the most recent 50 so the screen opens in one round trip, and for a
+   * long while 50 was all there was — a provider past their fiftieth payout had no way to reach the
+   * earlier ones. `before` is the opaque cursor from the previous page's `meta`.
+   */
+  async payoutHistory(before?: string) {
+    const { data, error } = await api.GET('/provider/payouts', {
+      params: { query: before === undefined ? {} : { before } },
+    });
+    if (error) {
+      throw error;
+    }
+    return { payouts: data.data, nextCursor: data.meta?.next_cursor ?? null };
+  }
+
+  /**
    * The provider's customer book (P7-08) — every customer they have engaged, with job count,
    * completions, lifetime value, last engagement and do-not-contact status. Server-ordered by most
    * recently engaged.
