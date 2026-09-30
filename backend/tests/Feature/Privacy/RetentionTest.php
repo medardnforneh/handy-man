@@ -39,9 +39,13 @@ function retentionAssignment(int $slot): Assignment
 function encryptedDoc(array $attributes = []): VerificationDocument
 {
     $file = UploadedFile::fake()->createWithContent('id.jpg', 'PLAINTEXT-ID-'.uniqid());
-    [$path, $sha] = app(VerificationStorage::class)->store($file);
+    $owner = User::factory()->create();
+    [$path, $sha, $scheme] = app(VerificationStorage::class)->store($file, $owner->party);
 
-    return VerificationDocument::factory()->create(array_merge(['storage_path' => $path, 'sha256' => $sha], $attributes));
+    return VerificationDocument::factory()->create(array_merge([
+        'party_id' => $owner->party_id, 'storage_path' => $path, 'sha256' => $sha,
+        'encryption_scheme' => $scheme,
+    ], $attributes));
 }
 
 beforeEach(function () {

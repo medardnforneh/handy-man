@@ -3,10 +3,12 @@
 > Living tracker for the build. Updated as work progresses. Source of truth for **where we
 > are** and **how this machine is set up**. Read this first when resuming.
 
-_Last updated: 2026-09-30 (a repository review: rate limiting where there was none, idempotency
-claims scoped to the caller, the OTP attempt cap applied by the database, gateway calls taken out
-of database transactions, and CLAUDE.md committed for the first time — see the top entry under
-"What was done" and the rewritten "Next steps")_
+_Last updated: 2026-09-30 (a repository review, in two passes. First: rate limiting where there
+was none, idempotency claims scoped to the caller, the OTP cap applied by the database, gateway
+calls taken out of database transactions, CLAUDE.md committed for the first time. Then the rest of
+that review's list: suspension that means something, a data key that protects something, erasure
+that reaches the person's own content, cursor pagination, and the CRM's missing authorisation —
+see the two top entries under "What was done")_
 
 _Previously: 2026-09-13 (the HandyMan REDESIGN — dark, one luminous green, Plus Jakarta Sans,
 22px cards, no shadows, one filled button per screen — replaced Modernist on every surface after
@@ -335,6 +337,97 @@ This section stayed at "25 open" for almost a month after the last gap closed �
 green, the tracker did not. Re-run it before believing this paragraph.
 
 ## What was done, most recent first
+
+### 2026-09-30 (second pass) — suspension that means something, and the rest of the review's list
+
+**Suspension was unenforceable, and now is not.** `user_status` has carried `suspended` on both
+`parties.status` and `users.status` since the first migration. Nothing in the panel wrote either
+column and nothing in the app read them, so "suspend" meant at most `provider_profiles.suspended_at`
+hiding a provider from search while they carried on signing in, accepting offers, messaging
+customers and requesting payouts. Staff could receive a report about a dangerous provider, record a
+decision on it — `ReviewReport` deliberately "records a decision and nothing else" — and have
+nothing to hand it off to.
+
+Now: `AccountStatus` (with `canAuthenticate()`, the one predicate every auth path asks) and
+`AccountStatusMachine` (the full matrix, `closed` terminal, per rule #8). `SetAccountStatus` does
+suspension as one act across all three places it has to reach — the party row AND every user row
+under it, every live session (refresh families revoked, Sanctum tokens deleted: a suspension that
+waits out a 15-minute access token and hopes nobody uses a 30-day refresh token is not one), and
+`provider_profiles.suspended_at`, which is the discovery half that used to be the whole of it.
+Enforcement is at all four doors: `EnsureAccountActive` in the api group (belt to the revocation's
+braces, for a token minted seconds before the sweep), `VerifyOtp`, `RotateRefreshToken`, and
+`canAccessPanel` — a suspended staff member kept the admin panel, which is the one place they could
+have unsuspended themselves. Suspend and reinstate are in the panel on the party list row and the
+detail page, both requiring a reason, both routed through the Action so the machine, the session
+revocation, the activity log and the outbox announcement happen wherever it is triggered from.
+
+Refused at **verify**, not at `/otp/request`: that endpoint answers 202 whether or not a number is
+registered, by design, and refusing there would turn it into a way to ask whether an account is
+suspended. 403 rather than 401, because an app that receives 401 sends the person back through the
+OTP screens to be refused again.
+
+**`parties.data_key` protected nothing.** A 256-bit key minted per party, encrypted at rest, and
+destroyed on erasure — and grep found exactly two uses: minting, and nulling. So "crypto-shred
+erasure", which doc 04 and the P1-10 entry both present as the thing that resolves
+erasure-versus-an-append-only-ledger, was ceremonial, and `ErasureTest` asserted the key was null
+rather than that anything had become unrecoverable. Identity papers were encrypted with `Crypt`,
+i.e. the application key: shared by every party, and not something erasure can destroy without
+locking the platform out of its own data. They are now encrypted with the owning party's own key,
+recorded per row (`encryption_scheme`) rather than guessed, with documents written before the change
+still readable under `app_key`. The test now keeps a copy of the ciphertext, erases the party,
+restores the copy, and asserts it cannot be read — the mechanism, not the marker.
+
+**Erasure left the person's own content behind.** "The human becomes unidentifiable" was the
+docblock's claim while the voice notes (recordings of their voice), the report photos (their
+premises), the messages (their words) and the reviews they wrote all stayed exactly where they were,
+and `config/retention.php` covered none of it either. The shape now follows what each thing is:
+media they own → bytes destroyed, row kept with `purged_at` so a thread shows something was there
+rather than losing the reference; their job photos → bytes and row both, since a `job_photos` row is
+nothing but a path; messages they sent → body nulled, row kept, because deleting the rows would tear
+holes in the other party's thread and in dispute evidence that is not this person's to erase;
+reviews they wrote → prose nulled, `rating` kept, since the number is about someone else's work. The
+docblock now lists what is deliberately NOT erased and why, because under Law 2024/017 that
+distinction is the whole answer.
+
+**The CRM would nudge a stranger.** `POST /provider/customers/{party}/follow-up` resolved any party
+id, and the Action checked only the provider's own do-not-contact list — a list the provider
+controls. Any authenticated user could put an SMS, a WhatsApp message and a push in front of anyone,
+on a party id guessable from any page that shows one, billed to us. The budget bounded how many;
+nothing bounded who. A shared engagement is required now, which is the same definition the client
+book itself uses.
+
+**Cursor pagination, which doc 05 requires and the API did not have.** Six lists. Three were
+entirely unbounded: `GET /jobs` (every job a customer ever created, four relations eager-loaded per
+row), `GET /jobs/{job}/messages` (a whole thread with its media, in **no defined order** — there was
+no ORDER BY at all — on every open of the workspace) and `GET /disputes`. `GET /conversations` was
+worse than unbounded: it loaded every message of every one of the user's conversations into memory
+to build one line of preview text each, then sorted in PHP. That is a `DISTINCT ON` and an SQL-side
+page now. `/follow-ups` and `/provider/site-visits` were capped at a flat 50 with nothing able to see
+past it. Keyset, not offset, for the reason doc 05 gives: offset over a growing feed shows the same
+row on two pages. Both parameters are additive (rule #4) and tested that way — a build that sends
+neither reads `data` exactly where it always did, and a bad value means "the default" rather than a
+422 mid-scroll. The messages page is the newest N handed back ASCENDING, because that is the order
+the app appends into and renders; a chat pages into its past, so its cursor is `older_cursor`.
+
+Also: a sweep for payout reservations never dispatched (`RequestPayout` commits the reservation
+before calling out, so a timeout leaves one `pending` with no `external_ref` — `ResolvePayout`
+rightly skips those, which left a client retry as the only thing that would ever finish them);
+**the third named concurrency test** from doc 05's testing floor, "parallel payout requests → one
+payout", which was listed as non-negotiable and did not exist; Redis behind `requirepass`, which it
+had never had while holding every session; a **strict** CSP in report-only, because a report-only
+policy softened with `unsafe-inline` reports nothing and the strict one turns "we would have to
+audit every surface" into a list of actual violations; a size guard on verification-document
+encryption, which is whole-file in memory and fine at 10M against a 256M limit until someone raises
+the former; and `shot.mjs`, a tracked empty file, gone.
+
+Verified in this pass, since the toolchain was reachable this time: the Ionic app **builds** against
+the regenerated client, its unit suite is **16/16 green**, the OpenAPI drift gate is clean, and all
+five frontend gates pass (i18n 1440 × 2, colours, strings, contrast both themes, 0 of 93 uncalled).
+The PHP toolchain still could not be installed — `composer install` cannot authenticate against
+github.com from here — so Pint, PHPStan and Pest remain **CI's** check, and the new migrations
+(`dropUnique` by constraint name, `NULLS NOT DISTINCT`, the row-comparison cursor with its explicit
+`::timestamptz`/`::uuid` casts) are the places to watch on the first run.
+
 
 ### 2026-09-30 — a repository review, and the nine things it fixed
 
@@ -2496,64 +2589,60 @@ months, while the tables above it recorded Phase 8 done and the redesign landed 
 this file warns about two sections up ("the sweep ran green, the tracker did not"). What follows is
 what the 2026-09-30 review found still open, which is a different list from what is built._
 
-**Open, from the repository review (2026-09-30).** Fixed in that pass: no rate limiting anywhere;
-idempotency claims not scoped to the caller; the OTP attempt cap not applied atomically; gateway
-HTTP calls inside database transactions holding row locks; no timeout on any gateway call; the
-`{gateway}` webhook path segment unvalidated; `post_max_size` below the upload limits the API
-declares; no HSTS; the production app granting a session on a network error at OTP verify; and
-`CLAUDE.md` itself, which had never been committed while 116 places in the repo cite it.
+**From the repository review (2026-09-30).** Two passes; between them the review's list is closed
+except where closing it is a decision rather than a patch.
 
-Still open, in rough order of how much they matter:
+Fixed in the first pass: no rate limiting anywhere; idempotency claims not scoped to the caller;
+the OTP attempt cap not applied atomically; gateway HTTP calls inside database transactions holding
+row locks; no timeout on any gateway call; the `{gateway}` webhook path segment unvalidated;
+`post_max_size` below the upload limits the API declares; no HSTS; the production app granting a
+session on a network error at OTP verify; and `CLAUDE.md`, which had never been committed while 116
+places in the repo cite it.
 
-1. **Suspension is unenforceable.** `user_status` carries `suspended`/`closed` on `parties` and
-   `users`, and `provider_profiles.suspended_at` exists, but nothing writes any of them and
-   nothing reads `users.status` at authentication. `ReviewReportAction` can only mark a report
-   resolved or dismissed with a note. Staff can receive a report about a dangerous provider, record
-   a decision, and hide them from search — they cannot stop them signing in, accepting offers,
-   messaging customers or requesting payouts. Needs both halves: an admin action that writes the
-   status, and a gate at token issuance and refresh that reads it.
-2. **`data_key` protects nothing.** Every party gets a 256-bit key at creation and it is destroyed
-   on erasure, but grep finds no other use — nothing is ever encrypted with it. "Crypto-shred
-   erasure", which doc 04 and the P1-10 entry present as what resolves erasure-vs-append-only,
-   is ceremonial today, and `ErasureTest` asserts the key is null rather than that anything became
-   unrecoverable. Either encrypt something with it or stop claiming the mechanism.
-3. **Erasure leaves the person's own content.** It clears addresses, devices, tokens, OTP
-   challenges, emergency contacts and the identity-document bytes. It does not touch conversation
-   messages, `media` (voice notes — recordings of their voice), `job_photos`, job free-text,
-   reviews they wrote, or notes; `config/retention.php` does not cover them either. The docblock
-   says "the human becomes unidentifiable". Decide this per table and write the decision into the
-   retention register, since Law 2024/017 is the driver.
-4. **Unsolicited contact through the CRM.** `POST /provider/customers/{party}/follow-up` resolves
-   any party id and `ScheduleManualFollowUp` checks only the provider's own do-not-contact list —
-   no check that an engagement ever existed between them. Party ids are guessable. Budget bounds it
-   at ~2 SMS + 3 WhatsApp + 4 push per target per day, billed to us.
-5. **No pagination, which doc 05 requires ("cursor, not offset").** No `paginate()` anywhere. Three
-   endpoints are entirely unbounded — `GET /jobs` (every job a customer ever created, with photos,
-   address, provider and milestones eager-loaded), `GET /jobs/{job}/messages` (the whole thread with
-   media, re-fetched on every workspace open, on 3G) and `GET /conversations`. The rest are capped
-   at 20–50 with no way to reach anything older, so a provider with 51 site visits cannot see the
-   first one. Additive-only makes a cursor parameter easy; nothing about it is blocked.
-6. **`ResolvePayout` skips a reservation with no reference**, which is correct — but it means the
-   only thing that drives a stranded payout forward is a client retry under the same
-   Idempotency-Key (`RequestPayout::resume`). A sweep for `pending` payouts with no `external_ref`
-   older than a few minutes would close that properly.
-7. **Verification documents are encrypted whole-file in memory** (plaintext and ciphertext both
-   resident; `read()` decrypts entirely before streaming). Fine at the 10M cap against
-   `memory_limit=256M`; it breaks quietly if that cap ever rises.
-8. **No CSP.** HSTS is now set; a Content-Security-Policy needs a per-surface audit because
-   Filament and the Blade pages both emit inline script and style. Noted in the Caddyfile.
-9. **Redis has no authentication.** Internal-network only, but it holds sessions, cache and the
-   queue, so any container compromise is full session takeover.
-10. **Doc 05's third named concurrency test does not exist.** "Parallel payout requests → one
-    payout" is listed as non-negotiable in the testing floor; `PayoutTest` covers the sequential
-    reservation only. (The offer and webhook ones exist, though both loop sequentially and rely on
-    the lock, so "parallel" is aspirational there too.)
-11. **The design source of truth is a path on one laptop** —
-    `C:\Users\admin\Downloads\Redesign project modernization\…`. Tokens are in the repo; the
-    per-screen specs and prototypes are not.
-12. **`shot.mjs` at the repo root is a tracked empty file**, and `check:native-origin` still warns
-    while `NATIVE_API_ORIGIN` reads as a real domain — resolve it so the release gate means
-    something.
+Fixed in the second: **suspension is real** (`AccountStatus` + `AccountStatusMachine`,
+`SetAccountStatus`, `EnsureAccountActive`, and suspend/reinstate in the panel — see the entry
+below); **`parties.data_key` protects something** (identity papers are encrypted with the owning
+party's own key, so destroying it is a real crypto-shred); **erasure reaches the person's own
+content** (media bytes, job photos, message bodies, review prose); **the CRM cannot nudge a
+stranger**; **cursor pagination** on six lists, three of which were entirely unbounded; a sweep for
+payout reservations that were never dispatched; the third named concurrency test from the testing
+floor; Redis behind a password; a strict Content-Security-Policy in report-only; and `shot.mjs`, a
+tracked empty file, deleted.
+
+Still open, and each of these is a decision someone has to make rather than code someone has to
+write:
+
+1. **A locale-correct tombstone for an erased party.** `display_name` is stored as
+   `'Utilisateur supprimé'`, so an anglophone reader sees French. A value written once and read
+   later in either locale cannot be translated at write time; the fix is a sentinel translated
+   where it is rendered (`erased_at` is already the signal on every surface that shows a display
+   name), which is a change on each of those surfaces rather than in the erasure Action.
+2. **What retention does with message history and media.** Erasure now destroys the content of
+   someone who asks to be forgotten. `config/retention.php` still says nothing about how long a
+   thread or a voice note is kept for everyone else, and that is a schedule the register needs a
+   number for, not a default worth guessing.
+3. **The job report's photo count.** `photos` is declared `array max:20` at 10M each, which fits in
+   no `post_max_size` worth setting on one box. `post_max_size` is now 64M, so a realistic report
+   works — but either the count comes down (which additive-only forbids, rule #4) or the app
+   downscales before upload. The app downscaling is the right answer and it is app work.
+4. **Promoting the CSP from report-only to enforcing.** The strict policy is being reported
+   against now; turning it on means threading nonces through the Blade layouts and whatever
+   Filament 5 needs. The reports are the input to that work.
+5. **A cursor for `/provider/site-visits`.** Ordered by a compound key (the
+   scheduled-before-completed bucket, then the date), so a keyset cursor needs the bucket in the
+   tuple. It takes `limit` now; a to-do list read from the top did not need more than that badly
+   enough to guess at the shape.
+6. **`/provider/earnings` history.** A nested array inside a composite payload rather than a list
+   endpoint, so paging it properly means a separate endpoint, which is an API design decision.
+7. **The unread counts on the conversations index** are one `COUNT` per conversation. Bounded to
+   the page now (≤50 rather than every conversation the user has ever had), so it is no longer a
+   scaling problem — but it is still N queries where one grouped query would do.
+8. **The design source of truth is a path on one laptop** —
+   `C:\Users\admin\Downloads\Redesign project modernization\…`. Tokens are in the repo; the
+   per-screen specs and prototypes are not.
+9. **`check:native-origin` still warns.** `NATIVE_API_ORIGIN` reads as a real domain while the
+   checker and the docblock both call it a placeholder. Resolve it so the release gate means
+   something.
 
 Follow-ups noted in code (not blocking): `cap add android/ios` when building native; full
 Tailwind/Vite pipeline for Blade (token CSS linked directly for now); the identity-verification

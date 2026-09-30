@@ -368,9 +368,21 @@ paths:
     get:
       tags: [Platform]
       operationId: listFollowUps
-      summary: The caller's follow-ups (nudges)
+      summary: The caller's follow-ups (nudges), newest first
+      parameters:
+        - $ref: "#/components/parameters/PageLimit"
+        - $ref: "#/components/parameters/PageCursor"
       responses:
-        "200": { description: The caller's follow-ups, content: { application/json: { schema: { type: object, required: [data], properties: { data: { type: array, items: { $ref: "#/components/schemas/FollowUp" } } } } } } }
+        "200":
+          description: The caller's follow-ups
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data: { type: array, items: { $ref: "#/components/schemas/FollowUp" } }
+                  meta: { $ref: "#/components/schemas/PageMeta" }
         "401": { $ref: "#/components/responses/Problem" }
 
   /follow-ups/{followUp}/respond:
@@ -572,9 +584,21 @@ paths:
     get:
       tags: [Platform]
       operationId: listDisputes
-      summary: List the caller's disputes
+      summary: List the caller's disputes, newest first
+      parameters:
+        - $ref: "#/components/parameters/PageLimit"
+        - $ref: "#/components/parameters/PageCursor"
       responses:
-        "200": { description: The caller's disputes, content: { application/json: { schema: { type: object, required: [data], properties: { data: { type: array, items: { $ref: "#/components/schemas/Dispute" } } } } } } }
+        "200":
+          description: The caller's disputes
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data: { type: array, items: { $ref: "#/components/schemas/Dispute" } }
+                  meta: { $ref: "#/components/schemas/PageMeta" }
         "401": { $ref: "#/components/responses/Problem" }
 
   /engagements/{engagement}/disputes:
@@ -1081,9 +1105,24 @@ paths:
     get:
       tags: [Platform]
       operationId: listMyJobs
-      summary: The customer's own jobs
+      summary: The customer's own jobs, newest first
+      description: >
+        Cursor-paginated. This used to return every job the customer had ever created, with photos,
+        address, provider and milestones eager-loaded on each.
+      parameters:
+        - $ref: "#/components/parameters/PageLimit"
+        - $ref: "#/components/parameters/PageCursor"
       responses:
-        "200": { description: Jobs, content: { application/json: { schema: { type: object, required: [data], properties: { data: { type: array, items: { $ref: "#/components/schemas/Job" } } } } } } }
+        "200":
+          description: Jobs
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data: { type: array, items: { $ref: "#/components/schemas/Job" } }
+                  meta: { $ref: "#/components/schemas/PageMeta" }
         "401": { $ref: "#/components/responses/Problem" }
     post:
       tags: [Platform]
@@ -1571,9 +1610,14 @@ paths:
         authoritative: a reconnecting client refetches this and reconciles (P4-07).
       parameters:
         - { name: job, in: path, required: true, schema: { type: string, format: uuid } }
+        - $ref: "#/components/parameters/PageLimit"
+        - $ref: "#/components/parameters/PageCursor"
       responses:
         "200":
-          description: The thread
+          description: >-
+            The newest page of the thread, oldest message FIRST — the order the client appends into
+            and renders. A chat pages into its past, so `before` walks backwards and the cursor is
+            named `older_cursor` rather than `next_cursor`.
           content:
             application/json:
               schema:
@@ -1588,6 +1632,12 @@ paths:
                       engagement_id:
                         description: Subscribe to `private-engagement.{id}` for live messages. Null if no engagement exists yet.
                         oneOf: [{ type: string, format: uuid }, { type: "null" }]
+                      has_older:
+                        type: boolean
+                        description: Whether older messages exist before this page's first message.
+                      older_cursor:
+                        description: Pass as `before` to fetch the messages just before this page. Null at the start of the thread.
+                        oneOf: [{ type: string }, { type: "null" }]
         "401": { $ref: "#/components/responses/Problem" }
         "403": { $ref: "#/components/responses/Problem" }
         "404": { $ref: "#/components/responses/Problem" }
@@ -1663,6 +1713,9 @@ paths:
         `last_message.kind` travels instead of rendered prose: a server-narrated message must be
         shown in the reader's own language, and only the client knows which that is. `preview` is
         populated only for free-form text.
+      parameters:
+        - $ref: "#/components/parameters/PageLimit"
+        - $ref: "#/components/parameters/PageCursor"
       responses:
         "200":
           description: Conversations, most recently active first
@@ -1673,6 +1726,7 @@ paths:
                 required: [data]
                 properties:
                   data: { type: array, items: { $ref: "#/components/schemas/ConversationSummary" } }
+                  meta: { $ref: "#/components/schemas/PageMeta" }
         "401": { $ref: "#/components/responses/Problem" }
 
   /conversations/{conversation}/read:
@@ -1774,6 +1828,14 @@ paths:
         Self-scoped, which is also why it is safe. Narrating a visit into the job's conversation —
         the way a warranty is — would introduce the provider to a customer not yet entitled to
         identify them (P2-03); reading one's own rows discloses nothing new in either direction.
+
+
+        `limit` only, deliberately: this list is ordered by a compound key (the
+        scheduled-before-completed bucket, then the date), and a keyset cursor must compare exactly
+        what the ordering compares or a page boundary lands in the wrong place. A to-do list read
+        from the top does not need one badly enough to guess at it.
+      parameters:
+        - $ref: "#/components/parameters/PageLimit"
       responses:
         "200":
           description: This provider's site visits.
@@ -2147,6 +2209,29 @@ components:
       scheme: bearer
 
   parameters:
+    # Cursor pagination (doc 05: "cursor, not offset"). Both are OPTIONAL and additive — a build
+    # that sends neither gets the newest page and reads `data` exactly where it always did.
+    PageLimit:
+      name: limit
+      in: query
+      required: false
+      description: >-
+        How many rows to return. Clamped to the endpoint's maximum; anything unparseable means
+        "the default", so a client cannot break itself with a bad value.
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 200
+    PageCursor:
+      name: before
+      in: query
+      required: false
+      description: >-
+        An opaque cursor from a previous response's `meta`. Returns the rows strictly before that
+        position. Do not parse it — the encoding is the server's and a stale one is treated as
+        absent rather than an error.
+      schema:
+        type: string
     IdempotencyKey:
       name: Idempotency-Key
       in: header
@@ -2176,6 +2261,18 @@ components:
         enum: [android, ios, web]
 
   schemas:
+    PageMeta:
+      type: object
+      description: >-
+        Where a cursor-paginated list stops and how to continue it. Keyset, not offset: offset
+        pagination over a feed that is still growing shows the same row on two pages (doc 05).
+      properties:
+        has_more:
+          type: boolean
+          description: Whether more rows exist before this page's last row.
+        next_cursor:
+          description: Pass as `before` to fetch the next page. Null when there is nothing more.
+          oneOf: [{ type: string }, { type: "null" }]
     Money:
       type: object
       description: Money is ALWAYS integer minor units + explicit currency. Never a float, never a formatted string.

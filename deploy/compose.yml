@@ -178,9 +178,12 @@ services:
     entrypoint: ["sh", "/init.sh"]
     restart: "no"
 
+  # Redis holds the sessions, the cache and the queue, so "it is only on the internal network"
+  # means any one compromised container is a full session takeover. It ran with no password at all;
+  # requirepass is the cheapest thing standing between those two facts.
   redis:
     image: redis:7-alpine
-    command: ["redis-server", "--appendonly", "yes", "--maxmemory", "256mb", "--maxmemory-policy", "noeviction"]
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory", "256mb", "--maxmemory-policy", "noeviction", "--requirepass", "${REDIS_PASSWORD:?REDIS_PASSWORD must be set}"]
     volumes:
       - redisdata:/data
     healthcheck:

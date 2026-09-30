@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Identity\Actions;
 
+use App\Domain\Access\AccountNotActive;
+use App\Domain\Access\AccountStatus;
 use App\Domain\Identity\OtpException;
 use App\Models\OtpChallenge;
 use App\Models\Party;
@@ -90,6 +92,18 @@ final class VerifyOtp
     {
         $user = User::query()->where('phone_e164', $phoneE164)->first();
         $registered = false;
+
+        // A suspended or closed account does not get a session, however good its code was. Checked
+        // HERE rather than at `/otp/request`: refusing to send a code would tell anyone who typed a
+        // number whether it is suspended, and the request endpoint's whole design is that it
+        // answers 202 either way so the platform cannot be used to enumerate who is on it.
+        if ($user !== null) {
+            $status = AccountStatus::from($user->status);
+
+            if (! $status->canAuthenticate()) {
+                throw new AccountNotActive($status);
+            }
+        }
 
         if ($user === null) {
             $party = Party::query()->create([

@@ -3,6 +3,7 @@
 use App\Domain\Access\PreconditionUnmetException;
 use App\Http\Middleware\CompressResponse;
 use App\Http\Middleware\EnforceAppVersion;
+use App\Http\Middleware\EnsureAccountActive;
 use App\Http\Middleware\Idempotency;
 use App\Http\Middleware\RecordUsage;
 use App\Http\Middleware\RequestId;
@@ -53,8 +54,11 @@ return Application::configure(basePath: dirname(__DIR__))
         // defining the limiter, and this file never put either back — so until now nothing in the
         // app bounded request rate anywhere. The limiter itself is defined in AppServiceProvider;
         // the stricter per-route limits (`auth`, `webhooks`) are named in routes/api.php.
+        // EnsureAccountActive sits between the two: after the cheap gates, before anything a
+        // suspended account could actually do. It reads the sanctum guard itself, so it does not
+        // need to wait for the route's `auth:sanctum` (see the class).
         $middleware->api(
-            prepend: ['throttle:api', EnforceAppVersion::class],
+            prepend: ['throttle:api', EnforceAppVersion::class, EnsureAccountActive::class],
             // RecordUsage is terminable and writes after the response — doc 08's switch trigger.
             append: [Idempotency::class, RecordUsage::class],
         );

@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Domain\Workspace\Actions\PostMessage;
 use App\Domain\Workspace\Actions\PostVoiceMessage;
 use App\Http\Controllers\Controller;
+use App\Support\Cursor;
 use App\Http\Requests\Api\V1\PostMessageRequest;
 use App\Http\Requests\Api\V1\PostVoiceMessageRequest;
 use App\Http\Resources\Api\V1\MessageResource;
@@ -35,10 +36,38 @@ final class MessageController extends Controller
         // than making it hunt for one it may not be entitled to read elsewhere.
         $engagementId = Engagement::query()->where('job_id', $job->id)->value('id');
 
-        return MessageResource::collection($conversation->messages()->with('media')->get())
+        // The thread, oldest-last, capped — and ORDERED, which it was not. There was no ORDER BY
+        // at all here, so the order of a chat was whatever Postgres happened to return; and there
+        // was no limit either, so every open re-fetched the entire history with its media over a
+        // mobile network. A long engagement's thread was the heaviest response the API served.
+        //
+        // The window is the NEWEST `limit` messages, handed back ASCENDING — which is the order the
+        // app appends into and renders (rule #4: it must keep reading `data` exactly as before).
+        // So the query takes them descending and the page is reversed.
+        $limit = Cursor::limit($request->query('limit'), 100);
+
+        $window = $conversation->messages()->with('media')
+            ->orderByDesc('created_at')
+            ->orderByDesc('id');
+
+        // `before` pages BACKWARDS through the history — older than what the client already holds.
+        Cursor::applyBefore($window, 'messages.created_at', $request->query('before'));
+
+        $found = $window->limit($limit + 1)->get();
+        $hasMore = $found->count() > $limit;
+        $page = $found->take($limit);
+        $oldest = $page->last(); // still the descending order here, so `last` is the oldest
+
+        return MessageResource::collection($page->reverse()->values())
             ->additional(['meta' => [
                 'conversation_id' => $conversation->id,
                 'engagement_id' => $engagementId,
+                // Named for what it does: fetch the messages BEFORE this page. A chat pages into
+                // its past, so calling it `next_cursor` would read backwards.
+                'has_older' => $hasMore,
+                'older_cursor' => $hasMore && $oldest !== null
+                    ? Cursor::encode($oldest->created_at->toIso8601String(), $oldest->id)
+                    : null,
             ]]);
     }
 

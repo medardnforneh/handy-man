@@ -13,6 +13,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\CreateJobRequest;
 use App\Http\Resources\Api\V1\JobResource;
 use App\Http\Resources\Api\V1\ProviderProfileResource;
+use App\Support\Cursor;
 use App\Models\Job;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
@@ -37,18 +38,44 @@ final class JobController extends Controller
         return response()->json(['data' => ['job_id' => $offer->job_id, 'offer_id' => $offer->id]], 201);
     }
 
+    /**
+     * The customer's own jobs, newest first.
+     *
+     * This used to `->get()` every job the customer had ever created, with `photos`, `address`,
+     * `engagement.provider` and `engagement.milestones` eager-loaded on each — a payload that only
+     * ever grew, fetched over a mobile network, for a screen that shows the first handful.
+     *
+     * `limit` and `before` are additive (rule #4): a build that sends neither gets the newest page
+     * and reads `data` exactly where it always did.
+     */
     public function index(Request $request): AnonymousResourceCollection
     {
         /** @var User $user */
         $user = $request->user();
 
-        $jobs = Job::query()
+        $limit = Cursor::limit($request->query('limit'), 25);
+
+        $query = Job::query()
             ->where('customer_party_id', $user->party_id)
             ->with(['photos', 'address', 'engagement.provider', 'engagement.milestones'])
             ->latest('created_at')
-            ->get();
+            ->orderByDesc('id');
 
-        return JobResource::collection($jobs);
+        Cursor::applyBefore($query, 'created_at', $request->query('before'));
+
+        // One more than asked for, so "is there another page" is answered by the query rather than
+        // by a second COUNT over the same rows.
+        $jobs = $query->limit($limit + 1)->get();
+        $hasMore = $jobs->count() > $limit;
+        $jobs = $jobs->take($limit);
+        $last = $jobs->last();
+
+        return JobResource::collection($jobs)->additional(['meta' => [
+            'has_more' => $hasMore,
+            'next_cursor' => $hasMore && $last !== null
+                ? Cursor::encode($last->created_at->toIso8601String(), $last->id)
+                : null,
+        ]]);
     }
 
     public function store(CreateJobRequest $request, CreateJob $action): JsonResponse

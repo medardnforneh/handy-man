@@ -16,6 +16,7 @@ use App\Models\Job;
 use App\Models\Quotation;
 use App\Models\SiteVisit;
 use App\Models\User;
+use App\Support\Cursor;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -47,6 +48,8 @@ final class SiteVisitController extends Controller
         /** @var User $user */
         $user = $request->user();
 
+        $limit = Cursor::limit($request->query('limit'), 50);
+
         $visits = SiteVisit::query()
             ->where('provider_party_id', $user->party_id)
             ->with(['job.address', 'job.skill'])
@@ -54,9 +57,15 @@ final class SiteVisitController extends Controller
             // that still has to happen outranks the one that already did.
             ->orderByRaw("case when status = 'scheduled' then 0 else 1 end")
             ->orderBy('scheduled_for')
-            ->limit(50)
+            ->limit($limit)
             ->get();
 
+        // `limit` only, no cursor, and that is the honest shape here rather than an oversight: this
+        // list is ordered by a COMPOUND key (the scheduled-before-completed bucket, then the date),
+        // and a keyset cursor has to compare exactly what the ordering compares or a page boundary
+        // can fall in the wrong place. A cursor for this wants the bucket in the tuple; a to-do
+        // list read from the top does not want one badly enough to guess at it. The cap is at least
+        // liftable now, where before it was a flat 50 nothing could see past.
         return SiteVisitResource::collection($visits);
     }
 

@@ -157,3 +157,33 @@ it('never shows one provider another provider\'s funnel', function () {
 
     expect($stages->sum('count'))->toBe(0)->and($stages->sum('value_minor'))->toBe(0);
 });
+
+it('refuses a manual follow-up to someone who is not the provider\'s customer at all', function () {
+    // The endpoint resolved ANY party id, and the Action checked only the provider's own
+    // do-not-contact list — a list the provider controls. So any authenticated user could put an
+    // SMS, a WhatsApp message and a push in front of a stranger, on a party id that is guessable
+    // from any page showing one, billed to the platform. The budget bounded how many; nothing
+    // bounded who.
+    $provider = User::factory()->create();
+    $stranger = User::factory()->create();
+
+    Sanctum::actingAs($provider);
+    $this->postJson("/api/v1/provider/customers/{$stranger->party_id}/follow-up", [], ['Idempotency-Key' => (string) Str::uuid()])
+        ->assertStatus(403)
+        ->assertHeader('Content-Type', 'application/problem+json')
+        ->assertJsonPath('title', 'Not one of your customers');
+
+    expect(FollowUp::query()->where('target_user_id', $stranger->id)->exists())->toBeFalse();
+});
+
+it('still allows the follow-up once there is a shared engagement', function () {
+    // The client book is defined by an engagement having happened, so that is the line: the same
+    // request that was refused above succeeds for someone the provider has actually worked with.
+    ['provider' => $provider, 'customer' => $customer] = providerAndCustomer();
+
+    Sanctum::actingAs($provider);
+    $this->postJson("/api/v1/provider/customers/{$customer->party_id}/follow-up", [], ['Idempotency-Key' => (string) Str::uuid()])
+        ->assertCreated();
+
+    expect(FollowUp::query()->where('target_user_id', $customer->id)->exists())->toBeTrue();
+});

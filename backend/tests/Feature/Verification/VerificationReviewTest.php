@@ -26,11 +26,16 @@ function storedDoc(DocKind $kind = DocKind::NationalIdFront): VerificationDocume
         tap(tempnam(sys_get_temp_dir(), 'vd'), fn ($p) => file_put_contents($p, 'ID-BYTES')),
         'id.bin', 'application/octet-stream', null, true,
     );
-    [$path, $sha] = app(VerificationStorage::class)->store($upload);
+    // The bytes are encrypted with the owning party's own key, so the document and the party it
+    // belongs to have to be the same one — a factory-generated party_id would leave a document
+    // nothing could decrypt.
+    $owner = User::factory()->create();
+    [$path, $sha, $scheme] = app(VerificationStorage::class)->store($upload, $owner->party);
 
     return VerificationDocument::factory()->create([
-        'kind' => $kind->value, 'grants_tier' => $kind->grantsTier(),
-        'storage_path' => $path, 'sha256' => $sha, 'status' => DocStatus::Pending->value,
+        'party_id' => $owner->party_id, 'kind' => $kind->value, 'grants_tier' => $kind->grantsTier(),
+        'storage_path' => $path, 'encryption_scheme' => $scheme, 'sha256' => $sha,
+        'status' => DocStatus::Pending->value,
     ]);
 }
 

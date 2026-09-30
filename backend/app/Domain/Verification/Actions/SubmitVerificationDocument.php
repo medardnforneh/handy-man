@@ -24,13 +24,16 @@ final class SubmitVerificationDocument
 
     public function handle(User $user, DocKind $kind, UploadedFile $file, ?Carbon $expiresAt = null): VerificationDocument
     {
-        [$path, $sha256] = $this->storage->store($file);
+        // Encrypted with the owning party's own key, so erasure destroying that key really does
+        // make the bytes unreadable — which is what P1-10's crypto-shred has always claimed.
+        [$path, $sha256, $scheme] = $this->storage->store($file, $user->party);
 
         return VerificationDocument::query()->create([
             'party_id' => $user->party_id,
             'subject_user_id' => $user->id,
             'kind' => $kind->value,
             'storage_path' => $path,
+            'encryption_scheme' => $scheme,
             'sha256' => $sha256,
             'grants_tier' => $kind->grantsTier(),
             'status' => DocStatus::Pending->value,

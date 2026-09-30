@@ -30,13 +30,22 @@
 		# If a subdomain is ever needed on plain http, drop includeSubDomains BEFORE deploying;
 		# browsers honour the old header until it expires.
 		Strict-Transport-Security "max-age=63072000; includeSubDomains; preload"
+
+		# Content-Security-Policy, in REPORT-ONLY and deliberately STRICT — no 'unsafe-inline'.
+		#
+		# Filament and the Blade pages both emit inline script and style, so an enforcing policy
+		# needs nonces threaded through the layouts first, and a policy softened with
+		# 'unsafe-inline' to skip that work protects nothing while looking done. Report-only
+		# breaks nothing, so the strict version is the one worth sending: it turns "we would
+		# have to audit every surface" into a list of the actual violations, which is how the
+		# enforcing header gets earned. Browsers log them to the console, which is where whoever
+		# does that work is already looking; a report-uri is worth adding when there is a
+		# collector to send them to.
+		#
+		# Promote to Content-Security-Policy (same value) once the reports are quiet.
+		Content-Security-Policy-Report-Only "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' wss:; frame-ancestors 'self'; base-uri 'self'; form-action 'self'; object-src 'none'"
 		-Server
 	}
-	# NOT set here: Content-Security-Policy. It belongs on this list and is deliberately still
-	# missing — Filament and the Blade pages both emit inline script and style, so a policy worth
-	# having needs a per-surface audit (nonces through the Blade layouts, and whatever Filament 5
-	# needs) rather than a header copied in blind. A CSP that has to be relaxed to
-	# 'unsafe-inline' protects nothing and would make this look done.
 	log {
 		output stdout
 		format json

@@ -11,6 +11,7 @@ use App\Http\Resources\Api\V1\DisputeResource;
 use App\Models\Dispute;
 use App\Models\Engagement;
 use App\Models\User;
+use App\Support\Cursor;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -36,12 +37,30 @@ final class DisputeController extends Controller
 
     public function index(Request $request): JsonResponse
     {
-        $disputes = Dispute::query()
+        // Unbounded, like the jobs list was — every dispute this party had ever raised, on every
+        // open of the screen.
+        $limit = Cursor::limit($request->query('limit'), 25);
+
+        $query = Dispute::query()
             ->where('raised_by_party_id', $this->user($request)->party_id)
             ->latest('created_at')
-            ->get();
+            ->orderByDesc('id');
 
-        return DisputeResource::collection($disputes)->response();
+        Cursor::applyBefore($query, 'created_at', $request->query('before'));
+
+        $disputes = $query->limit($limit + 1)->get();
+        $hasMore = $disputes->count() > $limit;
+        $disputes = $disputes->take($limit);
+        $last = $disputes->last();
+
+        return DisputeResource::collection($disputes)
+            ->additional(['meta' => [
+                'has_more' => $hasMore,
+                'next_cursor' => $hasMore && $last !== null
+                    ? Cursor::encode($last->created_at->toIso8601String(), $last->id)
+                    : null,
+            ]])
+            ->response();
     }
 
     private function user(Request $request): User

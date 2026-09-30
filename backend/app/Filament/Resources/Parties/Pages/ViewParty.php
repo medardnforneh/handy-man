@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Parties\Pages;
 
+use App\Filament\Resources\Parties\Actions\AccountStatusActions;
 use App\Filament\Resources\Parties\PartyResource;
 use Filament\Resources\Pages\ViewRecord;
 
@@ -11,6 +12,9 @@ class ViewParty extends ViewRecord
 
     protected function getHeaderActions(): array
     {
-        return [];
+        return [
+            AccountStatusActions::suspend(),
+            AccountStatusActions::reinstate(),
+        ];
     }
 }

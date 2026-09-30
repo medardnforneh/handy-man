@@ -32,7 +32,7 @@ final class ResolvePayout
     public function handle(Payout $payout): void
     {
         // Nothing to ask the gateway about: a payout with no reference was reserved but never
-        // accepted (see RequestPayout::resume, which is what drives those forward).
+        // accepted (see RequestPayout::dispatchReserved, which drives those forward).
         if ($payout->isResolved() || $payout->external_ref === null) {
             return;
         }

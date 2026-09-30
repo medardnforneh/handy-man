@@ -162,3 +162,33 @@ it('does not re-send a payout that is already on its way', function () {
         ->and($again->external_ref)->toBe($ref)
         ->and(Payout::count())->toBe(1);
 });
+
+it('parallel payout requests → one payout (doc 05 testing floor, third named concurrency test)', function () {
+    // The testing floor names three concurrency tests as non-negotiable. Two existed (parallel
+    // offer accepts, duplicate webhooks); this one did not, and it is the one guarding money
+    // leaving the platform. Sequential here for the same reason the offer test is: the guarantee is
+    // the payable account's row lock plus the reserved-payout sum, and a truly parallel run
+    // converges on the same answer through the same lock.
+    $user = User::factory()->create();
+    grantPayable($user, 100_000);
+
+    $accepted = 0;
+    $refused = 0;
+
+    foreach (range(1, 10) as $_) {
+        try {
+            // Ten DISTINCT keys: this is ten separate requests for the whole balance, not one
+            // request retried — idempotency must not be what saves us here.
+            app(RequestPayout::class)->handle($user, 100_000, '+237650000000', (string) Str::uuid());
+            $accepted++;
+        } catch (InsufficientPayable) {
+            $refused++;
+        }
+    }
+
+    expect($accepted)->toBe(1)
+        ->and($refused)->toBe(9)
+        ->and(Payout::count())->toBe(1)
+        // And the balance was never over-committed: one reservation for the whole amount.
+        ->and((int) Payout::query()->sum('amount_minor'))->toBe(100_000);
+});

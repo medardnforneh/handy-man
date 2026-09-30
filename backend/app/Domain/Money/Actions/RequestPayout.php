@@ -43,8 +43,9 @@ use InvalidArgumentException;
  *
  * Committing the reservation first means a failed or timed-out gateway call leaves the money
  * reserved and the payout visibly `pending` with no `external_ref` — which is exactly the state
- * {@see resume()} picks up, so a client retrying under the same Idempotency-Key drives the same
- * payout forward instead of creating a second one. The gateway carries `$payout->id` as its own
+ * {@see dispatchReserved()} picks up — whether a client retries under the same Idempotency-Key or
+ * the `payouts:reconcile` sweep gets there first — so the same payout goes forward instead of a
+ * second one being created. The gateway carries `$payout->id` as its own
  * client reference, so it dedupes the retry on its side too.
  */
 final class RequestPayout
@@ -72,7 +73,7 @@ final class RequestPayout
 
         $existing = Payout::query()->where('idempotency_key', $idempotencyKey)->first();
         if ($existing !== null) {
-            return $this->resume($existing);
+            return $this->dispatchReserved($existing);
         }
 
         $payable = $this->ledger->account(AccountKind::ProviderPayable, $provider->party_id, $currency);
@@ -121,7 +122,7 @@ final class RequestPayout
         }
 
         // Step 2 — disburse, outside the transaction.
-        return $this->resume($payout);
+        return $this->dispatchReserved($payout);
     }
 
     /**
@@ -136,7 +137,7 @@ final class RequestPayout
      * Every value comes off the ROW, never off the request that happens to be resuming it, so a
      * retry cannot quietly disburse to a different number than the one that was reserved.
      */
-    private function resume(Payout $payout): Payout
+    public function dispatchReserved(Payout $payout): Payout
     {
         if ($payout->status !== PaymentStatus::Pending || $payout->external_ref !== null) {
             return $payout;

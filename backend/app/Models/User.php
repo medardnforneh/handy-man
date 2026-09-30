@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Domain\Access\AccountStatus;
 use App\Domain\Access\Role;
 use Database\Factories\UserFactory;
 use Filament\Auth\MultiFactor\App\Contracts\HasAppAuthentication;
@@ -88,6 +89,13 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
      */
     public function canAccessPanel(Panel $panel): bool
     {
+        // A staff role is not enough: the account has to be one that may hold a session at all.
+        // Suspension used to be invisible here, so a suspended staff member kept the admin panel —
+        // the one place from which they could unsuspend themselves.
+        if (! AccountStatus::from($this->status)->canAuthenticate()) {
+            return false;
+        }
+
         return $this->hasAnyRole(array_map(fn (Role $r) => $r->value, Role::staffRoles()));
     }
 

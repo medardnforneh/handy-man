@@ -27,6 +27,9 @@ use MatanYadaev\EloquentSpatial\Traits\HasSpatial;
  * @property int $bytes
  * @property Point|null $captured_point
  * @property Carbon|null $captured_at
+ * @property Carbon|null $purged_at when the bytes were destroyed by erasure; the row stays so a
+ *                                  thread shows that something was there rather than losing the
+ *                                  reference silently
  */
 final class Media extends Model
 {
@@ -43,7 +46,7 @@ final class Media extends Model
 
     protected $fillable = [
         'owner_party_id', 'attachable_type', 'attachable_id', 'kind',
-        'storage_path', 'sha256', 'bytes', 'captured_point', 'captured_at',
+        'storage_path', 'sha256', 'bytes', 'captured_point', 'captured_at', 'purged_at',
     ];
 
     protected function casts(): array
@@ -52,6 +55,7 @@ final class Media extends Model
             'bytes' => 'integer',
             'captured_point' => Point::class,
             'captured_at' => 'datetime',
+            'purged_at' => 'datetime',
         ];
     }
 }

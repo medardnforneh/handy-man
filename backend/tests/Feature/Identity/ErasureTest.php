@@ -2,14 +2,21 @@
 
 declare(strict_types=1);
 
+use App\Domain\Verification\DocumentUnreadable;
 use App\Domain\Verification\VerificationStorage;
 use App\Models\Address;
 use App\Models\Consent;
 use App\Models\Device;
+use App\Models\Conversation;
 use App\Models\EmergencyContact;
+use App\Models\Job;
+use App\Models\JobPhoto;
+use App\Models\Media;
+use App\Models\Message;
 use App\Models\OutboxMessage;
 use App\Models\Party;
 use App\Models\ProviderProfile;
+use App\Models\Review;
 use App\Models\User;
 use App\Models\VerificationDocument;
 use Illuminate\Http\UploadedFile;
@@ -76,8 +83,10 @@ it('destroys the identity papers and the emergency contacts with the person', fu
     Storage::fake('verification');
     $user = User::factory()->create();
     $file = UploadedFile::fake()->createWithContent('id.jpg', 'PLAINTEXT-ID');
-    [$path, $sha] = app(VerificationStorage::class)->store($file);
-    $doc = VerificationDocument::factory()->create(['party_id' => $user->party_id, 'storage_path' => $path, 'sha256' => $sha]);
+    [$path, $sha, $scheme] = app(VerificationStorage::class)->store($file, $user->party);
+    $doc = VerificationDocument::factory()->create([
+        'party_id' => $user->party_id, 'storage_path' => $path, 'sha256' => $sha, 'encryption_scheme' => $scheme,
+    ]);
     EmergencyContact::factory()->create(['user_id' => $user->id, 'phone_e164' => '+237690000009']);
     Storage::disk('verification')->assertExists($path);
 
@@ -100,4 +109,89 @@ it('makes the erased user unrecoverable as an identity', function () {
 
     // The original phone no longer resolves to anyone.
     expect(User::where('phone_e164', '+237699000001')->exists())->toBeFalse();
+});
+
+it('crypto-shred is real: the destroyed key was the one that could read the papers', function () {
+    // The headline claim of P1-10, and it was ceremonial until 2026-09-30 — the key was minted and
+    // destroyed and nothing was ever encrypted with it, so the only reason an erased person's ID
+    // scans went away was the byte-delete beside it. This asserts the mechanism, not the marker:
+    // the same ciphertext must be unreadable afterwards even if a copy of it survived.
+    Storage::fake('verification');
+    $user = User::factory()->create();
+    $storage = app(VerificationStorage::class);
+
+    $file = UploadedFile::fake()->createWithContent('id.jpg', 'PLAINTEXT-ID');
+    [$path, $sha, $scheme] = $storage->store($file, $user->party);
+    $doc = VerificationDocument::factory()->create([
+        'party_id' => $user->party_id, 'storage_path' => $path, 'sha256' => $sha, 'encryption_scheme' => $scheme,
+    ]);
+
+    // The bytes on disk are not the plaintext, and they read back correctly while the key lives.
+    expect($scheme)->toBe(VerificationStorage::SCHEME_PARTY_KEY)
+        ->and(Storage::disk('verification')->get($path))->not->toContain('PLAINTEXT-ID')
+        ->and($storage->read($doc))->toBe('PLAINTEXT-ID');
+
+    // Keep a copy of the ciphertext, as a leaked backup would.
+    $leaked = (string) Storage::disk('verification')->get($path);
+
+    Sanctum::actingAs($user);
+    $this->deleteJson('/api/v1/me', [], ['Idempotency-Key' => (string) Str::uuid()])->assertOk();
+
+    // Restore the "leaked" copy and try again: the key is gone, so the bytes are noise.
+    Storage::disk('verification')->put($path, $leaked);
+    expect(Party::findOrFail($user->party_id)->data_key)->toBeNull()
+        ->and(fn () => $storage->read($doc->refresh()))->toThrow(DocumentUnreadable::class);
+});
+
+it('erases the content the person made, and keeps what is not theirs alone', function () {
+    Storage::fake('local');
+    $user = User::factory()->create();
+    $party = $user->party;
+
+    // A voice note they recorded.
+    Storage::disk('local')->put('media/voice.ogg', 'THEIR-VOICE');
+    $media = Media::factory()->create([
+        'owner_party_id' => $party->id,
+        'storage_path' => 'media/voice.ogg',
+    ]);
+
+    // A job they posted, with a photo of their premises.
+    $job = Job::factory()->create(['customer_party_id' => $party->id]);
+    Storage::disk('local')->put('jobs/photo.jpg', 'THEIR-PREMISES');
+    JobPhoto::factory()->create(['job_id' => $job->id, 'path' => 'jobs/photo.jpg']);
+
+    // Their words, in a thread the other party also has a stake in.
+    $conversation = Conversation::factory()->create();
+    $mine = Message::factory()->create([
+        'conversation_id' => $conversation->id,
+        'sender_user_id' => $user->getKey(),
+        'body' => 'my phone is 699000111',
+    ]);
+    $theirs = Message::factory()->create([
+        'conversation_id' => $conversation->id,
+        'body' => 'the other party said this',
+    ]);
+
+    // Their prose about someone else's work — the rating is not personal data about the author.
+    $review = Review::factory()->create(['author_party_id' => $party->id, 'rating' => 4, 'body' => 'he was late']);
+
+    Sanctum::actingAs($user);
+    $this->deleteJson('/api/v1/me', [], ['Idempotency-Key' => (string) Str::uuid()])->assertOk();
+
+    // Bytes destroyed; the media row survives saying so, so a thread shows something was there.
+    Storage::disk('local')->assertMissing('media/voice.ogg');
+    expect($media->refresh()->purged_at)->not->toBeNull();
+
+    // A job photo row is nothing but a path — bytes and row both go.
+    Storage::disk('local')->assertMissing('jobs/photo.jpg');
+    expect(JobPhoto::query()->where('job_id', $job->id)->exists())->toBeFalse();
+
+    // Their message is redacted; the other party's is untouched and the thread stays whole.
+    expect($mine->refresh()->body)->toBeNull()
+        ->and($theirs->refresh()->body)->toBe('the other party said this');
+
+    // Review prose gone, rating kept.
+    expect($review->refresh()->body)->toBeNull()
+        ->and($review->private_note)->toBeNull()
+        ->and($review->rating)->toBe(4);
 });

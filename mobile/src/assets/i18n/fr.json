@@ -737,7 +737,15 @@
       "granted": "Accordé",
       "revoked": "Révoqué",
       "no_consents": "Aucun consentement enregistré.",
-      "status_label": "Statut"
+      "status_label": "Statut",
+      "suspend": "Suspendre",
+      "suspend_explainer": "Ceci exclut le compte partout : toutes les sessions se terminent, aucune nouvelle connexion ne fonctionne, et un profil de prestataire quitte la recherche et le classement. C'est réversible.",
+      "reinstate": "Rétablir",
+      "reinstate_explainer": "Le compte peut se reconnecter. Les sessions ne sont pas restaurées : la personne devra se reconnecter.",
+      "status_reason": "Motif",
+      "status_reason_hint": "Enregistré dans le journal d'activité à votre nom. C'est la seule trace du pourquoi.",
+      "suspended_notice": "Compte suspendu",
+      "reinstated_notice": "Compte rétabli"
     },
     "audit": {
       "when": "Quand",
