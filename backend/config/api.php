@@ -67,6 +67,37 @@ return [
     |
     */
 
+    /*
+    |--------------------------------------------------------------------------
+    | Rate limits (requests per minute)
+    |--------------------------------------------------------------------------
+    |
+    | There were none. Laravel 11 moved `throttle:api` out of the default API
+    | middleware group and out of the framework's own limiter definitions, and
+    | nothing here put it back — so every endpoint was unbounded. That is a
+    | problem in three specific places rather than in general:
+    |
+    |   `auth`      the credential endpoints. The per-phone OTP counters and the
+    |               per-challenge attempt cap are the real controls, but with no
+    |               throttle in front of them nothing bounded how fast an
+    |               attacker could work through either.
+    |   `webhooks`  public, unauthenticated, and it WRITES: every request with a
+    |               bad signature stores a row with its full payload, on purpose,
+    |               as an audit trail. Unbounded, that is a way to fill a table.
+    |   `api`       everything else. Deliberately generous — this is a backstop
+    |               against a runaway client or a scraper, not a product limit,
+    |               and the offline write queue replays a backlog in bursts.
+    |
+    | Keyed by authenticated user where there is one, by IP where there is not.
+    |
+    */
+
+    'rate_limits' => [
+        'api' => (int) env('API_RATE_LIMIT', 120),
+        'auth' => (int) env('API_RATE_LIMIT_AUTH', 20),
+        'webhooks' => (int) env('API_RATE_LIMIT_WEBHOOKS', 60),
+    ],
+
     'idempotency' => [
         'header' => 'Idempotency-Key',
         'ttl_hours' => (int) env('API_IDEMPOTENCY_TTL_HOURS', 24),

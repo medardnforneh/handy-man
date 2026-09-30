@@ -3,7 +3,12 @@
 > Living tracker for the build. Updated as work progresses. Source of truth for **where we
 > are** and **how this machine is set up**. Read this first when resuming.
 
-_Last updated: 2026-09-13 (the HandyMan REDESIGN — dark, one luminous green, Plus Jakarta Sans,
+_Last updated: 2026-09-30 (a repository review: rate limiting where there was none, idempotency
+claims scoped to the caller, the OTP attempt cap applied by the database, gateway calls taken out
+of database transactions, and CLAUDE.md committed for the first time — see the top entry under
+"What was done" and the rewritten "Next steps")_
+
+_Previously: 2026-09-13 (the HandyMan REDESIGN — dark, one luminous green, Plus Jakarta Sans,
 22px cards, no shadows, one filled button per screen — replaced Modernist on every surface after
 the founder said Modernist was the wrong design; the handoff folder in Downloads is the spec.
 Same day: every notification channel got a real adapter, object storage, retention, erasure of
@@ -330,6 +335,106 @@ This section stayed at "25 open" for almost a month after the last gap closed �
 green, the tracker did not. Re-run it before believing this paragraph.
 
 ## What was done, most recent first
+
+### 2026-09-30 — a repository review, and the nine things it fixed
+
+A full read of the repository (no test run: the PHP toolchain could not be installed in that
+session, so every finding below is from reading, and **CI is what confirms it**). The node gates
+did run, and were clean: i18n parity 1432 keys × 2, no-literal-colours, no-bare-strings, contrast
+in both themes, 0 of 93 operations uncalled.
+
+**`CLAUDE.md` had never been committed.** 116 places in the repo cite it — the README calls it the
+entry point, and code cites it by number (`routes/api.php` "rule #4", `Money.php` "#1, #2",
+`Skill.php` "#7"). `git log --all -- CLAUDE.md` was empty and `.gitignore` never mentioned it, so
+every contributor and every agent has been working against rules they could not read. It is now
+reconstructed from those citations, with the numbering pinned to them. **Rules #5 and #10 are
+cited nowhere and could not be recovered** — they are marked as missing in the file rather than
+invented. Restore them if the original exists anywhere.
+
+**No rate limiting existed, anywhere.** Laravel 11 moved `throttle:api` out of the default API
+middleware group *and* stopped defining the `api` limiter; `bootstrap/app.php` never put either
+back, and there was no `RateLimiter::for` in the codebase. So `/auth/otp/verify`, `/auth/refresh`,
+the public directory and the public webhook all answered as fast as they were asked. Three
+limiters now (`config/api.rate_limits`): `api` 120/min keyed by sanctum user where there is one and
+by IP otherwise — keying it by IP alone would throttle everyone behind a carrier NAT, which here is
+most people; `auth` 20/min per IP on the three unauthenticated credential routes only, so `/me` and
+`/logout` are not caught by an IP-keyed limit; `webhooks` 60/min per IP, because that route is
+public and it WRITES. A 429 now renders as problem+json with type `rate-limited` and keeps
+`Retry-After` — the generic HttpException renderer dropped those headers, and the offline write
+queue is exactly the client that retries immediately when it cannot tell "slow down" from "broke".
+
+**An idempotency claim was not scoped to the caller,** and its `user_id` was never even populated.
+The unique index was on `idempotency_key` alone, and `handleExisting` looked up by key alone — so
+the same key, method, path and body from a second caller replayed the first caller's stored
+response verbatim. P0-06's own comment said "Scope for later (auth arrives in P1)"; P1 arrived and
+the scope did not. Separately, the middleware read `$request->user()` off the **default `web`
+guard** — which a Bearer client never satisfies, because this middleware is in the `api` group and
+runs before the route's `auth:sanctum`. Every row this table has ever held recorded `user_id` as
+null. Now: `Auth::guard('sanctum')` by name (the same reason `RecordUsage` does), and a unique index
+on `(user_id, idempotency_key) NULLS NOT DISTINCT` — the `NULLS NOT DISTINCT` is what keeps the
+claim atomic for the three `/auth/*` routes, which carry a key and have no user.
+
+**The OTP attempt cap was not applied atomically.** Read, compare, then increment, with the row
+lock only on the success path — so N concurrent verifies all read the same under-the-cap value and
+all went on to check a code, leaking roughly one extra guess per request in flight. With nothing
+throttling the endpoint that was the only bound on a 6-digit brute force. It is now one conditional
+`UPDATE … WHERE attempts < max`, outside any transaction (a rolled-back increment would let an
+attacker guess for ever), with the affected count as the answer. A successful verify now spends an
+attempt too, which costs nothing since the challenge is consumed.
+
+**Gateway calls ran inside database transactions holding row locks.** `RequestPayout` called
+CinetPay while holding `lockForUpdate` on the provider's payable account — and a timeout rolled
+that transaction back, **destroying the pending row that is the only record of the reservation**,
+while the transfer may already have been accepted. The provider could then ask for the same money
+again with nothing in our database that had seen the first request. It is two steps now: a short
+transaction reserves and commits, then the gateway is called with no lock held. A timed-out call
+leaves the payout `pending` with no `external_ref`, which `RequestPayout::resume` picks up when the
+client retries under the same Idempotency-Key — driving the same payout forward rather than making
+a second one, and the gateway carries the payout id as its own reference so it dedupes too.
+`ProcessPaymentWebhook` and `ResolvePayout` had the same shape and got the same treatment: read the
+authoritative status first, decide under the lock, re-check there.
+
+Found while in that file: **`RequestPayout`'s unique-violation recovery could never have worked.**
+The `catch (QueryException)` sat next to the failing INSERT inside the transaction, where Postgres
+has already aborted everything — the SELECT meant to recover the winner's row would itself have
+failed with "current transaction is aborted". It is outside the transaction now, which is the same
+reason `ProcessPaymentWebhook` wraps its dedup insert in a transaction of its own.
+
+**No gateway call had a timeout,** so they inherited Guzzle's "wait as long as it takes": a hung
+aggregator became a hung PHP-FPM worker, and — before the split above — a held lock with it.
+Bounded via `config/payments.http` (connect 5s, total 20s) rather than the constructor, so the
+signature the tests and the service provider call stays as it is.
+
+**The `{gateway}` webhook path segment was unvalidated.** Signatures are checked against the
+configured adapter, so nothing was ever wrongly applied — but the segment is half of the
+`(gateway, external_ref, event_type)` dedup key, so `/webhooks/payments/cinetpay` and
+`/webhooks/payments/cinetpay-x` were two keys for one callback, and each attempt still wrote its
+audit row. A mismatch is a 404 now, stored nowhere.
+
+**`post_max_size` was below the upload limits the API declares.** PHP wins: a body over it is
+discarded before Laravel sees it, so `$_FILES` arrives empty and the validator answers
+"photos.*.file is required" — which reads as a bug in the app, not as "too large". At 30M an
+on-site job report of five modern phone photos hit exactly that, in the core provider flow. Now
+64M, with `max_file_uploads` pinned. Still inconsistent by design and flagged in the file: a report
+declares `photos` as array max:20 and 20 × 10M fits in no sane budget, and the API being
+additive-only means the declared rule cannot simply be tightened — the app should downscale, or the
+count should be a decision.
+
+**No HSTS at the edge.** Caddy redirects http→https, but a redirect is one round trip an attacker
+on the same network gets to answer first, and these hostnames carry identity documents and payment
+flows. Two years, subdomains, preload-eligible. **CSP is still absent and deliberately so** — noted
+in the Caddyfile, because Filament and the Blade pages both emit inline script and style, and a
+policy relaxed to `unsafe-inline` would protect nothing while looking done.
+
+**The production app granted a session on a network error at OTP verify.** The offline fixture
+fallback caught every thrown error, set `authed` and returned true. No token is stored so nothing
+real is reachable, but a shipped build let anyone into the app shell by dropping the network at the
+right moment. Gated on a non-production build.
+
+What this pass did **not** do, and why, is the rewritten **Next steps** above: suspension being
+unenforceable and the two erasure gaps are features and a legal decision, not patches, and
+pagination is a contract addition worth designing rather than sprinkling.
+
 
 - **The provider app, designed** (2026-09-14, founder: "design the provider app too"). The
   handoff has no provider screens, so they were designed in its grammar rather than borrowed
@@ -2386,16 +2491,69 @@ green, the tracker did not. Re-run it before believing this paragraph.
 
 ## Next steps
 
-**Phases 0 and 1 are COMPLETE** (every task committed; 114 tests green). End-of-P1 demo works: a
-provider signs up by phone (OTP), lists skills, sets a service radius; an admin sees them in
-Filament. Next is **Phase 2 — jobs, offers, engagements (direct booking)**:
+_Rewritten 2026-09-30. This section had said "Phases 0 and 1 are COMPLETE … Next is Phase 2" for
+months, while the tables above it recorded Phase 8 done and the redesign landed — the exact failure
+this file warns about two sections up ("the sweep ran green, the tracker did not"). What follows is
+what the 2026-09-30 review found still open, which is a different list from what is built._
 
-1. **P2-01** jobs + engagement_mode + conditional-address CHECK + JobStateMachine
-2. **P2-02** EngagementModePolicy (feature applicability object, doc 06)
-3. **P2-03..P2-10** job creation + PII-minimised resource; provider search (ST_DWithin + skill +
-   rating, skips geo for remote); offers; **AcceptOfferAction** (concurrency: 20 parallel → 1
-   engagement); AcceptPaidJob gate keyed to engagement_mode; engagements + auto-assign; assignments
-   + dispatcher org-boundary; availability/conflict; Filament.
+**Open, from the repository review (2026-09-30).** Fixed in that pass: no rate limiting anywhere;
+idempotency claims not scoped to the caller; the OTP attempt cap not applied atomically; gateway
+HTTP calls inside database transactions holding row locks; no timeout on any gateway call; the
+`{gateway}` webhook path segment unvalidated; `post_max_size` below the upload limits the API
+declares; no HSTS; the production app granting a session on a network error at OTP verify; and
+`CLAUDE.md` itself, which had never been committed while 116 places in the repo cite it.
+
+Still open, in rough order of how much they matter:
+
+1. **Suspension is unenforceable.** `user_status` carries `suspended`/`closed` on `parties` and
+   `users`, and `provider_profiles.suspended_at` exists, but nothing writes any of them and
+   nothing reads `users.status` at authentication. `ReviewReportAction` can only mark a report
+   resolved or dismissed with a note. Staff can receive a report about a dangerous provider, record
+   a decision, and hide them from search — they cannot stop them signing in, accepting offers,
+   messaging customers or requesting payouts. Needs both halves: an admin action that writes the
+   status, and a gate at token issuance and refresh that reads it.
+2. **`data_key` protects nothing.** Every party gets a 256-bit key at creation and it is destroyed
+   on erasure, but grep finds no other use — nothing is ever encrypted with it. "Crypto-shred
+   erasure", which doc 04 and the P1-10 entry present as what resolves erasure-vs-append-only,
+   is ceremonial today, and `ErasureTest` asserts the key is null rather than that anything became
+   unrecoverable. Either encrypt something with it or stop claiming the mechanism.
+3. **Erasure leaves the person's own content.** It clears addresses, devices, tokens, OTP
+   challenges, emergency contacts and the identity-document bytes. It does not touch conversation
+   messages, `media` (voice notes — recordings of their voice), `job_photos`, job free-text,
+   reviews they wrote, or notes; `config/retention.php` does not cover them either. The docblock
+   says "the human becomes unidentifiable". Decide this per table and write the decision into the
+   retention register, since Law 2024/017 is the driver.
+4. **Unsolicited contact through the CRM.** `POST /provider/customers/{party}/follow-up` resolves
+   any party id and `ScheduleManualFollowUp` checks only the provider's own do-not-contact list —
+   no check that an engagement ever existed between them. Party ids are guessable. Budget bounds it
+   at ~2 SMS + 3 WhatsApp + 4 push per target per day, billed to us.
+5. **No pagination, which doc 05 requires ("cursor, not offset").** No `paginate()` anywhere. Three
+   endpoints are entirely unbounded — `GET /jobs` (every job a customer ever created, with photos,
+   address, provider and milestones eager-loaded), `GET /jobs/{job}/messages` (the whole thread with
+   media, re-fetched on every workspace open, on 3G) and `GET /conversations`. The rest are capped
+   at 20–50 with no way to reach anything older, so a provider with 51 site visits cannot see the
+   first one. Additive-only makes a cursor parameter easy; nothing about it is blocked.
+6. **`ResolvePayout` skips a reservation with no reference**, which is correct — but it means the
+   only thing that drives a stranded payout forward is a client retry under the same
+   Idempotency-Key (`RequestPayout::resume`). A sweep for `pending` payouts with no `external_ref`
+   older than a few minutes would close that properly.
+7. **Verification documents are encrypted whole-file in memory** (plaintext and ciphertext both
+   resident; `read()` decrypts entirely before streaming). Fine at the 10M cap against
+   `memory_limit=256M`; it breaks quietly if that cap ever rises.
+8. **No CSP.** HSTS is now set; a Content-Security-Policy needs a per-surface audit because
+   Filament and the Blade pages both emit inline script and style. Noted in the Caddyfile.
+9. **Redis has no authentication.** Internal-network only, but it holds sessions, cache and the
+   queue, so any container compromise is full session takeover.
+10. **Doc 05's third named concurrency test does not exist.** "Parallel payout requests → one
+    payout" is listed as non-negotiable in the testing floor; `PayoutTest` covers the sequential
+    reservation only. (The offer and webhook ones exist, though both loop sequentially and rely on
+    the lock, so "parallel" is aspirational there too.)
+11. **The design source of truth is a path on one laptop** —
+    `C:\Users\admin\Downloads\Redesign project modernization\…`. Tokens are in the repo; the
+    per-screen specs and prototypes are not.
+12. **`shot.mjs` at the repo root is a tracked empty file**, and `check:native-origin` still warns
+    while `NATIVE_API_ORIGIN` reads as a real domain — resolve it so the release gate means
+    something.
 
 Follow-ups noted in code (not blocking): `cap add android/ios` when building native; full
 Tailwind/Vite pipeline for Blade (token CSS linked directly for now); the identity-verification
@@ -2428,14 +2586,14 @@ approval flow that raises `verification_tier` (P6).
   the alphanumeric `HandyMan` (no reply path; what the deploy example assumes) or a purchased
   number people can text back.
 
-- **Primary button label contrast (founder decision, 2026-09-12).** White on the brand red
-  `#ec3013` is 3.76:1; WCAG AA wants 4.5:1 for a 14px label and no label colour gets there on
-  that red (ink is 3.73). It clears the 3:1 large-text bar only. Options: (a) accept — it is the
-  brand, labels are 800-weight, and the checker prints the waiver on every run; (b) move the
-  primary FILL to the ramp's 700 step `#ae1800` (passes at 6.3:1, visibly darker, the accent
-  stays `#ec3013` for icons/rules/the poster band); (c) make primary labels ≥ 18.66px bold.
-  Recommend (a) unless the outdoor-legibility test on a real low-end Android says otherwise —
-  that test is on the same checklist and would settle it with evidence rather than a ratio.
+- ~~**Primary button label contrast (founder decision, 2026-09-12).**~~ **MOOT since 2026-09-13,
+  struck 2026-09-30.** The question was white-on-`#ec3013` at 3.76:1 against AA's 4.5:1, and
+  `#ec3013` was Modernist — the design this tracker itself records as replaced the next day. On the
+  HandyMan redesign the primary fill is `brand.primary` with the ground as its ink, which
+  `npm run check:contrast` measures at **11.13:1**, and every other pair clears its threshold in
+  both themes with no waiver printed. There was nothing left to decide; it sat here as an open
+  question for two weeks after the colour it was about stopped existing. The outdoor-legibility
+  test on a real low-end Android is still worth running, but as a legibility check, not as this.
 
 - **P0-09 hosting region: DECIDED → in-country (Cameroon)**, Option A. Lawyer sign-off + CNDP
   processing register still pending (founder tasks). Self-managed PostGIS/Redis/MinIO in-country.

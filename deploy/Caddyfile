@@ -23,8 +23,20 @@
 		X-Content-Type-Options nosniff
 		X-Frame-Options SAMEORIGIN
 		Referrer-Policy strict-origin-when-cross-origin
+		# Caddy already redirects http→https, but a redirect is one round trip an attacker on the
+		# same network gets to answer first. HSTS removes it: after one visit the browser refuses
+		# to speak http to this host at all. Two years, subdomains included, and preload-eligible —
+		# this platform carries identity documents and payment flows on these hostnames.
+		# If a subdomain is ever needed on plain http, drop includeSubDomains BEFORE deploying;
+		# browsers honour the old header until it expires.
+		Strict-Transport-Security "max-age=63072000; includeSubDomains; preload"
 		-Server
 	}
+	# NOT set here: Content-Security-Policy. It belongs on this list and is deliberately still
+	# missing — Filament and the Blade pages both emit inline script and style, so a policy worth
+	# having needs a per-surface audit (nonces through the Blade layouts, and whatever Filament 5
+	# needs) rather than a header copied in blind. A CSP that has to be relaxed to
+	# 'unsafe-inline' protects nothing and would make this look done.
 	log {
 		output stdout
 		format json

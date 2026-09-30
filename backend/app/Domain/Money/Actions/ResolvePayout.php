@@ -31,14 +31,23 @@ final class ResolvePayout
 
     public function handle(Payout $payout): void
     {
-        DB::transaction(function () use ($payout): void {
+        // Nothing to ask the gateway about: a payout with no reference was reserved but never
+        // accepted (see RequestPayout::resume, which is what drives those forward).
+        if ($payout->isResolved() || $payout->external_ref === null) {
+            return;
+        }
+
+        // Read the authoritative status with no transaction open and no row locked (CLAUDE.md
+        // "never call an external service from inside a database transaction"). The decision is
+        // still made under the lock below, so a racing poller or webhook cannot post twice.
+        $status = $this->gateway->fetchStatus($payout->external_ref)->status;
+
+        DB::transaction(function () use ($payout, $status): void {
             $locked = Payout::query()->whereKey($payout->id)->lockForUpdate()->firstOrFail();
 
             if ($locked->isResolved() || $locked->external_ref === null) {
                 return;
             }
-
-            $status = $this->gateway->fetchStatus($locked->external_ref)->status;
 
             if ($status === GatewayStatus::Succeeded) {
                 $txn = $this->ledger->post(

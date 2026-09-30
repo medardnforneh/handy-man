@@ -131,3 +131,41 @@ it('hard-locks after too many wrong attempts', function () {
         ->assertStatus(429)
         ->assertJsonPath('title', 'Too many attempts');
 });
+
+it('never lets the attempt counter pass the cap, because the DB applies it', function () {
+    // The counter used to be read, compared, then incremented in three separate steps, so N
+    // concurrent verifies all saw the same under-the-cap value and all went on to check a code.
+    // The reservation is now one conditional UPDATE, which is what makes the cap hold: the row
+    // decides, and the affected count is the answer.
+    $phone = '+237699202020';
+    $max = (int) config('otp.max_verify_attempts');
+    otpPost($this, '/api/v1/auth/otp/request', ['phone_e164' => $phone, 'purpose' => 'login'])->assertStatus(202);
+
+    for ($i = 1; $i <= $max; $i++) {
+        otpPost($this, '/api/v1/auth/otp/verify', ['phone_e164' => $phone, 'code' => '000000', 'purpose' => 'login'])
+            ->assertStatus(422);
+        expect(OtpChallenge::where('phone_e164', $phone)->value('attempts'))->toBe($i);
+    }
+
+    // The cap is spent. Every further guess is refused without reaching the hash, and the counter
+    // stops dead rather than climbing.
+    foreach (range(1, 3) as $_) {
+        otpPost($this, '/api/v1/auth/otp/verify', ['phone_e164' => $phone, 'code' => '000000', 'purpose' => 'login'])
+            ->assertStatus(429)
+            ->assertJsonPath('title', 'Too many attempts');
+    }
+
+    expect(OtpChallenge::where('phone_e164', $phone)->value('attempts'))->toBe($max);
+});
+
+it('spends an attempt before the code is checked, so a guess always costs one', function () {
+    $phone = '+237699303030';
+    otpPost($this, '/api/v1/auth/otp/request', ['phone_e164' => $phone, 'purpose' => 'login'])->assertStatus(202);
+
+    expect(OtpChallenge::where('phone_e164', $phone)->value('attempts'))->toBe(0);
+
+    otpPost($this, '/api/v1/auth/otp/verify', ['phone_e164' => $phone, 'code' => '111111', 'purpose' => 'login'])
+        ->assertStatus(422);
+
+    expect(OtpChallenge::where('phone_e164', $phone)->value('attempts'))->toBe(1);
+});

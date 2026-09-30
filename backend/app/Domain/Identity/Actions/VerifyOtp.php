@@ -39,16 +39,32 @@ final class VerifyOtp
             throw OtpException::invalidOrExpired();
         }
 
-        if ($challenge->attempts >= (int) config('otp.max_verify_attempts')) {
+        // Reserve an attempt BEFORE the code is checked, in one atomic statement:
+        //
+        //   UPDATE otp_challenges SET attempts = attempts + 1 WHERE id = ? AND attempts < ?
+        //
+        // Read-then-compare-then-increment was not atomic, and the row lock on the success path
+        // below did nothing for it: N concurrent verifies all read the same pre-increment value,
+        // all found it under the cap, and all went on to check a code — so the hard lock leaked
+        // roughly one extra guess per request in flight. With no throttle in front of the endpoint
+        // that was the only thing bounding a 6-digit brute force.
+        //
+        // Postgres decides the cap here, so racing requests serialise on the row and the affected
+        // count is the answer: 0 rows means the cap was already reached. It stays OUTSIDE any
+        // transaction, because a rolled-back increment would let an attacker guess for ever.
+        //
+        // A successful verify also spends an attempt. That costs nothing — the challenge is
+        // consumed on success — and it is what keeps the reservation ahead of the check.
+        $reserved = OtpChallenge::query()
+            ->whereKey($challenge->id)
+            ->where('attempts', '<', (int) config('otp.max_verify_attempts'))
+            ->increment('attempts');
+
+        if ($reserved === 0) {
             throw OtpException::locked();
         }
 
         if (! Hash::check($code, $challenge->code_hash)) {
-            // Persist the failed attempt OUTSIDE any transaction so it survives the rejection —
-            // this is what feeds the hard-lock. (A rolled-back increment would let an attacker
-            // brute-force forever.)
-            $challenge->increment('attempts');
-
             throw OtpException::invalidOrExpired();
         }
 

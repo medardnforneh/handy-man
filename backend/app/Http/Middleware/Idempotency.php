@@ -7,7 +7,9 @@ namespace App\Http\Middleware;
 use App\Models\IdempotencyKey;
 use App\Support\Problem;
 use Closure;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
@@ -24,6 +26,17 @@ use Throwable;
  *
  * Transient failures (5xx or a thrown exception) RELEASE the claim so a retry can succeed;
  * deterministic responses (2xx–4xx) are stored and replayed.
+ *
+ * A claim belongs to the CALLER, not to the key alone (see the
+ * `scope_idempotency_keys_to_user` migration): the unique index is `(user_id, idempotency_key)`,
+ * and every lookup here carries the same user, so one caller's key can never replay another
+ * caller's stored response.
+ *
+ * The user is read off the `sanctum` guard explicitly. This middleware is in the `api` GROUP, so it
+ * runs before the route's own `auth:sanctum` — and the default guard is `web` (session), which a
+ * Bearer-only mobile client never satisfies. `$request->user()` therefore returned null for every
+ * app request, which is why `user_id` was recorded as null on every row this table ever held.
+ * Same reason `RecordUsage` names its guard.
  */
 final class Idempotency
 {
@@ -56,6 +69,8 @@ final class Idempotency
         }
 
         $hash = hash('sha256', $request->method().'|'.$request->path().'|'.$request->getContent());
+        $identifier = Auth::guard('sanctum')->user()?->getAuthIdentifier();
+        $userId = $identifier === null ? null : (string) $identifier;
 
         // Atomic claim via INSERT ... ON CONFLICT DO NOTHING. Exactly one racing request inserts;
         // the rest get 0 rows and fall through to replay/conflict. This never raises, so it is
@@ -63,7 +78,7 @@ final class Idempotency
         // violation would otherwise poison that transaction).
         $claimed = IdempotencyKey::query()->insertOrIgnore([
             'idempotency_key' => $key,
-            'user_id' => $request->user()?->getAuthIdentifier(),
+            'user_id' => $userId,
             'request_method' => $request->method(),
             'request_path' => $request->path(),
             'request_hash' => $hash,
@@ -73,10 +88,10 @@ final class Idempotency
         ]);
 
         if ($claimed === 0) {
-            return $this->handleExisting($key, $hash, $header);
+            return $this->handleExisting($key, $userId, $hash, $header);
         }
 
-        $record = IdempotencyKey::query()->where('idempotency_key', $key)->firstOrFail();
+        $record = $this->claim($key, $userId)->firstOrFail();
 
         try {
             $response = $next($request);
@@ -100,9 +115,24 @@ final class Idempotency
         return $response;
     }
 
-    private function handleExisting(string $key, string $hash, string $header): Response
+    /**
+     * This caller's claim on this key. Both halves of the unique index, always — a lookup by key
+     * alone would reach across callers, which is the whole thing the index now prevents.
+     *
+     * @return Builder<IdempotencyKey>
+     */
+    private function claim(string $key, ?string $userId): Builder
     {
-        $existing = IdempotencyKey::query()->where('idempotency_key', $key)->first();
+        $query = IdempotencyKey::query()->where('idempotency_key', $key);
+
+        return $userId === null
+            ? $query->whereNull('user_id')
+            : $query->where('user_id', $userId);
+    }
+
+    private function handleExisting(string $key, ?string $userId, string $hash, string $header): Response
+    {
+        $existing = $this->claim($key, $userId)->first();
 
         if ($existing === null) {
             // The claim was released between our failed insert and this read (transient failure).

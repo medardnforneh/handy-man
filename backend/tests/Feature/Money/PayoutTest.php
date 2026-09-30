@@ -104,3 +104,61 @@ it('reverses a confirmed-then-failed payout, restoring provider_payable (never a
         ->and(LedgerTransaction::where('kind', TxnKind::Payout->value)->count())->toBe(1)
         ->and(LedgerTransaction::where('kind', TxnKind::PayoutReversal->value)->count())->toBe(1);
 });
+
+it('keeps the reservation when the gateway call never completes, and resumes it on retry', function () {
+    // The reservation and the disbursement used to be one transaction with the HTTP call inside
+    // it. A timeout rolled that back — destroying the pending row that is the ONLY record of the
+    // reservation — while the transfer may already have been accepted, so the provider could ask
+    // for the same money again with nothing in our database that had seen the first request.
+    //
+    // The reservation now commits first. This is the state a timed-out call leaves behind:
+    // reserved, pending, no external_ref.
+    $user = User::factory()->create();
+    grantPayable($user, 1_000_000);
+    $key = (string) Str::uuid();
+
+    $stranded = Payout::query()->create([
+        'party_id' => $user->party_id,
+        'amount_minor' => 400_000,
+        'currency' => 'XAF',
+        'msisdn' => '+237650000000',
+        'gateway' => app(PaymentGateway::class)->name(),
+        'method' => 'mtn_momo',
+        'status' => PaymentStatus::Pending->value,
+        'idempotency_key' => $key,
+    ]);
+
+    // The funds are reserved by that row, so a second request cannot spend them twice.
+    expect(fn () => app(RequestPayout::class)->handle($user, 700_000, '+237650000000', (string) Str::uuid()))
+        ->toThrow(InsufficientPayable::class);
+
+    // ResolvePayout cannot help — it has no reference to ask the gateway about.
+    $this->artisan('payouts:reconcile')->assertSuccessful();
+    expect($stranded->fresh()->external_ref)->toBeNull();
+
+    // A retry under the SAME Idempotency-Key drives that payout forward instead of creating a
+    // second one. The gateway carries the payout id as its own client reference, so it dedupes
+    // the retry on its side too.
+    $resumed = app(RequestPayout::class)->handle($user, 400_000, '+237650000000', $key);
+
+    expect($resumed->id)->toBe($stranded->id)
+        ->and($resumed->external_ref)->not->toBeNull()
+        ->and($resumed->status)->toBe(PaymentStatus::Processing)
+        ->and(Payout::count())->toBe(1);
+});
+
+it('does not re-send a payout that is already on its way', function () {
+    $user = User::factory()->create();
+    grantPayable($user, 1_000_000);
+    $key = (string) Str::uuid();
+
+    $first = app(RequestPayout::class)->handle($user, 300_000, '+237650000000', $key);
+    $ref = $first->external_ref;
+
+    // Same key again: the row is already `processing` with a reference, so this is a read.
+    $again = app(RequestPayout::class)->handle($user, 300_000, '+237650000000', $key);
+
+    expect($again->id)->toBe($first->id)
+        ->and($again->external_ref)->toBe($ref)
+        ->and(Payout::count())->toBe(1);
+});

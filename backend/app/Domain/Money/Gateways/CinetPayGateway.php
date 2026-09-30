@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Money\Gateways;
 
 use App\Domain\Money\PaymentMethod;
+use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 
@@ -43,7 +44,7 @@ final class CinetPayGateway implements PaymentGateway
 
     public function requestCollection(CollectionRequest $request): GatewayResult
     {
-        $response = Http::acceptJson()->post("{$this->baseUrl}/v2/payment", [
+        $response = $this->http()->post("{$this->baseUrl}/v2/payment", [
             'apikey' => $this->apikey,
             'site_id' => $this->siteId,
             'transaction_id' => $request->reference,
@@ -86,7 +87,7 @@ final class CinetPayGateway implements PaymentGateway
     public function requestPayout(PayoutRequest $request): GatewayResult
     {
         // CinetPay transfers use a separate money-out API + auth token; wired with live credentials.
-        $response = Http::acceptJson()->post("{$this->baseUrl}/v1/transfer/money/send/contact", [
+        $response = $this->http()->post("{$this->baseUrl}/v1/transfer/money/send/contact", [
             'apikey' => $this->apikey,
             'site_id' => $this->siteId,
             'client_transaction_id' => $request->reference,
@@ -110,7 +111,7 @@ final class CinetPayGateway implements PaymentGateway
 
     public function fetchStatus(string $externalRef): GatewayResult
     {
-        $response = Http::acceptJson()->post("{$this->baseUrl}/v2/payment/check", [
+        $response = $this->http()->post("{$this->baseUrl}/v2/payment/check", [
             'apikey' => $this->apikey,
             'site_id' => $this->siteId,
             'transaction_id' => $externalRef,
@@ -147,6 +148,22 @@ final class CinetPayGateway implements PaymentGateway
 
         // The callback is a trigger, not the truth: report Pending and let the handler fetchStatus.
         return new GatewayEvent($ref, 'cinetpay.notification', GatewayStatus::Pending, (array) $request->all());
+    }
+
+    /**
+     * The bounded HTTP client every call here goes through.
+     *
+     * These calls had no timeout, so they inherited Guzzle's "wait as long as it takes". A gateway
+     * that stops answering then holds a PHP-FPM worker — and, before the payout flow was split in
+     * two, a database transaction and a row lock with it. The budget lives in
+     * `config/payments.http` rather than in this constructor so the signature stays as the tests
+     * (and the service provider) call it.
+     */
+    private function http(): PendingRequest
+    {
+        return Http::acceptJson()
+            ->connectTimeout((int) config('payments.http.connect_timeout', 5))
+            ->timeout((int) config('payments.http.timeout', 20));
     }
 
     /** CinetPay's operator code for a rail (Cameroon). */
