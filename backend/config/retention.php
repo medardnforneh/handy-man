@@ -33,4 +33,30 @@ return [
 
     // Same for a document that expired (its own validity date) and was never replaced.
     'expired_documents_days' => (int) env('RETENTION_EXPIRED_DOCUMENTS_DAYS', 30),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Workspace content, counted from the engagement ending
+    |--------------------------------------------------------------------------
+    | The schedule said nothing about the workspace, so a thread, its voice notes and a job's
+    | photos were kept for ever — for everyone, not only for people who asked to be erased. These
+    | are the two rules that close that, and they are deliberately asymmetric because the two
+    | things are not alike:
+    |
+    |   MEDIA is heavy and is the most personal thing here: a voice note is a recording of someone
+    |   speaking, a report photo is the inside of someone's home. Its purpose ends when the dispute
+    |   and warranty windows do.
+    |
+    |   MESSAGE TEXT is small, and it is the record — of what was agreed, of who said they would
+    |   come on Tuesday. It is what a dispute is argued from, so it outlives the media by a year.
+    |   The row always survives either way; only the body is emptied, so a thread stays whole.
+    |
+    | THE NUMBERS BELOW ARE A STARTING POINT, NOT A FINDING. Two years and three are long enough
+    | to be safe and short enough to be a real schedule, and they are what the CNDP processing
+    | register needs an answer for — the founder's answer, with the lawyer. Run
+    | `php artisan data:retain --dry-run` to see exactly what a number would destroy before it
+    | destroys it. Set either to 0 to keep that class for ever and say so in the register.
+    */
+    'engagement_media_days' => (int) env('RETENTION_ENGAGEMENT_MEDIA_DAYS', 730),
+    'message_bodies_days' => (int) env('RETENTION_MESSAGE_BODIES_DAYS', 1095),
 ];

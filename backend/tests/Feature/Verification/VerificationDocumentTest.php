@@ -7,6 +7,7 @@ use App\Domain\Verification\SignedDocumentUrl;
 use App\Domain\Verification\VerificationStorage;
 use App\Models\User;
 use App\Models\VerificationDocument;
+use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Storage;
@@ -53,16 +54,29 @@ it('encrypts the document at rest and records the plaintext hash', function () {
     $doc = VerificationDocument::query()->firstOrFail();
     $onDisk = (string) Storage::disk('verification')->get($doc->storage_path);
 
-    expect($onDisk)->not->toBe($plaintext);                       // encrypted at rest
-    expect(Crypt::decryptString($onDisk))->toBe($plaintext);      // decryptable back to the original
-    expect($doc->sha256)->toBe(hash('sha256', $plaintext));       // hash of the plaintext
-    expect($doc->party_id)->toBe($user->party_id);
+    expect($onDisk)->not->toBe($plaintext)                        // encrypted at rest
+        ->and($doc->sha256)->toBe(hash('sha256', $plaintext))     // hash of the plaintext
+        ->and($doc->party_id)->toBe($user->party_id)
+        // ...and encrypted with the OWNING PARTY's key, not the application key. That is what
+        // makes P1-10's crypto-shred real: erasure can destroy this key, and cannot destroy
+        // APP_KEY without locking the platform out of its own data. This assertion used to be
+        // `Crypt::decryptString($onDisk)`, which passed while the party key protected nothing.
+        ->and($doc->encryption_scheme)->toBe(VerificationStorage::SCHEME_PARTY_KEY);
+
+    // It round-trips through the storage service, which is the only thing that should know how.
+    expect(app(VerificationStorage::class)->read($doc))->toBe($plaintext);
+
+    // And the application key cannot read it, which is the whole point.
+    expect(fn () => Crypt::decryptString($onDisk))->toThrow(DecryptException::class);
 });
 
 it('serves the document through a signed URL within its TTL', function () {
     Storage::fake('verification');
-    [$path, $sha] = app(VerificationStorage::class)->store(smallJpeg('SECRET_DOC'));
-    $doc = VerificationDocument::factory()->create(['storage_path' => $path, 'sha256' => $sha]);
+    $owner = User::factory()->create();
+    [$path, $sha, $scheme] = app(VerificationStorage::class)->store(smallJpeg('SECRET_DOC'), $owner->party);
+    $doc = VerificationDocument::factory()->create([
+        'party_id' => $owner->party_id, 'storage_path' => $path, 'sha256' => $sha, 'encryption_scheme' => $scheme,
+    ]);
 
     $url = app(SignedDocumentUrl::class)->for($doc);
 
@@ -71,8 +85,11 @@ it('serves the document through a signed URL within its TTL', function () {
 
 it('rejects the signed URL once it has expired', function () {
     Storage::fake('verification');
-    [$path, $sha] = app(VerificationStorage::class)->store(smallJpeg());
-    $doc = VerificationDocument::factory()->create(['storage_path' => $path, 'sha256' => $sha]);
+    $owner = User::factory()->create();
+    [$path, $sha, $scheme] = app(VerificationStorage::class)->store(smallJpeg(), $owner->party);
+    $doc = VerificationDocument::factory()->create([
+        'party_id' => $owner->party_id, 'storage_path' => $path, 'sha256' => $sha, 'encryption_scheme' => $scheme,
+    ]);
 
     $url = app(SignedDocumentUrl::class)->for($doc); // 60s TTL
 

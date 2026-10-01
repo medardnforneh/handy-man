@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Parties\Tables;
 
+use App\Filament\Resources\Parties\Actions\AccountStatusActions;
 use App\Filament\Resources\Parties\PartyResource;
 use App\Models\Party;
 use BackedEnum;
@@ -62,6 +63,8 @@ class PartiesTable
             ->recordUrl(fn (Party $record): string => PartyResource::getUrl('view', ['record' => $record]))
             ->recordActions([
                 ViewAction::make(),
+                AccountStatusActions::suspend(),
+                AccountStatusActions::reinstate(),
             ]);
     }
 }

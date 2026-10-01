@@ -107,8 +107,13 @@ export class AuthService {
 
   /**
    * Verify the code (P1-02/03). A reachable backend decides: success stores the real Bearer access
-   * token; a rejected code returns false (no fallback — that would mask a real failure). Only a
-   * NETWORK error falls back to the fixture path (any 6 digits, no token) so the offline demo works.
+   * token; a rejected code returns false (no fallback — that would mask a real failure).
+   *
+   * A NETWORK error falls back to the fixture path (any 6 digits, no token) so the offline demo
+   * works — and that fallback is now gated on a non-production build. It was not, which meant a
+   * shipped app let anyone past this screen by dropping the network at the right moment: no token
+   * is stored, so nothing real is reachable, but `authed` was set and the app shell opened on
+   * fixture data. A demo affordance is not a thing to ship to a store.
    */
   async verifyOtp(code: string): Promise<boolean> {
     if (!/^\d{6}$/.test(code)) {
@@ -127,7 +132,11 @@ export class AuthService {
       void this.registerDevice();
       return true;
     } catch {
-      // Network error (backend unreachable) → fixture fallback keeps the offline demo working.
+      // Network error (backend unreachable) → fixture fallback keeps the offline demo working,
+      // in development only. In a production build an unreachable backend is a failed sign-in.
+      if (environment.production) {
+        return false;
+      }
       await this.markAuthed();
       return true;
     }

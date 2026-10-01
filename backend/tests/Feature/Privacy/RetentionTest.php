@@ -7,7 +7,10 @@ use App\Domain\Verification\DocStatus;
 use App\Domain\Verification\VerificationStorage;
 use App\Models\Assignment;
 use App\Models\Engagement;
+use App\Models\Conversation;
 use App\Models\IdempotencyKey;
+use App\Models\Media;
+use App\Models\Message;
 use App\Models\Job;
 use App\Models\OtpChallenge;
 use App\Models\RefreshToken;
@@ -39,9 +42,13 @@ function retentionAssignment(int $slot): Assignment
 function encryptedDoc(array $attributes = []): VerificationDocument
 {
     $file = UploadedFile::fake()->createWithContent('id.jpg', 'PLAINTEXT-ID-'.uniqid());
-    [$path, $sha] = app(VerificationStorage::class)->store($file);
+    $owner = User::factory()->create();
+    [$path, $sha, $scheme] = app(VerificationStorage::class)->store($file, $owner->party);
 
-    return VerificationDocument::factory()->create(array_merge(['storage_path' => $path, 'sha256' => $sha], $attributes));
+    return VerificationDocument::factory()->create(array_merge([
+        'party_id' => $owner->party_id, 'storage_path' => $path, 'sha256' => $sha,
+        'encryption_scheme' => $scheme,
+    ], $attributes));
 }
 
 beforeEach(function () {
@@ -127,3 +134,104 @@ it('is on the nightly schedule and reports every rule', function () {
         expect($out)->toContain($rule);
     }
 });
+
+it('destroys workspace media once the engagement is long finished, keeping the row', function () {
+    Storage::fake('local');
+    config()->set('retention.engagement_media_days', 365);
+
+    // Two engagements: one finished long ago, one finished yesterday.
+    $old = Engagement::factory()->create(['completed_at' => now()->subDays(400)]);
+    $recent = Engagement::factory()->create(['completed_at' => now()->subDay()]);
+
+    $oldMedia = workspaceMedia($old, 'old.ogg');
+    $recentMedia = workspaceMedia($recent, 'recent.ogg');
+
+    app(ApplyRetention::class)->handle();
+
+    // Gone, with the row surviving to say so — a thread shows something was there rather than
+    // losing the reference.
+    Storage::disk('local')->assertMissing('old.ogg');
+    expect($oldMedia->refresh()->purged_at)->not->toBeNull();
+
+    // Still in its purpose window.
+    Storage::disk('local')->assertExists('recent.ogg');
+    expect($recentMedia->refresh()->purged_at)->toBeNull();
+});
+
+it('empties old message bodies but never the rows, and leaves server narration alone', function () {
+    config()->set('retention.message_bodies_days', 365);
+
+    $old = Engagement::factory()->create(['completed_at' => now()->subDays(400)]);
+    $conversation = Conversation::factory()->create(['job_id' => $old->job_id]);
+    $sender = User::factory()->create();
+
+    $written = Message::factory()->create([
+        'conversation_id' => $conversation->id,
+        'sender_user_id' => $sender->getKey(),
+        'body' => 'call me on 699000111',
+    ]);
+    // Server narration: no free text, and its payload is rendered in the reader's language.
+    $narrated = Message::factory()->create([
+        'conversation_id' => $conversation->id,
+        'sender_user_id' => null,
+        'body' => null,
+        'kind' => 'quote_accepted',
+    ]);
+
+    app(ApplyRetention::class)->handle();
+
+    expect($written->refresh()->body)->toBeNull()
+        // The row, its kind, its sender and its place in the thread all stay: redacted, not
+        // truncated, so a dispute can still see that something was said and by whom.
+        ->and(Message::query()->whereKey($written->getKey())->exists())->toBeTrue()
+        ->and($written->sender_user_id)->toBe($sender->getKey())
+        ->and(Message::query()->whereKey($narrated->getKey())->exists())->toBeTrue();
+});
+
+it('keeps workspace content for ever when the period is zero', function () {
+    Storage::fake('local');
+    config()->set('retention.engagement_media_days', 0);
+    config()->set('retention.message_bodies_days', 0);
+
+    $old = Engagement::factory()->create(['completed_at' => now()->subDays(5000)]);
+    $media = workspaceMedia($old, 'kept.ogg');
+
+    $report = app(ApplyRetention::class)->handle();
+
+    // 0 means "kept, and said so in the register" — not "kept by accident".
+    expect($report['engagement_media'])->toBe(0)
+        ->and($report['message_bodies'])->toBe(0)
+        ->and($media->refresh()->purged_at)->toBeNull();
+    Storage::disk('local')->assertExists('kept.ogg');
+});
+
+it('counts without destroying on a dry run', function () {
+    // The workspace periods are a starting point, not a finding. Nobody should have to learn what
+    // a number means by watching it delete a year of someone's threads.
+    Storage::fake('local');
+    config()->set('retention.engagement_media_days', 365);
+
+    $old = Engagement::factory()->create(['completed_at' => now()->subDays(400)]);
+    $media = workspaceMedia($old, 'dry.ogg');
+
+    $report = app(ApplyRetention::class)->handle(dryRun: true);
+
+    expect($report['engagement_media'])->toBe(1)
+        ->and($media->refresh()->purged_at)->toBeNull();
+    Storage::disk('local')->assertExists('dry.ogg');
+});
+
+/** A voice note hanging off a message in this engagement's conversation. */
+function workspaceMedia(Engagement $engagement, string $path): Media
+{
+    $conversation = Conversation::factory()->create(['job_id' => $engagement->job_id]);
+    $message = Message::factory()->create(['conversation_id' => $conversation->id]);
+    Storage::disk('local')->put($path, 'AUDIO');
+
+    return Media::factory()->create([
+        'attachable_type' => 'message',
+        'attachable_id' => $message->getKey(),
+        'kind' => 'attachment',
+        'storage_path' => $path,
+    ]);
+}

@@ -30,6 +30,9 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $reviewed_at
  * @property string|null $reject_reason
  * @property Carbon|null $expires_at
+ * @property string|null $encryption_scheme 'party_key' (the owning party's own key — erasure can
+ *                                          destroy it) or 'app_key' for documents written before
+ *                                          that was true. NULL means app_key.
  * @property Carbon|null $purged_at when the bytes were destroyed (doc 04 retention); the row stays
  */
 final class VerificationDocument extends Model
@@ -42,7 +45,7 @@ final class VerificationDocument extends Model
     public $incrementing = false;
 
     protected $fillable = [
-        'party_id', 'subject_user_id', 'kind', 'storage_path', 'sha256', 'grants_tier',
+        'party_id', 'subject_user_id', 'kind', 'storage_path', 'encryption_scheme', 'sha256', 'grants_tier',
         'status', 'reviewed_by_user_id', 'reviewed_at', 'reject_reason', 'expires_at', 'purged_at',
     ];
 

@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Domain\Workspace\UserConversations;
 use App\Http\Controllers\Controller;
+use App\Support\Cursor;
 use App\Http\Resources\Api\V1\ConversationSummaryResource;
 use App\Models\Conversation;
 use App\Models\ConversationParticipant;
@@ -22,12 +23,33 @@ use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
  */
 final class ConversationController extends Controller
 {
+    /**
+     * Every conversation this user participates in, newest activity first, capped.
+     *
+     * It was uncapped: the messages tab fetched every thread the user had ever been part of, each
+     * with its last message, every time it opened.
+     */
     public function index(Request $request, UserConversations $conversations): AnonymousResourceCollection
     {
         /** @var User $user */
         $user = $request->user();
 
-        return ConversationSummaryResource::collection($conversations->forUser($user));
+        $limit = Cursor::limit($request->query('limit'), 50);
+
+        // One more than asked for, so "is there another page" comes out of the same query.
+        $found = $conversations->forUser($user, $limit + 1, $request->string('before')->toString() ?: null);
+
+        $hasMore = count($found) > $limit;
+        $page = array_slice($found, 0, $limit);
+        $last = $page === [] ? null : $page[count($page) - 1];
+
+        return ConversationSummaryResource::collection(array_column($page, 'summary'))
+            ->additional(['meta' => [
+                'has_more' => $hasMore,
+                'next_cursor' => $hasMore && $last !== null
+                    ? Cursor::encode($last['last_activity_at'], $last['conversation_id'])
+                    : null,
+            ]]);
     }
 
     /**

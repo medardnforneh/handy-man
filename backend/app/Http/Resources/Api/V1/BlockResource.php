@@ -39,6 +39,6 @@ final class BlockResource extends JsonResource
 
         $headline = $party->relationLoaded('providerProfile') ? $party->providerProfile?->headline : null;
 
-        return $headline ?? $party->display_name;
+        return $headline ?? $party->displayName();
     }
 }

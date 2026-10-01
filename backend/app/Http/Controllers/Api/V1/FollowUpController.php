@@ -9,6 +9,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\Api\V1\FollowUpResource;
 use App\Models\FollowUp;
 use App\Models\User;
+use App\Support\Cursor;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -22,14 +23,31 @@ final class FollowUpController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
-        $followUps = FollowUp::query()
+        // Capped at a flat 50 with no way past it, so a target with more nudges than that could
+        // never see the older ones. Same cursor as the other lists.
+        $limit = Cursor::limit($request->query('limit'), 50);
+
+        $query = FollowUp::query()
             ->where('target_user_id', $this->user($request)->id)
             ->whereIn('status', [FollowUpStatus::Sent->value, FollowUpStatus::Scheduled->value, FollowUpStatus::Responded->value])
             ->latest('scheduled_for')
-            ->limit(50)
-            ->get();
+            ->orderByDesc('id');
 
-        return FollowUpResource::collection($followUps)->response();
+        Cursor::applyBefore($query, 'scheduled_for', $request->query('before'));
+
+        $followUps = $query->limit($limit + 1)->get();
+        $hasMore = $followUps->count() > $limit;
+        $followUps = $followUps->take($limit);
+        $last = $followUps->last();
+
+        return FollowUpResource::collection($followUps)
+            ->additional(['meta' => [
+                'has_more' => $hasMore,
+                'next_cursor' => $hasMore && $last !== null
+                    ? Cursor::encode($last->scheduled_for->toIso8601String(), $last->id)
+                    : null,
+            ]])
+            ->response();
     }
 
     public function respond(Request $request, FollowUp $followUp): JsonResponse

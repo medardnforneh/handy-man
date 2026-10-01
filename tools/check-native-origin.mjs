@@ -22,6 +22,12 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const file = join(root, 'mobile/src/environments/environment.prod.ts');
 
 // Known-bad values: the committed placeholder, and anything that plainly is not a deployed origin.
+//
+// NOTE the trap here, because it is the whole reason this list is a list. The placeholder LOOKS
+// like the real thing — it is the domain the product intends to use. So when that domain is
+// actually registered and pointed at the box, this check will still fail, and the fix is to
+// delete the entry below rather than to argue with the checker. Do that in the same commit that
+// confirms the DNS, so the two facts cannot drift apart.
 const PLACEHOLDERS = [/^https:\/\/app\.handyman\.cm\/?$/i];
 
 const source = readFileSync(file, 'utf8');
@@ -57,7 +63,8 @@ for (const p of problems) {
 console.error('  A packaged app built with this will install, open, render — and reach nothing.');
 
 if (releasing) {
-  console.error('  Refusing to build a release. Set the real origin in environment.prod.ts.');
+  console.error('  Refusing to build a release. Set the real origin in environment.prod.ts —');
+  console.error('  and if it is already right, register the DNS and drop it from PLACEHOLDERS here.');
   process.exit(1);
 }
 console.error('  Not failing a dev build; set HM_RELEASE=1 to gate the store build on this.');

@@ -256,7 +256,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** The caller's follow-ups (nudges) */
+        /** The caller's follow-ups (nudges), newest first */
         get: operations["listFollowUps"];
         put?: never;
         post?: never;
@@ -448,7 +448,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** List the caller's disputes */
+        /** List the caller's disputes, newest first */
         get: operations["listDisputes"];
         put?: never;
         post?: never;
@@ -803,7 +803,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** The customer's own jobs */
+        /**
+         * The customer's own jobs, newest first
+         * @description Cursor-paginated. This used to return every job the customer had ever created, with photos, address, provider and milestones eager-loaded on each.
+         */
         get: operations["listMyJobs"];
         put?: never;
         /** Post a job (address required unless remote) */
@@ -1015,7 +1018,11 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /**
+         * The provider's payout history, newest first
+         * @description Cursor-paged. `GET /provider/earnings` still carries the most recent 50 alongside the balances, so the screen needs one round trip to open; this is how it reaches anything older, which it could not before. A separate endpoint rather than a cursor on that embedded array, because the array sits inside a composite payload whose other fields are not a page.
+         */
+        get: operations["listPayouts"];
         put?: never;
         /**
          * Request a payout of the provider's payable balance
@@ -1306,6 +1313,8 @@ export interface paths {
          * @description Scheduled visits first, soonest first — a to-do list. This read is what makes completing a visit possible: a visit is narrated into no thread and listed nowhere else, so without it the id existed only for as long as the session that scheduled it.
          *
          *     Self-scoped, which is also why it is safe. Narrating a visit into the job's conversation — the way a warranty is — would introduce the provider to a customer not yet entitled to identify them (P2-03); reading one's own rows discloses nothing new in either direction.
+         *
+         *     `limit` only, deliberately: this list is ordered by a compound key (the scheduled-before-completed bucket, then the date), and a keyset cursor must compare exactly what the ordering compares or a page boundary lands in the wrong place. A to-do list read from the top does not need one badly enough to guess at it.
          */
         get: operations["providerSiteVisits"];
         put?: never;
@@ -1597,6 +1606,13 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** @description Where a cursor-paginated list stops and how to continue it. Keyset, not offset: offset pagination over a feed that is still growing shows the same row on two pages (doc 05). */
+        PageMeta: {
+            /** @description Whether more rows exist before this page's last row. */
+            has_more?: boolean;
+            /** @description Pass as `before` to fetch the next page. Null when there is nothing more. */
+            next_cursor?: string | null;
+        };
         /** @description Money is ALWAYS integer minor units + explicit currency. Never a float, never a formatted string. */
         Money: {
             /** Format: int64 */
@@ -2470,6 +2486,10 @@ export interface components {
         };
     };
     parameters: {
+        /** @description How many rows to return. Clamped to the endpoint's maximum; anything unparseable means "the default", so a client cannot break itself with a bad value. */
+        PageLimit: number;
+        /** @description An opaque cursor from a previous response's `meta`. Returns the rows strictly before that position. Do not parse it — the encoding is the server's and a stale one is treated as absent rather than an error. */
+        PageCursor: string;
         /** @description A client-generated UUID. Replaying it returns the stored response (CLAUDE.md rule */
         IdempotencyKey: string;
         /** @description App build MAJOR.MINOR.PATCH. Builds below the server minimum receive 426. */
@@ -2860,7 +2880,12 @@ export interface operations {
     };
     listFollowUps: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description How many rows to return. Clamped to the endpoint's maximum; anything unparseable means "the default", so a client cannot break itself with a bad value. */
+                limit?: components["parameters"]["PageLimit"];
+                /** @description An opaque cursor from a previous response's `meta`. Returns the rows strictly before that position. Do not parse it — the encoding is the server's and a stale one is treated as absent rather than an error. */
+                before?: components["parameters"]["PageCursor"];
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -2875,6 +2900,7 @@ export interface operations {
                 content: {
                     "application/json": {
                         data: components["schemas"]["FollowUp"][];
+                        meta?: components["schemas"]["PageMeta"];
                     };
                 };
             };
@@ -3191,7 +3217,12 @@ export interface operations {
     };
     listDisputes: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description How many rows to return. Clamped to the endpoint's maximum; anything unparseable means "the default", so a client cannot break itself with a bad value. */
+                limit?: components["parameters"]["PageLimit"];
+                /** @description An opaque cursor from a previous response's `meta`. Returns the rows strictly before that position. Do not parse it — the encoding is the server's and a stale one is treated as absent rather than an error. */
+                before?: components["parameters"]["PageCursor"];
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -3206,6 +3237,7 @@ export interface operations {
                 content: {
                     "application/json": {
                         data: components["schemas"]["Dispute"][];
+                        meta?: components["schemas"]["PageMeta"];
                     };
                 };
             };
@@ -3939,7 +3971,12 @@ export interface operations {
     };
     listMyJobs: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description How many rows to return. Clamped to the endpoint's maximum; anything unparseable means "the default", so a client cannot break itself with a bad value. */
+                limit?: components["parameters"]["PageLimit"];
+                /** @description An opaque cursor from a previous response's `meta`. Returns the rows strictly before that position. Do not parse it — the encoding is the server's and a stale one is treated as absent rather than an error. */
+                before?: components["parameters"]["PageCursor"];
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -3954,6 +3991,7 @@ export interface operations {
                 content: {
                     "application/json": {
                         data: components["schemas"]["Job"][];
+                        meta?: components["schemas"]["PageMeta"];
                     };
                 };
             };
@@ -4368,6 +4406,35 @@ export interface operations {
             403: components["responses"]["Problem"];
         };
     };
+    listPayouts: {
+        parameters: {
+            query?: {
+                /** @description How many rows to return. Clamped to the endpoint's maximum; anything unparseable means "the default", so a client cannot break itself with a bad value. */
+                limit?: components["parameters"]["PageLimit"];
+                /** @description An opaque cursor from a previous response's `meta`. Returns the rows strictly before that position. Do not parse it — the encoding is the server's and a stale one is treated as absent rather than an error. */
+                before?: components["parameters"]["PageCursor"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description This provider's payouts */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["Payout"][];
+                        meta?: components["schemas"]["PageMeta"];
+                    };
+                };
+            };
+            401: components["responses"]["Problem"];
+        };
+    };
     requestPayout: {
         parameters: {
             query?: never;
@@ -4452,7 +4519,10 @@ export interface operations {
                             payable_available: components["schemas"]["Money"];
                             payable_pending: components["schemas"]["Money"];
                             lead_credits: components["schemas"]["Money"];
+                            /** @description The most recent page of the history, so the screen opens in one round trip. */
                             payouts: components["schemas"]["Payout"][];
+                            /** @description Pass as `before` to `GET /provider/payouts` for the payouts older than the embedded page. Null when this is the whole history. Opaque — the client must not build one of these itself. */
+                            payouts_next_cursor?: string | null;
                         };
                     };
                 };
@@ -4607,7 +4677,12 @@ export interface operations {
     };
     listMessages: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description How many rows to return. Clamped to the endpoint's maximum; anything unparseable means "the default", so a client cannot break itself with a bad value. */
+                limit?: components["parameters"]["PageLimit"];
+                /** @description An opaque cursor from a previous response's `meta`. Returns the rows strictly before that position. Do not parse it — the encoding is the server's and a stale one is treated as absent rather than an error. */
+                before?: components["parameters"]["PageCursor"];
+            };
             header?: never;
             path: {
                 job: string;
@@ -4616,7 +4691,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description The thread */
+            /** @description The newest page of the thread, oldest message FIRST — the order the client appends into and renders. A chat pages into its past, so `before` walks backwards and the cursor is named `older_cursor` rather than `next_cursor`. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -4629,6 +4704,10 @@ export interface operations {
                             conversation_id?: string;
                             /** @description Subscribe to `private-engagement.{id}` for live messages. Null if no engagement exists yet. */
                             engagement_id?: string | null;
+                            /** @description Whether older messages exist before this page's first message. */
+                            has_older?: boolean;
+                            /** @description Pass as `before` to fetch the messages just before this page. Null at the start of the thread. */
+                            older_cursor?: string | null;
                         };
                     };
                 };
@@ -4726,7 +4805,12 @@ export interface operations {
     };
     listConversations: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description How many rows to return. Clamped to the endpoint's maximum; anything unparseable means "the default", so a client cannot break itself with a bad value. */
+                limit?: components["parameters"]["PageLimit"];
+                /** @description An opaque cursor from a previous response's `meta`. Returns the rows strictly before that position. Do not parse it — the encoding is the server's and a stale one is treated as absent rather than an error. */
+                before?: components["parameters"]["PageCursor"];
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -4741,6 +4825,7 @@ export interface operations {
                 content: {
                     "application/json": {
                         data: components["schemas"]["ConversationSummary"][];
+                        meta?: components["schemas"]["PageMeta"];
                     };
                 };
             };
@@ -4867,7 +4952,10 @@ export interface operations {
     };
     providerSiteVisits: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description How many rows to return. Clamped to the endpoint's maximum; anything unparseable means "the default", so a client cannot break itself with a bad value. */
+                limit?: components["parameters"]["PageLimit"];
+            };
             header?: never;
             path?: never;
             cookie?: never;

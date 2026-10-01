@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { IonicModule, ToastController } from '@ionic/angular';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
+import { downscaleImage } from '../../core/downscale-image';
 import { OfflineStripComponent } from '../../core/offline/offline-strip.component';
 import { Deliverable, ReportDraft, ReportMaterial, WorkDetail, WorkStatus } from '../provider.models';
 import { MutationResult, ProviderService } from '../provider.service';
@@ -59,6 +60,8 @@ export class ProviderWorkDetailPage implements OnInit {
   readonly materials = signal<ReportMaterial[]>([]);
   readonly extraCharges = signal(0);
   readonly photos = signal<{ file: File; kind: 'before' | 'after' }[]>([]);
+  /** Shrinking a batch of camera photos takes a moment; the submit button waits for it. */
+  readonly optimisingPhotos = signal(false);
   readonly summaryTouched = signal(false);
 
   readonly summaryMissing = computed(() => this.summaryTouched() && this.summary().trim() === '');
@@ -170,14 +173,31 @@ export class ProviderWorkDetailPage implements OnInit {
     this.materials.update((rows) => rows.map((r, i) => (i === index ? { ...r, ...patch } : r)));
   }
 
-  addPhoto(event: Event, kind: 'before' | 'after'): void {
+  /**
+   * Take the picked photos, shrunk.
+   *
+   * A phone camera produces 4–8 MB a shot and a report carries several, which PHP discards as a
+   * whole rather than as one file too large — so it comes back as "photos.*.file is required" and
+   * reads like a broken app. Downscaling here is the fix that does not need the API's declared
+   * limits to change (they cannot: rule #4). Best-effort inside, so a photo it cannot process is
+   * still attached at full size rather than dropped.
+   */
+  async addPhoto(event: Event, kind: 'before' | 'after'): Promise<void> {
     const input = event.target as HTMLInputElement;
     const chosen = Array.from(input.files ?? []);
-    if (chosen.length > 0) {
-      this.photos.update((rows) => [...rows, ...chosen.map((file) => ({ file, kind }))]);
-    }
-    // Clear the input so picking the same file twice still fires a change.
+    // Cleared FIRST: the awaits below give the user time to pick again, and an input still holding
+    // the old selection would then fire no change event for the same file.
     input.value = '';
+
+    if (chosen.length === 0) {
+      return;
+    }
+
+    this.optimisingPhotos.set(true);
+    const shrunk = await Promise.all(chosen.map((file) => downscaleImage(file)));
+    this.optimisingPhotos.set(false);
+
+    this.photos.update((rows) => [...rows, ...shrunk.map((file) => ({ file, kind }))]);
   }
 
   removePhoto(index: number): void {

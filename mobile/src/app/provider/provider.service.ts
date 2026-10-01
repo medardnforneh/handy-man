@@ -362,7 +362,7 @@ export class ProviderService {
    * The lead-credit balance rides along here rather than through `GET /provider/credits`: it is in
    * this payload already, and the earnings screen is the only place it is shown.
    */
-  async fetchEarnings(): Promise<{ wallet: ProviderWallet; payouts: Payout[]; leadCreditsMinor: number } | null> {
+  async fetchEarnings(): Promise<{ wallet: ProviderWallet; payouts: Payout[]; leadCreditsMinor: number; nextPayoutCursor: string | null } | null> {
     try {
       const e = await this.api.earnings();
       const wallet: ProviderWallet = {
@@ -370,14 +370,36 @@ export class ProviderService {
         pendingPayoutMinor: e.payable_pending.amount_minor,
         currency: e.payable_available.currency,
       };
-      const payouts: Payout[] = e.payouts.map((p) => ({
-        id: p.id,
-        reference: (p.external_ref ?? p.id).slice(0, 12).toUpperCase(),
-        amountMinor: p.amount.amount_minor,
-        status: mapPayoutStatus(p.status),
-        date: this.shortDate(p.requested_at),
-      }));
-      return { wallet, payouts, leadCreditsMinor: e.lead_credits.amount_minor };
+      const payouts: Payout[] = e.payouts.map((p) => this.mapPayout(p));
+      // The cursor comes from the SERVER, in the summary payload. The client must not mint one:
+      // the encoding is the server's to change, and a client that builds its own is a client that
+      // breaks on the next deploy.
+      return {
+        wallet,
+        payouts,
+        leadCreditsMinor: e.lead_credits.amount_minor,
+        nextPayoutCursor: e.payouts_next_cursor ?? null,
+      };
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * The page of payouts BEFORE the ones already on screen (P3-08).
+   *
+   * The summary embeds the most recent 50; this is the rest. Returns null on a failure rather than
+   * throwing, the same as `fetchEarnings` — a history that will not load further is a disappointment
+   * on a screen that is otherwise working, not a reason to break it.
+   */
+  async fetchMorePayouts(before: string): Promise<{ payouts: Payout[]; nextCursor: string | null } | null> {
+    try {
+      const page = await this.api.payoutHistory(before);
+
+      return {
+        payouts: page.payouts.map((p) => this.mapPayout(p)),
+        nextCursor: page.nextCursor,
+      };
     } catch {
       return null;
     }
@@ -397,6 +419,29 @@ export class ProviderService {
    */
   async requestPayout(amountMinor: number, msisdn: string, method?: MobileRail): Promise<MutationResult> {
     return this.attempt(() => this.api.requestPayout(amountMinor, msisdn, method));
+  }
+
+  /**
+   * One payout row, as the screen shows it.
+   *
+   * Shared by the summary and the paged history, because two copies of this drift: the reference
+   * shortening and the locale-aware date are exactly the sort of thing that gets fixed in one place
+   * and not the other, and then older payouts render differently from newer ones in the same list.
+   */
+  private mapPayout(p: {
+    id: string;
+    external_ref?: string | null;
+    amount: { amount_minor: number };
+    status: string;
+    requested_at: string;
+  }): Payout {
+    return {
+      id: p.id,
+      reference: (p.external_ref ?? p.id).slice(0, 12).toUpperCase(),
+      amountMinor: p.amount.amount_minor,
+      status: mapPayoutStatus(p.status),
+      date: this.shortDate(p.requested_at),
+    };
   }
 
   /**

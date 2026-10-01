@@ -101,15 +101,27 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
 
     // Payment gateway webhooks (P3-05) — public + server-to-server; authenticity is the signature,
     // not a token. Exempt from the Idempotency-Key requirement (see config/api.php exempt_paths).
-    Route::post('/webhooks/payments/{gateway}', [PaymentWebhookController::class, 'handle'])->name('webhooks.payments');
+    // Throttled per IP: this route is public AND it writes — an unsigned callback still records a
+    // row with its payload, deliberately, as the audit trail of a forgery attempt.
+    Route::post('/webhooks/payments/{gateway}', [PaymentWebhookController::class, 'handle'])
+        ->middleware('throttle:webhooks')
+        ->name('webhooks.payments');
 
     // Auth — OTP-first (P1-02). Public: these ARE the authentication entry points. Token issuance
     // is added in P1-03.
     Route::prefix('auth')->name('auth.')->group(function (): void {
-        Route::post('/otp/request', [OtpController::class, 'request'])->name('otp.request');
-        Route::post('/otp/verify', [OtpController::class, 'verify'])->name('otp.verify');
-        // The refresh token is itself the credential (P1-03) — no bearer required.
-        Route::post('/refresh', [AuthController::class, 'refresh'])->name('refresh');
+        // The three unauthenticated credential routes, throttled per IP on top of the global
+        // limit. The OTP counters (3/hr per phone, 10/hr per IP) and the 5-attempt challenge cap
+        // are the real controls; this bounds how fast anything can reach them at all, which
+        // nothing did before. Scoped to these three deliberately: `/me` and `/logout` below are
+        // ordinary authenticated calls, and an IP-keyed limit on them would throttle everyone
+        // sharing a carrier NAT — which here is most people.
+        Route::middleware('throttle:auth')->group(function (): void {
+            Route::post('/otp/request', [OtpController::class, 'request'])->name('otp.request');
+            Route::post('/otp/verify', [OtpController::class, 'verify'])->name('otp.verify');
+            // The refresh token is itself the credential (P1-03) — no bearer required.
+            Route::post('/refresh', [AuthController::class, 'refresh'])->name('refresh');
+        });
 
         Route::middleware('auth:sanctum')->group(function (): void {
             Route::get('/me', [AuthController::class, 'me'])->name('me');
@@ -147,8 +159,11 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
         // here: they keep their signed, audited route (P6-01/02).
         Route::get('/media/{media}', [MediaController::class, 'show'])->name('media.show');
 
-        // Provider payout request (P3-08).
+        // Provider payout request (P3-08), and the paged history beside it. `GET /provider/earnings`
+        // still carries the first 50 for the one-round-trip case; this is how the screen reaches
+        // anything older, which it could not before.
         Route::post('/provider/payouts', [PayoutController::class, 'store'])->name('provider.payouts.store');
+        Route::get('/provider/payouts', [ProviderEarningsController::class, 'history'])->name('provider.payouts.index');
 
         // Escrow (P3-10/14). Customer approves a milestone (releases its slice) or refunds remaining.
         Route::post('/milestones/{milestone}/approve', [EscrowController::class, 'approveMilestone'])->name('milestones.approve');

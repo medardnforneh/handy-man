@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Identity\Actions;
 
+use App\Domain\Access\AccountNotActive;
+use App\Domain\Access\AccountStatus;
 use App\Domain\Identity\AuthTokenException;
 use App\Domain\Identity\IssuedTokens;
 use App\Models\RefreshToken;
@@ -48,6 +50,15 @@ final class RotateRefreshToken
 
         if ($token->isExpired()) {
             throw AuthTokenException::invalidRefresh();
+        }
+
+        // A suspension revokes the whole family, so a suspended account normally fails above. This
+        // catches the token minted in the seconds before that sweep ran — and says the true thing
+        // rather than "invalid refresh token", which would send the app back through the OTP
+        // screens to be refused there instead.
+        $status = AccountStatus::from($token->user->status);
+        if (! $status->canAuthenticate()) {
+            throw new AccountNotActive($status);
         }
 
         // Success path is atomic: re-lock the row, re-check it, rotate within the same family.

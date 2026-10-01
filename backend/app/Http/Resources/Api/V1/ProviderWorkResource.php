@@ -29,7 +29,7 @@ final class ProviderWorkResource extends JsonResource
             'job_id' => $this->job_id,
             'reference' => $job->reference,
             'title' => $job->title,
-            'customer_name' => $job->customer?->display_name,
+            'customer_name' => $job->customer?->displayName(),
             'engagement_mode' => $job->engagement_mode->value,
             'job_status' => $job->status->value,
             'accepted_at' => $this->accepted_at->toIso8601String(),

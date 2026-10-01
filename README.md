@@ -28,6 +28,16 @@ Then read **[`docs/LOCAL_TESTING.md`](docs/LOCAL_TESTING.md)** — how to sign i
 to click for every feature. It also lists, honestly, the features the API can do that the app has
 no screen for yet.
 
+## Claude Code on the web
+
+A cloud session prepares itself: `.claude/hooks/session-start.sh` installs the node dependencies,
+installs PostGIS and starts Postgres 16 on 5432 with `handyman_test` ready, points `CHROME_BIN` at
+the bundled Chromium, and then prints what that session can and cannot run.
+
+It cannot run `composer install` — the session's proxy gates GitHub to the repositories attached to
+the session, so Pint, PHPStan and Pest stay CI's job. **[`.claude/README.md`](.claude/README.md)**
+has the full diagnosis and the one setting that would fix it.
+
 ## Getting started (backend)
 
 Prereqs: PHP 8.3, Composer, PostgreSQL 16 + PostGIS, Redis. See `docs/BUILD_STATE.md` for how

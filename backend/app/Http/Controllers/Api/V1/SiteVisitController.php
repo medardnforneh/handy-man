@@ -16,6 +16,7 @@ use App\Models\Job;
 use App\Models\Quotation;
 use App\Models\SiteVisit;
 use App\Models\User;
+use App\Support\Cursor;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -47,17 +48,41 @@ final class SiteVisitController extends Controller
         /** @var User $user */
         $user = $request->user();
 
-        $visits = SiteVisit::query()
+        $limit = Cursor::limit($request->query('limit'), 50);
+
+        // Scheduled before completed, then soonest first: this list is a to-do, and the visit that
+        // still has to happen outranks the one that already did.
+        //
+        // That makes the sort key COMPOUND, so the cursor carries the bucket too — a keyset
+        // comparison has to compare exactly what the ordering compares, or the boundary between the
+        // last scheduled visit and the first completed one falls in the wrong place and a page is
+        // silently skipped. Ascending, so paging forward means `>` (see Cursor::applyAfterBucketed).
+        $bucket = "case when status = 'scheduled' then 0 else 1 end";
+
+        $query = SiteVisit::query()
             ->where('provider_party_id', $user->party_id)
             ->with(['job.address', 'job.skill'])
-            // Scheduled before completed, then soonest first: this list is a to-do, and the visit
-            // that still has to happen outranks the one that already did.
-            ->orderByRaw("case when status = 'scheduled' then 0 else 1 end")
+            ->orderByRaw($bucket)
             ->orderBy('scheduled_for')
-            ->limit(50)
-            ->get();
+            ->orderBy('id');
 
-        return SiteVisitResource::collection($visits);
+        Cursor::applyAfterBucketed($query, $bucket, 'scheduled_for', $request->query('before'));
+
+        $visits = $query->limit($limit + 1)->get();
+        $hasMore = $visits->count() > $limit;
+        $visits = $visits->take($limit);
+        $last = $visits->last();
+
+        return SiteVisitResource::collection($visits)->additional(['meta' => [
+            'has_more' => $hasMore,
+            'next_cursor' => $hasMore && $last !== null
+                ? Cursor::encodeBucketed(
+                    $last->status === SiteVisitStatus::Scheduled ? 0 : 1,
+                    $last->scheduled_for->toIso8601String(),
+                    $last->id,
+                )
+                : null,
+        ]]);
     }
 
     public function store(ScheduleSiteVisitRequest $request, Job $job, ScheduleSiteVisit $action): JsonResponse

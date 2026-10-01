@@ -3,6 +3,7 @@
 use App\Domain\Access\PreconditionUnmetException;
 use App\Http\Middleware\CompressResponse;
 use App\Http\Middleware\EnforceAppVersion;
+use App\Http\Middleware\EnsureAccountActive;
 use App\Http\Middleware\Idempotency;
 use App\Http\Middleware\RecordUsage;
 use App\Http\Middleware\RequestId;
@@ -15,6 +16,7 @@ use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Exceptions\ThrottleRequestsException;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Sentry\Laravel\Integration;
@@ -46,8 +48,17 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Force-update kill switch runs first on every API request (build plan P0-08); the
         // idempotency guard wraps mutating requests (P0-06, CLAUDE.md rule #3).
+        //
+        // `throttle:api` is prepended AHEAD of both, because a limiter that runs after the work is
+        // not a limiter. Laravel 11 took `throttle:api` out of the default API group and stopped
+        // defining the limiter, and this file never put either back — so until now nothing in the
+        // app bounded request rate anywhere. The limiter itself is defined in AppServiceProvider;
+        // the stricter per-route limits (`auth`, `webhooks`) are named in routes/api.php.
+        // EnsureAccountActive sits between the two: after the cheap gates, before anything a
+        // suspended account could actually do. It reads the sanctum guard itself, so it does not
+        // need to wait for the route's `auth:sanctum` (see the class).
         $middleware->api(
-            prepend: [EnforceAppVersion::class],
+            prepend: ['throttle:api', EnforceAppVersion::class, EnsureAccountActive::class],
             // RecordUsage is terminable and writes after the response — doc 08's switch trigger.
             append: [Idempotency::class, RecordUsage::class],
         );
@@ -84,6 +95,27 @@ return Application::configure(basePath: dirname(__DIR__))
                 detail: 'One or more fields failed validation.',
                 extra: ['errors' => $e->errors()],
             );
+        });
+
+        // A throttled request is an HttpException, so the generic handler below would already
+        // render it — but it would drop `Retry-After` and the `X-RateLimit-*` headers the limiter
+        // attached, and give it the catch-all `http-error` type. A client that cannot tell "slow
+        // down, for this many seconds" from "something went wrong" retries immediately and makes
+        // it worse, and the offline write queue is precisely such a client.
+        $exceptions->render(function (ThrottleRequestsException $e, Request $request) {
+            if (! $request->is('api/*')) {
+                return null;
+            }
+
+            $retryAfter = $e->getHeaders()['Retry-After'] ?? null;
+
+            return Problem::make(
+                type: 'rate-limited',
+                title: 'Too many requests',
+                status: Response::HTTP_TOO_MANY_REQUESTS,
+                detail: 'Too many requests. Please slow down and try again shortly.',
+                extra: array_filter(['retry_after_seconds' => $retryAfter === null ? null : (int) $retryAfter]),
+            )->withHeaders($e->getHeaders());
         });
 
         $exceptions->render(function (AuthenticationException $e, Request $request) {

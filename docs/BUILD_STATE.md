@@ -3,7 +3,15 @@
 > Living tracker for the build. Updated as work progresses. Source of truth for **where we
 > are** and **how this machine is set up**. Read this first when resuming.
 
-_Last updated: 2026-09-13 (the HandyMan REDESIGN — dark, one luminous green, Plus Jakarta Sans,
+_Last updated: 2026-09-30 (a repository review, in three passes. First: rate limiting where there
+was none, idempotency claims scoped to the caller, the OTP cap applied by the database, gateway
+calls taken out of database transactions, CLAUDE.md committed for the first time. Then the rest of
+that review's list: suspension that means something, a data key that protects something, erasure
+that reaches the person's own content, cursor pagination, and the CRM's missing authorisation —
+and then the nine open decisions those two left — see the three top entries under "What was
+done")_
+
+_Previously: 2026-09-13 (the HandyMan REDESIGN — dark, one luminous green, Plus Jakarta Sans,
 22px cards, no shadows, one filled button per screen — replaced Modernist on every surface after
 the founder said Modernist was the wrong design; the handoff folder in Downloads is the spec.
 Same day: every notification channel got a real adapter, object storage, retention, erasure of
@@ -330,6 +338,236 @@ This section stayed at "25 open" for almost a month after the last gap closed �
 green, the tracker did not. Re-run it before believing this paragraph.
 
 ## What was done, most recent first
+
+### 2026-09-30 (third pass) — the nine open decisions, decided
+
+The review's list had nine items left that were judgement calls rather than defects. Seven are now
+code; two are decisions to leave things alone, recorded above with the reasoning rather than left
+looking unfinished.
+
+**The erased tombstone.** `display_name` held French prose written once and read by everyone, so an
+anglophone customer saw French in their own thread. It stores a locale-free sentinel now
+(`Party::ERASED_NAME`), and `Party::displayName()` translates off `erased_at` where the name is
+rendered — the six API resources, the workspace counterpart name and the provider's client book.
+The raw sentinel is what an export or a ledger report shows, which is what it is for.
+
+**Retention reaches the workspace**, which the schedule had said nothing about, so a thread and its
+voice notes were kept for ever for everyone rather than only for people who ask to be erased. Two
+clocks, because the things differ: media (a recording of someone speaking, the inside of someone's
+home) goes at 730 days past the engagement completing, row kept with `purged_at`; message text —
+small, and the record a dispute is argued from — goes a year later and only the body, never the row.
+Both numbers are the founder's to set with the register, and `data:retain --dry-run` exists so
+nobody has to learn what a number means by watching it delete a year of somebody's threads.
+
+**The app downscales photos** to 2000px / JPEG 0.8 at the pick point. This is what closes the
+`post_max_size` mismatch from the right end: PHP discards an oversized body WHOLE, so five camera
+photos came back as "photos.*.file is required" and read as a broken app, and the declared limit
+could not be tightened (rule #4). Best-effort — an undecodable photo is attached at full size, not
+dropped. Its spec pins the failure modes as carefully as the success, and pins one thing found
+while writing it: the skip threshold is on BYTES, not megapixels, because upload size is the point.
+The first fixture drew 8×8 blocks, compressed to 128 KB, and was correctly left alone.
+
+**A bucketed cursor** for `/provider/site-visits`, since its sort key is compound. **A paged
+payout history** as its own endpoint (`GET /provider/payouts`) with the summary handing over
+`payouts_next_cursor` — the client must never mint one, and an earlier draft of this had it doing
+exactly that until the opacity rule in `Cursor`'s own docblock caught it. **One query** for the
+conversations' unread counts instead of one per conversation.
+
+Verified: the app builds, its suite is **20/20** (the four new downscaler specs included), the
+OpenAPI drift gate is clean at 94 operations with 0 uncalled, and all five frontend gates pass
+(i18n 1443 × 2). PHP remains CI's to check.
+
+
+### 2026-09-30 (second pass) — suspension that means something, and the rest of the review's list
+
+**Suspension was unenforceable, and now is not.** `user_status` has carried `suspended` on both
+`parties.status` and `users.status` since the first migration. Nothing in the panel wrote either
+column and nothing in the app read them, so "suspend" meant at most `provider_profiles.suspended_at`
+hiding a provider from search while they carried on signing in, accepting offers, messaging
+customers and requesting payouts. Staff could receive a report about a dangerous provider, record a
+decision on it — `ReviewReport` deliberately "records a decision and nothing else" — and have
+nothing to hand it off to.
+
+Now: `AccountStatus` (with `canAuthenticate()`, the one predicate every auth path asks) and
+`AccountStatusMachine` (the full matrix, `closed` terminal, per rule #8). `SetAccountStatus` does
+suspension as one act across all three places it has to reach — the party row AND every user row
+under it, every live session (refresh families revoked, Sanctum tokens deleted: a suspension that
+waits out a 15-minute access token and hopes nobody uses a 30-day refresh token is not one), and
+`provider_profiles.suspended_at`, which is the discovery half that used to be the whole of it.
+Enforcement is at all four doors: `EnsureAccountActive` in the api group (belt to the revocation's
+braces, for a token minted seconds before the sweep), `VerifyOtp`, `RotateRefreshToken`, and
+`canAccessPanel` — a suspended staff member kept the admin panel, which is the one place they could
+have unsuspended themselves. Suspend and reinstate are in the panel on the party list row and the
+detail page, both requiring a reason, both routed through the Action so the machine, the session
+revocation, the activity log and the outbox announcement happen wherever it is triggered from.
+
+Refused at **verify**, not at `/otp/request`: that endpoint answers 202 whether or not a number is
+registered, by design, and refusing there would turn it into a way to ask whether an account is
+suspended. 403 rather than 401, because an app that receives 401 sends the person back through the
+OTP screens to be refused again.
+
+**`parties.data_key` protected nothing.** A 256-bit key minted per party, encrypted at rest, and
+destroyed on erasure — and grep found exactly two uses: minting, and nulling. So "crypto-shred
+erasure", which doc 04 and the P1-10 entry both present as the thing that resolves
+erasure-versus-an-append-only-ledger, was ceremonial, and `ErasureTest` asserted the key was null
+rather than that anything had become unrecoverable. Identity papers were encrypted with `Crypt`,
+i.e. the application key: shared by every party, and not something erasure can destroy without
+locking the platform out of its own data. They are now encrypted with the owning party's own key,
+recorded per row (`encryption_scheme`) rather than guessed, with documents written before the change
+still readable under `app_key`. The test now keeps a copy of the ciphertext, erases the party,
+restores the copy, and asserts it cannot be read — the mechanism, not the marker.
+
+**Erasure left the person's own content behind.** "The human becomes unidentifiable" was the
+docblock's claim while the voice notes (recordings of their voice), the report photos (their
+premises), the messages (their words) and the reviews they wrote all stayed exactly where they were,
+and `config/retention.php` covered none of it either. The shape now follows what each thing is:
+media they own → bytes destroyed, row kept with `purged_at` so a thread shows something was there
+rather than losing the reference; their job photos → bytes and row both, since a `job_photos` row is
+nothing but a path; messages they sent → body nulled, row kept, because deleting the rows would tear
+holes in the other party's thread and in dispute evidence that is not this person's to erase;
+reviews they wrote → prose nulled, `rating` kept, since the number is about someone else's work. The
+docblock now lists what is deliberately NOT erased and why, because under Law 2024/017 that
+distinction is the whole answer.
+
+**The CRM would nudge a stranger.** `POST /provider/customers/{party}/follow-up` resolved any party
+id, and the Action checked only the provider's own do-not-contact list — a list the provider
+controls. Any authenticated user could put an SMS, a WhatsApp message and a push in front of anyone,
+on a party id guessable from any page that shows one, billed to us. The budget bounded how many;
+nothing bounded who. A shared engagement is required now, which is the same definition the client
+book itself uses.
+
+**Cursor pagination, which doc 05 requires and the API did not have.** Six lists. Three were
+entirely unbounded: `GET /jobs` (every job a customer ever created, four relations eager-loaded per
+row), `GET /jobs/{job}/messages` (a whole thread with its media, in **no defined order** — there was
+no ORDER BY at all — on every open of the workspace) and `GET /disputes`. `GET /conversations` was
+worse than unbounded: it loaded every message of every one of the user's conversations into memory
+to build one line of preview text each, then sorted in PHP. That is a `DISTINCT ON` and an SQL-side
+page now. `/follow-ups` and `/provider/site-visits` were capped at a flat 50 with nothing able to see
+past it. Keyset, not offset, for the reason doc 05 gives: offset over a growing feed shows the same
+row on two pages. Both parameters are additive (rule #4) and tested that way — a build that sends
+neither reads `data` exactly where it always did, and a bad value means "the default" rather than a
+422 mid-scroll. The messages page is the newest N handed back ASCENDING, because that is the order
+the app appends into and renders; a chat pages into its past, so its cursor is `older_cursor`.
+
+Also: a sweep for payout reservations never dispatched (`RequestPayout` commits the reservation
+before calling out, so a timeout leaves one `pending` with no `external_ref` — `ResolvePayout`
+rightly skips those, which left a client retry as the only thing that would ever finish them);
+**the third named concurrency test** from doc 05's testing floor, "parallel payout requests → one
+payout", which was listed as non-negotiable and did not exist; Redis behind `requirepass`, which it
+had never had while holding every session; a **strict** CSP in report-only, because a report-only
+policy softened with `unsafe-inline` reports nothing and the strict one turns "we would have to
+audit every surface" into a list of actual violations; a size guard on verification-document
+encryption, which is whole-file in memory and fine at 10M against a 256M limit until someone raises
+the former; and `shot.mjs`, a tracked empty file, gone.
+
+Verified in this pass, since the toolchain was reachable this time: the Ionic app **builds** against
+the regenerated client, its unit suite is **16/16 green**, the OpenAPI drift gate is clean, and all
+five frontend gates pass (i18n 1440 × 2, colours, strings, contrast both themes, 0 of 93 uncalled).
+The PHP toolchain still could not be installed — `composer install` cannot authenticate against
+github.com from here — so Pint, PHPStan and Pest remain **CI's** check, and the new migrations
+(`dropUnique` by constraint name, `NULLS NOT DISTINCT`, the row-comparison cursor with its explicit
+`::timestamptz`/`::uuid` casts) are the places to watch on the first run.
+
+
+### 2026-09-30 — a repository review, and the nine things it fixed
+
+A full read of the repository (no test run: the PHP toolchain could not be installed in that
+session, so every finding below is from reading, and **CI is what confirms it**). The node gates
+did run, and were clean: i18n parity 1432 keys × 2, no-literal-colours, no-bare-strings, contrast
+in both themes, 0 of 93 operations uncalled.
+
+**`CLAUDE.md` had never been committed.** 116 places in the repo cite it — the README calls it the
+entry point, and code cites it by number (`routes/api.php` "rule #4", `Money.php` "#1, #2",
+`Skill.php` "#7"). `git log --all -- CLAUDE.md` was empty and `.gitignore` never mentioned it, so
+every contributor and every agent has been working against rules they could not read. It is now
+reconstructed from those citations, with the numbering pinned to them. **Rules #5 and #10 are
+cited nowhere and could not be recovered** — they are marked as missing in the file rather than
+invented. Restore them if the original exists anywhere.
+
+**No rate limiting existed, anywhere.** Laravel 11 moved `throttle:api` out of the default API
+middleware group *and* stopped defining the `api` limiter; `bootstrap/app.php` never put either
+back, and there was no `RateLimiter::for` in the codebase. So `/auth/otp/verify`, `/auth/refresh`,
+the public directory and the public webhook all answered as fast as they were asked. Three
+limiters now (`config/api.rate_limits`): `api` 120/min keyed by sanctum user where there is one and
+by IP otherwise — keying it by IP alone would throttle everyone behind a carrier NAT, which here is
+most people; `auth` 20/min per IP on the three unauthenticated credential routes only, so `/me` and
+`/logout` are not caught by an IP-keyed limit; `webhooks` 60/min per IP, because that route is
+public and it WRITES. A 429 now renders as problem+json with type `rate-limited` and keeps
+`Retry-After` — the generic HttpException renderer dropped those headers, and the offline write
+queue is exactly the client that retries immediately when it cannot tell "slow down" from "broke".
+
+**An idempotency claim was not scoped to the caller,** and its `user_id` was never even populated.
+The unique index was on `idempotency_key` alone, and `handleExisting` looked up by key alone — so
+the same key, method, path and body from a second caller replayed the first caller's stored
+response verbatim. P0-06's own comment said "Scope for later (auth arrives in P1)"; P1 arrived and
+the scope did not. Separately, the middleware read `$request->user()` off the **default `web`
+guard** — which a Bearer client never satisfies, because this middleware is in the `api` group and
+runs before the route's `auth:sanctum`. Every row this table has ever held recorded `user_id` as
+null. Now: `Auth::guard('sanctum')` by name (the same reason `RecordUsage` does), and a unique index
+on `(user_id, idempotency_key) NULLS NOT DISTINCT` — the `NULLS NOT DISTINCT` is what keeps the
+claim atomic for the three `/auth/*` routes, which carry a key and have no user.
+
+**The OTP attempt cap was not applied atomically.** Read, compare, then increment, with the row
+lock only on the success path — so N concurrent verifies all read the same under-the-cap value and
+all went on to check a code, leaking roughly one extra guess per request in flight. With nothing
+throttling the endpoint that was the only bound on a 6-digit brute force. It is now one conditional
+`UPDATE … WHERE attempts < max`, outside any transaction (a rolled-back increment would let an
+attacker guess for ever), with the affected count as the answer. A successful verify now spends an
+attempt too, which costs nothing since the challenge is consumed.
+
+**Gateway calls ran inside database transactions holding row locks.** `RequestPayout` called
+CinetPay while holding `lockForUpdate` on the provider's payable account — and a timeout rolled
+that transaction back, **destroying the pending row that is the only record of the reservation**,
+while the transfer may already have been accepted. The provider could then ask for the same money
+again with nothing in our database that had seen the first request. It is two steps now: a short
+transaction reserves and commits, then the gateway is called with no lock held. A timed-out call
+leaves the payout `pending` with no `external_ref`, which `RequestPayout::resume` picks up when the
+client retries under the same Idempotency-Key — driving the same payout forward rather than making
+a second one, and the gateway carries the payout id as its own reference so it dedupes too.
+`ProcessPaymentWebhook` and `ResolvePayout` had the same shape and got the same treatment: read the
+authoritative status first, decide under the lock, re-check there.
+
+Found while in that file: **`RequestPayout`'s unique-violation recovery could never have worked.**
+The `catch (QueryException)` sat next to the failing INSERT inside the transaction, where Postgres
+has already aborted everything — the SELECT meant to recover the winner's row would itself have
+failed with "current transaction is aborted". It is outside the transaction now, which is the same
+reason `ProcessPaymentWebhook` wraps its dedup insert in a transaction of its own.
+
+**No gateway call had a timeout,** so they inherited Guzzle's "wait as long as it takes": a hung
+aggregator became a hung PHP-FPM worker, and — before the split above — a held lock with it.
+Bounded via `config/payments.http` (connect 5s, total 20s) rather than the constructor, so the
+signature the tests and the service provider call stays as it is.
+
+**The `{gateway}` webhook path segment was unvalidated.** Signatures are checked against the
+configured adapter, so nothing was ever wrongly applied — but the segment is half of the
+`(gateway, external_ref, event_type)` dedup key, so `/webhooks/payments/cinetpay` and
+`/webhooks/payments/cinetpay-x` were two keys for one callback, and each attempt still wrote its
+audit row. A mismatch is a 404 now, stored nowhere.
+
+**`post_max_size` was below the upload limits the API declares.** PHP wins: a body over it is
+discarded before Laravel sees it, so `$_FILES` arrives empty and the validator answers
+"photos.*.file is required" — which reads as a bug in the app, not as "too large". At 30M an
+on-site job report of five modern phone photos hit exactly that, in the core provider flow. Now
+64M, with `max_file_uploads` pinned. Still inconsistent by design and flagged in the file: a report
+declares `photos` as array max:20 and 20 × 10M fits in no sane budget, and the API being
+additive-only means the declared rule cannot simply be tightened — the app should downscale, or the
+count should be a decision.
+
+**No HSTS at the edge.** Caddy redirects http→https, but a redirect is one round trip an attacker
+on the same network gets to answer first, and these hostnames carry identity documents and payment
+flows. Two years, subdomains, preload-eligible. **CSP is still absent and deliberately so** — noted
+in the Caddyfile, because Filament and the Blade pages both emit inline script and style, and a
+policy relaxed to `unsafe-inline` would protect nothing while looking done.
+
+**The production app granted a session on a network error at OTP verify.** The offline fixture
+fallback caught every thrown error, set `authed` and returned true. No token is stored so nothing
+real is reachable, but a shipped build let anyone into the app shell by dropping the network at the
+right moment. Gated on a non-production build.
+
+What this pass did **not** do, and why, is the rewritten **Next steps** above: suspension being
+unenforceable and the two erasure gaps are features and a legal decision, not patches, and
+pagination is a contract addition worth designing rather than sprinkling.
+
 
 - **The provider app, designed** (2026-09-14, founder: "design the provider app too"). The
   handoff has no provider screens, so they were designed in its grammar rather than borrowed
@@ -2386,16 +2624,75 @@ green, the tracker did not. Re-run it before believing this paragraph.
 
 ## Next steps
 
-**Phases 0 and 1 are COMPLETE** (every task committed; 114 tests green). End-of-P1 demo works: a
-provider signs up by phone (OTP), lists skills, sets a service radius; an admin sees them in
-Filament. Next is **Phase 2 — jobs, offers, engagements (direct booking)**:
+_Rewritten 2026-09-30. This section had said "Phases 0 and 1 are COMPLETE … Next is Phase 2" for
+months, while the tables above it recorded Phase 8 done and the redesign landed — the exact failure
+this file warns about two sections up ("the sweep ran green, the tracker did not"). What follows is
+what the 2026-09-30 review found still open, which is a different list from what is built._
 
-1. **P2-01** jobs + engagement_mode + conditional-address CHECK + JobStateMachine
-2. **P2-02** EngagementModePolicy (feature applicability object, doc 06)
-3. **P2-03..P2-10** job creation + PII-minimised resource; provider search (ST_DWithin + skill +
-   rating, skips geo for remote); offers; **AcceptOfferAction** (concurrency: 20 parallel → 1
-   engagement); AcceptPaidJob gate keyed to engagement_mode; engagements + auto-assign; assignments
-   + dispatcher org-boundary; availability/conflict; Filament.
+**From the repository review (2026-09-30).** Two passes; between them the review's list is closed
+except where closing it is a decision rather than a patch.
+
+Fixed in the first pass: no rate limiting anywhere; idempotency claims not scoped to the caller;
+the OTP attempt cap not applied atomically; gateway HTTP calls inside database transactions holding
+row locks; no timeout on any gateway call; the `{gateway}` webhook path segment unvalidated;
+`post_max_size` below the upload limits the API declares; no HSTS; the production app granting a
+session on a network error at OTP verify; and `CLAUDE.md`, which had never been committed while 116
+places in the repo cite it.
+
+Fixed in the second: **suspension is real** (`AccountStatus` + `AccountStatusMachine`,
+`SetAccountStatus`, `EnsureAccountActive`, and suspend/reinstate in the panel — see the entry
+below); **`parties.data_key` protects something** (identity papers are encrypted with the owning
+party's own key, so destroying it is a real crypto-shred); **erasure reaches the person's own
+content** (media bytes, job photos, message bodies, review prose); **the CRM cannot nudge a
+stranger**; **cursor pagination** on six lists, three of which were entirely unbounded; a sweep for
+payout reservations that were never dispatched; the third named concurrency test from the testing
+floor; Redis behind a password; a strict Content-Security-Policy in report-only; and `shot.mjs`, a
+tracked empty file, deleted.
+
+Third pass closed the rest of that list. What each decision was resolved AS, since these were
+judgement calls rather than bugs:
+
+1. **The erased-party tombstone is now locale-correct.** `display_name` stores
+   `Party::ERASED_NAME` (`[erased]`), which is locale-free and unmistakable in an export or a
+   ledger report, and `Party::displayName()` translates from `erased_at` at render time. Every
+   user-facing path goes through it. Filament keeps the raw sentinel, which is the right thing for
+   a staff table reading raw data.
+2. **Retention covers the workspace**, on two clocks, because media and text are not alike:
+   `engagement_media_days` (default 730) destroys voice-note and report-photo BYTES once an
+   engagement is that long finished, keeping the row with `purged_at`; `message_bodies_days`
+   (default 1095) empties message bodies and never the rows, so a thread reads as redacted rather
+   than truncated and a dispute can still see who said something. **Those numbers are a starting
+   point, not a finding** — they are what the CNDP register needs an answer for, and
+   `php artisan data:retain --dry-run` reports exactly what a number would destroy before it does.
+   0 means kept for ever, deliberately.
+3. **The app downscales photos before upload** (`core/downscale-image.ts`): 2000px long edge, JPEG
+   0.8, which takes a 6 MB capture to a few hundred KB. That is what makes the declared
+   `photos: array max:20` reachable without tightening it (rule #4 forbids that) and it is the
+   slowest thing a provider does on site. Best-effort by design — a photo it cannot process is
+   attached at full size rather than dropped, because the worker is standing in someone's kitchen.
+4. **CSP stays report-only, deliberately.** The strict policy is being reported against now.
+   Promoting it means threading nonces through the Blade layouts and whatever Filament 5 needs,
+   and the reports are the input to that work — turning it on without them is how a site breaks in
+   production for a header nobody could test.
+5. **`/provider/site-visits` has its cursor**, carrying the bucket:
+   `(scheduled-before-completed, scheduled_for, id)`. A two-part cursor would have compared
+   something the ordering does not, and the page boundary between the last scheduled visit and the
+   first completed one is exactly where that lands wrong.
+6. **`GET /provider/payouts`** is the paged history, and `/provider/earnings` now hands over
+   `payouts_next_cursor` where its embedded page stops. The cursor is minted server-side; the app's
+   earnings screen has a "show older payouts" text action behind it, absent rather than inert once
+   the history runs out.
+7. **The unread counts are one query**, joined on `conversation_participants` so each row keeps its
+   own `last_read_at` cutoff, instead of one `COUNT` per conversation.
+8. **The design source of truth is still a path on one laptop** and this pass could not change
+   that — the files are not in the repo and are not reachable from here. Copying
+   `design_handoff_handyman_redesign/` (the README and the four `.dc.html` prototypes) into
+   `docs/design/` is a two-minute job on the machine that has them, and until someone does it the
+   spec dies with that disk.
+9. **`check:native-origin` still warns**, and still should: the domain is not registered. The
+   checker now says what resolving it means, because the placeholder LOOKS like the real thing —
+   when `app.handyman.cm` is registered the check will still fail, and the fix is to drop it from
+   `PLACEHOLDERS` in the same commit that confirms the DNS, not to argue with the checker.
 
 Follow-ups noted in code (not blocking): `cap add android/ios` when building native; full
 Tailwind/Vite pipeline for Blade (token CSS linked directly for now); the identity-verification
@@ -2428,14 +2725,14 @@ approval flow that raises `verification_tier` (P6).
   the alphanumeric `HandyMan` (no reply path; what the deploy example assumes) or a purchased
   number people can text back.
 
-- **Primary button label contrast (founder decision, 2026-09-12).** White on the brand red
-  `#ec3013` is 3.76:1; WCAG AA wants 4.5:1 for a 14px label and no label colour gets there on
-  that red (ink is 3.73). It clears the 3:1 large-text bar only. Options: (a) accept — it is the
-  brand, labels are 800-weight, and the checker prints the waiver on every run; (b) move the
-  primary FILL to the ramp's 700 step `#ae1800` (passes at 6.3:1, visibly darker, the accent
-  stays `#ec3013` for icons/rules/the poster band); (c) make primary labels ≥ 18.66px bold.
-  Recommend (a) unless the outdoor-legibility test on a real low-end Android says otherwise —
-  that test is on the same checklist and would settle it with evidence rather than a ratio.
+- ~~**Primary button label contrast (founder decision, 2026-09-12).**~~ **MOOT since 2026-09-13,
+  struck 2026-09-30.** The question was white-on-`#ec3013` at 3.76:1 against AA's 4.5:1, and
+  `#ec3013` was Modernist — the design this tracker itself records as replaced the next day. On the
+  HandyMan redesign the primary fill is `brand.primary` with the ground as its ink, which
+  `npm run check:contrast` measures at **11.13:1**, and every other pair clears its threshold in
+  both themes with no waiver printed. There was nothing left to decide; it sat here as an open
+  question for two weeks after the colour it was about stopped existing. The outdoor-legibility
+  test on a real low-end Android is still worth running, but as a legibility check, not as this.
 
 - **P0-09 hosting region: DECIDED → in-country (Cameroon)**, Option A. Lawyer sign-off + CNDP
   processing register still pending (founder tasks). Self-managed PostGIS/Redis/MinIO in-country.

@@ -119,3 +119,30 @@ it('treats a late webhook after a terminal state as a no-op', function () {
 
     expect(LedgerTransaction::where('kind', TxnKind::LeadCreditPurchase->value)->count())->toBe(1);
 });
+
+it('404s a callback addressed to a gateway that is not the configured one, and records nothing', function () {
+    // The `{gateway}` segment comes from the URL and is half of the (gateway, external_ref,
+    // event_type) dedup key, so an arbitrary value there gave one callback a fresh key per
+    // spelling — and every attempt still wrote its audit row. The signature is checked against
+    // the configured adapter either way, so nothing was ever applied; this stops it being stored.
+    test()->postJson('/api/v1/webhooks/payments/cinetpay-x',
+        ['reference' => 'r', 'status' => 'succeeded'],
+        ['X-Fake-Signature' => 'valid'],
+    )->assertNoContent(404);
+
+    expect(PaymentEvent::count())->toBe(0);
+});
+
+it('applies a webhook without holding a lock across the gateway round trip', function () {
+    // fetchStatus used to run INSIDE the transaction that locked the intent, so a slow aggregator
+    // held a row lock for the length of an HTTP round trip. It now runs first, with the decision
+    // re-checked under the lock — which must not change the outcome, and must still be exactly one
+    // ledger transaction for N deliveries.
+    [, $intent] = initiatedIntent(250_000);
+    app(PaymentGateway::class)->settle($intent->external_ref, GatewayStatus::Succeeded);
+
+    fakeWebhook($intent->external_ref)->assertNoContent(200);
+
+    expect(PaymentIntent::findOrFail($intent->id)->status)->toBe(PaymentStatus::Succeeded)
+        ->and(LedgerTransaction::where('kind', TxnKind::LeadCreditPurchase->value)->count())->toBe(1);
+});

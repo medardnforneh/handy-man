@@ -14,18 +14,27 @@ use Illuminate\Support\Facades\Log;
  */
 final class RetainData extends Command
 {
-    protected $signature = 'data:retain';
+    protected $signature = 'data:retain {--dry-run : Report what each rule would destroy, and destroy nothing}';
 
     protected $description = 'Destroy personal data past its retention period (config/retention.php)';
 
     public function handle(ApplyRetention $action): int
     {
-        $report = $action->handle();
+        $dryRun = (bool) $this->option('dry-run');
+        $report = $action->handle($dryRun);
+
+        if ($dryRun) {
+            // The workspace periods in config/retention.php are a starting point, not a finding.
+            // Nobody should have to learn what a number means by watching it delete a year of
+            // someone's threads, so this is how you find out first.
+            $this->warn('DRY RUN — nothing was destroyed. These are the counts each rule would have taken.');
+        }
 
         foreach ($report as $rule => $count) {
             $this->line(sprintf('%-24s %d', $rule, $count));
         }
-        Log::info('retention.applied', $report);
+
+        Log::info($dryRun ? 'retention.dry_run' : 'retention.applied', $report);
 
         return self::SUCCESS;
     }
